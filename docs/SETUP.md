@@ -357,8 +357,6 @@ Go to: https://dashboard.convex.dev → your project → Settings → Environmen
 
 ---
 
----
-
 ## Section 11 — Deploy to Vercel
 
 Follow this section after your local environment works end-to-end. Do not deploy first and debug later.
