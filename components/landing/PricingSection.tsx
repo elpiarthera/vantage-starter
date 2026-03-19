@@ -144,6 +144,8 @@ function PricingCard({
 							"border-2 border-primary",
 							"bg-card",
 							"shadow-lg shadow-primary/20",
+							"scale-[1.02]",
+							"ring-2 ring-primary/30",
 					  ].join(" ")
 					: [
 							"border border-border",
@@ -153,7 +155,7 @@ function PricingCard({
 		>
 			{/* Most popular badge — only on highlighted card */}
 			{isHighlighted && (
-				<span className="inline-flex items-center gap-1 rounded-full bg-primary/15 border border-primary/40 px-2.5 py-0.5 text-[11px] font-semibold text-primary tracking-[0.05em] uppercase mb-3 self-start">
+				<span className="inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground px-3 py-1 text-xs font-medium mb-3 self-start">
 					Most popular
 				</span>
 			)}
