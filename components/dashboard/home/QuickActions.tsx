@@ -14,7 +14,7 @@ export function QuickActions() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-base">{t("quick_actions")}</CardTitle>
+				<CardTitle className="text-base">{t("quick_actions.title")}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				{/* TODO: Add product-specific quick actions */}

@@ -38,7 +38,7 @@ function createBranch(
     length,
     depth,
     life: 0,
-    speed: 0.008 + Math.random() * 0.012,
+    speed: 0.002 + Math.random() * 0.003,
     opacity: 0.85 - depth * 0.06,
     children: [],
     hasSpawned: false,
@@ -103,14 +103,16 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
     resize();
 
     // Cap branch depth on mobile for CPU budget
-    const maxDepth = isMobile ? 5 : 8;
-    const branchFactor = isMobile ? 0.62 : 0.70;
+    const maxDepth = isMobile ? 6 : 9;
+    const branchFactor = isMobile ? 0.65 : 0.72;
 
     // Seed — trunk starts from bottom center, grows upward
+    // Trunk length scaled to canvas height so tree fills the viewport
     const seedX = canvas.width / dpr / 2;
     const seedY = canvas.height / dpr;
+    const trunkLength = Math.max(120, (canvas.height / dpr) * 0.22);
     branchesRef.current = [
-      createBranch(seedX, seedY, -Math.PI / 2, 90, 0),
+      createBranch(seedX, seedY, -Math.PI / 2, trunkLength, 0),
     ];
 
     // Trail opacity for previous frames (motion blur feel)
@@ -208,7 +210,8 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
       cancelAnimationFrame(animFrameRef.current);
       const seedX2 = canvas.clientWidth / 2;
       const seedY2 = canvas.clientHeight;
-      branchesRef.current = [createBranch(seedX2, seedY2, -Math.PI / 2, 90, 0)];
+      const trunkLength2 = Math.max(120, canvas.clientHeight * 0.22);
+      branchesRef.current = [createBranch(seedX2, seedY2, -Math.PI / 2, trunkLength2, 0)];
       firstFrame = true;
       resize();
       animFrameRef.current = requestAnimationFrame(tick);

@@ -50,6 +50,7 @@ export function AppSidebar() {
 
 	return (
 		<Sidebar
+			collapsible="icon"
 			className="group-data-[side=left]:border-r border-border"
 			aria-label="Main navigation"
 		>
@@ -179,17 +180,21 @@ export function AppSidebar() {
 			</SidebarContent>
 
 			{/* ── Footer: WorkspaceSwitcher + UserNav ── */}
-			<SidebarFooter>
+			<SidebarFooter className="gap-1 pb-3">
 				{/*
-          WorkspaceSwitcher: renders OrganizationSwitcher (Clerk).
-          Shows loading skeleton while Clerk hydrates.
+          WorkspaceSwitcher: compact org switcher row.
+          Hidden when sidebar is collapsed (icon-only mode) to avoid overflow.
         */}
-				<WorkspaceSwitcher />
+				<div className="group-data-[collapsible=icon]:hidden">
+					<WorkspaceSwitcher />
+				</div>
+
+				{/* Thin separator between org and user */}
+				<div className="h-px bg-sidebar-border mx-3 group-data-[collapsible=icon]:hidden" />
 
 				{/*
           SidebarUserNav: avatar + name + theme toggle + sign out.
           Only renders once Clerk user is loaded.
-          TODO: add Convex connection status indicator here (post-v1).
         */}
 				{isLoaded && user && <SidebarUserNav />}
 
@@ -197,7 +202,7 @@ export function AppSidebar() {
 				{!isLoaded && (
 					<div className="flex items-center gap-2 px-3 py-2">
 						<Skeleton className="size-6 rounded-full" />
-						<Skeleton className="h-4 w-24" />
+						<Skeleton className="h-4 w-24 group-data-[collapsible=icon]:hidden" />
 					</div>
 				)}
 			</SidebarFooter>

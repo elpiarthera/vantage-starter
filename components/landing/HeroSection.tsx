@@ -13,7 +13,7 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			className="relative min-h-[85vh] flex items-center overflow-hidden"
+			className="relative min-h-screen flex items-center overflow-hidden bg-background"
 		>
 			{/* Layer 0 — Generative Branching Tree (Canvas 2D, reads --primary + --background CSS vars) */}
 			<GenerativeTree className="z-0" />

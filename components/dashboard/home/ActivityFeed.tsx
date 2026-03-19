@@ -14,7 +14,7 @@ export function ActivityFeed() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-base">{t("activity")}</CardTitle>
+				<CardTitle className="text-base">{t("activity_feed.title")}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				{/* TODO: Wire up to product-specific activity data */}

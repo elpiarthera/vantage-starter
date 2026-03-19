@@ -4,12 +4,12 @@ import { useUser } from "@clerk/nextjs";
 import type { UserResource } from "@clerk/types";
 import { useQuery } from "convex/react";
 import {
+	Activity,
 	CreditCard,
-	ImageIcon,
-	Mic,
-	Music,
+	HardDrive,
+	Sparkles,
 	TrendingUp,
-	Video,
+	Zap,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -181,10 +181,11 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 					{t("usage_statistics")}
 				</h2>
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+					{/* API Calls */}
 					<Card className="p-4 md:p-6">
 						<div className="flex items-center gap-3 mb-2">
-							<div className="p-2 rounded-lg bg-blue-500/10">
-								<ImageIcon className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+							<div className="p-2 rounded-lg bg-primary/10">
+								<Activity className="h-4 w-4 md:h-5 md:w-5 text-primary" />
 							</div>
 							<span className="text-2xl md:text-3xl font-bold">
 								{usageStats.images}
@@ -195,10 +196,11 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 						</p>
 					</Card>
 
+					{/* AI Generations */}
 					<Card className="p-4 md:p-6">
 						<div className="flex items-center gap-3 mb-2">
-							<div className="p-2 rounded-lg bg-purple-500/10">
-								<Video className="h-4 w-4 md:h-5 md:w-5 text-purple-500" />
+							<div className="p-2 rounded-lg bg-primary/10">
+								<Sparkles className="h-4 w-4 md:h-5 md:w-5 text-primary" />
 							</div>
 							<span className="text-2xl md:text-3xl font-bold">
 								{usageStats.videos}
@@ -209,10 +211,11 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 						</p>
 					</Card>
 
+					{/* Storage Used */}
 					<Card className="p-4 md:p-6">
 						<div className="flex items-center gap-3 mb-2">
-							<div className="p-2 rounded-lg bg-green-500/10">
-								<Music className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+							<div className="p-2 rounded-lg bg-primary/10">
+								<HardDrive className="h-4 w-4 md:h-5 md:w-5 text-primary" />
 							</div>
 							<span className="text-2xl md:text-3xl font-bold">
 								{usageStats.music}
@@ -223,10 +226,11 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 						</p>
 					</Card>
 
+					{/* Credits Consumed */}
 					<Card className="p-4 md:p-6">
 						<div className="flex items-center gap-3 mb-2">
-							<div className="p-2 rounded-lg bg-orange-500/10">
-								<Mic className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+							<div className="p-2 rounded-lg bg-primary/10">
+								<Zap className="h-4 w-4 md:h-5 md:w-5 text-primary" />
 							</div>
 							<span className="text-2xl md:text-3xl font-bold">
 								{usageStats.narrations}

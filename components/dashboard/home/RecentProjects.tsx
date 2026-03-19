@@ -14,7 +14,7 @@ export function RecentProjects() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-base">{t("recent_items")}</CardTitle>
+				<CardTitle className="text-base">{t("recent_projects.title")}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				{/* TODO: Wire up to product-specific data */}

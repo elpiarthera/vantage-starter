@@ -135,16 +135,19 @@ function PricingCard({
 	tier: Tier;
 	t: ReturnType<typeof useTranslations>;
 }) {
+	const isHighlighted = tier.highlighted;
+
 	return (
 		<article
 			className={cn(
-				"rounded-xl p-6 flex flex-col relative h-full",
-				tier.highlighted
+				"rounded-xl p-6 md:p-8 flex flex-col relative h-full",
+				isHighlighted
 					? [
-							"border-2 border-primary/60",
-							"bg-card",
-							"shadow-[0_0_0_4px_oklch(var(--primary)/0.08),0_8px_32px_oklch(var(--primary)/0.15)]",
-							"bg-gradient-to-b from-primary/4 to-transparent",
+							"border-none",
+							"bg-primary",
+							"text-primary-foreground",
+							"shadow-[0_8px_32px_oklch(var(--primary)/0.30)]",
+							"scale-[1.02]",
 					  ].join(" ")
 					: [
 							"border border-border",
@@ -152,35 +155,43 @@ function PricingCard({
 					  ].join(" "),
 			)}
 		>
-			{/* Popular badge — Pro only */}
-			{tier.highlighted && (
-				<span className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground whitespace-nowrap tracking-[0.01em]">
-					{t("popular_badge")}
-				</span>
-			)}
-
 			{/* Tier name */}
 			<h3
 				className={cn(
 					"text-base font-semibold tracking-[-0.02em]",
-					tier.highlighted ? "text-foreground mt-2" : "text-foreground",
+					isHighlighted ? "text-primary-foreground" : "text-foreground",
 				)}
 			>
 				{t(tier.nameKey)}
 			</h3>
 
 			{/* Description */}
-			<p className="text-sm text-muted-foreground mt-1 mb-5 leading-relaxed">
+			<p
+				className={cn(
+					"text-sm mt-1 mb-5 leading-relaxed",
+					isHighlighted ? "text-primary-foreground/80" : "text-muted-foreground",
+				)}
+			>
 				{t(tier.descKey)}
 			</p>
 
 			{/* Price */}
 			<div className="mb-2 flex items-baseline gap-2">
-				<span className="text-4xl font-semibold tracking-[-0.03em] text-foreground">
+				<span
+					className={cn(
+						"text-4xl font-semibold tracking-[-0.03em]",
+						isHighlighted ? "text-primary-foreground" : "text-foreground",
+					)}
+				>
 					{tier.price}
 				</span>
 				{tier.price !== "$0" && (
-					<span className="text-sm text-muted-foreground">
+					<span
+						className={cn(
+							"text-sm",
+							isHighlighted ? "text-primary-foreground/70" : "text-muted-foreground",
+						)}
+					>
 						{t("one_time_label")}
 					</span>
 				)}
@@ -188,20 +199,37 @@ function PricingCard({
 
 			{/* Early bird note */}
 			{tier.earlyBirdPrice && (
-				<p className="text-xs text-primary font-medium mb-5">
+				<p
+					className={cn(
+						"text-xs font-medium mb-5",
+						isHighlighted ? "text-primary-foreground/90" : "text-primary",
+					)}
+				>
 					{t("early_bird_note", { price: tier.earlyBirdPrice })}
 				</p>
 			)}
 
 			{/* Pro callout — "The AI layer." */}
 			{tier.calloutKey && (
-				<p className="text-xs text-muted-foreground border-l-2 border-primary/50 pl-3 mb-5 italic leading-relaxed">
+				<p
+					className={cn(
+						"text-xs mb-5 italic leading-relaxed",
+						isHighlighted
+							? "border-l-2 border-primary-foreground/40 pl-3 text-primary-foreground/80"
+							: "border-l-2 border-primary/50 pl-3 text-muted-foreground",
+					)}
+				>
 					{t(tier.calloutKey)}
 				</p>
 			)}
 
 			{/* Divider */}
-			<div className={cn("h-px mb-5", tier.highlighted ? "bg-primary/20" : "bg-border")} />
+			<div
+				className={cn(
+					"h-px mb-5",
+					isHighlighted ? "bg-primary-foreground/20" : "bg-border",
+				)}
+			/>
 
 			{/* Features list */}
 			<ul
@@ -209,11 +237,17 @@ function PricingCard({
 				aria-label={`${t(tier.nameKey)} ${t("features_aria")}`}
 			>
 				{tier.featuresKey.map((fk) => (
-					<li key={fk} className="flex items-start gap-2.5 text-sm text-foreground">
+					<li
+						key={fk}
+						className={cn(
+							"flex items-start gap-2.5 text-sm",
+							isHighlighted ? "text-primary-foreground" : "text-foreground",
+						)}
+					>
 						<Check
 							className={cn(
 								"size-4 shrink-0 mt-0.5",
-								tier.highlighted ? "text-primary" : "text-muted-foreground",
+								isHighlighted ? "text-primary-foreground" : "text-muted-foreground",
 							)}
 							aria-hidden="true"
 						/>
@@ -222,17 +256,23 @@ function PricingCard({
 				))}
 			</ul>
 
-			{/* CTA */}
+			{/* CTA — always visible, inverted on highlighted card */}
 			<a href={tier.ctaHref} className="block">
 				<Button
-					variant={tier.highlighted ? "default" : "outline"}
+					variant="outline"
 					className={cn(
-						"w-full",
-						tier.highlighted && [
-							"shadow-[0_2px_12px_oklch(var(--primary)/0.30)]",
-							"hover:shadow-[0_4px_16px_oklch(var(--primary)/0.40)]",
-							"transition-shadow duration-200",
-						].join(" "),
+						"w-full font-medium",
+						isHighlighted
+							? [
+									"bg-primary-foreground text-primary border-none",
+									"hover:bg-primary-foreground/90",
+									"shadow-none",
+									"transition-colors duration-150",
+								].join(" ")
+							: [
+									"border-border",
+									"hover:bg-accent hover:text-accent-foreground",
+								].join(" "),
 					)}
 				>
 					{t(tier.ctaKey)}
