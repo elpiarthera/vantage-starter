@@ -369,7 +369,32 @@ export default defineSchema({
 		.index("by_owner_and_default", ["ownerId", "isDefault"]),
 
 	/**
-	 * 14. System Config Table
+	 * 14. Agent Memory Table
+	 * Convex-backed memory for AI agents — virtual file system per user/workspace.
+	 * Paths map to a virtual /memories/ directory:
+	 *   /memories/core.md        → type: 'core', injected every turn via prepareCall
+	 *   /memories/notes.md       → type: 'notes', on-demand archival
+	 *   /memories/prefs.md       → type: 'preference', user-specific persistent state
+	 */
+	agentMemory: defineTable({
+		userId: v.string(), // Clerk user ID
+		workspaceId: v.optional(v.id("workspaces")),
+		path: v.string(), // e.g. '/memories/core.md'
+		content: v.string(),
+		memoryType: v.union(
+			v.literal("core"), // Injected every turn
+			v.literal("notes"), // On-demand archival
+			v.literal("preference"), // User-specific persistent state
+		),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_user", ["userId"])
+		.index("by_user_and_path", ["userId", "path"])
+		.index("by_workspace", ["workspaceId"]),
+
+	/**
+	 * 15. System Config Table
 	 * Runtime-tunable global settings
 	 */
 	systemConfig: defineTable({

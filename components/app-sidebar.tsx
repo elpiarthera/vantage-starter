@@ -20,7 +20,7 @@
  */
 
 import { useUser } from "@clerk/nextjs";
-import { LayoutGrid, Settings, Zap } from "lucide-react";
+import { LayoutGrid, MessageSquare, Settings, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
@@ -109,21 +109,27 @@ export function AppSidebar() {
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 
+							{/* Chat */}
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									asChild
+									isActive={pathname.includes("/dashboard/chat")}
+									className={cn(
+										"h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground",
+										"data-[active=true]:text-foreground data-[active=true]:bg-sidebar-accent",
+									)}
+								>
+									<Link href="/dashboard/chat" onClick={handleNavClick}>
+										<MessageSquare className="size-4" aria-hidden="true" />
+										<span>Chat</span>
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+
 							{/*
                 ┌─────────────────────────────────────────────────────────────┐
-                │  [YOUR_NAV_ITEM_HERE]                                       │
-                │  Add your primary nav item here.                            │
-                │  Pattern:                                                   │
-                │    <SidebarMenuItem>                                        │
-                │      <SidebarMenuButton asChild isActive={...}              │
-                │        className="h-9 min-h-[44px] rounded-xl px-3         │
-                │                   text-muted-foreground">                  │
-                │        <Link href="/your-route">                            │
-                │          <YourIcon className="size-4" aria-hidden="true" />│
-                │          <span>Your Label</span>                            │
-                │        </Link>                                              │
-                │      </SidebarMenuButton>                                   │
-                │    </SidebarMenuItem>                                       │
+                │  [YOUR_NAV_ITEM_HERE] #2                                    │
+                │  Add your secondary nav item here. Same pattern as above.  │
                 └─────────────────────────────────────────────────────────────┘
               */}
 

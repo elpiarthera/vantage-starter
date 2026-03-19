@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { internal } from "./_generated/api";
 import { polar } from "./polar";
 import { chat as aiChat } from "./http/ai";
+import { agentChat } from "./http/agent";
 
 const http = httpRouter();
 
@@ -273,6 +274,21 @@ http.route({
 	path: "/ai/chat",
 	method: "OPTIONS",
 	handler: aiChat,
+});
+
+// ============================================================================
+// AGENT ROUTES (AI SDK v6 ToolLoopAgent)
+// ============================================================================
+http.route({
+	path: "/ai/agent",
+	method: "POST",
+	handler: agentChat,
+});
+
+http.route({
+	path: "/ai/agent",
+	method: "OPTIONS",
+	handler: agentChat,
 });
 
 export default http;
