@@ -2600,7 +2600,9 @@
       "headline": "Ihre KI baut die UI.",
       "subline": "Das einzige Boilerplate, bei dem die KI Komponenten rendert, nicht Text. Liefern Sie Ihr erstes KI-SaaS in Tagen, nicht Monaten.",
       "cta_primary": "Jetzt starten",
-      "cta_secondary": "In Aktion sehen"
+      "cta_secondary": "In Aktion sehen",
+      "subline_detail": "The first Convex boilerplate with Generative UI, credits, and RAG. Production-ready from clone.",
+      "social_proof_micro": "Trusted by solo founders building AI products with Convex."
     },
     "features": {
       "heading": "Alles, was Sie sowieso bauen würden.",
@@ -2652,7 +2654,9 @@
       "team_f3": "White-Label-Lizenz",
       "team_f4": "Prioritäts-Bugfixes",
       "team_f5": "Dedizierter Slack-Kanal",
-      "team_f6": "Vierteljährliche Architekturüberprüfung"
+      "team_f6": "Vierteljährliche Architekturüberprüfung",
+      "early_bird_note": "Early bird: {price} for the first 50 buyers.",
+      "pro_callout": "The AI layer. No other boilerplate has it."
     },
     "testimonials": {
       "heading": "Was Builder sagen.",

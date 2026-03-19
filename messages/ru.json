@@ -2600,7 +2600,9 @@
       "headline": "Ваш ИИ строит интерфейс.",
       "subline": "Единственный boilerplate, где ИИ рендерит компоненты, а не текст. Запустите первый SaaS с ИИ за дни, а не месяцы.",
       "cta_primary": "Начать создание",
-      "cta_secondary": "Смотреть в действии"
+      "cta_secondary": "Смотреть в действии",
+      "subline_detail": "The first Convex boilerplate with Generative UI, credits, and RAG. Production-ready from clone.",
+      "social_proof_micro": "Trusted by solo founders building AI products with Convex."
     },
     "features": {
       "heading": "Всё, что вы бы построили в любом случае.",
@@ -2652,7 +2654,9 @@
       "team_f3": "White-label лицензия",
       "team_f4": "Приоритетные исправления ошибок",
       "team_f5": "Выделенный Slack-канал",
-      "team_f6": "Ежеквартальный архитектурный обзор"
+      "team_f6": "Ежеквартальный архитектурный обзор",
+      "early_bird_note": "Early bird: {price} for the first 50 buyers.",
+      "pro_callout": "The AI layer. No other boilerplate has it."
     },
     "testimonials": {
       "heading": "Что говорят разработчики.",

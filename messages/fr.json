@@ -2596,11 +2596,13 @@
     },
     "hero": {
       "aria_label": "Section héro",
-      "badge": "[VOTRE_BADGE_ICI] — ex. Accès anticipé disponible",
+      "badge": "Accès anticipé — 50 licences early bird disponibles",
       "headline": "Votre IA construit l'interface.",
       "subline": "Le seul boilerplate où l'IA génère des composants, pas du texte. Livrez votre premier SaaS IA en quelques jours, pas en mois.",
+      "subline_detail": "Le premier boilerplate Convex avec UI générative, crédits et RAG. Production-ready dès le clone.",
       "cta_primary": "Commencer à créer",
-      "cta_secondary": "Voir en action"
+      "cta_secondary": "Voir en action",
+      "social_proof_micro": "Adopté par des fondateurs solo qui construisent des produits IA avec Convex."
     },
     "features": {
       "heading": "Tout ce que vous construiriez de toute façon.",
@@ -2628,7 +2630,9 @@
       "popular_badge": "Plus populaire",
       "one_time_label": "paiement unique",
       "one_time_note": "Achat unique. Inclut toutes les mises à jour futures du boilerplate. Aucun frais récurrent.",
+      "early_bird_note": "Early bird : {price} pour les 50 premiers acheteurs.",
       "features_aria": "fonctionnalités",
+      "pro_callout": "La couche IA. Aucun autre boilerplate ne l'a.",
       "starter_name": "Starter",
       "starter_desc": "Explorez la stack. Aucune carte bancaire requise.",
       "starter_cta": "Commencer gratuitement",

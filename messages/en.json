@@ -2597,11 +2597,13 @@
 		},
 		"hero": {
 			"aria_label": "Hero section",
-			"badge": "[YOUR_LAUNCH_BADGE_HERE] — e.g. Now in early access",
+			"badge": "Now in early access — 50 early bird licenses",
 			"headline": "Your AI builds the UI.",
 			"subline": "The only boilerplate where AI renders components, not text. Ship your first AI SaaS in days, not months.",
+			"subline_detail": "The first Convex boilerplate with Generative UI, credits, and RAG. Production-ready from clone.",
 			"cta_primary": "Start building",
-			"cta_secondary": "See it in action"
+			"cta_secondary": "See it in action",
+			"social_proof_micro": "Trusted by solo founders building AI products with Convex."
 		},
 		"features": {
 			"heading": "Everything you'd build anyway.",
@@ -2629,7 +2631,9 @@
 			"popular_badge": "Most popular",
 			"one_time_label": "one-time",
 			"one_time_note": "One-time purchase. Includes all future updates to the boilerplate. No recurring fees.",
+			"early_bird_note": "Early bird: {price} for the first 50 buyers.",
 			"features_aria": "features",
+			"pro_callout": "The AI layer. No other boilerplate has it.",
 			"starter_name": "Starter",
 			"starter_desc": "Explore the stack. No credit card required.",
 			"starter_cta": "Get started free",

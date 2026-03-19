@@ -2600,7 +2600,9 @@
       "headline": "La tua IA costruisce l'interfaccia.",
       "subline": "L'unico boilerplate in cui l'IA renderizza componenti, non testo. Lancia il tuo primo SaaS con IA in giorni, non mesi.",
       "cta_primary": "Inizia a creare",
-      "cta_secondary": "Guarda in azione"
+      "cta_secondary": "Guarda in azione",
+      "subline_detail": "The first Convex boilerplate with Generative UI, credits, and RAG. Production-ready from clone.",
+      "social_proof_micro": "Trusted by solo founders building AI products with Convex."
     },
     "features": {
       "heading": "Tutto quello che costruiresti comunque.",
@@ -2652,7 +2654,9 @@
       "team_f3": "Licenza white-label",
       "team_f4": "Correzioni bug prioritarie",
       "team_f5": "Canale Slack dedicato",
-      "team_f6": "Revisione dell'architettura trimestrale"
+      "team_f6": "Revisione dell'architettura trimestrale",
+      "early_bird_note": "Early bird: {price} for the first 50 buyers.",
+      "pro_callout": "The AI layer. No other boilerplate has it."
     },
     "testimonials": {
       "heading": "Cosa dicono i builder.",

@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 type Tier = {
 	nameKey: string;
 	price: string;
+	earlyBirdPrice?: string;
 	descKey: string;
 	ctaKey: string;
 	ctaHref: string;
 	featuresKey: string[];
 	highlighted?: boolean;
+	calloutKey?: string;
 };
 
 const TIERS: Tier[] = [
@@ -30,6 +32,7 @@ const TIERS: Tier[] = [
 	{
 		nameKey: "pro_name",
 		price: "$499",
+		earlyBirdPrice: "$399",
 		descKey: "pro_desc",
 		ctaKey: "pro_cta",
 		ctaHref: "https://polar.sh/checkout/[POLAR_PRO_PRODUCT_ID]",
@@ -41,6 +44,7 @@ const TIERS: Tier[] = [
 			"pro_f5",
 		],
 		highlighted: true,
+		calloutKey: "pro_callout",
 	},
 	{
 		nameKey: "team_name",
@@ -66,24 +70,30 @@ export function PricingSection() {
 		<section
 			id="pricing"
 			aria-labelledby="pricing-heading"
-			className="py-20 md:py-32 bg-muted/30"
+			className={cn(
+				"py-20 md:py-32",
+				// Subtle section background differentiation
+				"bg-gradient-to-b from-muted/20 to-muted/40",
+				"dark:from-muted/10 dark:to-muted/20",
+			)}
 		>
 			<div className="max-w-5xl mx-auto px-6">
 				{/* Header */}
-				<div className="mb-12 md:mb-16">
+				<div className="mb-12 md:mb-16 max-w-xl">
 					<h2
 						id="pricing-heading"
 						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
 					>
 						{t("heading")}
 					</h2>
-					<p className="text-muted-foreground text-lg max-w-xl">
+					<p className="text-muted-foreground text-lg leading-relaxed">
 						{t("subheading")}
 					</p>
 				</div>
 
 				{/* Tiers grid — mobile: 1 col, tablet: 2 col, desktop: 3 col */}
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				{/* Pro card is elevated via z-index + shadow on desktop */}
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-start">
 					{TIERS.map((tier) => (
 						<PricingCard key={tier.nameKey} tier={tier} t={t} />
 					))}
@@ -107,45 +117,105 @@ function PricingCard({
 	return (
 		<article
 			className={cn(
-				"rounded-xl border p-6 flex flex-col",
+				"rounded-xl p-6 flex flex-col relative",
 				tier.highlighted
-					? "border-primary bg-primary/5 shadow-sm"
-					: "border-border bg-background",
+					? [
+							// Pro card: amber border, elevated background, amber glow shadow
+							"border-2 border-primary/60",
+							"bg-card",
+							"shadow-[0_0_0_4px_oklch(0.62_0.16_44/0.08),0_8px_32px_oklch(0.62_0.16_44/0.15)]",
+							"dark:shadow-[0_0_0_4px_oklch(0.72_0.16_44/0.10),0_8px_32px_oklch(0.72_0.16_44/0.18)]",
+							// Subtle amber gradient on Pro
+							"bg-gradient-to-b from-primary/4 to-transparent",
+					  ].join(" ")
+					: [
+							"border border-border",
+							"bg-card",
+					  ].join(" "),
 			)}
 		>
+			{/* Popular badge — Pro only */}
 			{tier.highlighted && (
-				<span className="inline-flex self-start mb-4 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
+				<span className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground whitespace-nowrap tracking-[0.01em]">
 					{t("popular_badge")}
 				</span>
 			)}
 
-			<h3 className="text-lg font-semibold text-foreground">{t(tier.nameKey)}</h3>
-			<p className="text-sm text-muted-foreground mt-1 mb-4">{t(tier.descKey)}</p>
+			{/* Tier name */}
+			<h3
+				className={cn(
+					"text-base font-semibold tracking-[-0.02em]",
+					tier.highlighted ? "text-foreground mt-2" : "text-foreground",
+				)}
+			>
+				{t(tier.nameKey)}
+			</h3>
 
-			<div className="mb-6">
+			{/* Description */}
+			<p className="text-sm text-muted-foreground mt-1 mb-5 leading-relaxed">
+				{t(tier.descKey)}
+			</p>
+
+			{/* Price */}
+			<div className="mb-2 flex items-baseline gap-2">
 				<span className="text-4xl font-semibold tracking-[-0.03em] text-foreground">
 					{tier.price}
 				</span>
 				{tier.price !== "$0" && (
-					<span className="ml-1.5 text-sm text-muted-foreground">
+					<span className="text-sm text-muted-foreground">
 						{t("one_time_label")}
 					</span>
 				)}
 			</div>
 
-			<ul className="space-y-3 mb-8 flex-1" aria-label={`${t(tier.nameKey)} ${t("features_aria")}`}>
+			{/* Early bird note */}
+			{tier.earlyBirdPrice && (
+				<p className="text-xs text-primary font-medium mb-5">
+					{t("early_bird_note", { price: tier.earlyBirdPrice })}
+				</p>
+			)}
+
+			{/* Pro callout — "The AI layer." */}
+			{tier.calloutKey && (
+				<p className="text-xs text-muted-foreground border-l-2 border-primary/50 pl-3 mb-5 italic leading-relaxed">
+					{t(tier.calloutKey)}
+				</p>
+			)}
+
+			{/* Divider */}
+			<div className={cn("h-px mb-5", tier.highlighted ? "bg-primary/20" : "bg-border")} />
+
+			{/* Features list */}
+			<ul
+				className="space-y-3 mb-8 flex-1"
+				aria-label={`${t(tier.nameKey)} ${t("features_aria")}`}
+			>
 				{tier.featuresKey.map((fk) => (
 					<li key={fk} className="flex items-start gap-2.5 text-sm text-foreground">
-						<Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+						<Check
+							className={cn(
+								"size-4 shrink-0 mt-0.5",
+								tier.highlighted ? "text-primary" : "text-muted-foreground",
+							)}
+							aria-hidden="true"
+						/>
 						{t(fk)}
 					</li>
 				))}
 			</ul>
 
+			{/* CTA */}
 			<a href={tier.ctaHref} className="block">
 				<Button
 					variant={tier.highlighted ? "default" : "outline"}
-					className="w-full"
+					className={cn(
+						"w-full",
+						tier.highlighted && [
+							"shadow-[0_2px_12px_oklch(0.62_0.16_44/0.30)]",
+							"hover:shadow-[0_4px_16px_oklch(0.62_0.16_44/0.40)]",
+							"transition-shadow duration-200",
+						].join(" "),
+					)}
 				>
 					{t(tier.ctaKey)}
 				</Button>
