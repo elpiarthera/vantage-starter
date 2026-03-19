@@ -2578,5 +2578,93 @@
       "voice_label": "Voix",
       "default_voice": "Par défaut"
     }
+  },
+  "landing": {
+    "meta": {
+      "title": "VantageStarter — Boilerplate SaaS IA",
+      "description": "Le seul boilerplate où l'IA génère des composants, pas du texte. Livrez plus vite avec l'UI générative, Convex temps réel, un système de crédits et 36 agents intégrés.",
+      "og_title": "VantageStarter — Votre IA construit l'interface.",
+      "og_description": "Lancez vos produits SaaS IA sans reconstruire la plomberie. UI générative, Convex temps réel, crédits, auth, facturation — tout inclus.",
+      "og_image_alt": "VantageStarter — Boilerplate SaaS IA"
+    },
+    "nav": {
+      "aria_label": "Navigation principale",
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "sign_in": "Connexion",
+      "get_started": "Commencer"
+    },
+    "hero": {
+      "aria_label": "Section héro",
+      "badge": "[VOTRE_BADGE_ICI] — ex. Accès anticipé disponible",
+      "headline": "Votre IA construit l'interface.",
+      "subline": "Le seul boilerplate où l'IA génère des composants, pas du texte. Livrez votre premier SaaS IA en quelques jours, pas en mois.",
+      "cta_primary": "Commencer à créer",
+      "cta_secondary": "Voir en action"
+    },
+    "features": {
+      "heading": "Tout ce que vous construiriez de toute façon.",
+      "subheading": "Arrêtez de reconstruire la même infrastructure. VantageStarter livre 80 heures d'infrastructure pour que vous vous concentriez sur votre domaine.",
+      "generative_ui_title": "UI générative",
+      "generative_ui_desc": "L'IA ne se contente pas de répondre — elle affiche le bon composant au bon moment. Formulaires dynamiques, cartes de données et panneaux d'action générés à l'exécution. Aucun concurrent ne propose cela.",
+      "credits_title": "Système de crédits",
+      "credits_desc": "Moteur de crédits production avec coûts par action, alertes de solde bas et contrôles administrateur. Monétisez toute fonctionnalité IA dès le départ.",
+      "realtime_title": "Temps réel par défaut",
+      "realtime_desc": "Les abonnements Convex alimentent chaque liste, compteur et tableau de bord. Pas de polling. Pas de données périmées. Tout se met à jour en direct.",
+      "agents_title": "Armée d'agents",
+      "agents_desc": "36 agents IA spécialisés couvrant le SEO, les blogs, les e-mails, la vidéo, les ventes et les opérations — connectés à votre codebase dès le premier jour.",
+      "rag_title": "RAG inclus",
+      "rag_desc": "Recherche vectorielle et ingestion de documents prêtes. Connectez votre source de données et votre IA connaît votre domaine.",
+      "accessibility_title": "RGAA 100%",
+      "accessibility_desc": "Conformité complète WCAG 2.1 AA et RGAA 4.1.2 intégrée. Modèles de déclaration d'accessibilité inclus.",
+      "stack_title": "Une seule stack",
+      "stack_desc": "Next.js 15 + Convex + Clerk + Polar. Pas de Postgres, pas de Redis, pas d'auth personnalisée. Chaque dépendance justifie sa place.",
+      "no_sql_title": "Zéro SQL",
+      "no_sql_desc": "La base de données réactive de Convex remplace Postgres, Redis et les tâches de fond. Votre backend est entièrement en TypeScript."
+    },
+    "pricing": {
+      "heading": "Tarification simple, paiement unique.",
+      "subheading": "Achetez une fois, gardez pour toujours. Pas d'abonnement, pas de renouvellement de licence, pas de frais d'utilisation sur le boilerplate.",
+      "popular_badge": "Plus populaire",
+      "one_time_label": "paiement unique",
+      "one_time_note": "Achat unique. Inclut toutes les mises à jour futures du boilerplate. Aucun frais récurrent.",
+      "features_aria": "fonctionnalités",
+      "starter_name": "Starter",
+      "starter_desc": "Explorez la stack. Aucune carte bancaire requise.",
+      "starter_cta": "Commencer gratuitement",
+      "starter_f1": "Accès complet au code source",
+      "starter_f2": "Convex + Clerk + Polar configurés",
+      "starter_f3": "Système de crédits (admin lecture seule)",
+      "starter_f4": "Support communautaire",
+      "pro_name": "Pro",
+      "pro_desc": "Tout ce dont vous avez besoin pour livrer un SaaS IA en production.",
+      "pro_cta": "Acheter Pro",
+      "pro_f1": "Tout dans Starter",
+      "pro_f2": "Composants UI génératifs",
+      "pro_f3": "Armée de 36 agents (accès complet)",
+      "pro_f4": "1 appel d'onboarding de 30 min",
+      "pro_f5": "Canal de support Slack privé",
+      "team_name": "Équipe",
+      "team_desc": "Pour les équipes qui livrent plusieurs produits depuis la même base.",
+      "team_cta": "Acheter Équipe",
+      "team_f1": "Tout dans Pro",
+      "team_f2": "Jusqu'à 5 membres d'équipe",
+      "team_f3": "Licence marque blanche",
+      "team_f4": "Corrections de bugs prioritaires",
+      "team_f5": "Canal Slack dédié",
+      "team_f6": "Révision d'architecture trimestrielle"
+    },
+    "testimonials": {
+      "heading": "Ce que disent les créateurs.",
+      "subheading": "Retours de la première cohorte en accès anticipé.",
+      "placeholder_aria": "Témoignage {index}",
+      "placeholder_sr": "Témoignage à venir — remplacez par un vrai avis client"
+    },
+    "footer": {
+      "legal_nav_aria": "Navigation légale",
+      "legal": "Mentions légales",
+      "privacy": "Confidentialité",
+      "contact": "Contact"
+    }
   }
 }

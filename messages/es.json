@@ -2578,5 +2578,93 @@
       "voice_label": "Voz",
       "default_voice": "Predeterminado"
     }
+  },
+  "landing": {
+    "meta": {
+      "title": "VantageStarter — Boilerplate SaaS con IA",
+      "description": "El único boilerplate donde la IA renderiza componentes, no texto. Lanza más rápido con UI generativa, Convex en tiempo real, sistema de créditos y 36 agentes integrados.",
+      "og_title": "VantageStarter — Tu IA construye la UI.",
+      "og_description": "Lanza productos SaaS con IA sin reconstruir la infraestructura. UI generativa, Convex en tiempo real, créditos, auth, facturación — todo incluido.",
+      "og_image_alt": "VantageStarter — Boilerplate SaaS con IA"
+    },
+    "nav": {
+      "aria_label": "Navegación principal",
+      "features": "Características",
+      "pricing": "Precios",
+      "sign_in": "Iniciar sesión",
+      "get_started": "Empezar"
+    },
+    "hero": {
+      "aria_label": "Sección héroe",
+      "badge": "[TU_BADGE_AQUÍ] — ej. Ahora en acceso anticipado",
+      "headline": "Tu IA construye la UI.",
+      "subline": "El único boilerplate donde la IA renderiza componentes, no texto. Lanza tu primer SaaS con IA en días, no meses.",
+      "cta_primary": "Comenzar a crear",
+      "cta_secondary": "Verlo en acción"
+    },
+    "features": {
+      "heading": "Todo lo que construirías de todos modos.",
+      "subheading": "Deja de reconstruir la misma infraestructura. VantageStarter entrega 80 horas de infraestructura.",
+      "generative_ui_title": "UI generativa",
+      "generative_ui_desc": "La IA no solo responde — renderiza el componente correcto en el momento correcto.",
+      "credits_title": "Sistema de créditos",
+      "credits_desc": "Motor de créditos de nivel producción con costos por acción, alertas de saldo bajo y controles de administrador.",
+      "realtime_title": "Tiempo real por defecto",
+      "realtime_desc": "Las suscripciones de Convex alimentan cada lista, contador y panel. Sin polling. Sin datos desactualizados.",
+      "agents_title": "Ejército de agentes",
+      "agents_desc": "36 agentes IA especializados en SEO, blog, email, video, ventas y operaciones.",
+      "rag_title": "RAG incluido",
+      "rag_desc": "Búsqueda vectorial e ingesta de documentos lista. Conecta tu fuente de datos.",
+      "accessibility_title": "WCAG 100%",
+      "accessibility_desc": "Cumplimiento completo de WCAG 2.1 AA integrado. Plantillas de declaración de accesibilidad incluidas.",
+      "stack_title": "Un solo stack",
+      "stack_desc": "Next.js 15 + Convex + Clerk + Polar. Sin Postgres, sin Redis, sin auth personalizada.",
+      "no_sql_title": "Cero SQL",
+      "no_sql_desc": "La base de datos reactiva de Convex reemplaza Postgres, Redis y los trabajos en segundo plano."
+    },
+    "pricing": {
+      "heading": "Precio simple, pago único.",
+      "subheading": "Compra una vez, tuyo para siempre. Sin suscripción, sin renovación de licencia, sin tarifas de uso.",
+      "popular_badge": "Más popular",
+      "one_time_label": "pago único",
+      "one_time_note": "Compra única. Incluye todas las actualizaciones futuras. Sin tarifas recurrentes.",
+      "features_aria": "características",
+      "starter_name": "Starter",
+      "starter_desc": "Explora el stack. No se requiere tarjeta de crédito.",
+      "starter_cta": "Empezar gratis",
+      "starter_f1": "Acceso completo al código",
+      "starter_f2": "Convex + Clerk + Polar configurados",
+      "starter_f3": "Sistema de créditos (admin solo lectura)",
+      "starter_f4": "Soporte comunitario",
+      "pro_name": "Pro",
+      "pro_desc": "Todo lo que necesitas para lanzar un SaaS con IA en producción.",
+      "pro_cta": "Comprar Pro",
+      "pro_f1": "Todo en Starter",
+      "pro_f2": "Componentes de UI generativa",
+      "pro_f3": "Ejército de 36 agentes (acceso completo)",
+      "pro_f4": "1x llamada de onboarding de 30 min",
+      "pro_f5": "Canal privado de soporte en Slack",
+      "team_name": "Equipo",
+      "team_desc": "Para equipos que lanzan múltiples productos desde la misma base.",
+      "team_cta": "Comprar Equipo",
+      "team_f1": "Todo en Pro",
+      "team_f2": "Hasta 5 miembros del equipo",
+      "team_f3": "Licencia white-label",
+      "team_f4": "Correcciones de errores prioritarias",
+      "team_f5": "Canal dedicado en Slack",
+      "team_f6": "Revisión de arquitectura trimestral"
+    },
+    "testimonials": {
+      "heading": "Lo que dicen los creadores.",
+      "subheading": "Feedback del primer cohorte de acceso anticipado.",
+      "placeholder_aria": "Marcador de testimonio {index}",
+      "placeholder_sr": "Testimonio próximamente — reemplazar con cita real del cliente"
+    },
+    "footer": {
+      "legal_nav_aria": "Navegación legal",
+      "legal": "Legal",
+      "privacy": "Privacidad",
+      "contact": "Contacto"
+    }
   }
 }

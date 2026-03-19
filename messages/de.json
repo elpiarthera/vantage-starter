@@ -2578,5 +2578,93 @@
       "voice_label": "Stimme",
       "default_voice": "Standard"
     }
+  },
+  "landing": {
+    "meta": {
+      "title": "VantageStarter — KI-natives SaaS-Boilerplate",
+      "description": "Das einzige Boilerplate, bei dem die KI Komponenten rendert, nicht Text. Schneller liefern mit Generative UI, Convex Echtzeit, Kreditsystem und 36 integrierten Agenten.",
+      "og_title": "VantageStarter — Ihre KI baut die UI.",
+      "og_description": "KI-SaaS-Produkte ohne Neuaufbau der Infrastruktur launchen. Generative UI, Convex Echtzeit, Credits, Auth, Abrechnung — alles inklusive.",
+      "og_image_alt": "VantageStarter — KI-natives SaaS-Boilerplate"
+    },
+    "nav": {
+      "aria_label": "Hauptnavigation",
+      "features": "Funktionen",
+      "pricing": "Preise",
+      "sign_in": "Anmelden",
+      "get_started": "Loslegen"
+    },
+    "hero": {
+      "aria_label": "Hero-Bereich",
+      "badge": "[IHR_BADGE_HIER] — z.B. Jetzt im Early Access",
+      "headline": "Ihre KI baut die UI.",
+      "subline": "Das einzige Boilerplate, bei dem die KI Komponenten rendert, nicht Text. Liefern Sie Ihr erstes KI-SaaS in Tagen, nicht Monaten.",
+      "cta_primary": "Jetzt starten",
+      "cta_secondary": "In Aktion sehen"
+    },
+    "features": {
+      "heading": "Alles, was Sie sowieso bauen würden.",
+      "subheading": "Hören Sie auf, dieselbe Infrastruktur neu zu bauen. VantageStarter liefert 80 Stunden Infrastruktur.",
+      "generative_ui_title": "Generative UI",
+      "generative_ui_desc": "Die KI antwortet nicht nur — sie rendert die richtige Komponente für den richtigen Moment.",
+      "credits_title": "Kreditsystem",
+      "credits_desc": "Produktionsreifes Kreditsystem mit Kosten pro Aktion, Niedrigstand-Warnungen und Admin-Kontrollen.",
+      "realtime_title": "Echtzeit standardmäßig",
+      "realtime_desc": "Convex-Abonnements versorgen jede Liste, jeden Zähler und jedes Dashboard. Kein Polling. Keine veralteten Daten.",
+      "agents_title": "Agenten-Armee",
+      "agents_desc": "36 spezialisierte KI-Agenten für SEO, Blog, E-Mail, Video, Vertrieb und Betrieb.",
+      "rag_title": "RAG inklusive",
+      "rag_desc": "Vektorsuche und Dokumentenverarbeitung bereit. Verbinden Sie Ihre Datenquelle.",
+      "accessibility_title": "WCAG 100%",
+      "accessibility_desc": "Vollständige WCAG 2.1 AA-Konformität eingebaut. Barrierefreiheitserklärungsvorlagen inklusive.",
+      "stack_title": "Ein Stack",
+      "stack_desc": "Next.js 15 + Convex + Clerk + Polar. Kein Postgres, kein Redis, keine eigene Auth.",
+      "no_sql_title": "Kein SQL",
+      "no_sql_desc": "Convex reaktive Datenbank ersetzt Postgres, Redis und Hintergrundjobs."
+    },
+    "pricing": {
+      "heading": "Einfache Einmalpreise.",
+      "subheading": "Einmal kaufen, für immer behalten. Kein Abo, keine Lizenzerneuerung, keine Nutzungsgebühren.",
+      "popular_badge": "Am beliebtesten",
+      "one_time_label": "einmalig",
+      "one_time_note": "Einmaliger Kauf. Enthält alle zukünftigen Updates. Keine wiederkehrenden Gebühren.",
+      "features_aria": "Funktionen",
+      "starter_name": "Starter",
+      "starter_desc": "Entdecken Sie den Stack. Keine Kreditkarte erforderlich.",
+      "starter_cta": "Kostenlos starten",
+      "starter_f1": "Vollständiger Codebase-Zugriff",
+      "starter_f2": "Convex + Clerk + Polar konfiguriert",
+      "starter_f3": "Kreditsystem (Admin nur lesen)",
+      "starter_f4": "Community-Support",
+      "pro_name": "Pro",
+      "pro_desc": "Alles, was Sie für ein produktionsreifes KI-SaaS brauchen.",
+      "pro_cta": "Pro kaufen",
+      "pro_f1": "Alles in Starter",
+      "pro_f2": "Generative UI-Komponenten",
+      "pro_f3": "36-Agenten-Armee (vollständiger Zugriff)",
+      "pro_f4": "1x 30-Min-Onboarding-Call",
+      "pro_f5": "Privater Slack-Support-Kanal",
+      "team_name": "Team",
+      "team_desc": "Für Teams, die mehrere Produkte von derselben Basis liefern.",
+      "team_cta": "Team kaufen",
+      "team_f1": "Alles in Pro",
+      "team_f2": "Bis zu 5 Teammitglieder",
+      "team_f3": "White-Label-Lizenz",
+      "team_f4": "Prioritäts-Bugfixes",
+      "team_f5": "Dedizierter Slack-Kanal",
+      "team_f6": "Vierteljährliche Architekturüberprüfung"
+    },
+    "testimonials": {
+      "heading": "Was Builder sagen.",
+      "subheading": "Feedback aus dem ersten Early-Access-Cohort.",
+      "placeholder_aria": "Testimonial-Platzhalter {index}",
+      "placeholder_sr": "Testimonial kommt bald — ersetzen durch echtes Kundenzitat"
+    },
+    "footer": {
+      "legal_nav_aria": "Rechtliche Navigation",
+      "legal": "Impressum",
+      "privacy": "Datenschutz",
+      "contact": "Kontakt"
+    }
   }
 }
