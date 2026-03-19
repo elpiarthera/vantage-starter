@@ -114,7 +114,7 @@ export async function POST(req: Request) {
 
 		// 7. Stream response from OpenAI
 		const result = await streamText({
-			model: openai("gpt-4o"),
+			model: openai("gpt-4o") as any, // TODO: upgrade to AI SDK v6 — v1/v2 type mismatch
 			messages: coreMessages,
 			temperature: 0.7,
 			async onFinish({ usage, finishReason }) {

@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { internal } from "./_generated/api";
 import { polar } from "./polar";
+import { chat as aiChat } from "./http/ai";
 
 const http = httpRouter();
 
@@ -257,6 +258,21 @@ polar.registerRoutes(http, {
 			}
 		},
 	},
+});
+
+// ============================================================================
+// AI STREAMING ROUTES
+// ============================================================================
+http.route({
+	path: "/ai/chat",
+	method: "POST",
+	handler: aiChat,
+});
+
+http.route({
+	path: "/ai/chat",
+	method: "OPTIONS",
+	handler: aiChat,
 });
 
 export default http;

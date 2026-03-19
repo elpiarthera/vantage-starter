@@ -10,6 +10,7 @@ import {
 	User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type React from "react";
 import { useState } from "react";
 import { PurchaseCreditsModal } from "@/components/dashboard/account/modals/PurchaseCreditsModal";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
@@ -35,7 +36,15 @@ import { useDevice } from "@/contexts/DeviceContext";
 import { useCredits } from "@/hooks/business-logic/useCredits";
 import { Link } from "@/i18n/routing";
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+	/**
+	 * Optional SidebarTrigger (hamburger) rendered on mobile only.
+	 * Passed from dashboard layout when AppSidebar is active.
+	 */
+	sidebarTrigger?: React.ReactNode;
+}
+
+export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 	const { isMobile } = useDevice();
 	const { user } = useUser();
 	const t = useTranslations("dashboard_header");
@@ -171,8 +180,12 @@ export function DashboardHeader() {
 		<>
 			<header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 				<div className="container flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
-					{/* Left: Organization Switcher (Placeholder) */}
-					<div className="flex items-center gap-2">
+					{/* Left: Hamburger (mobile only) + Organization Switcher Placeholder */}
+					<div className="flex items-center gap-1">
+						{/* SidebarTrigger: shown on mobile; sidebar handles its own md:hidden logic */}
+						{sidebarTrigger && (
+							<div className="md:hidden">{sidebarTrigger}</div>
+						)}
 						<Button
 							variant="ghost"
 							className={`gap-2 px-2 md:px-3 text-sm md:text-base min-h-[44px] min-w-[44px] ${

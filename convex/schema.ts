@@ -341,7 +341,35 @@ export default defineSchema({
 		.index("by_polar_product_id", ["polarProductId"]),
 
 	/**
-	 * 13. System Config Table
+	 * 13. Workspaces Table
+	 * Scoped containers within an organization (personal or shared).
+	 * Each user gets a default personal workspace on first login.
+	 */
+	workspaces: defineTable({
+		organizationId: v.string(), // Clerk org ID (or "personal" for solo users)
+		ownerId: v.string(), // Clerk user ID
+		name: v.string(),
+		slug: v.optional(v.string()),
+		description: v.optional(v.string()),
+		icon: v.optional(v.string()),
+		color: v.optional(v.string()),
+		isDefault: v.optional(v.boolean()),
+		settings: v.optional(
+			v.object({
+				defaultModel: v.optional(v.string()),
+				theme: v.optional(v.string()),
+			}),
+		),
+		lastAccessedAt: v.optional(v.number()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_owner", ["ownerId"])
+		.index("by_organization", ["organizationId"])
+		.index("by_owner_and_default", ["ownerId", "isDefault"]),
+
+	/**
+	 * 14. System Config Table
 	 * Runtime-tunable global settings
 	 */
 	systemConfig: defineTable({
