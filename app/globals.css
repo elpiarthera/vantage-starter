@@ -301,3 +301,8 @@ section > div[style*="opacity:0"] {
 .h-input {
   height: 48px;
 }
+
+/* Apply safety net — sections visible after 0.8s regardless of JS */
+section {
+  animation: force-visible 0.5s ease-out 0.8s both;
+}
