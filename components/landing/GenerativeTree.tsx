@@ -88,10 +88,10 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
     // We resolve colors using a test element to get computed RGB values.
     const isDarkMode = document.documentElement.classList.contains("dark");
 
-    // Primary stroke: luminous electric blue in dark mode, darker in light mode
-    // Tips get a brighter variant for depth
+    // Primary stroke: bright electric blue in dark mode, darker in light mode
+    // Tips get a near-white-blue variant for depth
     const primaryColor = isDarkMode
-      ? "rgb(100, 160, 255)"   // luminous electric blue — clearly glows on dark bg
+      ? "rgb(80, 140, 255)"    // bright electric blue trunk/mid branches
       : "oklch(0.50 0.22 232)";  // mid electric blue — visible on light bg
 
     // Background fill for trail effect
@@ -125,8 +125,8 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
       createBranch(seedX, seedY, -Math.PI / 2, trunkLength, 0),
     ];
 
-    // Trail opacity for previous frames (motion blur feel)
-    const trailAlpha = 0.08;
+    // Trail opacity for previous frames — lower = branches stay visible longer
+    const trailAlpha = 0.03;
 
     function spawnChildren(branch: Branch) {
       const tipX = branch.x + Math.cos(branch.angle) * branch.length;
@@ -166,8 +166,21 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
       ctx.lineTo(endX, endY);
       // Deeper branches get a brighter/lighter tip color for luminous effect
       const tipColor = isDarkMode && branch.depth > 5
-        ? "rgb(180, 210, 255)"   // bright near-white electric blue for tips — luminous
+        ? "rgb(180, 210, 255)"   // near-white electric blue tips — max luminosity
+        : isDarkMode && branch.depth > 2
+        ? "rgb(120, 170, 255)"   // lighter blue mid-branches
         : primaryColor;
+      // Glow pass — wider, low-alpha stroke underneath for bloom effect
+      if (isDarkMode) {
+        ctx.strokeStyle = tipColor;
+        ctx.globalAlpha = 0.15 * branch.opacity * branch.life;
+        ctx.lineWidth = baseWidth * 4;
+        ctx.lineCap = "round";
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Main stroke
       ctx.strokeStyle = tipColor;
       ctx.globalAlpha = branch.opacity * branch.life;
       ctx.lineWidth = baseWidth;

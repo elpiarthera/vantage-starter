@@ -16,7 +16,7 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			className="relative min-h-screen flex items-center overflow-hidden bg-background"
+			className="relative min-h-[85vh] flex items-center overflow-hidden bg-background"
 		>
 			{/* Layer 0 — Generative Branching Tree (Canvas 2D, reads --primary + --background CSS vars) */}
 			<GenerativeTree className="z-0" />
@@ -54,7 +54,7 @@ export function HeroSection() {
 			/>
 
 			{/* Layer 4 — content */}
-			<div className="relative z-20 max-w-5xl mx-auto px-6 py-32 md:py-44 w-full">
+			<div className="relative z-20 max-w-5xl mx-auto px-6 py-20 md:py-28 w-full">
 				<motion.div
 					initial={{ opacity: 0, y: 16 }}
 					animate={{ opacity: 1, y: 0 }}

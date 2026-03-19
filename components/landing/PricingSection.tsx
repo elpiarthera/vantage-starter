@@ -141,11 +141,9 @@ function PricingCard({
 				"rounded-lg p-6 md:p-8 flex flex-col relative h-full",
 				isHighlighted
 					? [
-							"border-none",
-							"bg-primary",
-							"text-primary-foreground",
-							"shadow-[0_8px_32px_oklch(var(--primary)/0.30)]",
-							"scale-[1.02]",
+							"border-2 border-primary",
+							"bg-card",
+							"shadow-lg shadow-primary/20",
 					  ].join(" ")
 					: [
 							"border border-border",
@@ -153,11 +151,18 @@ function PricingCard({
 					  ].join(" "),
 			)}
 		>
+			{/* Most popular badge — only on highlighted card */}
+			{isHighlighted && (
+				<span className="inline-flex items-center gap-1 rounded-full bg-primary/15 border border-primary/40 px-2.5 py-0.5 text-[11px] font-semibold text-primary tracking-[0.05em] uppercase mb-3 self-start">
+					Most popular
+				</span>
+			)}
+
 			{/* Tier name */}
 			<h3
 				className={cn(
 					"text-base font-semibold tracking-[-0.02em]",
-					isHighlighted ? "text-primary-foreground" : "text-foreground",
+					isHighlighted ? "text-primary" : "text-foreground",
 				)}
 			>
 				{t(tier.nameKey)}
@@ -167,7 +172,7 @@ function PricingCard({
 			<p
 				className={cn(
 					"text-sm mt-1 mb-5 leading-relaxed",
-					isHighlighted ? "text-primary-foreground/80" : "text-muted-foreground",
+					"text-muted-foreground",
 				)}
 			>
 				{t(tier.descKey)}
@@ -178,7 +183,7 @@ function PricingCard({
 				<span
 					className={cn(
 						"text-4xl font-semibold tracking-[-0.03em]",
-						isHighlighted ? "text-primary-foreground" : "text-foreground",
+						"text-foreground",
 					)}
 				>
 					{tier.price}
@@ -187,7 +192,7 @@ function PricingCard({
 					<span
 						className={cn(
 							"text-sm",
-							isHighlighted ? "text-primary-foreground/70" : "text-muted-foreground",
+							"text-muted-foreground",
 						)}
 					>
 						{t("one_time_label")}
@@ -200,7 +205,7 @@ function PricingCard({
 				<p
 					className={cn(
 						"text-xs font-medium mb-5",
-						isHighlighted ? "text-primary-foreground/90" : "text-primary",
+						"text-primary",
 					)}
 				>
 					{t("early_bird_note", { price: tier.earlyBirdPrice })}
@@ -212,9 +217,7 @@ function PricingCard({
 				<p
 					className={cn(
 						"text-xs mb-5 italic leading-relaxed",
-						isHighlighted
-							? "border-l-2 border-primary-foreground/40 pl-3 text-primary-foreground/80"
-							: "border-l-2 border-primary/50 pl-3 text-muted-foreground",
+						"border-l-2 border-primary/50 pl-3 text-muted-foreground",
 					)}
 				>
 					{t(tier.calloutKey)}
@@ -222,12 +225,7 @@ function PricingCard({
 			)}
 
 			{/* Divider */}
-			<div
-				className={cn(
-					"h-px mb-5",
-					isHighlighted ? "bg-primary-foreground/20" : "bg-border",
-				)}
-			/>
+			<div className="h-px mb-5 bg-border" />
 
 			{/* Features list */}
 			<ul
@@ -237,15 +235,12 @@ function PricingCard({
 				{tier.featuresKey.map((fk) => (
 					<li
 						key={fk}
-						className={cn(
-							"flex items-start gap-2.5 text-sm",
-							isHighlighted ? "text-primary-foreground" : "text-foreground",
-						)}
+						className="flex items-start gap-2.5 text-sm text-foreground"
 					>
 						<Check
 							className={cn(
 								"size-4 shrink-0 mt-0.5",
-								isHighlighted ? "text-primary-foreground" : "text-muted-foreground",
+								isHighlighted ? "text-primary" : "text-muted-foreground",
 							)}
 							aria-hidden="true"
 						/>
@@ -254,23 +249,15 @@ function PricingCard({
 				))}
 			</ul>
 
-			{/* CTA — always visible, inverted on highlighted card */}
+			{/* CTA — filled on highlighted card, outline on others */}
 			<a href={tier.ctaHref} className="block">
 				<Button
-					variant="outline"
+					variant={isHighlighted ? "default" : "outline"}
 					className={cn(
 						"w-full font-medium",
 						isHighlighted
-							? [
-									"bg-primary-foreground text-primary border-none",
-									"hover:bg-primary-foreground/90",
-									"shadow-none",
-									"transition-colors duration-150",
-								].join(" ")
-							: [
-									"border-border",
-									"hover:bg-accent hover:text-accent-foreground",
-								].join(" "),
+							? "bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
+							: "border-border hover:bg-accent hover:text-accent-foreground",
 					)}
 				>
 					{t(tier.ctaKey)}
