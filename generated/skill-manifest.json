@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-03-19T15:04:26Z",
+  "count": 21,
+  "skills": {
+    "adapt": {
+      "location": ".claude/skills/adapt/SKILL.md",
+      "description": "What to adapt for (mobile, tablet, desktop, print, email, etc.)"
+    },
+    "animate": {
+      "location": ".claude/skills/animate/SKILL.md",
+      "description": "The feature or component to animate (optional)"
+    },
+    "arrange": {
+      "location": ".claude/skills/arrange/SKILL.md",
+      "description": "The feature or component to improve layout for (optional)"
+    },
+    "audit": {
+      "location": ".claude/skills/audit/SKILL.md",
+      "description": "The feature or area to audit (optional)"
+    },
+    "bolder": {
+      "location": ".claude/skills/bolder/SKILL.md",
+      "description": "The feature or component to make bolder (optional)"
+    },
+    "clarify": {
+      "location": ".claude/skills/clarify/SKILL.md",
+      "description": "The feature or component with unclear copy (optional)"
+    },
+    "colorize": {
+      "location": ".claude/skills/colorize/SKILL.md",
+      "description": "The feature or component to colorize (optional)"
+    },
+    "critique": {
+      "location": ".claude/skills/critique/SKILL.md",
+      "description": "The feature or area to critique (optional)"
+    },
+    "delight": {
+      "location": ".claude/skills/delight/SKILL.md",
+      "description": "The feature or area to add delight to (optional)"
+    },
+    "distill": {
+      "location": ".claude/skills/distill/SKILL.md",
+      "description": "The feature or component to distill (optional)"
+    },
+    "extract": {
+      "location": ".claude/skills/extract/SKILL.md",
+      "description": "The feature, component, or area to extract from (optional)"
+    },
+    "frontend-design": {
+      "location": ".claude/skills/frontend-design/SKILL.md",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications. Generates creative, polished code that avoids generic AI aesthetics."
+    },
+    "harden": {
+      "location": ".claude/skills/harden/SKILL.md",
+      "description": "The feature or area to harden (optional)"
+    },
+    "normalize": {
+      "location": ".claude/skills/normalize/SKILL.md",
+      "description": "The page, route, or feature to normalize (optional)"
+    },
+    "onboard": {
+      "location": ".claude/skills/onboard/SKILL.md",
+      "description": "The feature or area needing onboarding (optional)"
+    },
+    "optimize": {
+      "location": ".claude/skills/optimize/SKILL.md",
+      "description": "The feature or area to optimize (optional)"
+    },
+    "overdrive": {
+      "location": ".claude/skills/overdrive/SKILL.md",
+      "description": "The feature or area to push into overdrive (optional)"
+    },
+    "polish": {
+      "location": ".claude/skills/polish/SKILL.md",
+      "description": "The feature or area to polish (optional)"
+    },
+    "quieter": {
+      "location": ".claude/skills/quieter/SKILL.md",
+      "description": "The feature or component to make quieter (optional)"
+    },
+    "teach-impeccable": {
+      "location": ".claude/skills/teach-impeccable/SKILL.md",
+      "description": "One-time setup that gathers design context for your project and saves it to your AI config file. Run once to establish persistent design guidelines."
+    },
+    "typeset": {
+      "location": ".claude/skills/typeset/SKILL.md",
+      "description": "The feature or component to improve typography for (optional)"
+    }
+  }
+}

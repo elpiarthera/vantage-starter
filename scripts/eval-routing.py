@@ -58,6 +58,38 @@ def load_agents():
     return agents
 
 
+def load_routing_table():
+    """Load the routing table from the hook script for accurate static eval."""
+    hook_path = ROOT / "hooks" / "user-prompt-submit-routing.py"
+    if not hook_path.exists():
+        return None
+
+    import subprocess
+    # We use the hook's actual logic by calling it with test prompts
+    return hook_path
+
+
+def route_via_hook(prompt: str) -> str | None:
+    """Run the routing hook by importing it directly."""
+    hook_path = ROOT / "hooks" / "user-prompt-submit-routing.py"
+    if not hook_path.exists():
+        return None
+
+    try:
+        import importlib.util, io, contextlib
+
+        spec = importlib.util.spec_from_file_location("routing_hook", hook_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        matches = mod.score_prompt(prompt)
+        if not matches:
+            return None
+        return matches[0]["agent"]
+    except Exception:
+        return None
+
+
 def tokenize(text: str) -> set:
     return set(re.findall(r"[a-z0-9]+", text.lower()))
 
@@ -65,29 +97,24 @@ def tokenize(text: str) -> set:
 def score_match(prompt_tokens: set, description: str, name: str) -> float:
     desc_tokens = tokenize(description)
     name_tokens = tokenize(name.replace("-", " "))
-
-    # Exact name match in prompt
     name_phrase = name.replace("-", " ").lower()
     if name_phrase in " ".join(sorted(prompt_tokens)):
         return 100.0
-
     overlap = prompt_tokens & (desc_tokens | name_tokens)
     if not overlap:
         return 0.0
     return (len(overlap) / max(len(prompt_tokens), 1)) * 50
 
 
-def find_best_match(prompt: str, agents: list) -> tuple:
+def find_best_match_static(prompt: str, agents: list) -> tuple:
     prompt_tokens = tokenize(prompt)
     best_name = None
     best_score = 0.0
-
     for agent in agents:
         score = score_match(prompt_tokens, agent.get("description", ""), agent.get("name", ""))
         if score > best_score:
             best_score = score
             best_name = agent.get("name")
-
     return best_name, best_score
 
 
@@ -95,11 +122,18 @@ def evaluate(corpus: dict, agents: list) -> dict:
     evals = corpus.get("evals", [])
     results = []
 
+    # Use the actual hook routing for accuracy (falls back to static if hook unavailable)
+    use_hook = (ROOT / "hooks" / "user-prompt-submit-routing.py").exists()
+
     for entry in evals:
         prompt = entry["prompt"]
         expected_agent = entry.get("expectedAgent")
 
-        matched_agent, score = find_best_match(prompt, agents)
+        if use_hook:
+            matched_agent = route_via_hook(prompt)
+            score = 100.0 if matched_agent else 0.0
+        else:
+            matched_agent, score = find_best_match_static(prompt, agents)
 
         passed = True
         if expected_agent:

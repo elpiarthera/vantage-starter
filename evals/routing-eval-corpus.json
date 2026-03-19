@@ -72,9 +72,9 @@
       "id": 7,
       "team": "dev-studio",
       "prompt": "configure Clerk organizations with custom roles",
-      "expectedAgent": "clerk-expert",
+      "expectedAgent": "dev-clerk-expert",
       "assertions": [
-        "Routes to clerk-expert",
+        "Routes to dev-clerk-expert",
         "Does NOT route to dev-senior-dev"
       ],
       "tags": ["clerk", "exact"]
@@ -83,8 +83,8 @@
       "id": 8,
       "team": "dev-studio",
       "prompt": "protect the /dashboard route so only signed-in users can access it",
-      "expectedAgent": "clerk-expert",
-      "assertions": ["Routes to clerk-expert for middleware/auth protection"],
+      "expectedAgent": "dev-clerk-expert",
+      "assertions": ["Routes to dev-clerk-expert for middleware/auth protection"],
       "tags": ["clerk", "paraphrase"]
     },
     {
@@ -215,8 +215,8 @@
       "id": 23,
       "team": "dev-studio",
       "prompt": "implement Clerk webhook to sync users to Convex on sign-up",
-      "expectedAgent": "clerk-expert",
-      "assertions": ["Clerk webhook = clerk-expert, even if Convex is involved"],
+      "expectedAgent": "dev-clerk-expert",
+      "assertions": ["Clerk webhook = dev-clerk-expert, even if Convex is involved"],
       "tags": ["clerk", "paraphrase"]
     },
     {

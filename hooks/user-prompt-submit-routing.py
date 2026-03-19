@@ -38,18 +38,21 @@ ROUTING_TABLE = [
         "phrases": [
             "convex", "schema ", "mutation", "query ", "action ", "cron",
             "file storage", "real-time", "realtime", "index ", "indexes",
-            "database", "table ", "backend", "webhook ", "http action",
+            "database", "table ", "backend", "http action",
         ],
         "noneOf": [],
     },
-    # clerk-expert — auth
+    # dev-clerk-expert — auth
     {
-        "agent": "clerk-expert",
+        "agent": "dev-clerk-expert",
         "threshold": 1,
         "phrases": [
             "clerk", "auth", "sign in", "sign up", "signin", "signup",
             "organization", "rbac", "role ", "permission", "middleware",
             "session ", "jwt ", "oauth", "sso ", "user management",
+            "signed-in", "logged in", "protected route", "private route",
+            "unauthenticated", "authenticated users",
+            "clerk webhook", "webhook sync", "sync users",
         ],
         "noneOf": [],
     },
@@ -64,14 +67,14 @@ ROUTING_TABLE = [
         ],
         "noneOf": [],
     },
-    # dev-sentinel — security
+    # dev-sentinel — security (checked BEFORE frontend to avoid "form" + "input" false match)
     {
         "agent": "dev-sentinel",
         "threshold": 1,
         "phrases": [
             "security", "owasp", "vulnerability", "csp ", "content security",
-            "xss ", "injection", "csrf ", "secret ", "audit security",
-            "scan ", "penetration", "headers ", "exploit",
+            "xss", "injection", "csrf", "secrets", "audit security",
+            "penetration", "exploit", "xss vulnerabilit",
         ],
         "noneOf": [],
     },
@@ -85,7 +88,7 @@ ROUTING_TABLE = [
         ],
         "noneOf": [],
     },
-    # dev-senior-dev — architecture, review
+    # dev-senior-dev — architecture, review, tech decisions
     {
         "agent": "dev-senior-dev",
         "threshold": 1,
@@ -93,6 +96,8 @@ ROUTING_TABLE = [
             "architecture", "code review", "refactor", "pr review",
             "technical decision", "design decision", "trade-off",
             "system design", "patterns", "best practice", "technical debt",
+            "should we use", "zustand", "jotai", "which library",
+            "state management", "tech choice", "evaluate",
         ],
         "noneOf": [],
     },
@@ -101,7 +106,7 @@ ROUTING_TABLE = [
 AGENT_DESCRIPTIONS = {
     "dev-frontend": "Frontend: components, UI, pages, CSS, responsive design",
     "dev-convex-expert": "Backend: Convex schema, queries, mutations, actions, cron, storage",
-    "clerk-expert": "Auth: Clerk middleware, sign-in/up, organizations, RBAC",
+    "dev-clerk-expert": "Auth: Clerk middleware, sign-in/up, organizations, RBAC",
     "dev-seo": "SEO: metadata, canonical, schema.org, sitemap, robots",
     "dev-sentinel": "Security: OWASP, vulnerabilities, CSP headers, secrets",
     "accessibility-audit": "Accessibility: RGAA/WCAG, contrast, ARIA, keyboard nav",

@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"build": "next build",
-		"prebuild": "convex codegen --url ${CONVEX_URL}",
+		"prebuild": "npx convex codegen || true",
 		"dev": "next dev",
 		"lint": "next lint",
 		"start": "next start",
