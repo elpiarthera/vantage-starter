@@ -6,7 +6,6 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { PricingSection } from "@/components/landing/PricingSection";
-import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 
 type Props = {
 	params: Promise<{ locale: string }>;
@@ -58,7 +57,6 @@ export default async function LandingPage({ params }: Props) {
 				<HeroSection />
 				<FeaturesSection />
 				<PricingSection />
-				<TestimonialsSection />
 			</main>
 			<LandingFooter />
 		</div>

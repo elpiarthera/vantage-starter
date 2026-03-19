@@ -2625,9 +2625,11 @@
       "stack_title": "Une seule stack",
       "stack_desc": "Next.js 15 + Convex + Clerk + Polar. Pas de Postgres, pas de Redis, pas d'auth personnalisée. Chaque dépendance justifie sa place.",
       "no_sql_title": "Zéro SQL",
-      "no_sql_desc": "La base de données réactive de Convex remplace Postgres, Redis et les tâches de fond. Votre backend est entièrement en TypeScript."
+      "no_sql_desc": "La base de données réactive de Convex remplace Postgres, Redis et les tâches de fond. Votre backend est entièrement en TypeScript.",
+      "eyebrow": "Fonctionnalités"
     },
     "pricing": {
+      "eyebrow": "Tarifs",
       "heading": "Tarification simple, paiement unique.",
       "subheading": "Achetez une fois, gardez pour toujours. Pas d'abonnement, pas de renouvellement de licence, pas de frais d'utilisation sur le boilerplate.",
       "popular_badge": "Plus populaire",

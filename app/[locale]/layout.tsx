@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import { GeistMono } from "geist/font/mono";
-import { Instrument_Sans } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -33,9 +33,18 @@ const softwareApplicationSchema = {
 	},
 };
 
-// Instrument Sans — humanist editorial, display + body
-const instrumentSans = Instrument_Sans({
+// Space Grotesk — geometric, distinctive letterforms for headings
+const spaceGrotesk = Space_Grotesk({
 	subsets: ["latin"],
+	weight: ["500", "700"],
+	variable: "--font-heading",
+	display: "swap",
+});
+
+// Inter — clean, legible for body text
+const inter = Inter({
+	subsets: ["latin"],
+	weight: ["400", "500"],
 	variable: "--font-sans",
 	display: "swap",
 });
@@ -66,7 +75,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 	return (
 		<html
 			lang={locale}
-			className={`${instrumentSans.variable} ${GeistMono.variable} antialiased`}
+			className={`${spaceGrotesk.variable} ${inter.variable} ${GeistMono.variable} antialiased`}
 			suppressHydrationWarning
 		>
 			<head>

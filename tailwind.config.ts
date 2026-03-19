@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
 	darkMode: ["class"],
@@ -20,9 +21,12 @@ const config: Config = {
     	extend: {
     		fontFamily: {
     			sans: [
-    				'Instrument Sans',
-    				'system-ui',
-    				'sans-serif'
+    				'var(--font-sans)',
+    				...fontFamily.sans,
+    			],
+    			heading: [
+    				'var(--font-heading)',
+    				...fontFamily.sans,
     			],
     			mono: [
     				'Geist Mono',
@@ -32,6 +36,9 @@ const config: Config = {
     		colors: {
     			background: 'oklch(var(--background) / <alpha-value>)',
     			foreground: 'oklch(var(--foreground) / <alpha-value>)',
+    			'accent-warm': 'var(--accent-warm)',
+    			'card-hover': 'var(--card-hover)',
+    			'border-hover': 'var(--border-hover)',
     			card: {
     				DEFAULT: 'oklch(var(--card) / <alpha-value>)',
     				foreground: 'oklch(var(--card-foreground) / <alpha-value>)'

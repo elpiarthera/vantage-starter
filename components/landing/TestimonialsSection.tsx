@@ -68,7 +68,7 @@ function TestimonialPlaceholder({
 	return (
 		<article
 			className={cn(
-				"rounded-lg border border-dashed p-6 h-full",
+				"rounded-none border border-dashed p-6 h-full",
 				// Dashed primary tint border — designed placeholder, not a blank box
 				"border-primary/20",
 				"bg-primary/3 dark:bg-primary/5",

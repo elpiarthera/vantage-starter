@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
@@ -16,73 +15,51 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			// Hero is always dark — the Radiant shader renders on #0a0a0a canvas.
-			// Dark hero on light page is a premium pattern (Vercel, Linear, etc).
-			className="relative min-h-[85vh] flex items-center overflow-hidden"
-			style={{ background: "#0a0a0a" }}
+			className="relative min-h-[100vh] flex items-center justify-center overflow-hidden"
+			style={{ background: "#000000" }}
 		>
-			{/* Layer 0 — Radiant Generative Tree shader (iframe, original Radiant source) */}
+			{/* Layer 0 — Radiant Generative Tree shader */}
 			<GenerativeTree className="z-0" />
 
-			{/* Layer 1 — gradient fade to near-black in the hero interior */}
+			{/* Layer 1 — dark overlay at 40% opacity — shader becomes texture, not hero */}
 			<div
-				className="pointer-events-none absolute inset-0 z-10"
+				className="pointer-events-none absolute inset-0 z-10 bg-black/40"
 				aria-hidden="true"
-				style={{
-					background:
-						"linear-gradient(to bottom, transparent 0%, transparent 50%, #0a0a0a 90%)",
-				}}
 			/>
 
-			{/* Layer 2 — vignette edges for text readability */}
-			<div
-				className="pointer-events-none absolute inset-0 z-10"
-				aria-hidden="true"
-				style={{
-					background:
-						"radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(4, 4, 4, 0.55) 100%)",
-				}}
-			/>
-
-			{/* Layer 3 — content (z-30 to sit above the bottom bridge) */}
-			<div className="relative z-30 max-w-5xl mx-auto px-4 sm:px-6 py-16 md:py-28 w-full">
+			{/* Layer 2 — content centered */}
+			<div className="relative z-30 max-w-4xl mx-auto px-4 sm:px-6 py-16 md:py-28 w-full flex flex-col items-center text-center">
 				<motion.div
+					className="flex flex-col items-center"
 					initial={{ opacity: 0, y: 16 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6, ease: EXPO_OUT }}
 				>
-					{/* Eyebrow badge */}
-					<span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/40 bg-blue-500/10 px-3.5 py-1 text-xs font-medium text-blue-300 mb-8 tracking-[0.01em]">
+					{/* Eyebrow */}
+					<span
+						className="mb-8 block text-xs font-medium uppercase tracking-[0.05em]"
+						style={{ color: "oklch(0.75 0.14 65)" }}
+					>
 						{t("badge")}
 					</span>
 
 					{/* H1 */}
 					<h1
-						className="font-bold text-white text-balance mb-6"
+						className="font-heading font-bold text-white text-balance mb-6 max-w-[18ch]"
 						style={{
-							fontSize: "clamp(2rem, 7vw, 6rem)",
+							fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
 							lineHeight: 1.05,
-							letterSpacing: "-0.04em",
+							letterSpacing: "-0.03em",
 						}}
 					>
 						{t("headline_pre")}{" "}
-						{/* Hero is always dark — force the dark-mode gradient regardless of theme */}
-						<span
-							style={{
-								background: "linear-gradient(135deg, #ffffff 30%, oklch(0.75 0.20 232) 100%)",
-								WebkitBackgroundClip: "text",
-								WebkitTextFillColor: "transparent",
-								backgroundClip: "text",
-							}}
-						>
-							{t("headline_accent")}
-						</span>{" "}
+						{t("headline_accent")}{" "}
 						{t("headline_post")}
 					</h1>
 
 					{/* Subline */}
 					<motion.p
-						className="text-lg md:text-xl text-white/70 max-w-2xl mb-3 leading-relaxed tracking-[-0.01em]"
+						className="text-lg text-muted-foreground max-w-[50ch] mb-10 leading-relaxed tracking-[-0.01em]"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6, ease: EXPO_OUT, delay: 0.1 }}
@@ -90,34 +67,27 @@ export function HeroSection() {
 						{t("subline")}
 					</motion.p>
 
-					{/* Supporting detail */}
-					<p className="text-sm text-white/45 max-w-lg mb-10 leading-relaxed">
-						{t("subline_detail")}
-					</p>
-
 					{/* CTAs */}
 					<motion.div
-						className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 sm:gap-4"
+						className="flex flex-row items-center justify-center gap-4"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6, ease: EXPO_OUT, delay: 0.2 }}
 					>
-						<Link href="/sign-up" className="sm:min-w-[180px]">
+						<Link href="/sign-up">
 							<Button
 								size="lg"
-								className="w-full sm:w-auto gap-2 bg-blue-500 hover:bg-blue-400 text-white shadow-[0_2px_16px_rgba(59,130,246,0.35)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.50)] transition-all duration-200 border-0"
+								className="h-12 px-8 rounded-full bg-primary text-primary-foreground border-0 hover:opacity-90 transition-opacity duration-100"
 							>
 								{t("cta_primary")}
-								<ArrowRight className="size-4" aria-hidden="true" />
 							</Button>
 						</Link>
-						<a href="#features" className="sm:min-w-[160px]">
+						<a href="#features">
 							<Button
 								variant="ghost"
 								size="lg"
-								className="w-full sm:w-auto gap-2 text-white/60 hover:text-white hover:bg-white/8"
+								className="h-12 px-8 rounded-full bg-transparent border border-border text-foreground hover:opacity-90 transition-opacity duration-100 hover:bg-transparent"
 							>
-								<Play className="size-4" aria-hidden="true" />
 								{t("cta_secondary")}
 							</Button>
 						</a>
@@ -135,12 +105,9 @@ export function HeroSection() {
 				</motion.div>
 			</div>
 
-			{/* Layer 4 — bottom bridge: transitions from dark hero to page background.
-			    In light mode: fades from near-black (#0a0a0a) to near-white (--background).
-			    In dark mode: both values are dark — seam is invisible.
-			    pointer-events-none so it never blocks the CTAs. */}
+			{/* Layer 3 — bottom fade: 200px gradient from #000 to --background */}
 			<div
-				className="pointer-events-none absolute bottom-0 left-0 right-0 z-20 h-24 bg-gradient-to-b from-[#0a0a0a] to-background"
+				className="pointer-events-none absolute bottom-0 left-0 right-0 z-20 h-[200px] bg-gradient-to-b from-[#000000] to-background"
 				aria-hidden="true"
 			/>
 		</section>

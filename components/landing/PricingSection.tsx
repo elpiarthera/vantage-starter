@@ -15,7 +15,6 @@ type Tier = {
 	ctaHref: string;
 	featuresKey: string[];
 	highlighted?: boolean;
-	calloutKey?: string;
 };
 
 const TIERS: Tier[] = [
@@ -47,7 +46,6 @@ const TIERS: Tier[] = [
 			"pro_f5",
 		],
 		highlighted: true,
-		calloutKey: "pro_callout",
 	},
 	{
 		nameKey: "team_name",
@@ -70,33 +68,28 @@ export function PricingSection() {
 	const t = useTranslations("landing.pricing");
 	const reduced = useReducedMotion();
 
-	const cardVariants = {
-		hidden: { opacity: 1, y: reduced ? 0 : 20 },
-		visible: { opacity: 1, y: 0 },
-	};
-
 	return (
 		<section
 			id="pricing"
 			aria-labelledby="pricing-heading"
-			className="py-28 md:py-40"
+			className="py-20 md:py-32"
 		>
 			<div className="max-w-5xl mx-auto px-4 sm:px-6">
 				{/* Header */}
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
-					initial={{ opacity: 1, y: 0 }}
+					initial={{ opacity: 0, y: reduced ? 0 : 20 }}
 					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: "-50px", amount: 0.01 }}
+					viewport={{ once: true, amount: 0.15 }}
 					transition={{ duration: 0.4, ease: "easeOut" }}
 				>
-					{/* Section label */}
-					<p className="text-xs font-semibold text-primary tracking-[0.2em] uppercase font-mono mb-3">
-						Pricing
+					{/* Eyebrow */}
+					<p className="text-xs font-medium tracking-[0.05em] uppercase text-[var(--accent-warm)] mb-3">
+						{t("eyebrow")}
 					</p>
 					<h2
 						id="pricing-heading"
-						className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-foreground mb-4"
+						className="font-heading font-bold text-foreground mb-4"
 					>
 						{t("heading")}
 					</h2>
@@ -105,12 +98,12 @@ export function PricingSection() {
 					</p>
 				</motion.div>
 
-				{/* Tiers grid — section container animates in */}
+				{/* Tiers grid */}
 				<motion.div
-					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-start"
-					initial={cardVariants.hidden}
-					whileInView={cardVariants.visible}
-					viewport={{ once: true, margin: "-40px", amount: 0.01 }}
+					className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-start"
+					initial={{ opacity: 0, y: reduced ? 0 : 20 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, amount: 0.15 }}
 					transition={{ duration: 0.5, ease: "easeOut" }}
 				>
 					{TIERS.map((tier) => (
@@ -138,65 +131,37 @@ function PricingCard({
 	return (
 		<article
 			className={cn(
-				"rounded-lg p-6 md:p-8 flex flex-col relative h-full",
+				"rounded-none p-8 flex flex-col relative h-full",
+				"bg-card",
 				isHighlighted
-					? [
-							"border-2 border-primary",
-							"bg-card",
-							"shadow-lg shadow-primary/20",
-							"scale-[1.02]",
-							"ring-2 ring-primary/30",
-					  ].join(" ")
-					: [
-							"border border-border",
-							"bg-card",
-					  ].join(" "),
+					? "border border-primary"
+					: "border border-border",
 			)}
 		>
 			{/* Most popular badge — only on highlighted card */}
 			{isHighlighted && (
-				<span className="inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground px-3 py-1 text-xs font-medium mb-3 self-start">
-					Most popular
+				<span className="inline-flex items-center rounded-full bg-[var(--accent-warm)] text-black px-3 py-1 text-xs font-medium mb-3 self-start">
+					{t("popular_badge")}
 				</span>
 			)}
 
 			{/* Tier name */}
-			<h3
-				className={cn(
-					"text-base font-semibold tracking-[-0.02em]",
-					isHighlighted ? "text-primary" : "text-foreground",
-				)}
-			>
+			<h3 className="font-heading text-base font-semibold text-foreground">
 				{t(tier.nameKey)}
 			</h3>
 
 			{/* Description */}
-			<p
-				className={cn(
-					"text-sm mt-1 mb-5 leading-relaxed",
-					"text-muted-foreground",
-				)}
-			>
+			<p className="text-sm mt-1 mb-5 leading-relaxed text-muted-foreground">
 				{t(tier.descKey)}
 			</p>
 
 			{/* Price */}
 			<div className="mb-2 flex items-baseline gap-2">
-				<span
-					className={cn(
-						"text-4xl font-semibold tracking-[-0.03em]",
-						"text-foreground",
-					)}
-				>
+				<span className="font-heading text-5xl font-bold tracking-[-0.03em] text-foreground">
 					{tier.price}
 				</span>
 				{tier.price !== "$0" && (
-					<span
-						className={cn(
-							"text-sm",
-							"text-muted-foreground",
-						)}
-					>
+					<span className="text-sm font-normal text-muted-foreground">
 						{t("one_time_label")}
 					</span>
 				)}
@@ -204,25 +169,8 @@ function PricingCard({
 
 			{/* Early bird note */}
 			{tier.earlyBirdPrice && (
-				<p
-					className={cn(
-						"text-xs font-medium mb-5",
-						"text-primary",
-					)}
-				>
+				<p className="text-xs font-medium mb-5 text-primary">
 					{t("early_bird_note", { price: tier.earlyBirdPrice })}
-				</p>
-			)}
-
-			{/* Pro callout — "The AI layer." */}
-			{tier.calloutKey && (
-				<p
-					className={cn(
-						"text-xs mb-5 italic leading-relaxed",
-						"border-l-2 border-primary/50 pl-3 text-muted-foreground",
-					)}
-				>
-					{t(tier.calloutKey)}
 				</p>
 			)}
 
@@ -237,7 +185,7 @@ function PricingCard({
 				{tier.featuresKey.map((fk) => (
 					<li
 						key={fk}
-						className="flex items-start gap-2.5 text-sm text-foreground"
+						className="flex items-start gap-2.5 text-base text-foreground"
 					>
 						<Check
 							className={cn(
@@ -251,15 +199,14 @@ function PricingCard({
 				))}
 			</ul>
 
-			{/* CTA — filled on highlighted card, outline on others */}
+			{/* CTA */}
 			<a href={tier.ctaHref} className="block">
 				<Button
-					variant={isHighlighted ? "default" : "outline"}
 					className={cn(
-						"w-full font-medium",
+						"w-full h-12 rounded-full font-medium transition-opacity duration-100 hover:opacity-90",
 						isHighlighted
-							? "bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
-							: "border-border hover:bg-accent hover:text-accent-foreground",
+							? "bg-primary text-primary-foreground border-0"
+							: "bg-transparent border border-border text-foreground hover:bg-transparent",
 					)}
 				>
 					{t(tier.ctaKey)}

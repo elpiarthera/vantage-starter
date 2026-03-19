@@ -3,7 +3,7 @@
    Default preset: Dark Electric Blue (hue 232°)
    Loaded via @import before @tailwind base (SSR-safe static default)
    Runtime preset switching: <link href> swap via PresetLoader component
-   Fonts: Instrument Sans (display + body) + Geist Mono (code)
+   Fonts: Space Grotesk (headings) + Inter (body) + Geist Mono (code)
    ============================================================================ */
 
 /* Default preset — Dark Electric Blue. Must be before @tailwind directives. */
@@ -28,8 +28,12 @@
     /* Input */
     --input: oklch(0.88 0.02 232);
 
-    /* Border radius — rounded-xl (12px) as global base */
-    --radius: 0.75rem;
+    /* Border radius — 0 for cards/inputs, pill for buttons/badges */
+    --radius: 0rem;
+
+    /* Hover state tokens */
+    --card-hover: oklch(0.15 0.02 240);
+    --border-hover: oklch(0.30 0.03 240);
 
     /* Status colors */
     --success: oklch(0.55 0.18 145);
@@ -111,17 +115,39 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans), "Instrument Sans", system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     letter-spacing: -0.01em;
   }
 
-  /* Display size: tighter tracking per design spec */
-  h1, h2 {
-    letter-spacing: -0.03em;
+  /* Heading font — Space Grotesk for all headings */
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading), system-ui, sans-serif;
   }
 
-  h3, h4 {
-    letter-spacing: -0.02em;
+  /* Typography scale per design system v2 */
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+
+  h4 {
+    letter-spacing: -0.015em;
   }
 
   /* Prevent iOS input zoom (non-negotiable mobile rule) */
