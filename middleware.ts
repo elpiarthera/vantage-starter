@@ -31,7 +31,7 @@ const CSP = [
 	"img-src 'self' data: blob: https:",
 	"media-src 'self' blob: data: https:",
 	"font-src 'self' data: https:",
-	"connect-src 'self' blob: https: wss:",
+	"connect-src 'self' blob: https: wss: https://r.resend.com https://click.resend.com",
 	"frame-src 'self' https://challenges.cloudflare.com https://clerk.myreeldream.ai https://*.clerk.accounts.dev https://vercel.live https://polar.sh https://sandbox.polar.sh",
 	"object-src 'none'",
 	"base-uri 'self'",

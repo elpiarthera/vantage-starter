@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@clerk/nextjs/server";
-import { type CoreMessage, streamText } from "ai";
+import { streamText } from "ai";
 import { fetchMutation } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -101,11 +101,11 @@ export async function POST(req: Request) {
 			occasion ? { projectType: occasion } : undefined,
 		);
 
-		// 6. Convert messages to CoreMessage format (AI SDK v5)
-		const coreMessages: CoreMessage[] = [
-			{ role: "system", content: systemPrompt },
+		// 6. Build messages array for AI SDK v6
+		const coreMessages = [
+			{ role: "system" as const, content: systemPrompt },
 			...messages.map(
-				(msg: { role: string; content: string }): CoreMessage => ({
+				(msg: { role: string; content: string }) => ({
 					role: msg.role as "user" | "assistant",
 					content: msg.content,
 				}),
@@ -114,8 +114,8 @@ export async function POST(req: Request) {
 
 		// 7. Stream response from OpenAI
 		const result = await streamText({
-			model: openai("gpt-4o") as any, // TODO: upgrade to AI SDK v6 — v1/v2 type mismatch
-			messages: coreMessages,
+			model: openai("gpt-4o"),
+			messages: coreMessages as any,
 			temperature: 0.7,
 			async onFinish({ usage, finishReason }) {
 				const latency = Date.now() - startTime;
