@@ -20,7 +20,7 @@ export default function DashboardLayout({
 					<DashboardNav />
 
 					{/* Main Content */}
-					<main className="min-h-[calc(100vh-8rem)]">{children}</main>
+					<main id="main-content" className="min-h-[calc(100vh-8rem)]">{children}</main>
 				</div>
 			</DashboardBreadcrumbProvider>
 		</DeviceProvider>

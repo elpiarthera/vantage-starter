@@ -2,161 +2,196 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
+/* ============================================================================
+   VANTAGE STARTER DESIGN SYSTEM — OKLCH Color Space
+   Primary hue: 44° (warm amber-gold)
+   Fonts: Instrument Sans (display + body) + Geist Mono (code)
+   ============================================================================ */
 
 @layer base {
   :root {
-    /* Fixed --background HSL values to match #101a23 correctly */
-    --background: 207 35% 10%; /* #101a23 */
-    --foreground: 0 0% 100%; /* #ffffff */
-    --card: 210 30% 12%; /* #182634 */
-    --card-foreground: 0 0% 100%;
-    --popover: 210 30% 12%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 207 100% 50%; /* #0d7ff2 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 25% 20%; /* #223649 */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 25% 30%; /* #314d68 */
-    --muted-foreground: 0 0% 82%; /* #d1d5db */
-    --accent: 210 25% 20%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 210 25% 20%; /* #223649 */
-    --input: 210 25% 20%;
-    --ring: 207 100% 50%;
+    /* ---- Core Colors — Light mode (OKLCH hue 44°) ---- */
+    --background: oklch(0.99 0 0);
+    --foreground: oklch(0.12 0 0);
+    --card: oklch(0.99 0 0);
+    --card-foreground: oklch(0.12 0 0);
+    --popover: oklch(0.99 0 0);
+    --popover-foreground: oklch(0.12 0 0);
+
+    /* Primary — warm amber-gold
+       Foreground: dark (0.12) not white — contrast ratio 4.99:1 (WCAG AA pass) */
+    --primary: oklch(0.62 0.16 44);
+    --primary-foreground: oklch(0.12 0 0);
+
+    /* Secondary */
+    --secondary: oklch(0.96 0.01 44);
+    --secondary-foreground: oklch(0.20 0 0);
+
+    /* Muted */
+    --muted: oklch(0.96 0.00 0);
+    --muted-foreground: oklch(0.52 0 0);
+
+    /* Accent */
+    --accent: oklch(0.94 0.04 44);
+    --accent-foreground: oklch(0.20 0 0);
+
+    /* Destructive */
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.99 0 0);
+
+    /* Borders & Inputs */
+    --border: oklch(0.90 0.01 44);
+    --input: oklch(0.90 0.01 44);
+    --ring: oklch(0.62 0.16 44);
+
+    /* Border radius — rounded-xl (12px) as global base */
     --radius: 0.75rem;
-    --success: 142 71% 45%;
-    --warning: 38 92% 50%;
-    
-    /* 
-     * Sprint 38: Image Generator Layout Variables
-     * Baseline heights — "best effort" baselines with runtime fallbacks.
-     * The prompt bar can grow when pills expand (TextareaAutosize).
-     */
+
+    /* Status colors */
+    --success: oklch(0.55 0.18 145);
+    --warning: oklch(0.72 0.18 65);
+
+    /* Sidebar */
+    --sidebar-background: oklch(0.98 0.01 44);
+    --sidebar-foreground: oklch(0.12 0 0);
+    --sidebar-primary: oklch(0.62 0.16 44);
+    --sidebar-primary-foreground: oklch(0.99 0 0);
+    --sidebar-accent: oklch(0.94 0.04 44);
+    --sidebar-accent-foreground: oklch(0.20 0 0);
+    --sidebar-border: oklch(0.90 0.01 44);
+    --sidebar-ring: oklch(0.62 0.16 44);
+
+    /* Data visualization */
+    --chart-1: oklch(0.62 0.16 44);   /* amber-gold — primary */
+    --chart-2: oklch(0.60 0.14 200);  /* teal */
+    --chart-3: oklch(0.52 0.12 260);  /* blue */
+    --chart-4: oklch(0.72 0.18 120);  /* green */
+    --chart-5: oklch(0.65 0.20 0);    /* red */
+
+    /* ---- Safe-area & layout variables (preserved from MSR) ---- */
     --ig-prompt-bar-min-height: 116px;
     --ig-action-bar-height: 56px;
     --ig-floating-panel-top: 96px;
-    
-    /* Spacing */
+
     --ig-safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --ig-margin-sm: 16px;
     --ig-margin-md: 24px;
-    
-    /* Calculated positions */
+
     --ig-prompt-bar-total: calc(var(--ig-prompt-bar-min-height) + var(--ig-safe-area-bottom) + var(--ig-margin-md));
     --ig-action-bar-total: calc(var(--ig-action-bar-height) + var(--ig-margin-sm));
     --ig-canvas-bottom-offset: calc(var(--ig-prompt-bar-total) + var(--ig-action-bar-total));
     --ig-mobile-button-offset: calc(var(--ig-prompt-bar-total) + var(--ig-margin-md));
   }
+
+  .dark {
+    --background: oklch(0.10 0 0);
+    --foreground: oklch(0.97 0 0);
+    --card: oklch(0.15 0.01 44);
+    --card-foreground: oklch(0.97 0 0);
+    --popover: oklch(0.15 0.01 44);
+    --popover-foreground: oklch(0.97 0 0);
+
+    /* Primary — warmer in dark mode */
+    --primary: oklch(0.72 0.16 44);
+    --primary-foreground: oklch(0.10 0 0);
+
+    /* Secondary */
+    --secondary: oklch(0.22 0.02 44);
+    --secondary-foreground: oklch(0.97 0 0);
+
+    /* Muted */
+    --muted: oklch(0.18 0.00 0);
+    --muted-foreground: oklch(0.65 0 0);
+
+    /* Accent */
+    --accent: oklch(0.22 0.04 44);
+    --accent-foreground: oklch(0.97 0 0);
+
+    /* Destructive */
+    --destructive: oklch(0.65 0.22 25);
+    --destructive-foreground: oklch(0.99 0 0);
+
+    /* Borders & Inputs */
+    --border: oklch(1.00 0 0 / 10%);
+    --input: oklch(1.00 0 0 / 12%);
+    --ring: oklch(0.72 0.16 44);
+
+    /* Status */
+    --success: oklch(0.65 0.18 145);
+    --warning: oklch(0.78 0.18 65);
+
+    /* Sidebar */
+    --sidebar-background: oklch(0.13 0.01 44);
+    --sidebar-foreground: oklch(0.97 0 0);
+    --sidebar-primary: oklch(0.72 0.16 44);
+    --sidebar-primary-foreground: oklch(0.10 0 0);
+    --sidebar-accent: oklch(0.22 0.04 44);
+    --sidebar-accent-foreground: oklch(0.97 0 0);
+    --sidebar-border: oklch(1.00 0 0 / 10%);
+    --sidebar-ring: oklch(0.72 0.16 44);
+
+    /* Data visualization */
+    --chart-1: oklch(0.72 0.16 44);   /* amber-gold */
+    --chart-2: oklch(0.68 0.16 200);  /* teal */
+    --chart-3: oklch(0.62 0.16 260);  /* blue */
+    --chart-4: oklch(0.70 0.20 120);  /* green */
+    --chart-5: oklch(0.68 0.22 0);    /* red */
+  }
 }
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
-    /* Force Space Grotesk font family to match HTML */
-    font-family: "Space Grotesk", "Noto Sans", sans-serif;
+    font-family: "Instrument Sans", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Display size: tighter tracking per design spec */
+  h1, h2 {
+    letter-spacing: -0.03em;
+  }
+
+  h3, h4 {
+    letter-spacing: -0.02em;
+  }
+
+  /* Prevent iOS input zoom (non-negotiable mobile rule) */
+  input, select, textarea {
+    font-size: 16px;
   }
 }
 
-/* Added smooth animations and transitions */
-@layer utilities {
-  /* Fade in animation */
-  .animate-in {
-    animation-fill-mode: both;
-  }
+/* ============================================================================
+   ANIMATIONS — Tailwind transitions for UI, Framer Motion for landing only
+   Durations: 150ms (micro), 200ms (panels), 300ms (landing entrance max)
+   Banned: bounce, elastic, anything > 500ms inside the app
+   ============================================================================ */
 
-  .fade-in {
-    animation: fadeIn var(--animation-duration, 0.3s) ease-in;
-  }
-
-  .slide-in-from-bottom {
-    animation: slideInFromBottom var(--animation-duration, 0.3s) ease-out;
-  }
-
-  .slide-in-from-top {
-    animation: slideInFromTop var(--animation-duration, 0.3s) ease-out;
-  }
-
-  .slide-in-from-left {
-    animation: slideInFromLeft var(--animation-duration, 0.3s) ease-out;
-  }
-
-  .slide-in-from-right {
-    animation: slideInFromRight var(--animation-duration, 0.3s) ease-out;
-  }
-
-  .scale-in {
-    animation: scaleIn var(--animation-duration, 0.2s) ease-out;
-  }
-
-  /* Duration utilities */
-  .duration-200 {
-    --animation-duration: 0.2s;
-  }
-
-  .duration-300 {
-    --animation-duration: 0.3s;
-  }
-
-  .duration-500 {
-    --animation-duration: 0.5s;
-  }
-
-  /* Smooth transitions for interactive elements */
-  .transition-smooth {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .transition-transform-smooth {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Active state for mobile */
-  .active\:scale-98:active {
-    transform: scale(0.98);
-  }
-
-  .active\:scale-95:active {
-    transform: scale(0.95);
-  }
-
-  /* Sprint 30e.5: Glass morphism utilities */
-  .glass-panel {
-    @apply backdrop-blur-md bg-background/60 border border-border/50 shadow-lg rounded-xl;
-  }
-
-  .glass-panel-subtle {
-    @apply backdrop-blur-sm bg-background/40 border border-border/30 rounded-lg;
-  }
-
-  .glass-inner-field {
-    @apply bg-transparent border border-border/30 rounded-md focus-within:border-primary/50 transition-colors;
-  }
-
-  .glass-button {
-    @apply bg-secondary/50 border border-border/50 hover:bg-muted/50 hover:border-border/70 transition-smooth;
-  }
-}
-
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes slideInFromBottom {
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+/* Landing page: scroll-reveal */
+@keyframes reveal-up {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -167,49 +202,72 @@
   }
 }
 
-@keyframes slideInFromTop {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+.animate-reveal-up {
+  animation: reveal-up 300ms ease-out forwards;
+}
+
+/* Stagger delays for grid items */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+
+/* Subtle pulse for loading states */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 1.5s ease-in-out infinite;
+}
+
+/* ============================================================================
+   SKELETON LOADING
+   ============================================================================ */
+
+.skeleton {
+  * {
+    pointer-events: none !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  *[class^="text-"] {
+    color: transparent;
+    @apply rounded-md select-none animate-pulse;
+    background-color: oklch(var(--foreground) / 0.15);
+  }
+
+  .skeleton-bg {
+    background-color: oklch(var(--foreground) / 0.08);
+  }
+
+  .skeleton-div {
+    @apply animate-pulse;
+    background-color: oklch(var(--foreground) / 0.15);
   }
 }
 
-@keyframes slideInFromLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* ============================================================================
+   GRADIENT TEXT — landing page use only
+   ============================================================================ */
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--muted-foreground) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-@keyframes slideInFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* ============================================================================
+   TOUCH-FRIENDLY HELPERS
+   ============================================================================ */
+
+.min-h-touch {
+  min-height: 44px;
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.h-input {
+  height: 48px;
 }
-
-/* Add Google Fonts import for Space Grotesk */
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;500;700;900&display=swap");

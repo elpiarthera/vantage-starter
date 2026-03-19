@@ -7,6 +7,7 @@
 
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/auth";
 
 /**
  * Set admin role for a user by email
@@ -26,6 +27,7 @@ export const setAdminByEmail = mutation({
 		),
 	},
 	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
 		const user = await ctx.db
 			.query("users")
 			.withIndex("by_email", (q) => q.eq("email", args.email))
@@ -66,6 +68,7 @@ export const setAdminByClerkId = mutation({
 		),
 	},
 	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
 		const user = await ctx.db
 			.query("users")
 			.withIndex("by_clerk_user_id", (q) =>
@@ -101,6 +104,7 @@ export const setAdminByClerkId = mutation({
 export const listAdmins = query({
 	args: {},
 	handler: async (ctx) => {
+		await requireAdmin(ctx);
 		const users = await ctx.db.query("users").collect();
 
 		const admins = users.filter(
@@ -127,6 +131,7 @@ export const getUserByEmail = query({
 		email: v.string(),
 	},
 	handler: async (ctx, args) => {
+		await requireAdmin(ctx);
 		const user = await ctx.db
 			.query("users")
 			.withIndex("by_email", (q) => q.eq("email", args.email))

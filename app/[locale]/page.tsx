@@ -148,7 +148,7 @@ export default function GuidedFlowEntry() {
 					</div>
 				</header>
 
-				<main className="flex flex-1 justify-center py-6 px-4 md:py-10">
+				<main id="main-content" className="flex flex-1 justify-center py-6 px-4 md:py-10">
 					<div className="flex w-full max-w-4xl flex-col items-center">
 						<div className="w-full max-w-md">
 							<p className="text-center text-sm font-medium text-gray-400">

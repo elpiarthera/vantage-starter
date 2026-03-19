@@ -1,7 +1,5 @@
 import type { Config } from "tailwindcss";
 
-// all in fixtures is set to tailwind v3 as interims solutions
-
 const config: Config = {
 	darkMode: ["class"],
 	content: [
@@ -12,6 +10,7 @@ const config: Config = {
 	],
 	theme: {
 		screens: {
+			// xs: MSR's custom breakpoint — preserved
 			xs: "480px",
 			sm: "640px",
 			md: "768px",
@@ -20,81 +19,84 @@ const config: Config = {
 			"2xl": "1536px",
 		},
 		extend: {
+			fontFamily: {
+				// Instrument Sans: humanist, editorial — display + body
+				sans: ["Instrument Sans", "system-ui", "sans-serif"],
+				// Geist Mono: code only
+				mono: ["Geist Mono", "monospace"],
+			},
 			colors: {
-				background: "hsl(var(--background))",
-				foreground: "hsl(var(--foreground))",
+				background: "oklch(var(--background) / <alpha-value>)",
+				foreground: "oklch(var(--foreground) / <alpha-value>)",
 				card: {
-					DEFAULT: "hsl(var(--card))",
-					foreground: "hsl(var(--card-foreground))",
+					DEFAULT: "oklch(var(--card) / <alpha-value>)",
+					foreground: "oklch(var(--card-foreground) / <alpha-value>)",
 				},
 				popover: {
-					DEFAULT: "hsl(var(--popover))",
-					foreground: "hsl(var(--popover-foreground))",
+					DEFAULT: "oklch(var(--popover) / <alpha-value>)",
+					foreground: "oklch(var(--popover-foreground) / <alpha-value>)",
 				},
 				primary: {
-					DEFAULT: "hsl(var(--primary))",
-					foreground: "hsl(var(--primary-foreground))",
+					DEFAULT: "oklch(var(--primary) / <alpha-value>)",
+					foreground: "oklch(var(--primary-foreground) / <alpha-value>)",
 				},
 				secondary: {
-					DEFAULT: "hsl(var(--secondary))",
-					foreground: "hsl(var(--secondary-foreground))",
+					DEFAULT: "oklch(var(--secondary) / <alpha-value>)",
+					foreground: "oklch(var(--secondary-foreground) / <alpha-value>)",
 				},
 				muted: {
-					DEFAULT: "hsl(var(--muted))",
-					foreground: "hsl(var(--muted-foreground))",
+					DEFAULT: "oklch(var(--muted) / <alpha-value>)",
+					foreground: "oklch(var(--muted-foreground) / <alpha-value>)",
 				},
 				accent: {
-					DEFAULT: "hsl(var(--accent))",
-					foreground: "hsl(var(--accent-foreground))",
+					DEFAULT: "oklch(var(--accent) / <alpha-value>)",
+					foreground: "oklch(var(--accent-foreground) / <alpha-value>)",
 				},
 				destructive: {
-					DEFAULT: "hsl(var(--destructive))",
-					foreground: "hsl(var(--destructive-foreground))",
+					DEFAULT: "oklch(var(--destructive) / <alpha-value>)",
+					foreground: "oklch(var(--destructive-foreground) / <alpha-value>)",
 				},
-				success: "hsl(var(--success) / <alpha-value>)",
-				warning: "hsl(var(--warning) / <alpha-value>)",
-				border: "hsl(var(--border))",
-				input: "hsl(var(--input))",
-				ring: "hsl(var(--ring))",
+				success: "oklch(var(--success) / <alpha-value>)",
+				warning: "oklch(var(--warning) / <alpha-value>)",
+				border: "oklch(var(--border) / <alpha-value>)",
+				input: "oklch(var(--input) / <alpha-value>)",
+				ring: "oklch(var(--ring) / <alpha-value>)",
 				chart: {
-					"1": "hsl(var(--chart-1))",
-					"2": "hsl(var(--chart-2))",
-					"3": "hsl(var(--chart-3))",
-					"4": "hsl(var(--chart-4))",
-					"5": "hsl(var(--chart-5))",
+					"1": "oklch(var(--chart-1) / <alpha-value>)",
+					"2": "oklch(var(--chart-2) / <alpha-value>)",
+					"3": "oklch(var(--chart-3) / <alpha-value>)",
+					"4": "oklch(var(--chart-4) / <alpha-value>)",
+					"5": "oklch(var(--chart-5) / <alpha-value>)",
 				},
 				sidebar: {
-					DEFAULT: "hsl(var(--sidebar-background))",
-					foreground: "hsl(var(--sidebar-foreground))",
-					primary: "hsl(var(--sidebar-primary))",
-					"primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-					accent: "hsl(var(--sidebar-accent))",
-					"accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-					border: "hsl(var(--sidebar-border))",
-					ring: "hsl(var(--sidebar-ring))",
+					DEFAULT: "oklch(var(--sidebar-background) / <alpha-value>)",
+					foreground: "oklch(var(--sidebar-foreground) / <alpha-value>)",
+					primary: "oklch(var(--sidebar-primary) / <alpha-value>)",
+					"primary-foreground": "oklch(var(--sidebar-primary-foreground) / <alpha-value>)",
+					accent: "oklch(var(--sidebar-accent) / <alpha-value>)",
+					"accent-foreground": "oklch(var(--sidebar-accent-foreground) / <alpha-value>)",
+					border: "oklch(var(--sidebar-border) / <alpha-value>)",
+					ring: "oklch(var(--sidebar-ring) / <alpha-value>)",
 				},
 			},
 			borderRadius: {
-				lg: "var(--radius)",
-				md: "calc(var(--radius) - 2px)",
-				sm: "calc(var(--radius) - 4px)",
+				// Border radius contract: rounded-xl (12px) as global base
+				DEFAULT: "12px",
+				sm: "6px",
+				md: "8px",
+				lg: "8px",   // buttons
+				xl: "12px",  // cards, panels, dialogs
+				"2xl": "16px",
+				full: "9999px", // badges, tags
 			},
 			keyframes: {
 				"accordion-down": {
-					from: {
-						height: "0",
-					},
-					to: {
-						height: "var(--radix-accordion-content-height)",
-					},
+					from: { height: "0" },
+					to: { height: "var(--radix-accordion-content-height)" },
 				},
 				"accordion-up": {
-					from: {
-						height: "var(--radix-accordion-content-height)",
-					},
-					to: {
-						height: "0",
-					},
+					from: { height: "var(--radix-accordion-content-height)" },
+					to: { height: "0" },
 				},
 			},
 			animation: {
