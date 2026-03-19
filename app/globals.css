@@ -305,9 +305,3 @@ section > div[style*="opacity:0"] {
 section {
 }
 
-/* Nuclear safety net — force sections visible after 1s regardless of Framer Motion inline styles */
-section {
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
-}

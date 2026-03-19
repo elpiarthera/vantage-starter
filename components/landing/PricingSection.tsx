@@ -71,7 +71,7 @@ export function PricingSection() {
 	const reduced = useReducedMotion();
 
 	const cardVariants = {
-		hidden: { opacity: 0, y: reduced ? 0 : 20 },
+		hidden: { opacity: 1, y: reduced ? 0 : 20 },
 		visible: { opacity: 1, y: 0 },
 	};
 
@@ -85,7 +85,7 @@ export function PricingSection() {
 				{/* Header */}
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
-					initial={{ opacity: 0, y: 12 }}
+					initial={{ opacity: 1, y: 0 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true, margin: "-50px", amount: 0.01 }}
 					transition={{ duration: 0.4, ease: "easeOut" }}
