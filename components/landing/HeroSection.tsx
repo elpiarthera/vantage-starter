@@ -24,13 +24,13 @@ export function HeroSection() {
 			{/* Layer 0 — Radiant Generative Tree shader (iframe, original Radiant source) */}
 			<GenerativeTree className="z-0" />
 
-			{/* Layer 1 — gradient fade to dark at bottom (matches the dark hero bg) */}
+			{/* Layer 1 — gradient fade to near-black in the hero interior */}
 			<div
 				className="pointer-events-none absolute inset-0 z-10"
 				aria-hidden="true"
 				style={{
 					background:
-						"linear-gradient(to bottom, transparent 0%, transparent 50%, #0a0a0a 100%)",
+						"linear-gradient(to bottom, transparent 0%, transparent 50%, #0a0a0a 90%)",
 				}}
 			/>
 
@@ -44,8 +44,8 @@ export function HeroSection() {
 				}}
 			/>
 
-			{/* Layer 3 — content */}
-			<div className="relative z-20 max-w-5xl mx-auto px-6 py-20 md:py-28 w-full">
+			{/* Layer 3 — content (z-30 to sit above the bottom bridge) */}
+			<div className="relative z-30 max-w-5xl mx-auto px-4 sm:px-6 py-16 md:py-28 w-full">
 				<motion.div
 					initial={{ opacity: 0, y: 16 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -60,13 +60,23 @@ export function HeroSection() {
 					<h1
 						className="font-bold text-white text-balance mb-6"
 						style={{
-							fontSize: "clamp(2.75rem, 7vw, 6rem)",
-							lineHeight: 1.0,
+							fontSize: "clamp(2rem, 7vw, 6rem)",
+							lineHeight: 1.05,
 							letterSpacing: "-0.04em",
 						}}
 					>
 						{t("headline_pre")}{" "}
-						<span className="text-gradient">{t("headline_accent")}</span>{" "}
+						{/* Hero is always dark — force the dark-mode gradient regardless of theme */}
+						<span
+							style={{
+								background: "linear-gradient(135deg, #ffffff 30%, oklch(0.75 0.20 232) 100%)",
+								WebkitBackgroundClip: "text",
+								WebkitTextFillColor: "transparent",
+								backgroundClip: "text",
+							}}
+						>
+							{t("headline_accent")}
+						</span>{" "}
 						{t("headline_post")}
 					</h1>
 
@@ -87,25 +97,25 @@ export function HeroSection() {
 
 					{/* CTAs */}
 					<motion.div
-						className="flex flex-col sm:flex-row items-center justify-start gap-4"
+						className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 sm:gap-4"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6, ease: EXPO_OUT, delay: 0.2 }}
 					>
-						<Link href="/sign-up">
+						<Link href="/sign-up" className="sm:min-w-[180px]">
 							<Button
 								size="lg"
-								className="min-w-[180px] gap-2 bg-blue-500 hover:bg-blue-400 text-white shadow-[0_2px_16px_rgba(59,130,246,0.35)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.50)] transition-all duration-200 border-0"
+								className="w-full sm:w-auto gap-2 bg-blue-500 hover:bg-blue-400 text-white shadow-[0_2px_16px_rgba(59,130,246,0.35)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.50)] transition-all duration-200 border-0"
 							>
 								{t("cta_primary")}
 								<ArrowRight className="size-4" aria-hidden="true" />
 							</Button>
 						</Link>
-						<a href="#features">
+						<a href="#features" className="sm:min-w-[160px]">
 							<Button
 								variant="ghost"
 								size="lg"
-								className="min-w-[160px] gap-2 text-white/60 hover:text-white hover:bg-white/8"
+								className="w-full sm:w-auto gap-2 text-white/60 hover:text-white hover:bg-white/8"
 							>
 								<Play className="size-4" aria-hidden="true" />
 								{t("cta_secondary")}
@@ -124,6 +134,15 @@ export function HeroSection() {
 					</motion.p>
 				</motion.div>
 			</div>
+
+			{/* Layer 4 — bottom bridge: transitions from dark hero to page background.
+			    In light mode: fades from near-black (#0a0a0a) to near-white (--background).
+			    In dark mode: both values are dark — seam is invisible.
+			    pointer-events-none so it never blocks the CTAs. */}
+			<div
+				className="pointer-events-none absolute bottom-0 left-0 right-0 z-20 h-24 bg-gradient-to-b from-[#0a0a0a] to-background"
+				aria-hidden="true"
+			/>
 		</section>
 	);
 }

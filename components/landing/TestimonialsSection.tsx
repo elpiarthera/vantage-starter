@@ -18,7 +18,7 @@ export function TestimonialsSection() {
 			aria-labelledby="testimonials-heading"
 			className="py-28 md:py-40"
 		>
-			<div className="max-w-5xl mx-auto px-6">
+			<div className="max-w-5xl mx-auto px-4 sm:px-6">
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
 					initial={{ opacity: 0, y: 12 }}

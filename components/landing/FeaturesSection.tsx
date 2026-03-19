@@ -91,7 +91,7 @@ export function FeaturesSection() {
 			aria-labelledby="features-heading"
 			className="py-28 md:py-40"
 		>
-			<div className="max-w-5xl mx-auto px-6">
+			<div className="max-w-5xl mx-auto px-4 sm:px-6">
 				{/* Section header — fade in on scroll */}
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
