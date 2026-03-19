@@ -19,7 +19,6 @@ dist/
 
 # Convex
 .convex/
-convex/_generated/
 
 # Testing
 coverage/
