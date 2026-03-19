@@ -373,6 +373,7 @@ In the "Environment Variables" section of the import screen, add all of the foll
 
 ```
 CONVEX_DEPLOYMENT=<from step 3>
+CONVEX_URL=<from step 3, same value as NEXT_PUBLIC_CONVEX_URL — required for Vercel prebuild>
 NEXT_PUBLIC_CONVEX_URL=<from step 3>
 NEXT_PUBLIC_CONVEX_SITE_URL=<from step 3>
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<from step 4>
