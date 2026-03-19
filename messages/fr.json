@@ -35,7 +35,7 @@
   },
   "sign_up_page": {
     "title": "Créer un compte",
-    "subtitle": "Inscrivez-vous pour créer des vidéos incroyables"
+    "subtitle": "Commencez à construire votre SaaS IA"
   },
   "step_header": {
     "back_button": "Retour",
@@ -2598,11 +2598,14 @@
       "aria_label": "Section héro",
       "badge": "Accès anticipé — 50 licences early bird disponibles",
       "headline": "Votre IA construit l'interface.",
+      "headline_pre": "Votre",
+      "headline_accent": "IA",
+      "headline_post": "construit l'interface.",
       "subline": "Le seul boilerplate où l'IA génère des composants, pas du texte. Livrez votre premier SaaS IA en quelques jours, pas en mois.",
       "subline_detail": "Le premier boilerplate Convex avec UI générative, crédits et RAG. Production-ready dès le clone.",
       "cta_primary": "Commencer à créer",
       "cta_secondary": "Voir en action",
-      "social_proof_micro": "Adopté par des fondateurs solo qui construisent des produits IA avec Convex."
+      "social_proof_micro": "Construit sur Convex. Livré avec Clerk. Propulsé par AI SDK v5."
     },
     "features": {
       "heading": "Tout ce que vous construiriez de toute façon.",

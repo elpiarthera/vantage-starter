@@ -16,19 +16,23 @@ export function TestimonialsSection() {
 	return (
 		<section
 			aria-labelledby="testimonials-heading"
-			className="py-20 md:py-32"
+			className="py-28 md:py-40"
 		>
 			<div className="max-w-5xl mx-auto px-6">
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
 					initial={{ opacity: 0, y: 12 }}
 					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: "-100px" }}
+					viewport={{ once: true, margin: "-50px", amount: 0.01 }}
 					transition={{ duration: 0.4, ease: "easeOut" }}
 				>
+					{/* Section label */}
+					<p className="text-xs font-semibold text-primary tracking-[0.2em] uppercase font-mono mb-3">
+						Testimonials
+					</p>
 					<h2
 						id="testimonials-heading"
-						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
+						className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-foreground mb-4"
 					>
 						{t("heading")}
 					</h2>
@@ -37,19 +41,18 @@ export function TestimonialsSection() {
 					</p>
 				</motion.div>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+				{/* Section container animates in, not individual cards */}
+				<motion.div
+					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+					initial={cardVariants.hidden}
+					whileInView={cardVariants.visible}
+					viewport={{ once: true, margin: "-40px", amount: 0.01 }}
+					transition={{ duration: 0.5, ease: "easeOut" }}
+				>
 					{[1, 2, 3].map((i) => (
-						<motion.div
-							key={i}
-							initial={cardVariants.hidden}
-							whileInView={cardVariants.visible}
-							viewport={{ once: true, margin: "-100px" }}
-							transition={{ duration: 0.4, ease: "easeOut", delay: (i - 1) * 0.08 }}
-						>
-							<TestimonialPlaceholder index={i} t={t} />
-						</motion.div>
+						<TestimonialPlaceholder key={i} index={i} t={t} />
 					))}
-				</div>
+				</motion.div>
 			</div>
 		</section>
 	);
@@ -65,7 +68,7 @@ function TestimonialPlaceholder({
 	return (
 		<article
 			className={cn(
-				"rounded-xl border border-dashed p-6 h-full",
+				"rounded-lg border border-dashed p-6 h-full",
 				// Dashed primary tint border — designed placeholder, not a blank box
 				"border-primary/20",
 				"bg-primary/3 dark:bg-primary/5",

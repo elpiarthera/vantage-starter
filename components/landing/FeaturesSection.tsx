@@ -72,7 +72,8 @@ const FEATURES: FeatureItem[] = [
 ];
 
 // Shared animation variants — useReducedMotion collapses y movement
-function useCardVariants() {
+// Section container fades in, not individual cards (ElevenLabs pattern)
+function useSectionVariants() {
 	const reduced = useReducedMotion();
 	return {
 		hidden: { opacity: 0, y: reduced ? 0 : 20 },
@@ -82,13 +83,13 @@ function useCardVariants() {
 
 export function FeaturesSection() {
 	const t = useTranslations("landing.features");
-	const cardVariants = useCardVariants();
+	const sectionVariants = useSectionVariants();
 
 	return (
 		<section
 			id="features"
 			aria-labelledby="features-heading"
-			className="py-20 md:py-32"
+			className="py-28 md:py-40"
 		>
 			<div className="max-w-5xl mx-auto px-6">
 				{/* Section header — fade in on scroll */}
@@ -96,12 +97,16 @@ export function FeaturesSection() {
 					className="mb-12 md:mb-16 max-w-xl"
 					initial={{ opacity: 0, y: 12 }}
 					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: "-100px" }}
+					viewport={{ once: true, margin: "-50px", amount: 0.01 }}
 					transition={{ duration: 0.4, ease: "easeOut" }}
 				>
+					{/* Section label — ElevenLabs pattern */}
+					<p className="text-xs font-semibold text-primary tracking-[0.2em] uppercase font-mono mb-3">
+						Features
+					</p>
 					<h2
 						id="features-heading"
-						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
+						className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-foreground mb-4"
 					>
 						{t("heading")}
 					</h2>
@@ -110,54 +115,38 @@ export function FeaturesSection() {
 					</p>
 				</motion.div>
 
-				{/* 1+3+4 grid */}
-				<div className="grid grid-cols-1 gap-6 md:gap-8">
+				{/* 1+3+4 grid — section container animates, not individual cards */}
+				<motion.div
+					className="grid grid-cols-1 gap-6 md:gap-8"
+					initial={sectionVariants.hidden}
+					whileInView={sectionVariants.visible}
+					viewport={{ once: true, margin: "-40px", amount: 0.01 }}
+					transition={{ duration: 0.5, ease: "easeOut" }}
+				>
 					{/* Row 1: primary differentiator — full width, elevated treatment */}
-					<motion.div
-						initial={cardVariants.hidden}
-						whileInView={cardVariants.visible}
-						viewport={{ once: true, margin: "-100px" }}
-						transition={{ duration: 0.4, ease: "easeOut" }}
-					>
-						<PrimaryFeatureCard feature={FEATURES[0]} t={t} />
-					</motion.div>
+					<PrimaryFeatureCard feature={FEATURES[0]} t={t} />
 
-					{/* Row 2: 3 pillars — staggered */}
+					{/* Row 2: 3 pillars */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
-						{FEATURES.slice(1, 4).map((f, i) => (
-							<motion.div
-								key={f.titleKey}
-								initial={cardVariants.hidden}
-								whileInView={cardVariants.visible}
-								viewport={{ once: true, margin: "-100px" }}
-								transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.08 }}
-							>
-								<FeatureCard feature={f} t={t} />
-							</motion.div>
+						{FEATURES.slice(1, 4).map((f) => (
+							<FeatureCard key={f.titleKey} feature={f} t={t} />
 						))}
 					</div>
 
-					{/* Row 3: 4 proof points — staggered */}
+					{/* Row 3: 4 proof points */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-						{FEATURES.slice(4).map((f, i) => (
-							<motion.div
-								key={f.titleKey}
-								initial={cardVariants.hidden}
-								whileInView={cardVariants.visible}
-								viewport={{ once: true, margin: "-100px" }}
-								transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.08 }}
-							>
-								<FeatureCard feature={f} t={t} compact />
-							</motion.div>
+						{FEATURES.slice(4).map((f) => (
+							<FeatureCard key={f.titleKey} feature={f} t={t} compact />
 						))}
 					</div>
-				</div>
+				</motion.div>
 			</div>
 		</section>
 	);
 }
 
 // Full-width primary card — the Generative UI differentiator gets elevated treatment
+// Icon container stays — it's a deliberate showcase, not a repeating grid element
 function PrimaryFeatureCard({
 	feature,
 	t,
@@ -168,23 +157,24 @@ function PrimaryFeatureCard({
 	return (
 		<article
 			className={cn(
-				"rounded-xl border p-8 md:p-10",
+				// Reduced radius (8px) — professional, not consumer-friendly
+				"rounded-lg border p-8 md:p-10",
 				// Primary accent — electric blue border
 				"border-primary/40",
 				// Subtle primary background tint
 				"bg-gradient-to-br from-primary/8 via-primary/4 to-transparent",
 				"dark:from-primary/12 dark:via-primary/6 dark:to-transparent",
-				// Hover: primary border glow, not scale
+				// Hover: shadow only, no scale
 				"transition-shadow duration-200",
 				"hover:shadow-[0_0_0_1px_oklch(var(--primary)/0.35),0_4px_24px_oklch(var(--primary)/0.12)]",
 				"md:flex md:items-start md:gap-10",
 			)}
 		>
-			{/* Icon — primary, prominent */}
+			{/* Icon — primary, prominent — keeps container on the hero card */}
 			<div
 				className={cn(
 					"flex-shrink-0 flex items-center justify-center",
-					"size-12 rounded-xl",
+					"size-12 rounded-lg",
 					"bg-primary/15 border border-primary/25",
 					"text-primary",
 					"mb-5 md:mb-0 md:mt-1",
@@ -209,7 +199,7 @@ function PrimaryFeatureCard({
 	);
 }
 
-// Standard feature card — 3 pillars and 4 proof points
+// Standard feature card — bare icon, no container (ElevenLabs pattern)
 function FeatureCard({
 	feature,
 	t,
@@ -222,21 +212,18 @@ function FeatureCard({
 	return (
 		<article
 			className={cn(
-				"rounded-xl border border-border p-6",
+				// Reduced radius (8px) — professional
+				"rounded-lg border border-border p-6",
 				"bg-card",
-				// Hover: primary border glow, no scale
+				// Shadow hover instead of border glow — floating surface feel
 				"transition-shadow duration-150",
-				"hover:border-primary/30",
-				"hover:shadow-[0_0_0_1px_oklch(var(--primary)/0.20),0_2px_12px_oklch(var(--primary)/0.08)]",
+				"shadow-none hover:shadow-md",
 			)}
 		>
-			{/* Icon container — primary tinted */}
+			{/* Icon — bare, no container. Text-foreground/60 = 60% opacity white. */}
 			<div
 				className={cn(
-					"flex items-center justify-center",
-					"size-9 rounded-lg mb-4",
-					"bg-primary/10 border border-primary/20",
-					"text-primary",
+					"mb-5 text-foreground/60",
 				)}
 				aria-hidden="true"
 			>

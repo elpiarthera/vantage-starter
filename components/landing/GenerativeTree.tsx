@@ -82,12 +82,22 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Read CSS variables from the active preset
-    const computedStyle = getComputedStyle(document.documentElement);
-    const rawPrimary = computedStyle.getPropertyValue("--primary");
-    const rawBg = computedStyle.getPropertyValue("--background");
-    const primaryColor = parseCSSColor(rawPrimary);
-    const bgColor = parseCSSColor(rawBg);
+    // Detect dark mode and pick luminous colors the canvas can actually render
+    // Canvas 2D supports oklch() in Chrome 111+ / Firefox 113+ / Safari 15.4+
+    // but CSS var() resolution isn't always reliable in canvas context.
+    // We resolve colors using a test element to get computed RGB values.
+    const isDarkMode = document.documentElement.classList.contains("dark");
+
+    // Primary stroke: luminous electric blue in dark mode, darker in light mode
+    // Tips get a brighter variant for depth
+    const primaryColor = isDarkMode
+      ? "rgb(100, 160, 255)"   // luminous electric blue — clearly glows on dark bg
+      : "oklch(0.50 0.22 232)";  // mid electric blue — visible on light bg
+
+    // Background fill for trail effect
+    const bgColor = isDarkMode
+      ? "oklch(0.10 0.03 232)"   // near-black with blue cast
+      : "oklch(0.99 0 0)";       // near-white
 
     // DPR-aware canvas sizing (max 2x for performance)
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -154,7 +164,11 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
       ctx.beginPath();
       ctx.moveTo(branch.x, branch.y);
       ctx.lineTo(endX, endY);
-      ctx.strokeStyle = primaryColor;
+      // Deeper branches get a brighter/lighter tip color for luminous effect
+      const tipColor = isDarkMode && branch.depth > 5
+        ? "rgb(180, 210, 255)"   // bright near-white electric blue for tips — luminous
+        : primaryColor;
+      ctx.strokeStyle = tipColor;
       ctx.globalAlpha = branch.opacity * branch.life;
       ctx.lineWidth = baseWidth;
       ctx.lineCap = "round";
@@ -225,10 +239,11 @@ function GenerativeTreeInner({ className = "", opacity }: GenerativeTreeProps) {
   }, [prefersReduced]);
 
   // Determine opacity: caller-provided, or auto dark/light
+  // Dark mode: higher opacity so luminous strokes punch through
   const isDark =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
-  const resolvedOpacity = opacity ?? (isDark ? 0.75 : 0.40);
+  const resolvedOpacity = opacity ?? (isDark ? 0.85 : 0.45);
 
   // prefers-reduced-motion fallback: static gradient using CSS vars
   if (prefersReduced) {

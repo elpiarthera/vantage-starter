@@ -79,11 +79,7 @@ export function PricingSection() {
 		<section
 			id="pricing"
 			aria-labelledby="pricing-heading"
-			className={cn(
-				"py-20 md:py-32",
-				"bg-gradient-to-b from-muted/20 to-muted/40",
-				"dark:from-muted/10 dark:to-muted/20",
-			)}
+			className="py-28 md:py-40"
 		>
 			<div className="max-w-5xl mx-auto px-6">
 				{/* Header */}
@@ -91,12 +87,16 @@ export function PricingSection() {
 					className="mb-12 md:mb-16 max-w-xl"
 					initial={{ opacity: 0, y: 12 }}
 					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: "-100px" }}
+					viewport={{ once: true, margin: "-50px", amount: 0.01 }}
 					transition={{ duration: 0.4, ease: "easeOut" }}
 				>
+					{/* Section label */}
+					<p className="text-xs font-semibold text-primary tracking-[0.2em] uppercase font-mono mb-3">
+						Pricing
+					</p>
 					<h2
 						id="pricing-heading"
-						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
+						className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-foreground mb-4"
 					>
 						{t("heading")}
 					</h2>
@@ -105,20 +105,18 @@ export function PricingSection() {
 					</p>
 				</motion.div>
 
-				{/* Tiers grid — staggered reveal */}
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-start">
-					{TIERS.map((tier, i) => (
-						<motion.div
-							key={tier.nameKey}
-							initial={cardVariants.hidden}
-							whileInView={cardVariants.visible}
-							viewport={{ once: true, margin: "-100px" }}
-							transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.08 }}
-						>
-							<PricingCard tier={tier} t={t} />
-						</motion.div>
+				{/* Tiers grid — section container animates in */}
+				<motion.div
+					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-start"
+					initial={cardVariants.hidden}
+					whileInView={cardVariants.visible}
+					viewport={{ once: true, margin: "-40px", amount: 0.01 }}
+					transition={{ duration: 0.5, ease: "easeOut" }}
+				>
+					{TIERS.map((tier) => (
+						<PricingCard key={tier.nameKey} tier={tier} t={t} />
 					))}
-				</div>
+				</motion.div>
 
 				<p className="mt-8 text-xs text-muted-foreground text-center">
 					{t("one_time_note")}
@@ -140,7 +138,7 @@ function PricingCard({
 	return (
 		<article
 			className={cn(
-				"rounded-xl p-6 md:p-8 flex flex-col relative h-full",
+				"rounded-lg p-6 md:p-8 flex flex-col relative h-full",
 				isHighlighted
 					? [
 							"border-none",

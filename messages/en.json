@@ -35,7 +35,7 @@
 	},
 	"sign_up_page": {
 		"title": "Create Account",
-		"subtitle": "Sign up to start creating amazing videos"
+		"subtitle": "Start building your AI SaaS"
 	},
 	"step_header": {
 		"back_button": "Back",
@@ -75,7 +75,7 @@
 		"your_balance": "Your balance: {balance}",
 		"credits_needed": "Credits needed",
 		"more_credits": "{creditsNeeded} more credits",
-		"purchase_tip": "Purchase credits to continue creating amazing videos. Credits never expire!",
+		"purchase_tip": "Purchase credits to keep building. Credits never expire!",
 		"purchase_button": "Purchase Credits",
 		"purchase_success_toast": "Credits added successfully! You can continue now.",
 		"refine_credits": "1 credit",
@@ -2599,11 +2599,14 @@
 			"aria_label": "Hero section",
 			"badge": "Now in early access — 50 early bird licenses",
 			"headline": "Your AI builds the UI.",
+			"headline_pre": "Your",
+			"headline_accent": "AI",
+			"headline_post": "builds the UI.",
 			"subline": "The only boilerplate where AI renders components, not text. Ship your first AI SaaS in days, not months.",
 			"subline_detail": "The first Convex boilerplate with Generative UI, credits, and RAG. Production-ready from clone.",
 			"cta_primary": "Start building",
 			"cta_secondary": "See it in action",
-			"social_proof_micro": "Trusted by solo founders building AI products with Convex."
+			"social_proof_micro": "Built on Convex. Shipped with Clerk. Powered by AI SDK v5."
 		},
 		"features": {
 			"heading": "Everything you'd build anyway.",
