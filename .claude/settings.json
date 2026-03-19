@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx biome check *)",
+      "Bash(npx biome check . --write)",
+      "Bash(npx biome format *)",
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/laurentperello/coding/vantage-starter && npx tsc --noEmit 2>&1 | tail -20 || true"
+          }
+        ]
+      }
+    ]
+  }
+}

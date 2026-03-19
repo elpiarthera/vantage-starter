@@ -1,0 +1,111 @@
+# VantageStarter — Claude Code Project Bible
+
+VantageStarter is a production-ready SaaS boilerplate built on Next.js 15 + Convex + Clerk + Polar + AI SDK v6. It ships with a pre-configured agent development team in `.claude/agents/`. Every developer who clones this repo gets a specialist AI team on day one.
+
+---
+
+## STACK
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 15 App Router (strict mode, `noEmit: true`) |
+| Backend | Convex (queries, mutations, actions, cron jobs, file storage) |
+| Auth | Clerk (middleware, organizations, RBAC, webhooks) |
+| Billing | Polar.sh (subscriptions, checkout, customer portal, license keys) |
+| AI | Vercel AI SDK v6 (multi-provider: Anthropic, OpenAI, Google) |
+| UI | shadcn/ui + Tailwind CSS + Radix primitives |
+| i18n | next-intl |
+| Testing | Vitest (Convex), Jest + Testing Library (React), Playwright (e2e) |
+| Linting | Biome |
+
+---
+
+## DESIGN SYSTEM
+
+- **Color:** OKLCH hue 44° — warm amber primary
+- **Typography:** Instrument Sans (body), Geist Mono (code)
+- **Component library:** shadcn/ui with Radix primitives
+- **Patterns:** Impeccable design system (see `.claude/skills/`)
+- **Anti-patterns (never ship these):**
+  - Hardcoded px values instead of Tailwind spacing scale
+  - `!important` overrides
+  - Inline styles on interactive elements
+  - Non-semantic HTML (div soup)
+  - Missing focus-visible states
+  - Color contrast below WCAG AA
+
+---
+
+## ORCHESTRATION — WHICH AGENT HANDLES WHAT
+
+Before any task, check which agent is responsible. Never do specialist work yourself.
+
+| Task | Agent |
+|------|-------|
+| Frontend components, UI, pages, CSS, responsive | `dev-frontend` |
+| Convex schema, queries, mutations, actions, cron, storage | `dev-convex-expert` |
+| Architecture decisions, code review, PR review, refactoring | `dev-senior-dev` |
+| Clerk auth, middleware, sign-in/up, org, RBAC | `dev-clerk-expert` |
+| SEO: metadata, canonical, schema, sitemap, robots | `dev-seo` |
+| Security audit, OWASP, vulnerabilities, CSP headers | `dev-sentinel` |
+| Accessibility: RGAA/WCAG, alt text, keyboard nav, contrast | `accessibility-audit` |
+
+Delegate with a short brief (3-5 sentences). Trust the agent's workflow. Never do specialist work in the orchestrator.
+
+---
+
+## QA PROTOCOL
+
+Run both checks before every commit. Both must pass.
+
+```bash
+# TypeScript — strict mode, no build escape hatch
+npx tsc --noEmit
+
+# Biome — linting + formatting
+npx biome check .
+```
+
+Note: `next.config.mjs` has `ignoreBuildErrors: true` — the build will not catch type errors. `tsc --noEmit` is the real gate.
+
+---
+
+## FILE STRUCTURE
+
+```
+app/                    # Next.js App Router
+  [locale]/             # i18n-wrapped routes
+convex/                 # All backend: schema, queries, mutations, actions
+components/             # Shared UI components (shadcn/ui based)
+lib/                    # Utilities, helpers, constants
+hooks/                  # React hooks
+providers/              # Context providers (Clerk, Convex, Theme)
+messages/               # i18n translation files (next-intl)
+.claude/
+  agents/               # Bundled specialist agents
+  skills/               # Impeccable design system skills
+docs/
+  SETUP.md              # Developer onboarding
+  CUSTOMIZING.md        # How to adapt for your SaaS
+  AGENT-GUIDE.md        # How to use the bundled agents
+```
+
+---
+
+## CONVENTIONS
+
+- **Server Components by default.** Add `"use client"` only when interactivity requires it (event handlers, hooks, browser APIs).
+- **Convex for all data.** No REST APIs. No SQL. Real-time by default.
+- **Clerk middleware protects routes.** Auth checks at middleware level, not component level.
+- **Zod at every boundary.** Forms, Convex args, env vars.
+- **TypeScript strict.** No `any`. No `as` casts without a comment explaining why.
+- **Colocation.** Component + its hook + its types in the same directory.
+- **i18n mandatory.** All user-facing strings go through `next-intl`. No hardcoded English.
+
+---
+
+## DOCUMENTATION
+
+- Developer setup: `docs/SETUP.md`
+- Customizing for your SaaS: `docs/CUSTOMIZING.md`
+- Using the bundled agents: `docs/AGENT-GUIDE.md`

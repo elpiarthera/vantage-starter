@@ -2579,5 +2579,93 @@
 			"voice_label": "Voice",
 			"default_voice": "Default"
 		}
+	},
+	"landing": {
+		"meta": {
+			"title": "VantageStarter — AI-Native SaaS Boilerplate",
+			"description": "The only boilerplate where AI renders components, not text. Ship faster with Generative UI, Convex real-time, credit system, and a 36-agent army built in.",
+			"og_title": "VantageStarter — Your AI builds the UI.",
+			"og_description": "Ship AI SaaS products without rebuilding the plumbing. Generative UI, Convex real-time, credits, auth, billing — all included.",
+			"og_image_alt": "VantageStarter — AI-Native SaaS Boilerplate"
+		},
+		"nav": {
+			"aria_label": "Main navigation",
+			"features": "Features",
+			"pricing": "Pricing",
+			"sign_in": "Sign in",
+			"get_started": "Get started"
+		},
+		"hero": {
+			"aria_label": "Hero section",
+			"badge": "[YOUR_LAUNCH_BADGE_HERE] — e.g. Now in early access",
+			"headline": "Your AI builds the UI.",
+			"subline": "The only boilerplate where AI renders components, not text. Ship your first AI SaaS in days, not months.",
+			"cta_primary": "Start building",
+			"cta_secondary": "See it in action"
+		},
+		"features": {
+			"heading": "Everything you'd build anyway.",
+			"subheading": "Stop rebuilding the same plumbing. VantageStarter ships 80 hours of infrastructure so you can focus on your domain.",
+			"generative_ui_title": "Generative UI",
+			"generative_ui_desc": "The AI doesn't just answer — it renders the right component for the right moment. Dynamic forms, data cards, and action panels generated at runtime. No competitor has this.",
+			"credits_title": "Credit system",
+			"credits_desc": "Production-grade credit engine with per-action costs, low-balance alerts, and admin controls. Monetize any AI feature out of the box.",
+			"realtime_title": "Real-time by default",
+			"realtime_desc": "Convex subscriptions power every list, counter, and dashboard. No polling. No stale data. Everything updates live.",
+			"agents_title": "Agent army",
+			"agents_desc": "36 specialized AI agents covering SEO, blog, email, video, sales, and ops — wired to your codebase from day one.",
+			"rag_title": "RAG included",
+			"rag_desc": "Vector search and document ingestion ready. Drop in your data source and your AI knows your domain.",
+			"accessibility_title": "RGAA 100%",
+			"accessibility_desc": "Full WCAG 2.1 AA and RGAA 4.1.2 compliance built in. Accessibility declaration templates included.",
+			"stack_title": "One stack",
+			"stack_desc": "Next.js 15 + Convex + Clerk + Polar. No Postgres, no Redis, no custom auth. Every dependency earns its place.",
+			"no_sql_title": "Zero SQL",
+			"no_sql_desc": "Convex's reactive database replaces Postgres, Redis, and background jobs. Your backend is TypeScript all the way down."
+		},
+		"pricing": {
+			"heading": "Simple, one-time pricing.",
+			"subheading": "Buy once, own forever. No subscription, no license renewal, no usage fees on the boilerplate itself.",
+			"popular_badge": "Most popular",
+			"one_time_label": "one-time",
+			"one_time_note": "One-time purchase. Includes all future updates to the boilerplate. No recurring fees.",
+			"features_aria": "features",
+			"starter_name": "Starter",
+			"starter_desc": "Explore the stack. No credit card required.",
+			"starter_cta": "Get started free",
+			"starter_f1": "Full codebase access",
+			"starter_f2": "Convex + Clerk + Polar wired up",
+			"starter_f3": "Credit system (read-only admin)",
+			"starter_f4": "Community support",
+			"pro_name": "Pro",
+			"pro_desc": "Everything you need to ship a production AI SaaS.",
+			"pro_cta": "Buy Pro",
+			"pro_f1": "Everything in Starter",
+			"pro_f2": "Generative UI components",
+			"pro_f3": "36-agent army (full access)",
+			"pro_f4": "1x 30-min onboarding call",
+			"pro_f5": "Private Slack support channel",
+			"team_name": "Team",
+			"team_desc": "For teams shipping multiple products from the same base.",
+			"team_cta": "Buy Team",
+			"team_f1": "Everything in Pro",
+			"team_f2": "Up to 5 team members",
+			"team_f3": "White-label license",
+			"team_f4": "Priority bug fixes",
+			"team_f5": "Dedicated Slack channel",
+			"team_f6": "Quarterly architecture review"
+		},
+		"testimonials": {
+			"heading": "What builders say.",
+			"subheading": "Early access feedback from the first cohort.",
+			"placeholder_aria": "Testimonial placeholder {index}",
+			"placeholder_sr": "Testimonial coming soon — replace with real customer quote"
+		},
+		"footer": {
+			"legal_nav_aria": "Legal navigation",
+			"legal": "Legal",
+			"privacy": "Privacy",
+			"contact": "Contact"
+		}
 	}
 }
