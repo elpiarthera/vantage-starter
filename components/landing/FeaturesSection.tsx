@@ -1,4 +1,7 @@
+"use client";
+
 import type React from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
 	Bot,
 	Brain,
@@ -68,8 +71,18 @@ const FEATURES: FeatureItem[] = [
 	},
 ];
 
+// Shared animation variants — useReducedMotion collapses y movement
+function useCardVariants() {
+	const reduced = useReducedMotion();
+	return {
+		hidden: { opacity: 0, y: reduced ? 0 : 20 },
+		visible: { opacity: 1, y: 0 },
+	};
+}
+
 export function FeaturesSection() {
 	const t = useTranslations("landing.features");
+	const cardVariants = useCardVariants();
 
 	return (
 		<section
@@ -78,8 +91,14 @@ export function FeaturesSection() {
 			className="py-20 md:py-32"
 		>
 			<div className="max-w-5xl mx-auto px-6">
-				{/* Section header */}
-				<div className="mb-12 md:mb-16 max-w-xl">
+				{/* Section header — fade in on scroll */}
+				<motion.div
+					className="mb-12 md:mb-16 max-w-xl"
+					initial={{ opacity: 0, y: 12 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, margin: "-100px" }}
+					transition={{ duration: 0.4, ease: "easeOut" }}
+				>
 					<h2
 						id="features-heading"
 						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
@@ -89,24 +108,47 @@ export function FeaturesSection() {
 					<p className="text-muted-foreground text-lg leading-relaxed">
 						{t("subheading")}
 					</p>
-				</div>
+				</motion.div>
 
 				{/* 1+3+4 grid */}
 				<div className="grid grid-cols-1 gap-6 md:gap-8">
 					{/* Row 1: primary differentiator — full width, elevated treatment */}
-					<PrimaryFeatureCard feature={FEATURES[0]} t={t} />
+					<motion.div
+						initial={cardVariants.hidden}
+						whileInView={cardVariants.visible}
+						viewport={{ once: true, margin: "-100px" }}
+						transition={{ duration: 0.4, ease: "easeOut" }}
+					>
+						<PrimaryFeatureCard feature={FEATURES[0]} t={t} />
+					</motion.div>
 
-					{/* Row 2: 3 pillars */}
+					{/* Row 2: 3 pillars — staggered */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
-						{FEATURES.slice(1, 4).map((f) => (
-							<FeatureCard key={f.titleKey} feature={f} t={t} />
+						{FEATURES.slice(1, 4).map((f, i) => (
+							<motion.div
+								key={f.titleKey}
+								initial={cardVariants.hidden}
+								whileInView={cardVariants.visible}
+								viewport={{ once: true, margin: "-100px" }}
+								transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.08 }}
+							>
+								<FeatureCard feature={f} t={t} />
+							</motion.div>
 						))}
 					</div>
 
-					{/* Row 3: 4 proof points */}
+					{/* Row 3: 4 proof points — staggered */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-						{FEATURES.slice(4).map((f) => (
-							<FeatureCard key={f.titleKey} feature={f} t={t} compact />
+						{FEATURES.slice(4).map((f, i) => (
+							<motion.div
+								key={f.titleKey}
+								initial={cardVariants.hidden}
+								whileInView={cardVariants.visible}
+								viewport={{ once: true, margin: "-100px" }}
+								transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.08 }}
+							>
+								<FeatureCard feature={f} t={t} compact />
+							</motion.div>
 						))}
 					</div>
 				</div>
@@ -127,19 +169,18 @@ function PrimaryFeatureCard({
 		<article
 			className={cn(
 				"rounded-xl border p-8 md:p-10",
-				// Amber accent — top border sweep
+				// Primary accent — electric blue border
 				"border-primary/40",
-				// Subtle amber background tint
+				// Subtle primary background tint
 				"bg-gradient-to-br from-primary/8 via-primary/4 to-transparent",
 				"dark:from-primary/12 dark:via-primary/6 dark:to-transparent",
-				// Hover: amber border glow, not scale
+				// Hover: primary border glow, not scale
 				"transition-shadow duration-200",
-				"hover:shadow-[0_0_0_1px_oklch(0.62_0.16_44/0.35),0_4px_24px_oklch(0.62_0.16_44/0.12)]",
-				"dark:hover:shadow-[0_0_0_1px_oklch(0.72_0.16_44/0.4),0_4px_24px_oklch(0.72_0.16_44/0.15)]",
+				"hover:shadow-[0_0_0_1px_oklch(var(--primary)/0.35),0_4px_24px_oklch(var(--primary)/0.12)]",
 				"md:flex md:items-start md:gap-10",
 			)}
 		>
-			{/* Icon — amber, prominent */}
+			{/* Icon — primary, prominent */}
 			<div
 				className={cn(
 					"flex-shrink-0 flex items-center justify-center",
@@ -153,7 +194,7 @@ function PrimaryFeatureCard({
 			</div>
 
 			<div>
-				{/* "New" badge */}
+				{/* Differentiator badge */}
 				<span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary mb-3 tracking-[0.01em]">
 					Zero competitors
 				</span>
@@ -183,14 +224,13 @@ function FeatureCard({
 			className={cn(
 				"rounded-xl border border-border p-6",
 				"bg-card",
-				// Hover: amber border glow, not scale
-				"transition-shadow duration-200",
+				// Hover: primary border glow, no scale
+				"transition-shadow duration-150",
 				"hover:border-primary/30",
-				"hover:shadow-[0_0_0_1px_oklch(0.62_0.16_44/0.20),0_2px_12px_oklch(0.62_0.16_44/0.08)]",
-				"dark:hover:shadow-[0_0_0_1px_oklch(0.72_0.16_44/0.25),0_2px_12px_oklch(0.72_0.16_44/0.10)]",
+				"hover:shadow-[0_0_0_1px_oklch(var(--primary)/0.20),0_2px_12px_oklch(var(--primary)/0.08)]",
 			)}
 		>
-			{/* Icon container — amber tinted */}
+			{/* Icon container — primary tinted */}
 			<div
 				className={cn(
 					"flex items-center justify-center",

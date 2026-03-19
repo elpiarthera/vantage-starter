@@ -1,48 +1,32 @@
+/* ============================================================================
+   VANTAGE STARTER DESIGN SYSTEM — OKLCH Color Space
+   Default preset: Dark Electric Blue (hue 232°)
+   Loaded via @import before @tailwind base (SSR-safe static default)
+   Runtime preset switching: <link href> swap via PresetLoader component
+   Fonts: Instrument Sans (display + body) + Geist Mono (code)
+   ============================================================================ */
+
+/* Default preset — Dark Electric Blue. Must be before @tailwind directives. */
+@import "../styles/presets/dark-electric-blue.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================================
-   VANTAGE STARTER DESIGN SYSTEM — OKLCH Color Space
-   Primary hue: 44° (warm amber-gold)
-   Fonts: Instrument Sans (display + body) + Geist Mono (code)
-   ============================================================================ */
-
 @layer base {
   :root {
-    /* ---- Core Colors — Light mode (OKLCH hue 44°) ---- */
-    --background: oklch(0.99 0 0);
-    --foreground: oklch(0.12 0 0);
-    --card: oklch(0.99 0 0);
-    --card-foreground: oklch(0.12 0 0);
-    --popover: oklch(0.99 0 0);
-    --popover-foreground: oklch(0.12 0 0);
+    /* Tokens not covered by presets — stable across all presets */
 
-    /* Primary — warm amber-gold
-       Foreground: dark (0.12) not white — contrast ratio 4.99:1 (WCAG AA pass) */
-    --primary: oklch(0.62 0.16 44);
-    --primary-foreground: oklch(0.12 0 0);
-
-    /* Secondary */
-    --secondary: oklch(0.96 0.01 44);
+    /* Secondary — tinted to active hue */
+    --secondary: oklch(0.96 0.01 232);
     --secondary-foreground: oklch(0.20 0 0);
 
-    /* Muted */
-    --muted: oklch(0.96 0.00 0);
-    --muted-foreground: oklch(0.52 0 0);
-
-    /* Accent */
-    --accent: oklch(0.94 0.04 44);
-    --accent-foreground: oklch(0.20 0 0);
-
-    /* Destructive */
+    /* Destructive — red-orange, universal */
     --destructive: oklch(0.55 0.22 25);
     --destructive-foreground: oklch(0.99 0 0);
 
-    /* Borders & Inputs */
-    --border: oklch(0.90 0.01 44);
-    --input: oklch(0.90 0.01 44);
-    --ring: oklch(0.62 0.16 44);
+    /* Input */
+    --input: oklch(0.88 0.02 232);
 
     /* Border radius — rounded-xl (12px) as global base */
     --radius: 0.75rem;
@@ -51,32 +35,30 @@
     --success: oklch(0.55 0.18 145);
     --warning: oklch(0.72 0.18 65);
 
-    /* Sidebar */
-    --sidebar-background: oklch(0.97 0.005 44);
+    /* Sidebar tokens — Dark Electric Blue preset */
+    --sidebar-background: oklch(0.97 0.005 232);
     --sidebar-foreground: oklch(0.25 0 0);
-    --sidebar-primary: oklch(0.62 0.16 44);
-    --sidebar-primary-foreground: oklch(0.12 0 0);
-    --sidebar-accent: oklch(0.93 0.02 44);
+    --sidebar-primary: oklch(0.50 0.22 232);
+    --sidebar-primary-foreground: oklch(0.99 0 0);
+    --sidebar-accent: oklch(0.92 0.06 232);
     --sidebar-accent-foreground: oklch(0.20 0 0);
-    --sidebar-border: oklch(0.90 0.01 44);
-    --sidebar-ring: oklch(0.62 0.16 44);
+    --sidebar-border: oklch(0.88 0.02 232);
+    --sidebar-ring: oklch(0.50 0.22 232);
 
     /* Data visualization */
-    --chart-1: oklch(0.62 0.16 44);   /* amber-gold — primary */
-    --chart-2: oklch(0.60 0.14 200);  /* teal */
-    --chart-3: oklch(0.52 0.12 260);  /* blue */
-    --chart-4: oklch(0.72 0.18 120);  /* green */
-    --chart-5: oklch(0.65 0.20 0);    /* red */
+    --chart-1: oklch(0.50 0.22 232);   /* electric blue — primary */
+    --chart-2: oklch(0.60 0.14 200);   /* teal */
+    --chart-3: oklch(0.65 0.20 0);     /* red */
+    --chart-4: oklch(0.72 0.18 120);   /* green */
+    --chart-5: oklch(0.65 0.18 44);    /* amber */
 
-    /* ---- Safe-area & layout variables (preserved from MSR) ---- */
+    /* Safe-area & layout variables (preserved from MSR) */
     --ig-prompt-bar-min-height: 116px;
     --ig-action-bar-height: 56px;
     --ig-floating-panel-top: 96px;
-
     --ig-safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --ig-margin-sm: 16px;
     --ig-margin-md: 24px;
-
     --ig-prompt-bar-total: calc(var(--ig-prompt-bar-min-height) + var(--ig-safe-area-bottom) + var(--ig-margin-md));
     --ig-action-bar-total: calc(var(--ig-action-bar-height) + var(--ig-margin-sm));
     --ig-canvas-bottom-offset: calc(var(--ig-prompt-bar-total) + var(--ig-action-bar-total));
@@ -84,58 +66,37 @@
   }
 
   .dark {
-    --background: oklch(0.10 0 0);
-    --foreground: oklch(0.97 0 0);
-    --card: oklch(0.15 0.01 44);
-    --card-foreground: oklch(0.97 0 0);
-    --popover: oklch(0.15 0.01 44);
-    --popover-foreground: oklch(0.97 0 0);
-
-    /* Primary — warmer in dark mode */
-    --primary: oklch(0.72 0.16 44);
-    --primary-foreground: oklch(0.10 0 0);
-
     /* Secondary */
-    --secondary: oklch(0.22 0.02 44);
-    --secondary-foreground: oklch(0.97 0 0);
-
-    /* Muted */
-    --muted: oklch(0.18 0.00 0);
-    --muted-foreground: oklch(0.65 0 0);
-
-    /* Accent */
-    --accent: oklch(0.22 0.04 44);
-    --accent-foreground: oklch(0.97 0 0);
+    --secondary: oklch(0.22 0.04 232);
+    --secondary-foreground: oklch(0.94 0.01 232);
 
     /* Destructive */
     --destructive: oklch(0.65 0.22 25);
     --destructive-foreground: oklch(0.99 0 0);
 
-    /* Borders & Inputs */
-    --border: oklch(1.00 0 0 / 10%);
-    --input: oklch(1.00 0 0 / 12%);
-    --ring: oklch(0.72 0.16 44);
+    /* Input */
+    --input: oklch(0.24 0.04 232);
 
     /* Status */
     --success: oklch(0.65 0.18 145);
     --warning: oklch(0.78 0.18 65);
 
     /* Sidebar */
-    --sidebar-background: oklch(0.12 0.01 44);
+    --sidebar-background: oklch(0.12 0.03 232);
     --sidebar-foreground: oklch(0.90 0 0);
-    --sidebar-primary: oklch(0.72 0.16 44);
-    --sidebar-primary-foreground: oklch(0.10 0 0);
-    --sidebar-accent: oklch(0.20 0.02 44);
+    --sidebar-primary: oklch(0.68 0.22 232);
+    --sidebar-primary-foreground: oklch(0.08 0.02 232);
+    --sidebar-accent: oklch(0.25 0.08 232);
     --sidebar-accent-foreground: oklch(0.90 0 0);
-    --sidebar-border: oklch(1.00 0 0 / 8%);
-    --sidebar-ring: oklch(0.72 0.16 44);
+    --sidebar-border: oklch(0.24 0.04 232);
+    --sidebar-ring: oklch(0.68 0.22 232);
 
     /* Data visualization */
-    --chart-1: oklch(0.72 0.16 44);   /* amber-gold */
-    --chart-2: oklch(0.68 0.16 200);  /* teal */
-    --chart-3: oklch(0.62 0.16 260);  /* blue */
-    --chart-4: oklch(0.70 0.20 120);  /* green */
-    --chart-5: oklch(0.68 0.22 0);    /* red */
+    --chart-1: oklch(0.68 0.22 232);   /* electric blue */
+    --chart-2: oklch(0.68 0.16 200);   /* teal */
+    --chart-3: oklch(0.68 0.22 0);     /* red */
+    --chart-4: oklch(0.70 0.20 120);   /* green */
+    --chart-5: oklch(0.72 0.16 44);    /* amber */
   }
 }
 
@@ -150,7 +111,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Instrument Sans", system-ui, sans-serif;
+    font-family: var(--font-sans), "Instrument Sans", system-ui, sans-serif;
     letter-spacing: -0.01em;
   }
 

@@ -77,6 +77,14 @@ export default async function LocaleLayout({ children, params }: Props) {
 						__html: JSON.stringify(softwareApplicationSchema),
 					}}
 				/>
+				{/* Prefetch all 7 color presets — eliminates flash on runtime preset switch */}
+				<link rel="prefetch" as="style" href="/styles/presets/dark-electric-blue.css" />
+				<link rel="prefetch" as="style" href="/styles/presets/amber.css" />
+				<link rel="prefetch" as="style" href="/styles/presets/mono.css" />
+				<link rel="prefetch" as="style" href="/styles/presets/blue.css" />
+				<link rel="prefetch" as="style" href="/styles/presets/rose.css" />
+				<link rel="prefetch" as="style" href="/styles/presets/emerald.css" />
+				<link rel="prefetch" as="style" href="/styles/presets/arctic.css" />
 			</head>
 			<body>
 				<SkipLink />

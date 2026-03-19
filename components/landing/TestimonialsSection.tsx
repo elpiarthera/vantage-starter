@@ -1,8 +1,17 @@
+"use client";
+
+import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export function TestimonialsSection() {
 	const t = useTranslations("landing.testimonials");
+	const reduced = useReducedMotion();
+
+	const cardVariants = {
+		hidden: { opacity: 0, y: reduced ? 0 : 20 },
+		visible: { opacity: 1, y: 0 },
+	};
 
 	return (
 		<section
@@ -10,7 +19,13 @@ export function TestimonialsSection() {
 			className="py-20 md:py-32"
 		>
 			<div className="max-w-5xl mx-auto px-6">
-				<div className="mb-12 md:mb-16 max-w-xl">
+				<motion.div
+					className="mb-12 md:mb-16 max-w-xl"
+					initial={{ opacity: 0, y: 12 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, margin: "-100px" }}
+					transition={{ duration: 0.4, ease: "easeOut" }}
+				>
 					<h2
 						id="testimonials-heading"
 						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
@@ -20,11 +35,19 @@ export function TestimonialsSection() {
 					<p className="text-muted-foreground text-lg leading-relaxed">
 						{t("subheading")}
 					</p>
-				</div>
+				</motion.div>
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 					{[1, 2, 3].map((i) => (
-						<TestimonialPlaceholder key={i} index={i} t={t} />
+						<motion.div
+							key={i}
+							initial={cardVariants.hidden}
+							whileInView={cardVariants.visible}
+							viewport={{ once: true, margin: "-100px" }}
+							transition={{ duration: 0.4, ease: "easeOut", delay: (i - 1) * 0.08 }}
+						>
+							<TestimonialPlaceholder index={i} t={t} />
+						</motion.div>
 					))}
 				</div>
 			</div>
@@ -42,8 +65,8 @@ function TestimonialPlaceholder({
 	return (
 		<article
 			className={cn(
-				"rounded-xl border border-dashed p-6",
-				// Dashed amber tint border — designed placeholder, not a blank box
+				"rounded-xl border border-dashed p-6 h-full",
+				// Dashed primary tint border — designed placeholder, not a blank box
 				"border-primary/20",
 				"bg-primary/3 dark:bg-primary/5",
 				// 60% opacity: signals "coming soon" without looking broken
@@ -58,7 +81,7 @@ function TestimonialPlaceholder({
         Example: "Cut our onboarding from 3 days to 4 hours. — Sarah, CTO at Acme"
       */}
 
-			{/* Quote mark — amber accent */}
+			{/* Quote mark — primary accent */}
 			<div
 				className="text-primary/40 font-serif text-4xl leading-none mb-3 select-none"
 				aria-hidden="true"
@@ -75,7 +98,7 @@ function TestimonialPlaceholder({
 
 			{/* Author placeholder */}
 			<div className="flex items-center gap-3 pt-4 border-t border-primary/15">
-				{/* Avatar circle — amber tint */}
+				{/* Avatar circle */}
 				<div
 					className="size-9 rounded-full bg-primary/20 border border-primary/25 shrink-0"
 					aria-hidden="true"

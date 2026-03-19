@@ -1,3 +1,6 @@
+"use client";
+
+import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -65,6 +68,12 @@ const TIERS: Tier[] = [
 
 export function PricingSection() {
 	const t = useTranslations("landing.pricing");
+	const reduced = useReducedMotion();
+
+	const cardVariants = {
+		hidden: { opacity: 0, y: reduced ? 0 : 20 },
+		visible: { opacity: 1, y: 0 },
+	};
 
 	return (
 		<section
@@ -72,14 +81,19 @@ export function PricingSection() {
 			aria-labelledby="pricing-heading"
 			className={cn(
 				"py-20 md:py-32",
-				// Subtle section background differentiation
 				"bg-gradient-to-b from-muted/20 to-muted/40",
 				"dark:from-muted/10 dark:to-muted/20",
 			)}
 		>
 			<div className="max-w-5xl mx-auto px-6">
 				{/* Header */}
-				<div className="mb-12 md:mb-16 max-w-xl">
+				<motion.div
+					className="mb-12 md:mb-16 max-w-xl"
+					initial={{ opacity: 0, y: 12 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, margin: "-100px" }}
+					transition={{ duration: 0.4, ease: "easeOut" }}
+				>
 					<h2
 						id="pricing-heading"
 						className="text-3xl md:text-4xl font-semibold tracking-[-0.03em] text-foreground mb-4"
@@ -89,13 +103,20 @@ export function PricingSection() {
 					<p className="text-muted-foreground text-lg leading-relaxed">
 						{t("subheading")}
 					</p>
-				</div>
+				</motion.div>
 
-				{/* Tiers grid — mobile: 1 col, tablet: 2 col, desktop: 3 col */}
-				{/* Pro card is elevated via z-index + shadow on desktop */}
+				{/* Tiers grid — staggered reveal */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-start">
-					{TIERS.map((tier) => (
-						<PricingCard key={tier.nameKey} tier={tier} t={t} />
+					{TIERS.map((tier, i) => (
+						<motion.div
+							key={tier.nameKey}
+							initial={cardVariants.hidden}
+							whileInView={cardVariants.visible}
+							viewport={{ once: true, margin: "-100px" }}
+							transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.08 }}
+						>
+							<PricingCard tier={tier} t={t} />
+						</motion.div>
 					))}
 				</div>
 
@@ -117,15 +138,12 @@ function PricingCard({
 	return (
 		<article
 			className={cn(
-				"rounded-xl p-6 flex flex-col relative",
+				"rounded-xl p-6 flex flex-col relative h-full",
 				tier.highlighted
 					? [
-							// Pro card: amber border, elevated background, amber glow shadow
 							"border-2 border-primary/60",
 							"bg-card",
-							"shadow-[0_0_0_4px_oklch(0.62_0.16_44/0.08),0_8px_32px_oklch(0.62_0.16_44/0.15)]",
-							"dark:shadow-[0_0_0_4px_oklch(0.72_0.16_44/0.10),0_8px_32px_oklch(0.72_0.16_44/0.18)]",
-							// Subtle amber gradient on Pro
+							"shadow-[0_0_0_4px_oklch(var(--primary)/0.08),0_8px_32px_oklch(var(--primary)/0.15)]",
 							"bg-gradient-to-b from-primary/4 to-transparent",
 					  ].join(" ")
 					: [
@@ -211,8 +229,8 @@ function PricingCard({
 					className={cn(
 						"w-full",
 						tier.highlighted && [
-							"shadow-[0_2px_12px_oklch(0.62_0.16_44/0.30)]",
-							"hover:shadow-[0_4px_16px_oklch(0.62_0.16_44/0.40)]",
+							"shadow-[0_2px_12px_oklch(var(--primary)/0.30)]",
+							"hover:shadow-[0_4px_16px_oklch(var(--primary)/0.40)]",
 							"transition-shadow duration-200",
 						].join(" "),
 					)}
