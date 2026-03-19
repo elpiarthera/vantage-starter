@@ -16,44 +16,35 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			className="relative min-h-[85vh] flex items-center overflow-hidden bg-background"
+			// Hero is always dark — the Radiant shader renders on #0a0a0a canvas.
+			// Dark hero on light page is a premium pattern (Vercel, Linear, etc).
+			className="relative min-h-[85vh] flex items-center overflow-hidden"
+			style={{ background: "#0a0a0a" }}
 		>
-			{/* Layer 0 — Generative Branching Tree (Canvas 2D, reads --primary + --background CSS vars) */}
+			{/* Layer 0 — Radiant Generative Tree shader (iframe, original Radiant source) */}
 			<GenerativeTree className="z-0" />
 
-			{/* Layer 1 — warm radial glow — depth anchor, invisible in light mode */}
-			<div
-				className="pointer-events-none absolute inset-0 z-5"
-				aria-hidden="true"
-				style={{
-					background:
-						"radial-gradient(ellipse 70% 50% at 50% 20%, oklch(0.68 0.15 65 / 0.08) 0%, transparent 70%)",
-				}}
-			/>
-
-			{/* Layer 2 — gradient fade to background at bottom */}
+			{/* Layer 1 — gradient fade to dark at bottom (matches the dark hero bg) */}
 			<div
 				className="pointer-events-none absolute inset-0 z-10"
 				aria-hidden="true"
 				style={{
 					background:
-						"linear-gradient(to bottom, transparent 0%, transparent 50%, var(--background) 100%)",
+						"linear-gradient(to bottom, transparent 0%, transparent 50%, #0a0a0a 100%)",
 				}}
 			/>
 
-			{/* Layer 3 — dark vignette edges for text readability */}
+			{/* Layer 2 — vignette edges for text readability */}
 			<div
 				className="pointer-events-none absolute inset-0 z-10"
 				aria-hidden="true"
 				style={{
-					background: [
-						"linear-gradient(to bottom, oklch(0.06 0.02 232 / 0.4) 0%, transparent 35%)",
-						"radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.06 0.02 232 / 0.3) 0%, transparent 70%)",
-					].join(", "),
+					background:
+						"radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(4, 4, 4, 0.55) 100%)",
 				}}
 			/>
 
-			{/* Layer 4 — content */}
+			{/* Layer 3 — content */}
 			<div className="relative z-20 max-w-5xl mx-auto px-6 py-20 md:py-28 w-full">
 				<motion.div
 					initial={{ opacity: 0, y: 16 }}
@@ -61,13 +52,13 @@ export function HeroSection() {
 					transition={{ duration: 0.6, ease: EXPO_OUT }}
 				>
 					{/* Eyebrow badge */}
-					<span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/12 px-3.5 py-1 text-xs font-medium text-primary mb-8 tracking-[0.01em]">
+					<span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/40 bg-blue-500/10 px-3.5 py-1 text-xs font-medium text-blue-300 mb-8 tracking-[0.01em]">
 						{t("badge")}
 					</span>
 
-					{/* H1 — bold, larger, tight. Accent word from translation key. */}
+					{/* H1 */}
 					<h1
-						className="font-bold text-foreground text-balance mb-6"
+						className="font-bold text-white text-balance mb-6"
 						style={{
 							fontSize: "clamp(2.75rem, 7vw, 6rem)",
 							lineHeight: 1.0,
@@ -81,7 +72,7 @@ export function HeroSection() {
 
 					{/* Subline */}
 					<motion.p
-						className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-3 leading-relaxed tracking-[-0.01em]"
+						className="text-lg md:text-xl text-white/70 max-w-2xl mb-3 leading-relaxed tracking-[-0.01em]"
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6, ease: EXPO_OUT, delay: 0.1 }}
@@ -90,7 +81,7 @@ export function HeroSection() {
 					</motion.p>
 
 					{/* Supporting detail */}
-					<p className="text-sm text-muted-foreground/70 max-w-lg mb-10 leading-relaxed">
+					<p className="text-sm text-white/45 max-w-lg mb-10 leading-relaxed">
 						{t("subline_detail")}
 					</p>
 
@@ -104,7 +95,7 @@ export function HeroSection() {
 						<Link href="/sign-up">
 							<Button
 								size="lg"
-								className="min-w-[180px] gap-2 shadow-[0_2px_8px_oklch(var(--primary)/0.30)] hover:shadow-[0_4px_16px_oklch(var(--primary)/0.40)] transition-shadow duration-200"
+								className="min-w-[180px] gap-2 bg-blue-500 hover:bg-blue-400 text-white shadow-[0_2px_16px_rgba(59,130,246,0.35)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.50)] transition-all duration-200 border-0"
 							>
 								{t("cta_primary")}
 								<ArrowRight className="size-4" aria-hidden="true" />
@@ -114,7 +105,7 @@ export function HeroSection() {
 							<Button
 								variant="ghost"
 								size="lg"
-								className="min-w-[160px] gap-2 text-muted-foreground hover:text-foreground hover:bg-accent"
+								className="min-w-[160px] gap-2 text-white/60 hover:text-white hover:bg-white/8"
 							>
 								<Play className="size-4" aria-hidden="true" />
 								{t("cta_secondary")}
@@ -122,9 +113,9 @@ export function HeroSection() {
 						</a>
 					</motion.div>
 
-					{/* Social proof — specific stack names, not generic */}
+					{/* Social proof */}
 					<motion.p
-						className="mt-8 text-xs text-muted-foreground/60 tracking-[0.01em]"
+						className="mt-8 text-xs text-white/40 tracking-[0.01em]"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ duration: 0.4, ease: EXPO_OUT, delay: 0.3 }}
