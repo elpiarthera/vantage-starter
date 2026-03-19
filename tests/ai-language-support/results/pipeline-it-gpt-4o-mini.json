@@ -1,0 +1,90 @@
+{
+	"testSessionId": "it-4om-1766235159047",
+	"startedAt": "2025-12-20T12:52:39.047Z",
+	"updatedAt": "2025-12-20T12:55:37.644Z",
+	"language": "it",
+	"textModel": "gpt-4o-mini",
+	"textGeneration": {
+		"completedAt": "2025-12-20T12:52:46.506Z",
+		"modelUsed": "gpt-4o-mini",
+		"latencyMs": 7457,
+		"systemPrompt": "You are an expert AI Director for emotionally resonant short-form videos.\n\nYour task is to create a compelling video story concept based on the provided event details.\n\nThe story should:\n1. Be structured for a 30-second video (approximately 75-90 words for narration)\n2. Have a clear emotional arc: opening hook → emotional core → meaningful conclusion\n3. Match the occasion and emotional theme perfectly\n4. Be personal and authentic, not generic\n5. Include specific visual scene suggestions (3-4 scenes)\n\nIMPORTANT: Generate all content in the SAME LANGUAGE as the user's input.\n\nReturn a JSON object with:\n- narrationScript: The 75-90 word narration script\n- scenes: Array of 3 scene descriptions for visuals\n- musicPrompt: A prompt for generating background music",
+		"userPrompt": "Occasion: Annuncio di Matrimonio\nEvent Title: Matrimonio di Laurent & Laurence\nEmotional Theme: Calore Romantico\nVisual Style: Cinematico\n\nPersonal Story from the creator:\n\"Ci siamo incontrati a Parigi sotto la Torre Eiffel cinque anni fa. Un incontro casuale diventato destino. Ora siamo pronti a iniziare la nostra eternità e vogliamo che facciate parte della nostra storia.\"\n\nCreate a compelling narration script for this wedding video. The story should feel Calore Romantico and deeply personal.",
+		"generatedStory": "Cinque anni fa, a Parigi, due anime si sono incontrate sotto la Torre Eiffel. Un incontro casuale che ha cambiato tutto. Oggi, Laurent e Laurence sono pronti a scrivere il prossimo capitolo della loro storia d'amore. Con i cuori colmi di gioia, vi invitano a condividere il loro matrimonio, un giorno che segna l'inizio della loro eternità insieme. Unitevi a noi in questa celebrazione di amore e connessione, dove ogni sorriso racconta un sogno e ogni abbraccio è un passo verso il futuro.",
+		"generatedScenes": [
+			"Inizio con una panoramica romantica della Torre Eiffel al tramonto, con Laurent e Laurence che si tengono per mano, sorridendo uno all'altro.",
+			"Taglio su un primo piano delle loro mani che si intrecciano, mentre una voce fuori campo racconta la loro storia d'amore, con immagini di momenti felici trascorsi insieme.",
+			"Scena finale della coppia che si scambia promesse di matrimonio circondata da amici e familiari, con lacrime di gioia e sorrisi, mentre il sole tramonta sullo sfondo."
+		],
+		"narrationScript": "Cinque anni fa, a Parigi, due anime si sono incontrate sotto la Torre Eiffel. Un incontro casuale che ha cambiato tutto. Oggi, Laurent e Laurence sono pronti a scrivere il prossimo capitolo della loro storia d'amore. Con i cuori colmi di gioia, vi invitano a condividere il loro matrimonio, un giorno che segna l'inizio della loro eternità insieme. Unitevi a noi in questa celebrazione di amore e connessione, dove ogni sorriso racconta un sogno e ogni abbraccio è un passo verso il futuro.",
+		"musicPrompt": "Crea una colonna sonora romantica e cinematica con melodie dolci e nostalgiche, che evochino sentimenti di amore e connessione profonda.",
+		"rawResponse": "{\n  \"narrationScript\": \"Cinque anni fa, a Parigi, due anime si sono incontrate sotto la Torre Eiffel. Un incontro casuale che ha cambiato tutto. Oggi, Laurent e Laurence sono pronti a scrivere il prossimo capitolo della loro storia d'amore. Con i cuori colmi di gioia, vi invitano a condividere il loro matrimonio, un giorno che segna l'inizio della loro eternità insieme. Unitevi a noi in questa celebrazione di amore e connessione, dove ogni sorriso racconta un sogno e ogni abbraccio è un passo verso il futuro.\",\n  \"scenes\": [\n    \"Inizio con una panoramica romantica della Torre Eiffel al tramonto, con Laurent e Laurence che si tengono per mano, sorridendo uno all'altro.\",\n    \"Taglio su un primo piano delle loro mani che si intrecciano, mentre una voce fuori campo racconta la loro storia d'amore, con immagini di momenti felici trascorsi insieme.\",\n    \"Scena finale della coppia che si scambia promesse di matrimonio circondata da amici e familiari, con lacrime di gioia e sorrisi, mentre il sole tramonta sullo sfondo.\"\n  ],\n  \"musicPrompt\": \"Crea una colonna sonora romantica e cinematica con melodie dolci e nostalgiche, che evochino sentimenti di amore e connessione profonda.\"\n}",
+		"qualityScore": 8,
+		"estimatedCost": 0.000315
+	},
+	"imageGeneration": {
+		"completedAt": "2025-12-20T12:53:43.607Z",
+		"modelUsed": "fal-ai/nano-banana-pro",
+		"latencyMs": 57100,
+		"images": [
+			{
+				"sceneIndex": 0,
+				"url": "https://v3b.fal.media/files/b/0a870f9c/uoYPAhyeFFV4_lX_gqtVO.png",
+				"prompt": "Inizio con una panoramica romantica della Torre Eiffel al tramonto, con Laurent e Laurence che si tengono per mano, sorridendo uno all'altro.",
+				"latencyMs": 18064
+			},
+			{
+				"sceneIndex": 1,
+				"url": "https://v3b.fal.media/files/b/0a870f9e/7AWVzyQxnI_gXcE-b1adj.png",
+				"prompt": "Taglio su un primo piano delle loro mani che si intrecciano, mentre una voce fuori campo racconta la loro storia d'amore, con immagini di momenti felici trascorsi insieme.",
+				"latencyMs": 17991
+			},
+			{
+				"sceneIndex": 2,
+				"url": "https://v3b.fal.media/files/b/0a870fa0/mHa6f4DVv2OuHFd1arjA1.png",
+				"prompt": "Scena finale della coppia che si scambia promesse di matrimonio circondata da amici e familiari, con lacrime di gioia e sorrisi, mentre il sole tramonta sullo sfondo.",
+				"latencyMs": 18041
+			}
+		],
+		"qualityScore": 8,
+		"estimatedCost": 0.03
+	},
+	"videoGeneration": {
+		"completedAt": "2025-12-20T12:55:25.586Z",
+		"modelUsed": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+		"latencyMs": 101979,
+		"videos": [
+			{
+				"sceneIndex": 0,
+				"url": "https://v3b.fal.media/files/b/0a870fac/5TmWqPcPlhPbhn2yzSbCd_output.mp4",
+				"prompt": "Inizio con una panoramica romantica della Torre Eiffel al tramonto, con Laurent e Laurence che si tengono per mano, sorridendo uno all'altro. Emotional context: Ci siamo incontrati a Parigi sotto la Torre Eiffel cinque anni fa. Un incontro casuale diventato destino. Ora siamo pronti a iniziare la nostra eternità e vogliamo che facciate parte della nostra storia.. This is for a Annuncio di Matrimonio video. The overall mood is Calore Romantico. Visual style: Cinematico. Quick, dynamic pacing suitable for a 5-second clip. High quality, professional production.",
+				"firstFrameUrl": "https://v3b.fal.media/files/b/0a870f9c/uoYPAhyeFFV4_lX_gqtVO.png",
+				"lastFrameUrl": "https://v3b.fal.media/files/b/0a870fa0/mHa6f4DVv2OuHFd1arjA1.png"
+			}
+		],
+		"qualityScore": 8,
+		"estimatedCost": 0.35
+	},
+	"narration": {
+		"completedAt": "2025-12-20T12:55:32.601Z",
+		"modelUsed": "fal-ai/minimax/speech-2.6-hd",
+		"latencyMs": 7013,
+		"script": "Cinque anni fa, a Parigi, due anime si sono incontrate sotto la Torre Eiffel. Un incontro casuale che ha cambiato tutto. Oggi, Laurent e Laurence sono pronti a scrivere il prossimo capitolo della loro storia d'amore. Con i cuori colmi di gioia, vi invitano a condividere il loro matrimonio, un giorno che segna l'inizio della loro eternità insieme. Unitevi a noi in questa celebrazione di amore e connessione, dove ogni sorriso racconta un sogno e ogni abbraccio è un passo verso il futuro.",
+		"languageBoost": "Italian",
+		"audioUrl": "https://v3b.fal.media/files/b/0a870fad/0GKmWsgjBBlxcclSpOkRR_speech.mp3",
+		"duration": 0,
+		"qualityScore": 8,
+		"estimatedCost": 0.02
+	},
+	"music": {
+		"completedAt": "2025-12-20T12:55:37.644Z",
+		"modelUsed": "fal-ai/stable-audio-25/text-to-audio",
+		"latencyMs": 5042,
+		"prompt": "Crea una colonna sonora romantica e cinematica con melodie dolci e nostalgiche, che evochino sentimenti di amore e connessione profonda.",
+		"audioUrl": "https://v3b.fal.media/files/b/0a870fad/BvF6rhsq8Nal1H12HDr8u_tmpr4etzcd0.wav",
+		"duration": 30,
+		"qualityScore": 8,
+		"estimatedCost": 0.05
+	},
+	"totalDurationMs": 178597
+}

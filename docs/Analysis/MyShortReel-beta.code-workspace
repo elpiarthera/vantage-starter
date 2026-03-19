@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../vertical-ai-alpha"
+		},
+		{
+			"path": "../../../awesome-video-prompts"
+		},
+		{
+			"path": "../../../Nano-banana-pro-playground"
+		},
+		{
+			"path": "../../../seq"
+		},
+		{
+			"path": "../../../polar"
+		}
+	],
+	"settings": {}
+}

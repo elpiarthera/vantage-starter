@@ -1,0 +1,13 @@
+{
+	"headers": [
+		{
+			"source": "/(.*)",
+			"headers": [
+				{
+					"key": "Content-Security-Policy",
+					"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.accounts.dev https://vercel.live; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; media-src 'self' blob: data: https:; font-src 'self' data: https:; connect-src 'self' blob: https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.convex.cloud https://*.sentry.io wss://*.convex.cloud wss://*.convex.site https://fal.run https://*.fal.ai https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://vercel.live; frame-src https://challenges.cloudflare.com https://*.clerk.accounts.dev https://vercel.live https://polar.sh https://sandbox.polar.sh; base-uri 'self'; form-action 'self'"
+				}
+			]
+		}
+	]
+}

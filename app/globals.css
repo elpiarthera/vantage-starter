@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    /* Fixed --background HSL values to match #101a23 correctly */
+    --background: 207 35% 10%; /* #101a23 */
+    --foreground: 0 0% 100%; /* #ffffff */
+    --card: 210 30% 12%; /* #182634 */
+    --card-foreground: 0 0% 100%;
+    --popover: 210 30% 12%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 207 100% 50%; /* #0d7ff2 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 25% 20%; /* #223649 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 25% 30%; /* #314d68 */
+    --muted-foreground: 0 0% 82%; /* #d1d5db */
+    --accent: 210 25% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 25% 20%; /* #223649 */
+    --input: 210 25% 20%;
+    --ring: 207 100% 50%;
+    --radius: 0.75rem;
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    
+    /* 
+     * Sprint 38: Image Generator Layout Variables
+     * Baseline heights — "best effort" baselines with runtime fallbacks.
+     * The prompt bar can grow when pills expand (TextareaAutosize).
+     */
+    --ig-prompt-bar-min-height: 116px;
+    --ig-action-bar-height: 56px;
+    --ig-floating-panel-top: 96px;
+    
+    /* Spacing */
+    --ig-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --ig-margin-sm: 16px;
+    --ig-margin-md: 24px;
+    
+    /* Calculated positions */
+    --ig-prompt-bar-total: calc(var(--ig-prompt-bar-min-height) + var(--ig-safe-area-bottom) + var(--ig-margin-md));
+    --ig-action-bar-total: calc(var(--ig-action-bar-height) + var(--ig-margin-sm));
+    --ig-canvas-bottom-offset: calc(var(--ig-prompt-bar-total) + var(--ig-action-bar-total));
+    --ig-mobile-button-offset: calc(var(--ig-prompt-bar-total) + var(--ig-margin-md));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Force Space Grotesk font family to match HTML */
+    font-family: "Space Grotesk", "Noto Sans", sans-serif;
+  }
+}
+
+/* Added smooth animations and transitions */
+@layer utilities {
+  /* Fade in animation */
+  .animate-in {
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    animation: fadeIn var(--animation-duration, 0.3s) ease-in;
+  }
+
+  .slide-in-from-bottom {
+    animation: slideInFromBottom var(--animation-duration, 0.3s) ease-out;
+  }
+
+  .slide-in-from-top {
+    animation: slideInFromTop var(--animation-duration, 0.3s) ease-out;
+  }
+
+  .slide-in-from-left {
+    animation: slideInFromLeft var(--animation-duration, 0.3s) ease-out;
+  }
+
+  .slide-in-from-right {
+    animation: slideInFromRight var(--animation-duration, 0.3s) ease-out;
+  }
+
+  .scale-in {
+    animation: scaleIn var(--animation-duration, 0.2s) ease-out;
+  }
+
+  /* Duration utilities */
+  .duration-200 {
+    --animation-duration: 0.2s;
+  }
+
+  .duration-300 {
+    --animation-duration: 0.3s;
+  }
+
+  .duration-500 {
+    --animation-duration: 0.5s;
+  }
+
+  /* Smooth transitions for interactive elements */
+  .transition-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-transform-smooth {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Active state for mobile */
+  .active\:scale-98:active {
+    transform: scale(0.98);
+  }
+
+  .active\:scale-95:active {
+    transform: scale(0.95);
+  }
+
+  /* Sprint 30e.5: Glass morphism utilities */
+  .glass-panel {
+    @apply backdrop-blur-md bg-background/60 border border-border/50 shadow-lg rounded-xl;
+  }
+
+  .glass-panel-subtle {
+    @apply backdrop-blur-sm bg-background/40 border border-border/30 rounded-lg;
+  }
+
+  .glass-inner-field {
+    @apply bg-transparent border border-border/30 rounded-md focus-within:border-primary/50 transition-colors;
+  }
+
+  .glass-button {
+    @apply bg-secondary/50 border border-border/50 hover:bg-muted/50 hover:border-border/70 transition-smooth;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Add Google Fonts import for Space Grotesk */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;500;700;900&display=swap");

@@ -1,0 +1,89 @@
+{
+	"testSessionId": "fr-1766147451476",
+	"startedAt": "2025-12-19T12:30:51.476Z",
+	"updatedAt": "2025-12-19T12:34:40.064Z",
+	"language": "fr",
+	"textGeneration": {
+		"completedAt": "2025-12-19T12:30:58.827Z",
+		"modelUsed": "gpt-4o-mini",
+		"latencyMs": 7350,
+		"systemPrompt": "You are an expert AI Director for emotionally resonant short-form videos.\n\nYour task is to create a compelling video story concept based on the provided event details.\n\nThe story should:\n1. Be structured for a 30-second video (approximately 75-90 words for narration)\n2. Have a clear emotional arc: opening hook → emotional core → meaningful conclusion\n3. Match the occasion and emotional theme perfectly\n4. Be personal and authentic, not generic\n5. Include specific visual scene suggestions (3-4 scenes)\n\nIMPORTANT: Generate all content in the SAME LANGUAGE as the user's input.\n\nReturn a JSON object with:\n- narrationScript: The 75-90 word narration script\n- scenes: Array of 3 scene descriptions for visuals\n- musicPrompt: A prompt for generating background music",
+		"userPrompt": "Occasion: Annonce de Mariage\nEvent Title: Mariage de Laurent & Laurence\nEmotional Theme: Chaleur Romantique\nVisual Style: Cinématique\n\nPersonal Story from the creator:\n\"Nous nous sommes rencontrés à Paris sous la Tour Eiffel il y a cinq ans. Une rencontre fortuite devenue destin. Maintenant nous sommes prêts à commencer notre éternité, et nous voulons que vous fassiez partie de notre histoire.\"\n\nCreate a compelling narration script for this wedding video. The story should feel Chaleur Romantique and deeply personal.",
+		"generatedStory": "Cinq ans ont passé depuis notre rencontre magique sous la Tour Eiffel. Cet instant fortuit est devenu notre destin. Laurent et Laurence, deux âmes sœurs unies par l'amour, s'apprêtent à écrire un nouveau chapitre de leur vie ensemble. À travers les rires, les larmes et la passion, nous avons construit un chemin rempli de souvenirs inoubliables. Aujourd'hui, nous vous invitons à célébrer notre amour et à faire partie de notre éternité. Ensemble, faisons de ce jour un moment inoubliable.",
+		"generatedScenes": [
+			"Vue panoramique de la Tour Eiffel au coucher du soleil, avec des couples se tenant par la main autour. La caméra se rapproche de Laurent et Laurence, échangeant des sourires complices.",
+			"Flashbacks en noir et blanc de leurs moments heureux ensemble : un café romantique, une promenade sur les quais de la Seine, et des rires partagés.",
+			"Laurent et Laurence, vêtus de leurs habits de mariage, se tenant la main devant leurs proches, entourés de fleurs et de bougies, avec des larmes de joie dans leurs yeux."
+		],
+		"narrationScript": "Cinq ans ont passé depuis notre rencontre magique sous la Tour Eiffel. Cet instant fortuit est devenu notre destin. Laurent et Laurence, deux âmes sœurs unies par l'amour, s'apprêtent à écrire un nouveau chapitre de leur vie ensemble. À travers les rires, les larmes et la passion, nous avons construit un chemin rempli de souvenirs inoubliables. Aujourd'hui, nous vous invitons à célébrer notre amour et à faire partie de notre éternité. Ensemble, faisons de ce jour un moment inoubliable.",
+		"musicPrompt": "Une mélodie douce et romantique, avec des violons et un piano, créant une atmosphère chaleureuse et émotive, pour accompagner les moments clés de l'histoire.",
+		"rawResponse": "{\n  \"narrationScript\": \"Cinq ans ont passé depuis notre rencontre magique sous la Tour Eiffel. Cet instant fortuit est devenu notre destin. Laurent et Laurence, deux âmes sœurs unies par l'amour, s'apprêtent à écrire un nouveau chapitre de leur vie ensemble. À travers les rires, les larmes et la passion, nous avons construit un chemin rempli de souvenirs inoubliables. Aujourd'hui, nous vous invitons à célébrer notre amour et à faire partie de notre éternité. Ensemble, faisons de ce jour un moment inoubliable.\",\n  \"scenes\": [\n    {\n      \"description\": \"Vue panoramique de la Tour Eiffel au coucher du soleil, avec des couples se tenant par la main autour. La caméra se rapproche de Laurent et Laurence, échangeant des sourires complices.\"\n    },\n    {\n      \"description\": \"Flashbacks en noir et blanc de leurs moments heureux ensemble : un café romantique, une promenade sur les quais de la Seine, et des rires partagés.\"\n    },\n    {\n      \"description\": \"Laurent et Laurence, vêtus de leurs habits de mariage, se tenant la main devant leurs proches, entourés de fleurs et de bougies, avec des larmes de joie dans leurs yeux.\"\n    }\n  ],\n  \"musicPrompt\": \"Une mélodie douce et romantique, avec des violons et un piano, créant une atmosphère chaleureuse et émotive, pour accompagner les moments clés de l'histoire.\"\n}",
+		"qualityScore": 8,
+		"estimatedCost": 0.000315
+	},
+	"imageGeneration": {
+		"completedAt": "2025-12-19T12:31:56.616Z",
+		"modelUsed": "fal-ai/nano-banana-pro",
+		"latencyMs": 57787,
+		"images": [
+			{
+				"sceneIndex": 0,
+				"url": "https://v3b.fal.media/files/b/0a86ed5a/GBbpyVZrV7MR54zeVaW_r.png",
+				"prompt": "Vue panoramique de la Tour Eiffel au coucher du soleil, avec des couples se tenant par la main autour. La caméra se rapproche de Laurent et Laurence, échangeant des sourires complices.",
+				"latencyMs": 18483
+			},
+			{
+				"sceneIndex": 1,
+				"url": "https://v3b.fal.media/files/b/0a86ed5b/IGgn6Fi7q7YEkHsoL8j7N.png",
+				"prompt": "Flashbacks en noir et blanc de leurs moments heureux ensemble : un café romantique, une promenade sur les quais de la Seine, et des rires partagés.",
+				"latencyMs": 20516
+			},
+			{
+				"sceneIndex": 2,
+				"url": "https://v3b.fal.media/files/b/0a86ed5e/FOdB1_kDK9EPocRclqyZI.png",
+				"prompt": "Laurent et Laurence, vêtus de leurs habits de mariage, se tenant la main devant leurs proches, entourés de fleurs et de bougies, avec des larmes de joie dans leurs yeux.",
+				"latencyMs": 15785
+			}
+		],
+		"qualityScore": 8,
+		"estimatedCost": 0.03
+	},
+	"videoGeneration": {
+		"completedAt": "2025-12-19T12:33:38.019Z",
+		"modelUsed": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+		"latencyMs": 101403,
+		"videos": [
+			{
+				"sceneIndex": 0,
+				"url": "https://v3b.fal.media/files/b/0a86ed69/VwckzwRXlul1EbORLdoSv_output.mp4",
+				"prompt": "Vue panoramique de la Tour Eiffel au coucher du soleil, avec des couples se tenant par la main autour. La caméra se rapproche de Laurent et Laurence, échangeant des sourires complices. Emotional context: Nous nous sommes rencontrés à Paris sous la Tour Eiffel il y a cinq ans. Une rencontre fortuite devenue destin. Maintenant nous sommes prêts à commencer notre éternité, et nous voulons que vous fassiez partie de notre histoire.. This is for a Annonce de Mariage video. The overall mood is Chaleur Romantique. Visual style: Cinématique. Quick, dynamic pacing suitable for a 5-second clip. High quality, professional production.",
+				"firstFrameUrl": "https://v3b.fal.media/files/b/0a86ed5a/GBbpyVZrV7MR54zeVaW_r.png",
+				"lastFrameUrl": "https://v3b.fal.media/files/b/0a86ed5e/FOdB1_kDK9EPocRclqyZI.png"
+			}
+		],
+		"qualityScore": 8,
+		"estimatedCost": 0.35
+	},
+	"narration": {
+		"completedAt": "2025-12-19T12:34:35.026Z",
+		"modelUsed": "fal-ai/minimax/speech-2.6-hd",
+		"latencyMs": 57005,
+		"script": "Cinq ans ont passé depuis notre rencontre magique sous la Tour Eiffel. Cet instant fortuit est devenu notre destin. Laurent et Laurence, deux âmes sœurs unies par l'amour, s'apprêtent à écrire un nouveau chapitre de leur vie ensemble. À travers les rires, les larmes et la passion, nous avons construit un chemin rempli de souvenirs inoubliables. Aujourd'hui, nous vous invitons à célébrer notre amour et à faire partie de notre éternité. Ensemble, faisons de ce jour un moment inoubliable.",
+		"languageBoost": "French",
+		"audioUrl": "https://v3b.fal.media/files/b/0a86ed6f/frGVY6FYIM4oupNeX9-ZR_speech.mp3",
+		"duration": 0,
+		"qualityScore": 8,
+		"estimatedCost": 0.02
+	},
+	"music": {
+		"completedAt": "2025-12-19T12:34:40.064Z",
+		"modelUsed": "fal-ai/stable-audio-25/text-to-audio",
+		"latencyMs": 5037,
+		"prompt": "Une mélodie douce et romantique, avec des violons et un piano, créant une atmosphère chaleureuse et émotive, pour accompagner les moments clés de l'histoire.",
+		"audioUrl": "https://v3b.fal.media/files/b/0a86ed6f/gSOOph_u046aN5ImMRGh0_tmpk7gva74n.wav",
+		"duration": 30,
+		"qualityScore": 8,
+		"estimatedCost": 0.05
+	},
+	"totalDurationMs": 228588
+}

@@ -1,0 +1,1860 @@
+Directory Structure:
+
+└── ./
+    ├── app
+    │   ├── api
+    │   │   ├── s3-upload
+    │   │   │   └── route.ts
+    │   │   └── validate-key
+    │   │       └── route.ts
+    │   ├── components
+    │   │   ├── DownloadIcon.tsx
+    │   │   ├── GitHubIcon.tsx
+    │   │   ├── PlusIcon.tsx
+    │   │   └── TwitterIcon.tsx
+    │   ├── suggested-prompts
+    │   │   ├── actions.ts
+    │   │   └── SuggestedPrompts.tsx
+    │   ├── actions.ts
+    │   ├── Fieldset.tsx
+    │   ├── globals.css
+    │   ├── ImageUploader.tsx
+    │   ├── layout.tsx
+    │   ├── Logo.tsx
+    │   ├── page.tsx
+    │   ├── SampleImages.tsx
+    │   ├── Spinner.tsx
+    │   ├── SubmitButton.tsx
+    │   └── UserAPIKey.tsx
+    ├── components
+    │   └── ui
+    │       └── sonner.tsx
+    └── lib
+        ├── get-adjusted-dimentions.ts
+        ├── get-together.ts
+        ├── preload-next-image.ts
+        ├── rate-limiter.ts
+        └── utils.ts
+
+
+
+---
+File: /app/api/s3-upload/route.ts
+---
+
+export { POST } from 'next-s3-upload/route';
+
+
+
+---
+File: /app/api/validate-key/route.ts
+---
+
+import { getTogether } from "@/lib/get-together";
+
+export async function POST(request: Request) {
+  try {
+    const { apiKey } = await request.json();
+
+    if (!apiKey) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "API key is required",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const together = getTogether(apiKey);
+
+    try {
+      // Make a simple chat completion call to validate the API key
+      await together.chat.completions.create({
+        model: "Qwen/Qwen2.5-72B-Instruct-Turbo",
+        messages: [
+          {
+            role: "user",
+            content: "Hello, how are you?",
+          },
+        ],
+        max_tokens: 1, // Minimal tokens for validation
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "API key is valid",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    } catch (error) {
+      console.error("API key validation failed:", error);
+
+      const errorCode =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code)
+          : undefined;
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Invalid API key or service unavailable",
+          code: errorCode || "VALIDATION_ERROR",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  } catch (error) {
+    console.error("Request processing failed:", error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Invalid request format",
+        code: "INVALID_REQUEST",
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+}
+
+
+
+---
+File: /app/components/DownloadIcon.tsx
+---
+
+import { ComponentProps } from "react";
+
+export function DownloadIcon(props: ComponentProps<"svg">) {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M12.775 6.375A.625.625 0 0012.15 7c0 2.84-2.31 5.15-5.15 5.15-2.84 0-5.15-2.31-5.15-5.15A.625.625 0 00.6 7a6.35 6.35 0 001.875 4.525A6.354 6.354 0 007 13.4a6.35 6.35 0 004.525-1.875A6.354 6.354 0 0013.4 7a.625.625 0 00-.625-.625z"
+        fill="#171717"
+      />
+      <path
+        d="M6.143 9.19c.23.23.535.355.857.355.325 0 .63-.128.858-.355L9.43 7.617a.625.625 0 10-.885-.885l-.92.923v-6.43a.625.625 0 00-1.25 0v6.43l-.922-.923a.625.625 0 10-.885.885L6.143 9.19z"
+        fill="#171717"
+      />
+    </svg>
+  );
+}
+
+
+
+---
+File: /app/components/GitHubIcon.tsx
+---
+
+import * as React from "react";
+import type { SVGProps } from "react";
+const GitHub = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    width="1em"
+    height="1em"
+    viewBox="0 0 1024 1024"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z"
+      transform="scale(64)"
+      fill="currentColor"
+    />
+  </svg>
+);
+export default GitHub;
+
+
+
+---
+File: /app/components/PlusIcon.tsx
+---
+
+import { ComponentProps } from "react";
+
+export function PlusIcon(props: ComponentProps<"svg">) {
+  return (
+    <svg
+      width={12}
+      height={12}
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M6 1v10M1 6h10"
+        stroke="#E5E5E5"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+
+
+---
+File: /app/components/TwitterIcon.tsx
+---
+
+import * as React from "react";
+import type { SVGProps } from "react";
+const XformerlyTwitter = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1em"
+    height="1em"
+    fill="none"
+    viewBox="0 0 1200 1227"
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="M714.163 519.284 1160.89 0h-105.86L667.137 450.887 357.328 0H0l468.492 681.821L0 1226.37h105.866l409.625-476.152 327.181 476.152H1200L714.137 519.284h.026ZM569.165 687.828l-47.468-67.894-377.686-540.24h162.604l304.797 435.991 47.468 67.894 396.2 566.721H892.476L569.165 687.854v-.026Z"
+    />
+  </svg>
+);
+export default XformerlyTwitter;
+
+
+
+---
+File: /app/suggested-prompts/actions.ts
+---
+
+"use server";
+
+import { getTogether } from "@/lib/get-together";
+import { getIPAddress, getRateLimiter } from "@/lib/rate-limiter";
+import dedent from "dedent";
+import invariant from "tiny-invariant";
+import { z } from "zod";
+// import { zodToJsonSchema } from "zod-to-json-schema";
+
+const schema = z.array(z.string());
+// const jsonSchema = zodToJsonSchema(schema, { target: "openAi" });
+
+const ratelimit = getRateLimiter();
+
+export async function getSuggestions(
+  imageUrl: string,
+  userAPIKey: string | null,
+) {
+  invariant(typeof imageUrl === "string");
+
+  if (ratelimit && !userAPIKey) {
+    const ipAddress = await getIPAddress();
+
+    const { success } = await ratelimit.limit(`${ipAddress}-suggestions`);
+    if (!success) {
+      return [];
+    }
+  }
+
+  const together = getTogether(userAPIKey);
+
+  const response = await together.chat.completions.create({
+    model: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    messages: [
+      {
+        role: "system",
+        content: dedent`
+        # General Instructions
+          You will be shown an image that a user wants to edit using AI-powered prompting. Analyze the image and suggest exactly 3 simple, practical edits that would improve or meaningfully change the image. Each suggestion should be:
+
+- Specific and actionable (not vague)
+- Achievable with standard image editing AI
+- Varied in type (e.g., lighting, objects, style, composition)
+
+Please keep the suggestions short and concise, about 5-8 words each.
+
+Format your response as valid JSON with this structure:
+          [
+            "specific description of edit 1",
+            "specific description of edit 2",
+            "specific description of edit 3"
+          ]
+
+Provide only the JSON response, no additional text.
+
+# Additional Context
+
+Here's some additional information about the image model that will be used to edit the image based on the prompt:
+
+With FLUX.1 Kontext you can modify an input image via simple text instructions, enabling flexible and instant image editing - no need for finetuning or complex editing workflows. The core capabilities of the the FLUX.1 Kontext suite are:
+
+- Character consistency: Preserve unique elements of an image, such as a reference character or object in a picture, across multiple scenes and environments.
+- Local editing: Make targeted modifications of specific elements in an image without affecting the rest.
+- Style Reference: Generate novel scenes while preserving unique styles from a reference image, directed by text prompts.
+- Interactive Speed: Minimal latency for both image generation and editing.
+- Iterate: modify step by step
+
+Flux.1 Kontext allows you to iteratively add more instructions and build on previous edits, refining your creation step-by-step with minimal latency, while preserving image quality and character consistency.
+
+# Final instructions.
+
+ONLY RESPOND IN JSON. NOTHING ELSE.
+          `,
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: {
+              url: imageUrl,
+            },
+          },
+        ],
+      },
+    ],
+    // response_format: { type: "json_schema", schema: jsonSchema },
+  });
+
+  if (!response?.choices?.[0]?.message?.content) return [];
+
+  const json = JSON.parse(response?.choices?.[0]?.message?.content);
+  const result = schema.safeParse(json);
+
+  if (result.error) return [];
+
+  return result.data;
+}
+
+
+
+---
+File: /app/suggested-prompts/SuggestedPrompts.tsx
+---
+
+import { startTransition, useActionState, useEffect } from "react";
+import { getSuggestions } from "./actions";
+
+const cache = new Map<string, string[]>();
+
+const shimmer = `
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+`;
+
+export function SuggestedPrompts({
+  imageUrl,
+  onSelect,
+}: {
+  imageUrl: string;
+  onSelect: (v: string) => void;
+}) {
+  const [state, action, pending] = useActionState<{
+    url: string;
+    suggestions: string[];
+  } | null>(async () => {
+    let cachedSuggestions = cache.get(imageUrl);
+
+    if (!cachedSuggestions) {
+      const newSuggestions = await getSuggestions(
+        imageUrl,
+        localStorage.getItem("togetherApiKey"),
+      );
+      cache.set(imageUrl, newSuggestions);
+      cachedSuggestions = newSuggestions;
+    }
+
+    return { url: imageUrl, suggestions: cachedSuggestions };
+  }, null);
+
+  useEffect(() => {
+    if (!pending && state?.url !== imageUrl) {
+      setTimeout(() => {
+        startTransition(() => {
+          action();
+        });
+      }, 50);
+    }
+  }, [action, imageUrl, pending, state?.url]);
+
+  return (
+    <div className="p-2 md:p-4">
+      <style>{shimmer}</style>
+
+      {/* {true ? ( */}
+      {pending || !state ? (
+        <div className="grid grid-cols-3 gap-2 pb-4">
+          {Array.from(Array(3).keys()).map((i) => (
+            <div
+              className="h-9 w-full animate-[shimmer_4.5s_infinite_linear] rounded-md bg-gradient-to-r from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a] bg-[length:400%_100%]"
+              key={i}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="-mx-2 flex gap-2 overflow-x-auto px-2 pb-4 md:-mx-4 md:px-4">
+          {state?.suggestions.map((suggestion, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSelect(suggestion)}
+              className="shrink-0 rounded-md bg-gray-800 px-3 py-2 text-left text-sm transition enabled:cursor-pointer enabled:hover:bg-gray-700 disabled:opacity-50"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+---
+File: /app/actions.ts
+---
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use server";
+
+import { getAdjustedDimensions } from "@/lib/get-adjusted-dimentions";
+import { getTogether } from "@/lib/get-together";
+import { getIPAddress, getRateLimiter } from "@/lib/rate-limiter";
+import { z } from "zod";
+
+const ratelimit = getRateLimiter();
+
+const schema = z.object({
+  imageUrl: z.string(),
+  prompt: z.string(),
+  width: z.number(),
+  height: z.number(),
+  userAPIKey: z.string().nullable(),
+  model: z
+    .enum([
+      "black-forest-labs/FLUX.1-kontext-dev",
+      "black-forest-labs/FLUX.1-kontext-pro",
+    ])
+    .default("black-forest-labs/FLUX.1-kontext-dev"),
+});
+
+export async function generateImage(
+  unsafeData: z.infer<typeof schema>,
+): Promise<{ success: true; url: string } | { success: false; error: string }> {
+  const { imageUrl, prompt, width, height, userAPIKey, model } =
+    schema.parse(unsafeData);
+
+  if (ratelimit && !userAPIKey) {
+    const ipAddress = await getIPAddress();
+
+    const { success } = await ratelimit.limit(ipAddress);
+    if (!success) {
+      return {
+        success: false,
+        error:
+          "No requests left. Please add your own API key or try again in 24h.",
+      };
+    }
+  }
+
+  const together = getTogether(userAPIKey);
+  const adjustedDimensions = getAdjustedDimensions(width, height);
+
+  let url;
+  try {
+    const json = await together.images.create({
+      model,
+      prompt,
+      width: adjustedDimensions.width,
+      height: adjustedDimensions.height,
+      image_url: imageUrl,
+    });
+
+    url = json.data[0].url;
+  } catch (e: any) {
+    console.log(e);
+    // if the error contains "403", then it's a rate limit error
+    if (e.toString().includes("403")) {
+      return {
+        success: false,
+        error:
+          "You need a paid Together AI account to use the Pro model. Please upgrade by purchasing credits here: https://api.together.xyz/settings/billing.",
+      };
+    }
+  }
+
+  if (url) {
+    return { success: true, url };
+  } else {
+    return {
+      success: false,
+      error: "Image could not be generated. Please try again.",
+    };
+  }
+}
+
+
+
+---
+File: /app/Fieldset.tsx
+---
+
+import { ComponentProps } from "react";
+import { useFormStatus } from "react-dom";
+
+export function Fieldset({ children, ...rest }: ComponentProps<"fieldset">) {
+  const { pending } = useFormStatus();
+
+  return (
+    <fieldset disabled={pending} {...rest}>
+      {children}
+    </fieldset>
+  );
+}
+
+
+
+---
+File: /app/globals.css
+---
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-gray-50: oklch(0.985 0 0);
+  --color-gray-100: oklch(0.97 0 0);
+  --color-gray-200: oklch(0.922 0 0);
+  --color-gray-300: oklch(0.87 0 0);
+  --color-gray-400: oklch(0.708 0 0);
+  --color-gray-500: oklch(0.556 0 0);
+  --color-gray-600: oklch(0.439 0 0);
+  --color-gray-700: oklch(0.371 0 0);
+  --color-gray-800: oklch(0.269 0 0);
+  --color-gray-900: oklch(0.205 0 0);
+  --color-gray-950: oklch(0.145 0 0);
+
+  --default-font-family: var(--font-kulim-park);
+  --default-mono-font-family: var(--font-syne-mono);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+
+---
+File: /app/ImageUploader.tsx
+---
+
+import clsx from "clsx";
+import { getImageData, useS3Upload } from "next-s3-upload";
+import { useRef, useState, useTransition } from "react";
+import Spinner from "./Spinner";
+
+export function ImageUploader({
+  onUpload,
+}: {
+  onUpload: ({
+    url,
+    width,
+    height,
+  }: {
+    url: string;
+    width: number;
+    height: number;
+  }) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const { uploadToS3 } = useS3Upload();
+  const [pending, startTransition] = useTransition();
+
+  async function handleUpload(file: File) {
+    startTransition(async () => {
+      const [result, data] = await Promise.all([
+        uploadToS3(file),
+        getImageData(file),
+      ]);
+
+      console.log(result.url);
+      console.log(data);
+
+      onUpload({
+        url: result.url,
+        width: data.width ?? 1024,
+        height: data.height ?? 768,
+      });
+    });
+  }
+
+  return (
+    <button
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const data = e.dataTransfer;
+        const file = data?.files?.[0];
+        if (file) {
+          handleUpload(file);
+        }
+      }}
+      onDragEnter={() => setIsDragging(true)}
+      onDragLeave={() => {
+        setIsDragging(false);
+      }}
+      onClick={() => {
+        fileInputRef.current?.click();
+      }}
+      className={clsx(
+        isDragging && "text-gray-400",
+        !isDragging && !pending && "text-gray-700 hover:text-gray-400",
+        "relative flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center rounded-xl bg-gray-900 focus-visible:text-gray-400 focus-visible:outline-none",
+      )}
+    >
+      <svg
+        className={clsx("absolute inset-0 transition-colors")}
+        viewBox="0 0 400 300"
+      >
+        <rect
+          x=".5"
+          y=".5"
+          width="399"
+          height="299"
+          rx="6"
+          ry="6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeDasharray="8,10"
+        />
+      </svg>
+
+      {!pending ? (
+        <>
+          <div className="flex grow flex-col justify-center">
+            <p className="text-xl text-white">Drop a photo</p>
+            <p className="mt-1 text-gray-500">or click to upload</p>
+          </div>
+
+          <div className="pb-3">
+            <p className="text-sm text-gray-500">
+              Powered by <span className="text-white">Together.ai</span>
+            </p>
+          </div>
+        </>
+      ) : (
+        <div className="text-white">
+          <Spinner />
+          <p className="mt-2 text-lg">Uploading...</p>
+        </div>
+      )}
+
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleUpload(file);
+          }
+        }}
+        ref={fileInputRef}
+      />
+    </button>
+  );
+}
+
+
+
+---
+File: /app/layout.tsx
+---
+
+import type { Metadata, Viewport } from "next";
+import { Kulim_Park, Syne_Mono } from "next/font/google";
+import "./globals.css";
+import { Logo } from "./Logo";
+import PlausibleProvider from "next-plausible";
+import { UserAPIKey } from "./UserAPIKey";
+import { Toaster } from "@/components/ui/sonner";
+import GitHub from "./components/GitHubIcon";
+import XformerlyTwitter from "./components/TwitterIcon";
+import { PlusIcon } from "./components/PlusIcon";
+
+const kulimPark = Kulim_Park({
+  variable: "--font-kulim-park",
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "600", "700"],
+});
+
+const syneMono = Syne_Mono({
+  variable: "--font-syne-mono",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const title = "EasyEdit – Edit images with one prompt";
+const description = "The easiest way to edit images in one prompt";
+const url = "https://www.easyedit.io/";
+const ogimage = "https://www.easyedit.io/og-image.png";
+const sitename = "easyedit.io";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(url),
+  title,
+  description,
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    images: [ogimage],
+    title,
+    description,
+    url: url,
+    siteName: sitename,
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [ogimage],
+    title,
+    description,
+  },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "dark",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className={`${kulimPark.variable} ${syneMono.variable}`}>
+      <head>
+        <PlausibleProvider domain="easyedit.io" />
+      </head>
+      <body className="flex min-h-screen w-full flex-col antialiased">
+        <header className="relative flex p-4 text-center text-white">
+          <UserAPIKey />
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://easyedit.io"
+            className="absolute left-1/2 flex grow -translate-x-1/2 items-center gap-2 text-lg max-md:hidden"
+          >
+            <Logo />
+            EasyEdit
+          </a>
+
+          <div className="absolute top-4 right-4 flex gap-2">
+            <a
+              href="https://github.com/Nutlope/easyedit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-8 cursor-pointer items-center gap-2 rounded border-[0.5px] border-gray-700 bg-gray-900 px-3.5 text-gray-200 transition hover:bg-gray-800"
+              title="Star on GitHub"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                className="h-4 w-4 text-yellow-400"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
+              </svg>
+              <GitHub className="h-4 w-4" />
+              <span className="hidden md:inline">Star on GitHub</span>
+            </a>
+            <a
+              href="https://easyedit.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden h-8 cursor-pointer items-center gap-2 rounded border-[0.5px] border-gray-700 bg-gray-900 px-3.5 text-gray-200 transition hover:bg-gray-800 md:flex"
+            >
+              <PlusIcon />
+              New Image
+            </a>
+          </div>
+        </header>
+
+        <main className="flex flex-1 flex-col items-center justify-center overflow-auto pt-4 md:pb-12">
+          <div className="w-full">{children}</div>
+        </main>
+
+        <Toaster />
+
+        <footer className="flex flex-col items-center p-4 max-md:gap-4 md:flex-row md:justify-between">
+          <p className="text-sm text-gray-400">
+            Powered by{" "}
+            <a
+              href="https://www.together.ai/blog/flux-1-kontext"
+              target="_blank"
+              className="text-gray-200 underline underline-offset-2"
+            >
+              Flux Kontext
+            </a>{" "}
+            on{" "}
+            <a
+              href="https://togetherai.link"
+              target="_blank"
+              className="text-gray-200 underline underline-offset-2"
+            >
+              Together AI
+            </a>
+          </p>
+          <div className="flex gap-3 text-sm">
+            <a
+              href="https://github.com/Nutlope/easyedit"
+              target="_blank"
+              className="flex h-7 items-center gap-1 rounded border-[0.5px] border-gray-700 px-2.5 text-gray-400 transition-colors hover:border-gray-300 hover:text-gray-300"
+            >
+              <GitHub className="size-[10px]" />
+              GitHub
+            </a>
+            <a
+              href="https://x.com/nutlope"
+              target="_blank"
+              className="flex h-7 items-center gap-1 rounded border-[0.5px] border-gray-700 px-2.5 text-gray-400 transition-colors hover:border-gray-300 hover:text-gray-300"
+            >
+              <XformerlyTwitter className="size-[10px]" />
+              Twitter
+            </a>
+          </div>
+        </footer>
+      </body>
+    </html>
+  );
+}
+
+
+
+---
+File: /app/Logo.tsx
+---
+
+import { ComponentProps } from "react";
+
+export function Logo(props: ComponentProps<"svg">) {
+  return (
+    <svg
+      width={32}
+      height={32}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <rect
+        x={0.5}
+        y={31.5}
+        width={31}
+        height={31}
+        rx={15.5}
+        transform="rotate(-90 .5 31.5)"
+        fill="#171717"
+        stroke="#262626"
+      />
+      <rect
+        x={19.459}
+        y={11.4169}
+        width={1.91682}
+        height={1.91682}
+        rx={0.958408}
+        transform="rotate(-90 19.459 11.417)"
+        fill="#D4D4D4"
+        stroke="#D4D4D4"
+      />
+      <path
+        d="M19.606 19.628c-1.691-3.587-4.518-9.367-3.724-6.8.717 2.318-3.124 4.96-5.932 6.416-.284.147-.186.602.134.61l9.244.2a.299.299 0 00.278-.426z"
+        fill="#D4D4D4"
+        stroke="#D4D4D4"
+      />
+    </svg>
+  );
+}
+
+
+
+---
+File: /app/page.tsx
+---
+
+"use client";
+
+import Image, { getImageProps } from "next/image";
+import { useRef, useState, useTransition, useEffect, useMemo } from "react";
+import { generateImage } from "./actions";
+import { ImageUploader } from "./ImageUploader";
+import { Fieldset } from "./Fieldset";
+import Spinner from "./Spinner";
+import { preloadNextImage } from "@/lib/preload-next-image";
+import clsx from "clsx";
+import { SampleImages } from "./SampleImages";
+import { getAdjustedDimensions } from "@/lib/get-adjusted-dimentions";
+import { DownloadIcon } from "./components/DownloadIcon";
+import { toast } from "sonner";
+import { SuggestedPrompts } from "./suggested-prompts/SuggestedPrompts";
+import { flushSync } from "react-dom";
+
+// Helper to slugify the prompt for filenames
+function slugifyPrompt(prompt?: string): string {
+  if (!prompt) return "image";
+  // Take first 8 words, join with dashes, remove non-alphanum, limit to 40 chars
+  const words = prompt.split(/\s+/).slice(0, 8);
+  let slug = words.join("-").toLowerCase();
+  slug = slug.replace(/[^a-z0-9\-]/g, "");
+  if (slug.length > 40) slug = slug.slice(0, 40);
+  return slug || "image";
+}
+
+export default function Home() {
+  const [images, setImages] = useState<
+    { url: string; version: number; prompt?: string }[]
+  >([]);
+  const [imageData, setImageData] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 1024, height: 768 });
+  const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [prompt, setPrompt] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const [selectedModel, setSelectedModel] = useState<
+    | "black-forest-labs/FLUX.1-kontext-dev"
+    | "black-forest-labs/FLUX.1-kontext-pro"
+  >("black-forest-labs/FLUX.1-kontext-dev");
+  const [hasApiKey, setHasApiKey] = useState(false);
+
+  const activeImage = useMemo(
+    () => images.find((i) => i.url === activeImageUrl),
+    [images, activeImageUrl],
+  );
+
+  const adjustedImageDimensions = getAdjustedDimensions(
+    imageData.width,
+    imageData.height,
+  );
+
+  useEffect(() => {
+    function handleNewSession() {
+      setImages([]);
+      setActiveImageUrl(null);
+    }
+    window.addEventListener("new-image-session", handleNewSession);
+    return () => {
+      window.removeEventListener("new-image-session", handleNewSession);
+    };
+  }, []);
+
+  useEffect(() => {
+    const checkApiKey = () => {
+      const apiKey = localStorage.getItem("togetherApiKey");
+      const hasKey = !!apiKey;
+      setHasApiKey(hasKey);
+
+      // If Pro model is selected but no API key, switch to Dev model
+      if (!hasKey && selectedModel === "black-forest-labs/FLUX.1-kontext-pro") {
+        setSelectedModel("black-forest-labs/FLUX.1-kontext-dev");
+      }
+    };
+
+    checkApiKey();
+
+    // Listen for storage events (when localStorage changes in other tabs)
+    window.addEventListener("storage", checkApiKey);
+
+    // Poll for API key changes every 500ms to catch changes in the same tab
+    const interval = setInterval(checkApiKey, 500);
+
+    return () => {
+      window.removeEventListener("storage", checkApiKey);
+      clearInterval(interval);
+    };
+  }, [selectedModel]);
+
+  async function handleDownload() {
+    if (!activeImage) return;
+
+    const imageProps = getImageProps({
+      src: activeImage.url,
+      alt: "Generated image",
+      height: imageData.height,
+      width: imageData.width,
+      quality: 100,
+    });
+
+    // Fetch the image
+    const response = await fetch(imageProps.props.src);
+    const blob = await response.blob();
+
+    const extension = blob.type.includes("jpeg")
+      ? "jpg"
+      : blob.type.includes("png")
+        ? "png"
+        : blob.type.includes("webp")
+          ? "webp"
+          : "bin";
+
+    // Create a download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    // Use slugified prompt as filename prefix
+    const slug = slugifyPrompt(activeImage.prompt);
+    link.download = `v${activeImage.version}-${slug}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
+  return (
+    <>
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 md:flex-row">
+        <div
+          ref={scrollRef}
+          className="flex shrink-0 snap-x scroll-pl-4 gap-4 pt-1 pb-5 max-md:order-2 max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 md:w-40 md:flex-col"
+        >
+          {images
+            .slice()
+            .reverse()
+            .map((image) => (
+              <div
+                className="flex shrink-0 snap-start items-center gap-3"
+                key={image.url}
+              >
+                <span
+                  className={clsx(
+                    activeImageUrl === image.url
+                      ? "text-white"
+                      : "text-gray-400",
+                    "w-4 shrink-0 font-mono text-xs max-md:hidden",
+                  )}
+                >
+                  v{image.version}
+                </span>
+                <button
+                  className={clsx(
+                    activeImageUrl === image.url
+                      ? "max-md:border-white"
+                      : "max-md:border-transparent",
+                    "cursor-pointer overflow-hidden rounded-md focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-white max-md:border",
+                  )}
+                  onClick={() => setActiveImageUrl(image.url)}
+                >
+                  <Image
+                    width={imageData.width}
+                    height={imageData.height}
+                    style={{
+                      aspectRatio: imageData.width / imageData.height,
+                    }}
+                    className="w-auto max-md:h-20"
+                    src={image.url}
+                    alt=""
+                  />
+                </button>
+              </div>
+            ))}
+        </div>
+
+        <div className="grow">
+          {!activeImage ? (
+            <>
+              <h1 className="mx-auto max-w-md text-center text-2xl text-balance text-white md:text-4xl">
+                Edit any image with a simple prompt
+              </h1>
+
+              <div className="mt-8">
+                <ImageUploader
+                  onUpload={({ url, width, height }) => {
+                    setImageData({ width, height });
+                    setImages([{ url, version: 0 }]);
+                    setActiveImageUrl(url);
+                  }}
+                />
+              </div>
+
+              <div className="mt-8">
+                <SampleImages
+                  onSelect={({ url, width, height }) => {
+                    setImageData({ width, height });
+                    setImages([{ url, version: 0 }]);
+                    setActiveImageUrl(url);
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <div>
+              <div className="group relative flex items-center justify-center overflow-hidden rounded-xl bg-gray-900">
+                <Image
+                  width={imageData.width}
+                  height={imageData.height}
+                  src={activeImage.url}
+                  style={{
+                    aspectRatio:
+                      adjustedImageDimensions.width /
+                      adjustedImageDimensions.height,
+                  }}
+                  alt="uploaded image"
+                  className="object-contain max-md:h-[50vh] md:max-h-[70vh]"
+                />
+
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 bg-gradient-to-t from-black/70 via-black/50 to-transparent p-4 pt-8">
+                  <div className="flex items-center gap-4">
+                    <div className="py-1">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-black/75 font-mono text-xs ring ring-white/10">
+                        v{activeImage.version}
+                      </div>
+                    </div>
+                    {activeImage.prompt && (
+                      <div>
+                        <p className="text-xs text-gray-400">Prompt used:</p>
+                        <p className="text-sm text-gray-50 md:text-base">
+                          {activeImage.prompt}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    title="Download this image"
+                    onClick={handleDownload}
+                    className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white text-gray-900 transition hover:bg-gray-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    <DownloadIcon />
+                  </button>
+                </div>
+
+                <div className="pointer-events-none absolute inset-0 rounded-xl ring ring-white/10 ring-inset" />
+
+                {pending && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gray-900/75">
+                    <Spinner className="size-6 text-white" />
+                    <p className="animate-pulse text-xl text-white">
+                      Editing your image...
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      This can take up to 15 seconds.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4">
+                {activeImage ? (
+                  <form
+                    className="relative"
+                    key={activeImageUrl}
+                    ref={formRef}
+                    action={(formData) => {
+                      startTransition(async () => {
+                        const prompt = formData.get("prompt") as string;
+
+                        const generation = await generateImage({
+                          imageUrl: activeImage.url, // Use the currently active image
+                          prompt,
+                          width: imageData.width,
+                          height: imageData.height,
+                          userAPIKey: localStorage.getItem("togetherApiKey"),
+                          model: selectedModel,
+                        });
+
+                        if (generation.success) {
+                          await preloadNextImage({
+                            src: generation.url,
+                            width: imageData.width,
+                            height: imageData.height,
+                          });
+                          setImages((current) => [
+                            ...current,
+                            {
+                              url: generation.url,
+                              prompt,
+                              version: current.length,
+                            },
+                          ]);
+                          setActiveImageUrl(generation.url);
+                          setPrompt("");
+                        } else {
+                          toast(generation.error);
+                        }
+                      });
+                    }}
+                  >
+                    <div className="mb-4">
+                      <label
+                        htmlFor="model-select"
+                        className="mb-2 block text-sm font-medium text-gray-300"
+                      >
+                        Model
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="model-select"
+                          value={selectedModel}
+                          onChange={(e) =>
+                            setSelectedModel(
+                              e.target.value as typeof selectedModel,
+                            )
+                          }
+                          disabled={pending}
+                          className="w-full appearance-none rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="black-forest-labs/FLUX.1-kontext-dev">
+                            Flux Kontext Dev
+                          </option>
+                          <option
+                            value="black-forest-labs/FLUX.1-kontext-pro"
+                            disabled={!hasApiKey}
+                          >
+                            Flux Kontext Pro{" "}
+                            {!hasApiKey && "(Together API key required)"}
+                          </option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      {!hasApiKey &&
+                        selectedModel ===
+                          "black-forest-labs/FLUX.1-kontext-pro" && (
+                          <p className="mt-1 text-xs text-amber-400">
+                            Pro model requires an API key. Please add your
+                            Together AI API key to use this model.
+                          </p>
+                        )}
+                    </div>
+
+                    <Fieldset className="relative rounded-xl bg-gray-900">
+                      <div className="pointer-events-none absolute inset-px rounded-xl ring ring-white/10" />
+                      {/* Mobile: no autofocus */}
+                      <input
+                        type="text"
+                        name="prompt"
+                        className="mr-2 w-full px-3 py-4 pr-14 focus-visible:outline-none disabled:opacity-50 md:hidden"
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Tell us the changes you want..."
+                        required
+                      />
+
+                      {/* Desktop: autofocus */}
+                      <input
+                        type="text"
+                        name="prompt"
+                        autoFocus
+                        className="mr-2 w-full px-4 py-5 pr-14 focus-visible:outline-none disabled:opacity-50 max-md:hidden"
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Tell us the changes you want..."
+                        required
+                      />
+
+                      <button className="absolute top-3 right-4 flex size-8 items-center justify-center rounded-full bg-white text-gray-900 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white enabled:cursor-pointer enabled:hover:bg-white/80 disabled:opacity-50 md:top-4">
+                        <svg
+                          width="10"
+                          viewBox="0 0 8 10"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3.49996 9.24264C3.49997 9.51878 3.72382 9.74264 3.99997 9.74264C4.27611 9.74264 4.49996 9.51878 4.49997 9.24264L3.49996 9.24264ZM4.35352 0.403806C4.15826 0.208544 3.84167 0.208544 3.64641 0.403806L0.464431 3.58579C0.269169 3.78105 0.269169 4.09763 0.464431 4.29289C0.659693 4.48816 0.976276 4.48816 1.17154 4.29289L3.99996 1.46447L6.82839 4.29289C7.02365 4.48816 7.34024 4.48816 7.5355 4.29289C7.73076 4.09763 7.73076 3.78105 7.5355 3.58579L4.35352 0.403806ZM3.99996 9.24264L4.49997 9.24264V0.757359L3.99996 0.757359L3.49996 0.757359V9.24264L3.99996 9.24264Z"
+                            fill="#262626"
+                          />
+                        </svg>
+                      </button>
+
+                      <SuggestedPrompts
+                        imageUrl={activeImage.url}
+                        onSelect={(suggestion) => {
+                          flushSync(() => {
+                            setPrompt(suggestion);
+                          });
+                          formRef.current?.requestSubmit();
+                        }}
+                      />
+                    </Fieldset>
+                  </form>
+                ) : (
+                  <p className="pb-19 text-base/12 md:pb-25">
+                    Select an image to make more edits.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="w-40 shrink-0" />
+      </div>
+    </>
+  );
+}
+
+
+
+---
+File: /app/SampleImages.tsx
+---
+
+import Image from "next/image";
+
+const sampleImages = [
+  {
+    url: "https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/39f8ea0e-000f-49bc-9f52-ed1cfb4e4230/free-photo-of-casual-man-working-on-laptop-in-cozy-cafe.jpeg",
+    height: 1752,
+    width: 986,
+  },
+  {
+    url: "https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/4e742e29-ddbc-4493-b2a3-95c15d8d0a2c/image-(6).png",
+    height: 1365,
+    width: 2048,
+  },
+  {
+    url: "https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/8dcc41ed-b7e4-473d-b30f-19c8790a4293/style_transfer_1.png",
+    width: 1408,
+    height: 792,
+  },
+];
+
+export function SampleImages({
+  onSelect,
+}: {
+  onSelect: ({
+    url,
+    width,
+    height,
+  }: {
+    url: string;
+    width: number;
+    height: number;
+  }) => void;
+}) {
+  return (
+    <div className="rounded-xl bg-gray-900 p-4">
+      <p className="text-gray-500">
+        Nothing to upload?{" "}
+        <span className="text-gray-300">Try a sample image:</span>
+      </p>
+      <div className="mt-3 flex gap-4 overflow-x-auto max-md:-mx-4 max-md:px-4 max-md:pb-4">
+        {sampleImages.map((sample) => (
+          <button
+            key={sample.url}
+            className="group relative shrink-0 cursor-pointer overflow-hidden rounded-lg bg-gray-700"
+            onClick={() => {
+              onSelect({
+                url: sample.url,
+                width: sample.width,
+                height: sample.height,
+              });
+            }}
+          >
+            <Image
+              src={sample.url}
+              width={sample.width}
+              height={sample.height}
+              alt=""
+              className="aspect-[4/3] w-[110px] object-contain"
+            />
+
+            <div className="absolute inset-px rounded-lg ring-1 ring-white/5 group-hover:ring-white/15" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
+---
+File: /app/Spinner.tsx
+---
+
+import { ReactNode } from "react";
+
+const keyframes = `
+  @keyframes spinner {
+    0% { opacity: 1; }
+    100% { opacity: 0.25; }
+  }
+`;
+
+export default function Spinner({
+  loading = true,
+  children,
+  className,
+}: {
+  loading?: boolean;
+  children?: ReactNode;
+  className?: string;
+}) {
+  if (!loading) return children;
+
+  const spinner = (
+    <span className={`relative inline-flex ${className ?? "size-4"}`}>
+      <style>{keyframes}</style>
+      {Array.from(Array(8).keys()).map((i) => (
+        <span
+          key={i}
+          className="absolute top-0 left-[calc(50%-12.5%/2)] h-[100%] w-[12.5%] animate-[spinner_800ms_linear_infinite] before:block before:h-[30%] before:w-[100%] before:rounded-full before:bg-current"
+          style={{
+            transform: `rotate(${45 * i}deg)`,
+            animationDelay: `calc(-${8 - i} / 8 * 800ms)`,
+          }}
+        />
+      ))}
+    </span>
+  );
+
+  if (!children) return spinner;
+
+  return (
+    <span className="relative flex items-center justify-center">
+      <span className="invisible">{children}</span>
+
+      <span className="absolute inset-0 flex items-center justify-center">
+        {spinner}
+      </span>
+    </span>
+  );
+}
+
+
+
+---
+File: /app/SubmitButton.tsx
+---
+
+import { ComponentProps } from "react";
+import { useFormStatus } from "react-dom";
+import Spinner from "./Spinner";
+
+export function SubmitButton({
+  children,
+  disabled,
+  ...props
+}: ComponentProps<"button">) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={disabled || pending} {...props}>
+      <Spinner loading={pending}>{children}</Spinner>
+    </button>
+  );
+}
+
+
+
+---
+File: /app/UserAPIKey.tsx
+---
+
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
+
+export function UserAPIKey() {
+  const [userAPIKey, setUserAPIKey] = useState<string>("");
+  const [isValidating, setIsValidating] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize from sessionStorage
+  useEffect(() => {
+    const storedKey = sessionStorage.getItem("togetherApiKey");
+    if (storedKey) {
+      setUserAPIKey(storedKey);
+    }
+  }, []);
+
+  const validateAndSaveApiKey = async (apiKey: string) => {
+    if (!apiKey) {
+      sessionStorage.removeItem("togetherApiKey");
+      return false;
+    }
+
+    setIsValidating(true);
+    try {
+      const response = await fetch("/api/validate-key", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ apiKey }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        sessionStorage.setItem("togetherApiKey", apiKey);
+        toast.success("API key validated and saved!");
+        return true;
+      } else {
+        toast.error(result.message || "Invalid API key");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error validating API key:", error);
+      toast.error("Failed to validate API key. Please try again.");
+      return false;
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUserAPIKey(value);
+
+    if (value.length === 0) {
+      sessionStorage.removeItem("togetherApiKey");
+      return;
+    }
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      validateAndSaveApiKey(value);
+    }, 500);
+  };
+
+  return (
+    <div className="flex gap-3">
+      <div className="text-left text-xs max-md:hidden">
+        <p className="text-gray-600">[Optional] Add your</p>
+        <a
+          href="https://api.together.xyz/settings/api-keys"
+          target="_blank"
+          className="text-gray-300 underline"
+          rel="noopener noreferrer"
+        >
+          Together API Key:
+        </a>
+      </div>
+      <div className="relative flex-1">
+        <input
+          type="password"
+          value={userAPIKey}
+          autoComplete="off"
+          onChange={handleApiKeyChange}
+          placeholder="API key"
+          className="h-8 w-full rounded border-[0.5px] border-gray-700 bg-gray-900 px-2 text-sm focus-visible:outline focus-visible:outline-gray-200"
+        />
+        {isValidating && (
+          <div className="absolute top-1/2 right-2 -translate-y-1/2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
+---
+File: /components/ui/sonner.tsx
+---
+
+"use client";
+
+import { Toaster as Sonner, ToasterProps } from "sonner";
+
+const Toaster = ({ ...props }: ToasterProps) => {
+  return (
+    <Sonner
+      theme={"dark"}
+      className="toaster group"
+      richColors
+      style={
+        {
+          "--normal-bg": "var(--popover)",
+          "--normal-text": "var(--popover-foreground)",
+          "--normal-border": "var(--border)",
+        } as React.CSSProperties
+      }
+      {...props}
+    />
+  );
+};
+
+export { Toaster };
+
+
+
+---
+File: /lib/get-adjusted-dimentions.ts
+---
+
+export function getAdjustedDimensions(
+  width: number,
+  height: number,
+): { width: number; height: number } {
+  const maxDim = 1024;
+  const minDim = 64;
+
+  const roundToMultipleOf16 = (n: number) => Math.round(n / 16) * 16;
+
+  const aspectRatio = width / height;
+
+  let scaledWidth = width;
+  let scaledHeight = height;
+
+  if (width > maxDim || height > maxDim) {
+    if (aspectRatio >= 1) {
+      scaledWidth = maxDim;
+      scaledHeight = Math.round(maxDim / aspectRatio);
+    } else {
+      scaledHeight = maxDim;
+      scaledWidth = Math.round(maxDim * aspectRatio);
+    }
+  }
+
+  const adjustedWidth = Math.min(
+    maxDim,
+    Math.max(minDim, roundToMultipleOf16(scaledWidth)),
+  );
+  const adjustedHeight = Math.min(
+    maxDim,
+    Math.max(minDim, roundToMultipleOf16(scaledHeight)),
+  );
+
+  return { width: adjustedWidth, height: adjustedHeight };
+}
+
+
+
+---
+File: /lib/get-together.ts
+---
+
+import Together from "together-ai";
+
+export function getTogether(userAPIKey: string | null) {
+  const options: ConstructorParameters<typeof Together>[0] = {};
+
+  if (process.env.HELICONE_API_KEY) {
+    options.baseURL = "https://together.helicone.ai/v1";
+    options.defaultHeaders = {
+      "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+      "Helicone-Property-BYOK": userAPIKey ? "true" : "false",
+      "Helicone-Property-appname": "EasyEdit",
+      "Helicone-Property-environment":
+        process.env.VERCEL_ENV === "production" ? "prod" : "dev",
+    };
+  }
+
+  if (userAPIKey) {
+    options.apiKey = userAPIKey;
+  }
+
+  const together = new Together(options);
+
+  return together;
+}
+
+
+
+---
+File: /lib/preload-next-image.ts
+---
+
+import { getImageProps, ImageProps } from "next/image";
+
+export async function preloadNextImage(imageProps: Omit<ImageProps, "alt">) {
+  try {
+    // Get the same props that Next.js Image would use
+    const { props } = getImageProps({ ...imageProps, alt: "" });
+
+    // Extract the srcSet from the props
+    const { srcSet } = props;
+
+    if (srcSet) {
+      // Parse the srcSet to get the URLs
+      const srcSetUrls = srcSet.split(", ").map((s) => s.split(" ")[0]);
+
+      // Preload each URL in the srcSet
+      await Promise.all(
+        srcSetUrls.map((url) => {
+          return new Promise((resolve) => {
+            const img = new window.Image();
+            img.onload = () => resolve(undefined);
+            img.onerror = () => resolve(undefined);
+            img.src = url;
+          });
+        }),
+      );
+    }
+  } catch (error) {
+    console.error("Error preloading Next.js image:", error);
+  }
+}
+
+
+
+---
+File: /lib/rate-limiter.ts
+---
+
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { headers } from "next/headers";
+import "server-only";
+
+export function getRateLimiter() {
+  let ratelimit: Ratelimit | undefined;
+
+  // Add rate limiting if Upstash API keys are set, otherwise skip
+  if (process.env.UPSTASH_REDIS_REST_URL) {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      // Allow 5 requests per day
+      limiter: Ratelimit.fixedWindow(5, "1 d"),
+      analytics: true,
+      prefix: "easyedit",
+    });
+  }
+  return ratelimit;
+}
+export async function getIPAddress() {
+  const FALLBACK_IP_ADDRESS = "0.0.0.0";
+  const headersList = await headers();
+  const forwardedFor = headersList.get("x-forwarded-for");
+
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0] ?? FALLBACK_IP_ADDRESS;
+  }
+
+  return headersList.get("x-real-ip") ?? FALLBACK_IP_ADDRESS;
+}
+
+
+
+---
+File: /lib/utils.ts
+---
+
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}

@@ -1,0 +1,626 @@
+/**
+ * AI Model Comparison Test
+ *
+ * Compares GPT-4o, GPT-5 Mini, and GPT-5 Nano across the same 5 test URLs
+ * to determine optimal model(s) for cost vs quality trade-off.
+ *
+ * Goals:
+ * 1. Cost reduction ≥60%
+ * 2. Quality improvement OR maintained (≥8.0/10, target ≥8.5/10)
+ */
+
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { ConvexHttpClient } from "convex/browser";
+import * as dotenv from "dotenv";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { api } = require("../convex/_generated/api");
+
+// Load environment variables
+dotenv.config({ path: ".env.local" });
+
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
+
+if (!CONVEX_URL) {
+  console.error("❌ NEXT_PUBLIC_CONVEX_URL not found in .env.local");
+  process.exit(1);
+}
+
+const client = new ConvexHttpClient(CONVEX_URL);
+
+// Models to compare
+const MODELS_TO_TEST = [
+  {
+    name: "GPT-4o (Baseline)",
+    id: "gpt-4o",
+    inputCost: 2.5, // per 1M tokens
+    outputCost: 10.0, // per 1M tokens
+    isBaseline: true,
+  },
+  {
+    name: "GPT-5 Mini",
+    id: "gpt-5-mini",
+    inputCost: 0.25,
+    outputCost: 2.0,
+    isBaseline: false,
+  },
+  {
+    name: "GPT-5 Nano",
+    id: "gpt-5-nano",
+    inputCost: 0.05,
+    outputCost: 0.4,
+    isBaseline: false,
+  },
+];
+
+// Same test URLs as existing test suite
+const TEST_URLS = [
+  {
+    id: 1,
+    url: "https://vercel.com/docs/mcp",
+    type: "Vercel Docs",
+    description: "Model Context Protocol documentation",
+    expectations: {
+      keywords: ["MCP", "model context protocol", "LLM", "integration"],
+      forbiddenTerms: ["Search…", "⌘ K", "Sign in", "Feedback", "Menu"],
+      minLength: 500,
+      maxLength: 5000,
+    },
+  },
+  {
+    id: 2,
+    url: "https://docs.convex.dev/quickstart/nextjs",
+    type: "Convex Docs",
+    description: "Convex Next.js quickstart guide",
+    expectations: {
+      keywords: ["Convex", "Next.js", "backend", "real-time", "database"],
+      forbiddenTerms: ["Search…", "⌘ K", "Sign in", "Feedback"],
+      minLength: 500,
+      maxLength: 5000,
+    },
+  },
+  {
+    id: 3,
+    url: "https://polar.sh/docs/integrate/sdk/adapters/nextjs",
+    type: "Polar Docs",
+    description: "Polar Next.js SDK adapter documentation",
+    expectations: {
+      keywords: ["Polar", "Next.js", "SDK", "adapter", "integration"],
+      forbiddenTerms: ["Search…", "⌘ K", "Sign in", "Menu"],
+      minLength: 300,
+      maxLength: 5000,
+    },
+  },
+  {
+    id: 4,
+    url: "https://docs.firecrawl.dev/introduction",
+    type: "Firecrawl Docs",
+    description: "Firecrawl introduction and overview",
+    expectations: {
+      keywords: ["Firecrawl", "scraping", "web", "API", "data"],
+      forbiddenTerms: ["Search…", "⌘ K", "Sign in", "Feedback", "Menu"],
+      minLength: 400,
+      maxLength: 5000,
+    },
+  },
+  {
+    id: 5,
+    url: "https://docs.composio.dev/docs/welcome",
+    type: "Composio Docs",
+    description: "Composio welcome and overview",
+    expectations: {
+      keywords: ["Composio", "AI", "agents", "tools", "integration"],
+      forbiddenTerms: ["Search…", "⌘ K", "Sign in", "Menu"],
+      minLength: 300,
+      maxLength: 5000,
+    },
+  },
+];
+
+// Top-level regex patterns
+const SEARCH_BAR_PATTERN = /Search….*?⌘ K/i;
+const SIGN_IN_PATTERN = /Sign in with \w+/gi;
+const FEEDBACK_PATTERN = /Feedback/gi;
+const MENU_PATTERN = /Menu/gi;
+
+// Quality check functions (same as existing test suite)
+function checkNavigationRemoved(content: string): {
+  passed: boolean;
+  score: number;
+} {
+  const hasSearchBar = SEARCH_BAR_PATTERN.test(content);
+  const hasSignIn = SIGN_IN_PATTERN.test(content);
+  const hasFeedback = FEEDBACK_PATTERN.test(content);
+  const hasMenu = MENU_PATTERN.test(content);
+
+  const passed = !(hasSearchBar || hasSignIn || hasFeedback || hasMenu);
+  return { passed, score: passed ? 10 : 0 };
+}
+
+function checkCasualTone(content: string): {
+  passed: boolean;
+  score: number;
+  details: Record<string, number>;
+} {
+  const directAddress = (content.match(/\b(you|your|let's)\b/gi) || []).length;
+  const contractions = (
+    content.match(
+      /\b(you're|it's|don't|can't|won't|that's|what's|there's|here's|they're)\b/gi
+    ) || []
+  ).length;
+  const encouragingWords = (
+    content.match(/\b(easy|simple|perfect|great|awesome|amazing)\b/gi) || []
+  ).length;
+  const exclamations = (content.match(/!/g) || []).length;
+
+  let score = 0;
+  if (directAddress >= 5) {
+    score += 3;
+  }
+  if (contractions >= 1) {
+    score += 2;
+  }
+  if (encouragingWords >= 1) {
+    score += 2.5;
+  }
+  if (exclamations >= 1) {
+    score += 2.5;
+  }
+
+  return {
+    passed: score >= 6,
+    score: Math.min(10, score),
+    details: { directAddress, contractions, encouragingWords, exclamations },
+  };
+}
+
+function checkSEOKeywords(
+  content: string,
+  keywords: string[]
+): {
+  passed: boolean;
+  score: number;
+  details: Record<string, { count: number; status: string }>;
+} {
+  const details: Record<string, { count: number; status: string }> = {};
+  let totalScore = 0;
+
+  for (const keyword of keywords) {
+    const regex = new RegExp(`\\b${keyword}\\b`, "gi");
+    const matches = content.match(regex);
+    const count = matches ? matches.length : 0;
+
+    let status = "";
+    let keywordScore = 0;
+
+    if (count === 0) {
+      status = "not found";
+      keywordScore = 0;
+    } else if (count >= 1 && count <= 4) {
+      status = "natural";
+      keywordScore = 2;
+    } else if (count >= 5 && count <= 6) {
+      status = "possibly stuffed";
+      keywordScore = 1;
+    } else {
+      status = "possibly stuffed";
+      keywordScore = 0.5;
+    }
+
+    details[keyword] = { count, status };
+    totalScore += keywordScore;
+  }
+
+  const maxScore = keywords.length * 2;
+  const normalizedScore = (totalScore / maxScore) * 10;
+
+  return {
+    passed: normalizedScore >= 6,
+    score: normalizedScore,
+    details,
+  };
+}
+
+function checkForbiddenTerms(
+  content: string,
+  terms: string[]
+): {
+  passed: boolean;
+  score: number;
+  found: string[];
+} {
+  const found: string[] = [];
+
+  for (const term of terms) {
+    const regex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    if (regex.test(content)) {
+      found.push(term);
+    }
+  }
+
+  return {
+    passed: found.length === 0,
+    score: found.length === 0 ? 10 : Math.max(0, 10 - found.length * 2),
+    found,
+  };
+}
+
+function checkMarkdownFormatting(content: string): {
+  passed: boolean;
+  score: number;
+  issues: string[];
+} {
+  const issues: string[] = [];
+  let score = 10;
+
+  const headers = content.match(/^#{1,3}\s+.+$/gm);
+  if (!headers || headers.length < 2) {
+    issues.push("Few or no headers found");
+    score -= 3;
+  }
+
+  const paragraphs = content.split("\n\n");
+  if (paragraphs.length < 3) {
+    issues.push("Content not broken into paragraphs");
+    score -= 3;
+  }
+
+  const longLines = content
+    .split("\n")
+    .filter((line) => line.length > 200 && !line.startsWith("```"));
+  if (longLines.length > 3) {
+    issues.push("Many overly long lines");
+    score -= 4;
+  }
+
+  return {
+    passed: score >= 6,
+    score: Math.max(0, score),
+    issues,
+  };
+}
+
+function checkLength(
+  content: string,
+  min: number,
+  max: number
+): {
+  passed: boolean;
+  score: number;
+  expected: string;
+  actual: number;
+} {
+  const length = content.length;
+  const passed = length >= min && length <= max;
+
+  let score: number;
+  if (passed) {
+    score = 10;
+  } else if (length < min) {
+    score = 5;
+  } else {
+    score = 8;
+  }
+
+  return {
+    passed,
+    score,
+    expected: `${min}-${max} chars`,
+    actual: length,
+  };
+}
+
+// Test a single URL with a specific model
+async function testURLWithModel(
+  testCase: (typeof TEST_URLS)[0],
+  model: (typeof MODELS_TO_TEST)[0]
+): Promise<{
+  success: boolean;
+  quality: number;
+  latency: number;
+  cost: number;
+  error?: string;
+  checks?: Record<string, unknown>;
+}> {
+  console.log(`\n   Testing with ${model.name}...`);
+
+  const startTime = Date.now();
+
+  try {
+    // Pass the model to test to the Convex action for REAL comparison
+    const result = await client.action(
+      api.resourceExtraction.extractAndEnrichResourceData,
+      {
+        url: testCase.url,
+        testModels: {
+          extraction: model.id,
+          enrichment: model.id,
+          categorization: model.id,
+        },
+      }
+    );
+
+    const latency = (Date.now() - startTime) / 1000;
+
+    // Estimate tokens and cost
+    const estimatedInputTokens = 1500; // Average
+    const estimatedOutputTokens = 500;
+    const cost =
+      (estimatedInputTokens / 1_000_000) * model.inputCost +
+      (estimatedOutputTokens / 1_000_000) * model.outputCost;
+
+    // Run quality checks
+    const navCheck = checkNavigationRemoved(result.content);
+    const toneCheck = checkCasualTone(result.content);
+    const seoCheck = checkSEOKeywords(
+      result.content,
+      testCase.expectations.keywords
+    );
+    const forbiddenCheck = checkForbiddenTerms(
+      result.content,
+      testCase.expectations.forbiddenTerms
+    );
+    const formatCheck = checkMarkdownFormatting(result.content);
+    const lengthCheck = checkLength(
+      result.content,
+      testCase.expectations.minLength,
+      testCase.expectations.maxLength
+    );
+
+    const qualityScore =
+      (navCheck.score +
+        toneCheck.score +
+        seoCheck.score +
+        forbiddenCheck.score +
+        formatCheck.score +
+        lengthCheck.score) /
+      6;
+
+    return {
+      success: true,
+      quality: qualityScore,
+      latency,
+      cost,
+      checks: {
+        navigation: navCheck,
+        tone: toneCheck,
+        seo: seoCheck,
+        forbidden: forbiddenCheck,
+        formatting: formatCheck,
+        length: lengthCheck,
+      },
+    };
+  } catch (error) {
+    const latency = (Date.now() - startTime) / 1000;
+    return {
+      success: false,
+      quality: 0,
+      latency,
+      cost: 0,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+// Main test runner
+async function runComparison() {
+  console.log(
+    "\n╔═══════════════════════════════════════════════════════════════════════╗"
+  );
+  console.log(
+    "║           🤖 AI MODEL COMPARISON TEST                                 ║"
+  );
+  console.log(
+    "║                                                                       ║"
+  );
+  console.log(
+    "║  Comparing GPT-4o, GPT-5 Mini, and GPT-5 Nano                       ║"
+  );
+  console.log(
+    "║  Goals: 60%+ cost reduction + maintain/improve quality (≥8.0/10)    ║"
+  );
+  console.log(
+    "╚═══════════════════════════════════════════════════════════════════════╝\n"
+  );
+
+  const results: Record<
+    string,
+    {
+      successes: number;
+      failures: number;
+      avgQuality: number;
+      avgLatency: number;
+      avgCost: number;
+      tests: Array<{
+        quality: number;
+        latency: number;
+        cost: number;
+      }>;
+    }
+  > = {};
+
+  // Initialize results for each model
+  for (const model of MODELS_TO_TEST) {
+    results[model.id] = {
+      successes: 0,
+      failures: 0,
+      avgQuality: 0,
+      avgLatency: 0,
+      avgCost: 0,
+      tests: [],
+    };
+  }
+
+  console.log("✅ REAL MODEL TESTING ENABLED");
+  console.log(
+    "   Each URL will be tested with GPT-4o, GPT-5 Mini, and GPT-5 Nano"
+  );
+  console.log("   This will take ~5-10 minutes for all tests\n");
+
+  // Test each URL with each model
+  for (const testCase of TEST_URLS) {
+    console.log(`\n${"=".repeat(78)}`);
+    console.log(`🧪 Test: ${testCase.type}`);
+    console.log(`📋 ${testCase.description}`);
+    console.log(`🔗 ${testCase.url}`);
+    console.log(`${"=".repeat(78)}`);
+
+    for (const model of MODELS_TO_TEST) {
+      const result = await testURLWithModel(testCase, model);
+
+      if (result.success) {
+        results[model.id].successes++;
+        results[model.id].tests.push(result);
+      } else {
+        results[model.id].failures++;
+        console.log(`   ❌ Failed: ${result.error}`);
+      }
+
+      // Wait between tests
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+
+  // Calculate averages
+  for (const modelId of Object.keys(results)) {
+    const modelResults = results[modelId];
+    const successfulTests = modelResults.tests.filter((t) => t.quality > 0);
+
+    if (successfulTests.length > 0) {
+      modelResults.avgQuality =
+        successfulTests.reduce((sum, t) => sum + t.quality, 0) /
+        successfulTests.length;
+      modelResults.avgLatency =
+        successfulTests.reduce((sum, t) => sum + t.latency, 0) /
+        successfulTests.length;
+      modelResults.avgCost =
+        successfulTests.reduce((sum, t) => sum + t.cost, 0) /
+        successfulTests.length;
+    }
+  }
+
+  // Print summary
+  printSummary(results);
+
+  // Save results
+  const timestamp = new Date().toISOString().split("T")[0];
+  const _logPath = path.join(
+    "docs",
+    "test-results",
+    `ai-model-comparison-${timestamp}.log`
+  );
+  const jsonPath = path.join(
+    "docs",
+    "test-results",
+    `ai-model-comparison-${timestamp}.json`
+  );
+
+  // Save JSON
+  fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
+  console.log(`\n💾 Results saved to: ${jsonPath}\n`);
+}
+
+function printSummary(
+  results: Record<
+    string,
+    {
+      successes: number;
+      failures: number;
+      avgQuality: number;
+      avgLatency: number;
+      avgCost: number;
+      tests: Array<{ quality: number; latency: number; cost: number }>;
+    }
+  >
+) {
+  console.log(
+    "\n\n╔═══════════════════════════════════════════════════════════════════════╗"
+  );
+  console.log(
+    "║                     📊 COMPARISON SUMMARY                             ║"
+  );
+  console.log(
+    "╚═══════════════════════════════════════════════════════════════════════╝\n"
+  );
+
+  const baseline = results["gpt-4o"];
+
+  for (const model of MODELS_TO_TEST) {
+    const modelResults = results[model.id];
+    const costSavings =
+      baseline.avgCost > 0
+        ? ((baseline.avgCost - modelResults.avgCost) / baseline.avgCost) * 100
+        : 0;
+    const qualityDelta = modelResults.avgQuality - baseline.avgQuality;
+
+    console.log(`\n📊 ${model.name}`);
+    console.log(`   ${"─".repeat(65)}`);
+    console.log(
+      `   Success Rate:    ${modelResults.successes}/${TEST_URLS.length} (${((modelResults.successes / TEST_URLS.length) * 100).toFixed(0)}%)`
+    );
+    console.log(
+      `   Avg Quality:     ${modelResults.avgQuality.toFixed(1)}/10 ${getQualityEmoji(modelResults.avgQuality)} ${qualityDelta !== 0 ? `(${qualityDelta > 0 ? "+" : ""}${qualityDelta.toFixed(1)} vs baseline)` : "(baseline)"}`
+    );
+    console.log(`   Avg Latency:     ${modelResults.avgLatency.toFixed(1)}s`);
+    console.log(
+      `   Cost/extraction: $${modelResults.avgCost.toFixed(4)} ${model.isBaseline ? "(baseline)" : `(${costSavings.toFixed(0)}% cheaper)`}`
+    );
+    console.log(
+      `   Monthly (1K):    $${(modelResults.avgCost * 1000).toFixed(2)}`
+    );
+    console.log(
+      `   Annual (1K):     $${(modelResults.avgCost * 12_000).toFixed(2)}`
+    );
+  }
+
+  // Recommendation
+  console.log("\n\n🎯 RECOMMENDATION:");
+  console.log("═".repeat(78));
+
+  const miniResults = results["gpt-5-mini"];
+  const _nanoResults = results["gpt-5-nano"];
+
+  if (miniResults.avgQuality >= 8.5) {
+    console.log("✅ **MIGRATE TO GPT-5 MINI** for ALL functions");
+    console.log("   Quality improved AND cost reduced significantly!");
+  } else if (miniResults.avgQuality >= 8.0) {
+    console.log("✅ **MIGRATE TO GPT-5 MINI** for ALL functions");
+    console.log("   Quality maintained AND cost reduced significantly!");
+  } else if (miniResults.avgQuality >= 7.5) {
+    console.log("⚠️  **PARTIAL MIGRATION**");
+    console.log("   Use GPT-5 Mini for enrichment/categorization only");
+    console.log("   Keep GPT-4o for critical content extraction");
+  } else {
+    console.log("❌ **STAY ON GPT-4o**");
+    console.log(
+      "   Quality too low with GPT-5 models - not worth the cost savings"
+    );
+  }
+
+  console.log("\n");
+}
+
+function getQualityEmoji(score: number): string {
+  if (score >= 8.5) {
+    return "🎉";
+  }
+  if (score >= 8.0) {
+    return "✅";
+  }
+  if (score >= 7.0) {
+    return "⚠️";
+  }
+  return "❌";
+}
+
+// Run the comparison
+runComparison()
+  .then(() => {
+    console.log("✅ Comparison complete!\n");
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error("❌ Error:", error);
+    process.exit(1);
+  });

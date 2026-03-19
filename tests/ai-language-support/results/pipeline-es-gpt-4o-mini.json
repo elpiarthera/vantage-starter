@@ -1,0 +1,90 @@
+{
+	"testSessionId": "es-4om-1766235781503",
+	"startedAt": "2025-12-20T13:03:01.503Z",
+	"updatedAt": "2025-12-20T13:05:57.981Z",
+	"language": "es",
+	"textModel": "gpt-4o-mini",
+	"textGeneration": {
+		"completedAt": "2025-12-20T13:03:07.282Z",
+		"modelUsed": "gpt-4o-mini",
+		"latencyMs": 5778,
+		"systemPrompt": "You are an expert AI Director for emotionally resonant short-form videos.\n\nYour task is to create a compelling video story concept based on the provided event details.\n\nThe story should:\n1. Be structured for a 30-second video (approximately 75-90 words for narration)\n2. Have a clear emotional arc: opening hook → emotional core → meaningful conclusion\n3. Match the occasion and emotional theme perfectly\n4. Be personal and authentic, not generic\n5. Include specific visual scene suggestions (3-4 scenes)\n\nIMPORTANT: Generate all content in the SAME LANGUAGE as the user's input.\n\nReturn a JSON object with:\n- narrationScript: The 75-90 word narration script\n- scenes: Array of 3 scene descriptions for visuals\n- musicPrompt: A prompt for generating background music",
+		"userPrompt": "Occasion: Anuncio de Boda\nEvent Title: Boda de Laurent & Laurence\nEmotional Theme: Calidez Romántica\nVisual Style: Cinematográfico\n\nPersonal Story from the creator:\n\"Nos conocimos en París bajo la Torre Eiffel hace cinco años. Un encuentro casual que se convirtió en destino. Ahora estamos listos para comenzar nuestra eternidad, y queremos que seas parte de nuestra historia.\"\n\nCreate a compelling narration script for this wedding video. The story should feel Calidez Romántica and deeply personal.",
+		"generatedStory": "Hace cinco años, en París, un encuentro casual bajo la Torre Eiffel cambió nuestras vidas para siempre. Desde ese momento, Laurent y Laurence han tejido una historia de amor que trasciende fronteras. Hoy, rodeados de amigos y familia, celebramos no solo el inicio de nuestra eternidad, sino la magia de cada recuerdo compartido. Únete a nosotros en este viaje lleno de risas, sueños y amor eterno, mientras comenzamos un nuevo capítulo. ¡Te invitamos a ser parte de nuestra historia!",
+		"generatedScenes": [
+			"Una toma panorámica de la Torre Eiffel al atardecer, con luces brillando mientras Laurent y Laurence se abrazan, riendo juntos.",
+			"Un montaje de clips cortos de momentos significativos: su primer baile, risas compartidas en una cena romántica, y la chispa de sus miradas.",
+			"Laurent y Laurence, rodeados de sus seres queridos, levantando copas en un brindis, con sonrisas de felicidad, encapsulando la calidez de la celebración."
+		],
+		"narrationScript": "Hace cinco años, en París, un encuentro casual bajo la Torre Eiffel cambió nuestras vidas para siempre. Desde ese momento, Laurent y Laurence han tejido una historia de amor que trasciende fronteras. Hoy, rodeados de amigos y familia, celebramos no solo el inicio de nuestra eternidad, sino la magia de cada recuerdo compartido. Únete a nosotros en este viaje lleno de risas, sueños y amor eterno, mientras comenzamos un nuevo capítulo. ¡Te invitamos a ser parte de nuestra historia!",
+		"musicPrompt": "Crea una melodía suave y romántica con piano y cuerdas, que evoque sentimientos de amor y calidez, ideal para una celebración de bodas.",
+		"rawResponse": "{\n  \"narrationScript\": \"Hace cinco años, en París, un encuentro casual bajo la Torre Eiffel cambió nuestras vidas para siempre. Desde ese momento, Laurent y Laurence han tejido una historia de amor que trasciende fronteras. Hoy, rodeados de amigos y familia, celebramos no solo el inicio de nuestra eternidad, sino la magia de cada recuerdo compartido. Únete a nosotros en este viaje lleno de risas, sueños y amor eterno, mientras comenzamos un nuevo capítulo. ¡Te invitamos a ser parte de nuestra historia!\",\n  \"scenes\": [\n    {\n      \"description\": \"Una toma panorámica de la Torre Eiffel al atardecer, con luces brillando mientras Laurent y Laurence se abrazan, riendo juntos.\"\n    },\n    {\n      \"description\": \"Un montaje de clips cortos de momentos significativos: su primer baile, risas compartidas en una cena romántica, y la chispa de sus miradas.\"\n    },\n    {\n      \"description\": \"Laurent y Laurence, rodeados de sus seres queridos, levantando copas en un brindis, con sonrisas de felicidad, encapsulando la calidez de la celebración.\"\n    }\n  ],\n  \"musicPrompt\": \"Crea una melodía suave y romántica con piano y cuerdas, que evoque sentimientos de amor y calidez, ideal para una celebración de bodas.\"\n}",
+		"qualityScore": 8,
+		"estimatedCost": 0.000315
+	},
+	"imageGeneration": {
+		"completedAt": "2025-12-20T13:04:06.750Z",
+		"modelUsed": "fal-ai/nano-banana-pro",
+		"latencyMs": 59467,
+		"images": [
+			{
+				"sceneIndex": 0,
+				"url": "https://v3b.fal.media/files/b/0a870fda/gub02x_e_xA-492Tw4ye0.png",
+				"prompt": "Una toma panorámica de la Torre Eiffel al atardecer, con luces brillando mientras Laurent y Laurence se abrazan, riendo juntos.",
+				"latencyMs": 20427
+			},
+			{
+				"sceneIndex": 1,
+				"url": "https://v3b.fal.media/files/b/0a870fdc/an_zQoih4tt8oIf6FPxbK.png",
+				"prompt": "Un montaje de clips cortos de momentos significativos: su primer baile, risas compartidas en una cena romántica, y la chispa de sus miradas.",
+				"latencyMs": 17943
+			},
+			{
+				"sceneIndex": 2,
+				"url": "https://v3b.fal.media/files/b/0a870fdf/ic3-aQhbUVAG8iAiiH-6A.png",
+				"prompt": "Laurent y Laurence, rodeados de sus seres queridos, levantando copas en un brindis, con sonrisas de felicidad, encapsulando la calidez de la celebración.",
+				"latencyMs": 18094
+			}
+		],
+		"qualityScore": 8,
+		"estimatedCost": 0.03
+	},
+	"videoGeneration": {
+		"completedAt": "2025-12-20T13:05:45.953Z",
+		"modelUsed": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+		"latencyMs": 99202,
+		"videos": [
+			{
+				"sceneIndex": 0,
+				"url": "https://v3b.fal.media/files/b/0a870fea/Qfe3IMsbLKp3QTT97l5Sf_output.mp4",
+				"prompt": "Una toma panorámica de la Torre Eiffel al atardecer, con luces brillando mientras Laurent y Laurence se abrazan, riendo juntos. Emotional context: Nos conocimos en París bajo la Torre Eiffel hace cinco años. Un encuentro casual que se convirtió en destino. Ahora estamos listos para comenzar nuestra eternidad, y queremos que seas parte de nuestra historia.. This is for a Anuncio de Boda video. The overall mood is Calidez Romántica. Visual style: Cinematográfico. Quick, dynamic pacing suitable for a 5-second clip. High quality, professional production.",
+				"firstFrameUrl": "https://v3b.fal.media/files/b/0a870fda/gub02x_e_xA-492Tw4ye0.png",
+				"lastFrameUrl": "https://v3b.fal.media/files/b/0a870fdf/ic3-aQhbUVAG8iAiiH-6A.png"
+			}
+		],
+		"qualityScore": 8,
+		"estimatedCost": 0.35
+	},
+	"narration": {
+		"completedAt": "2025-12-20T13:05:53.152Z",
+		"modelUsed": "fal-ai/minimax/speech-2.6-hd",
+		"latencyMs": 7198,
+		"script": "Hace cinco años, en París, un encuentro casual bajo la Torre Eiffel cambió nuestras vidas para siempre. Desde ese momento, Laurent y Laurence han tejido una historia de amor que trasciende fronteras. Hoy, rodeados de amigos y familia, celebramos no solo el inicio de nuestra eternidad, sino la magia de cada recuerdo compartido. Únete a nosotros en este viaje lleno de risas, sueños y amor eterno, mientras comenzamos un nuevo capítulo. ¡Te invitamos a ser parte de nuestra historia!",
+		"languageBoost": "Spanish",
+		"audioUrl": "https://v3b.fal.media/files/b/0a870feb/vvIcdk3Myh9VbHIYGQTcn_speech.mp3",
+		"duration": 0,
+		"qualityScore": 8,
+		"estimatedCost": 0.02
+	},
+	"music": {
+		"completedAt": "2025-12-20T13:05:57.981Z",
+		"modelUsed": "fal-ai/stable-audio-25/text-to-audio",
+		"latencyMs": 4828,
+		"prompt": "Crea una melodía suave y romántica con piano y cuerdas, que evoque sentimientos de amor y calidez, ideal para una celebración de bodas.",
+		"audioUrl": "https://v3b.fal.media/files/b/0a870feb/qT6fXzMunBwGKnDN7s6G7_tmpkv_aciqk.wav",
+		"duration": 30,
+		"qualityScore": 8,
+		"estimatedCost": 0.05
+	},
+	"totalDurationMs": 176477
+}
