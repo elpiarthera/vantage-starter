@@ -339,7 +339,7 @@ Complete table of all environment variables.
 | `CONVEX_URL` | Required for Vercel builds | Same value as `NEXT_PUBLIC_CONVEX_URL` | Yes | `https://your-project.convex.cloud` |
 | `POLAR_ACCESS_TOKEN` | Required | Polar Dashboard → Settings → Access Tokens | Yes | `polar_at_...` |
 | `RESEND_API_KEY` | Required | Resend Dashboard → API Keys | Yes | `re_abc123...` |
-| `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | Yes | `sk-proj-...` |
+| `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | Yes | `sk-proj-...` | Used by `app/api/chat/route.ts` (via `@ai-sdk/openai`) and `scripts/translate.js`. Not read directly by the raw `openai` package. |
 | `FAL_KEY` | Required for AI features | https://fal.ai/dashboard/keys | Yes | `key_id:key_secret` |
 | `TOGETHER_API_KEY` | Optional (fallback AI) | https://api.together.xyz/settings/api-keys | Yes | `abc123...` |
 
@@ -353,7 +353,6 @@ Go to: https://dashboard.convex.dev → your project → Settings → Environmen
 |----------|-------|
 | `CLERK_JWT_ISSUER_DOMAIN` | Same domain-only value (no `https://`) |
 | `FAL_KEY` | Same value as in `.env.local` |
-| `OPENAI_API_KEY` | Same value as in `.env.local` |
 
 ---
 

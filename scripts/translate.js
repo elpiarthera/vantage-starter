@@ -1,9 +1,10 @@
 require("dotenv").config({ path: ".env.local" });
 const fs = require("node:fs");
 const path = require("node:path");
-const OpenAI = require("openai");
+const { createOpenAI } = require("@ai-sdk/openai");
+const { generateText } = require("ai");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openaiProvider = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const TARGET_LANGS = ["fr", "de", "it", "es", "pt", "ru"];
 const LANG_NAMES = {
 	fr: "French (France)",
@@ -123,13 +124,18 @@ async function translate() {
 	const enPath = path.join(MESSAGES_DIR, "en.json");
 
 	if (!fs.existsSync(enPath)) {
-		console.error("❌ messages/en.json not found!");
+		console.error("messages/en.json not found!");
+		process.exit(1);
+	}
+
+	if (!process.env.OPENAI_API_KEY) {
+		console.error("OPENAI_API_KEY is not set in .env.local");
 		process.exit(1);
 	}
 
 	const enData = JSON.parse(fs.readFileSync(enPath, "utf8"));
 	const totalKeys = countKeys(enData);
-	console.log(`📊 Total keys in en.json: ${totalKeys}\n`);
+	console.log(`Total keys in en.json: ${totalKeys}\n`);
 
 	for (const lang of TARGET_LANGS) {
 		const targetPath = path.join(MESSAGES_DIR, `${lang}.json`);
@@ -144,7 +150,7 @@ async function translate() {
 			}
 		}
 
-		console.log(`\n🔍 Checking ${lang}...`);
+		console.log(`\nChecking ${lang}...`);
 
 		// Step 1: Sync structure - remove obsolete keys
 		const { synced: cleanedData, removedCount } = syncStructure(
@@ -152,7 +158,7 @@ async function translate() {
 			existingData,
 		);
 		if (removedCount > 0) {
-			console.log(`  🧹 Removed ${removedCount} obsolete keys`);
+			console.log(`  Removed ${removedCount} obsolete keys`);
 		}
 
 		// Step 2: Find missing keys
@@ -160,7 +166,7 @@ async function translate() {
 		const missingCount = countKeys(missingKeys);
 
 		if (missingCount === 0 && removedCount === 0) {
-			console.log(`✅ ${lang}.json is up to date.`);
+			console.log(`${lang}.json is up to date.`);
 			continue;
 		}
 
@@ -168,20 +174,15 @@ async function translate() {
 			// No translations needed, just save cleaned data
 			fs.writeFileSync(targetPath, JSON.stringify(cleanedData, null, 2));
 			console.log(
-				`💾 Saved ${lang}.json (${countKeys(cleanedData)} total keys)`,
+				`Saved ${lang}.json (${countKeys(cleanedData)} total keys)`,
 			);
 			continue;
 		}
 
-		console.log(`🌍 Translating ${missingCount} keys for ${lang}...`);
+		console.log(`Translating ${missingCount} keys for ${lang}...`);
 
 		try {
-			const completion = await openai.chat.completions.create({
-				model: "gpt-4o",
-				messages: [
-					{
-						role: "system",
-						content: `You are a professional translator. Translate the following JSON to ${LANG_NAMES[lang]}.
+			const systemPrompt = `You are a professional translator. Translate the following JSON to ${LANG_NAMES[lang]}.
 
 CRITICAL: You MUST translate to ${LANG_NAMES[lang]} - NOT French, NOT any other language!
 
@@ -192,29 +193,34 @@ RULES:
 4. Preserve HTML tags if any (<strong>, <br/>, etc.)
 5. Preserve emojis exactly as they are
 6. Maintain a friendly, professional UI tone
-7. Output ONLY valid JSON, no explanations
+7. Output ONLY valid JSON, no explanations, no markdown code fences
 
-Target language: ${LANG_NAMES[lang]} (code: ${lang})`,
-					},
+Target language: ${LANG_NAMES[lang]} (code: ${lang})`;
+
+			const { text } = await generateText({
+				model: openaiProvider("gpt-4o"),
+				messages: [
+					{ role: "system", content: systemPrompt },
 					{ role: "user", content: JSON.stringify(missingKeys, null, 2) },
 				],
-				response_format: { type: "json_object" },
 				temperature: 0.3,
 			});
 
-			const translatedData = JSON.parse(completion.choices[0].message.content);
+			// Strip markdown code fences if the model wrapped the output
+			const cleaned = text.trim().replace(/^```json\s*/i, "").replace(/```\s*$/, "");
+			const translatedData = JSON.parse(cleaned);
 
 			// Deep merge cleaned data with new translations
 			const finalData = deepMerge(cleanedData, translatedData);
 
 			fs.writeFileSync(targetPath, JSON.stringify(finalData, null, 2));
-			console.log(`💾 Saved ${lang}.json (${countKeys(finalData)} total keys)`);
+			console.log(`Saved ${lang}.json (${countKeys(finalData)} total keys)`);
 		} catch (error) {
-			console.error(`❌ Failed to translate ${lang}:`, error.message);
+			console.error(`Failed to translate ${lang}:`, error.message);
 		}
 	}
 
-	console.log("\n✅ Translation complete!");
+	console.log("\nTranslation complete!");
 }
 
 translate();
