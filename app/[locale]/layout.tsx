@@ -12,6 +12,27 @@ import { UserSyncProvider } from "@/components/UserSyncProvider";
 import { routing } from "@/i18n/routing";
 import { ClientProviders } from "../ClientProviders";
 
+const BASE_URL =
+	process.env.NEXT_PUBLIC_SITE_URL || "https://vantagestarter.ai";
+
+// SoftwareApplication JSON-LD — lives here so it's inside <html><head>, not outside <html>
+const softwareApplicationSchema = {
+	"@context": "https://schema.org",
+	"@type": "SoftwareApplication",
+	"@id": `${BASE_URL}/#software`,
+	name: "VantageStarter",
+	url: BASE_URL,
+	applicationCategory: "DeveloperApplication",
+	operatingSystem: "Web",
+	description:
+		"AI SaaS starter kit with Convex backend, Clerk auth, Polar billing, credit system, multi-language support, and RGAA accessibility.",
+	offers: {
+		"@type": "Offer",
+		price: "0",
+		priceCurrency: "USD",
+	},
+};
+
 // Instrument Sans — humanist editorial, display + body
 const instrumentSans = Instrument_Sans({
 	subsets: ["latin"],
@@ -48,6 +69,15 @@ export default async function LocaleLayout({ children, params }: Props) {
 			className={`${instrumentSans.variable} ${GeistMono.variable} antialiased`}
 			suppressHydrationWarning
 		>
+			<head>
+				<script
+					type="application/ld+json"
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: server-only static JSON-LD, no user input
+					dangerouslySetInnerHTML={{
+						__html: JSON.stringify(softwareApplicationSchema),
+					}}
+				/>
+			</head>
 			<body>
 				<SkipLink />
 				<ThemeProvider

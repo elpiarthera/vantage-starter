@@ -40,41 +40,16 @@ export const metadata: Metadata = {
 	robots: { index: true, follow: true },
 };
 
-// SoftwareApplication JSON-LD
-const softwareApplicationSchema = {
-	"@context": "https://schema.org",
-	"@type": "SoftwareApplication",
-	"@id": `${BASE_URL}/#software`,
-	name: "VantageStarter",
-	url: BASE_URL,
-	applicationCategory: "DeveloperApplication",
-	operatingSystem: "Web",
-	description:
-		"AI SaaS starter kit with Convex backend, Clerk auth, Polar billing, credit system, multi-language support, and RGAA accessibility.",
-	offers: {
-		"@type": "Offer",
-		price: "0",
-		priceCurrency: "USD",
-	},
-};
-
+// Root layout: renders children directly — <html>/<body> are owned by app/[locale]/layout.tsx.
+// The JSON-LD <script> that was previously here caused hydration errors (#418/#423) because
+// it rendered as a sibling to <html>, producing invalid document structure.
+// It now lives inside <head> in app/[locale]/layout.tsx.
 export default function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	return (
-		<>
-			<script
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: server-only static JSON-LD, no user input
-				dangerouslySetInnerHTML={{
-					__html: JSON.stringify(softwareApplicationSchema),
-				}}
-			/>
-			{children}
-		</>
-	);
+	return children;
 }
 
 // Required for next-intl to work with non-locale routes
