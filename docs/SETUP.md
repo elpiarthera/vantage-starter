@@ -166,15 +166,29 @@ Convex also needs this value as an environment variable on its side.
 7. Value: `your-app-name.clerk.accounts.dev` (same domain-only format, no `https://`)
 8. Click **"Save"**
 
-### Step 4.6 — Configure redirect URLs in your env file
+### Step 4.6 — Configure paths in the Clerk dashboard
+
+Clerk needs to know where your sign-in and sign-up pages live so it can redirect correctly in development.
+
+1. In the Clerk dashboard, click **"Configure"** in the left sidebar
+2. In the Configure submenu, click **"Paths"**
+3. Set the following:
+   - **Sign-in page on development host** → `/sign-in`
+   - **Sign-up page on development host** → `/sign-up`
+   - **Page on development host** (under "Signing Out") → `/`
+4. Click **"Save"**
+
+> Note: The after-sign-in and after-sign-up redirect URLs are controlled by environment variables (step 4.7 below), NOT by any Clerk dashboard setting. Do not look for them in the dashboard — they are not there.
+
+### Step 4.7 — Configure redirect URLs in your env file
 
 These tell Clerk where to send users after sign-in and sign-up. They are already in `.env.example`. Verify they are in your `.env.local`:
 
 ```
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/guided/step-1
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/en/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
 ```
 
 ---
@@ -304,37 +318,122 @@ Work through this checklist after both servers are running.
 
 ## Section 10 — Environment Variables Reference
 
-Complete table of all environment variables. Add all required ones to `.env.local` before starting.
+Complete table of all environment variables.
 
-| Variable | Required | Where to get it | Example value |
-|----------|----------|-----------------|---------------|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Required | Clerk Dashboard → API Keys | `pk_test_abc...` |
-| `CLERK_SECRET_KEY` | Required | Clerk Dashboard → API Keys | `sk_test_xyz...` |
-| `CLERK_JWT_ISSUER_DOMAIN` | Required | Clerk Dashboard → JWT Templates → Convex template → Issuer (domain only, no https://) | `your-app.clerk.accounts.dev` |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Required | Hard-coded value | `/sign-in` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Required | Hard-coded value | `/sign-up` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Required | Hard-coded value | `/dashboard` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Required | Hard-coded value | `/guided/step-1` |
-| `CONVEX_DEPLOYMENT` | Required | Auto-written by `npx convex dev` | `dev:your-project-name` |
-| `NEXT_PUBLIC_CONVEX_URL` | Required | Auto-written by `npx convex dev` | `https://your-project.convex.cloud` |
-| `CONVEX_URL` | Required for Vercel builds | Same value as `NEXT_PUBLIC_CONVEX_URL` | `https://your-project.convex.cloud` |
-| `POLAR_ACCESS_TOKEN` | Required | Polar Dashboard → Settings → Access Tokens | `polar_at_...` |
-| `RESEND_API_KEY` | Required | Resend Dashboard → API Keys | `re_abc123...` |
-| `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | `sk-proj-...` |
-| `FAL_KEY` | Required for AI features | https://fal.ai/dashboard/keys | `key_id:key_secret` |
-| `TOGETHER_API_KEY` | Optional (fallback AI) | https://api.together.xyz/settings/api-keys | `abc123...` |
+- **Set in `.env.local`** — required for local development
+- **Set in Vercel** — required for production deployment
+- **Set in Convex dashboard** — required for Convex functions to access the value at runtime
+
+| Variable | Required | Where to get it | Set in Vercel? | Example value |
+|----------|----------|-----------------|----------------|---------------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Required | Clerk Dashboard → API Keys | Yes | `pk_test_abc...` |
+| `CLERK_SECRET_KEY` | Required | Clerk Dashboard → API Keys | Yes | `sk_test_xyz...` |
+| `CLERK_JWT_ISSUER_DOMAIN` | Required | Clerk Dashboard → JWT Templates → Convex template → Issuer (domain only, no `https://`) | No — Convex dashboard only | `your-app.clerk.accounts.dev` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Required | Hard-coded value | Yes | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Required | Hard-coded value | Yes | `/sign-up` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Required | Hard-coded value | Yes | `/en/dashboard` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Required | Hard-coded value | Yes | `/en/guided/step-1` |
+| `CONVEX_DEPLOYMENT` | Required | Auto-written by `npx convex dev` | Yes | `dev:your-project-name` |
+| `NEXT_PUBLIC_CONVEX_URL` | Required | Auto-written by `npx convex dev` | Yes | `https://your-project.convex.cloud` |
+| `NEXT_PUBLIC_CONVEX_SITE_URL` | Required for Vercel | Your Vercel production domain | Yes | `https://my-app.vercel.app` |
+| `CONVEX_URL` | Required for Vercel builds | Same value as `NEXT_PUBLIC_CONVEX_URL` | Yes | `https://your-project.convex.cloud` |
+| `POLAR_ACCESS_TOKEN` | Required | Polar Dashboard → Settings → Access Tokens | Yes | `polar_at_...` |
+| `RESEND_API_KEY` | Required | Resend Dashboard → API Keys | Yes | `re_abc123...` |
+| `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | Yes | `sk-proj-...` |
+| `FAL_KEY` | Required for AI features | https://fal.ai/dashboard/keys | Yes | `key_id:key_secret` |
+| `TOGETHER_API_KEY` | Optional (fallback AI) | https://api.together.xyz/settings/api-keys | Yes | `abc123...` |
 
 ### Variables also required in Convex Dashboard
 
-Some variables must be set in the Convex dashboard in addition to `.env.local`. Convex serverless functions run in their own environment and cannot read your local `.env.local`.
+Convex serverless functions run in their own runtime. They cannot read `.env.local` or Vercel environment variables. These must be set separately.
 
 Go to: https://dashboard.convex.dev → your project → Settings → Environment Variables
 
 | Variable | Value |
 |----------|-------|
-| `CLERK_JWT_ISSUER_DOMAIN` | Same domain-only value as in `.env.local` |
-| `FAL_KEY` | Same value as in `.env.local` (required when AI features are used) |
+| `CLERK_JWT_ISSUER_DOMAIN` | Same domain-only value (no `https://`) |
+| `FAL_KEY` | Same value as in `.env.local` |
 | `OPENAI_API_KEY` | Same value as in `.env.local` |
+
+---
+
+---
+
+## Section 11 — Deploy to Vercel
+
+Follow this section after your local environment works end-to-end. Do not deploy first and debug later.
+
+### Step 11.1 — Import the repository
+
+1. Go to https://vercel.com/new
+2. Under "Import Git Repository", find `elpiarthera/vantage-starter` and click **"Import"**
+3. Framework preset: **Next.js** (auto-detected — verify it shows Next.js before proceeding)
+
+### Step 11.2 — Add environment variables
+
+In the "Environment Variables" section of the import screen, add all of the following. Do not skip any.
+
+```
+CONVEX_DEPLOYMENT=<from step 3>
+NEXT_PUBLIC_CONVEX_URL=<from step 3>
+NEXT_PUBLIC_CONVEX_SITE_URL=<from step 3>
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<from step 4>
+CLERK_SECRET_KEY=<from step 4>
+POLAR_ACCESS_TOKEN=<from step 6>
+RESEND_API_KEY=<from step 7>
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/en/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
+```
+
+> `NEXT_PUBLIC_CONVEX_SITE_URL` is the production URL Convex uses to generate absolute links. Set it to your Vercel domain once you know it (e.g. `https://my-app.vercel.app`). You can add it after the first deploy.
+
+### Step 11.3 — Deploy
+
+Click **"Deploy"**. The first build takes 2–4 minutes.
+
+If the build fails, check Section 12 (Common Build Errors) below.
+
+---
+
+## Section 12 — Common Build Errors
+
+### pnpm lockfile stale
+
+**Error:** `ERR_PNPM_OUTDATED_LOCKFILE` or similar lockfile conflict during CI build.
+
+**Fix:**
+
+```bash
+pnpm install --no-frozen-lockfile
+git add pnpm-lock.yaml
+git commit -m "fix: update pnpm lockfile"
+git push
+```
+
+Vercel will rebuild automatically after the push.
+
+### CLERK_JWT_ISSUER_DOMAIN missing
+
+**Error:** Auth fails silently or Convex functions return authentication errors in production.
+
+**Cause:** `CLERK_JWT_ISSUER_DOMAIN` must be set in the **Convex dashboard** environment variables, not only in `.env.local` or Vercel. Convex functions run in their own runtime and cannot read Vercel env vars.
+
+**Fix:** Go to https://dashboard.convex.dev → your project → Settings → Environment Variables → add `CLERK_JWT_ISSUER_DOMAIN` with the domain-only value (e.g. `your-app.clerk.accounts.dev`).
+
+### Clerk redirect URLs not working
+
+**Symptom:** After sign-in, users land on the wrong page or get a 404.
+
+**Cause:** After-sign-in and after-sign-up URLs are set via environment variables, not in the Clerk dashboard. The Clerk dashboard "Paths" screen only controls sign-in/sign-up page locations and sign-out redirect.
+
+**Fix:** Verify these are set in Vercel environment variables (not just `.env.local`):
+
+```
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/en/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
+```
 
 ---
 
