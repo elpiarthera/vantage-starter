@@ -162,7 +162,7 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
 						>
 							{tOccasions(project.occasion.replace(/-/g, "_") as never)}
 						</Badge>
-						<Badge variant="outline" className={statusColors[project.status]}>
+						<Badge variant="outline" className={statusColors[project.status as keyof typeof statusColors]}>
 							{tStatus(project.status)}
 						</Badge>
 					</div>

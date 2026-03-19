@@ -124,7 +124,7 @@ export const VIDEO_GENERATION_PROMPT: PromptBuilder<
 		version: "2.1",
 		model: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
 		updatedAt: "2025-12-18",
-		author: "MyShortReel Team",
+		author: "VantageStarter Team",
 		notes:
 			"Used for image-to-video generation. Includes full project context from Step 1 (occasion, theme, emotion) and Step 2b (visual style).",
 	} as PromptMetadata,

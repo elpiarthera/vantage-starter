@@ -35,8 +35,7 @@ export const saveFileMetadata = mutation({
 			v.literal("video"),
 			v.literal("audio"),
 		),
-		projectId: v.optional(v.id("projects")),
-		sceneId: v.optional(v.id("scenes")),
+		projectId: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		// Verify user is authenticated
@@ -65,8 +64,8 @@ export const saveFileMetadata = mutation({
 
 		// Save asset metadata (using existing schema field names)
 		const assetId = await ctx.db.insert("assets", {
-			userId: identity.subject, // Clerk user ID (string)
-			projectId: args.projectId as string | undefined, // Convert to string
+			userId: identity.subject,
+			projectId: args.projectId,
 			type: args.assetType,
 			url,
 			filename: args.fileName,

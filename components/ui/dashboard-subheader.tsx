@@ -136,7 +136,7 @@ export function DashboardSubheader({
 export const DashboardSubheaderVariants = {
 	dashboard: {
 		title: "Dashboard",
-		description: "Welcome to your MyShortReel dashboard",
+		description: "Welcome to your VantageStarter dashboard",
 		icon: DashboardSquare01Icon,
 	},
 	models: {
@@ -161,7 +161,7 @@ export const DashboardSubheaderVariants = {
 	},
 	docs: {
 		title: "Documentation",
-		description: "Learn how to use MyShortReel effectively",
+		description: "Learn how to use VantageStarter effectively",
 		icon: BookOpen01Icon,
 	},
 	settings: {

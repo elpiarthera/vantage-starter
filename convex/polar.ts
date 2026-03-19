@@ -1,5 +1,5 @@
 /**
- * Polar.sh Integration for MyShortReel
+ * Polar.sh Integration for VantageStarter
  *
  * Based on official example: /home/laurentperello/polar/example/convex/example.ts
  *

@@ -13,12 +13,11 @@ export function ClientProviders({ children }: { children: ReactNode }) {
 	const localization = clerkLocalizations[locale] || {};
 
 	return (
-		// @ts-expect-error Server Component - ClerkProvider is async in Next.js 15
 		<ClerkProvider
 			dynamic
 			afterSignOutUrl="/sign-in"
 			signInFallbackRedirectUrl="/dashboard"
-			signUpFallbackRedirectUrl="/guided/step-1"
+			signUpFallbackRedirectUrl="/dashboard"
 			localization={localization}
 			appearance={{
 				baseTheme: dark,

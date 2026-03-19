@@ -30,7 +30,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/contexts/DeviceContext";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 
 /** Step-1 occasions (same as guided step-1) for category dropdown */
 const OCCASION_CATEGORIES = [
@@ -148,7 +148,7 @@ export function CreateTemplateModal({
 		}
 		setIsSubmitting(true);
 		try {
-			const defaultScenes = (scenes ?? []).map((scene) => ({
+			const defaultScenes = (scenes ?? []).map((scene: Doc<"scenes">) => ({
 				sceneNumber: scene.sceneNumber,
 				title: scene.title,
 				description: scene.description,
@@ -328,7 +328,7 @@ export function CreateTemplateModal({
 								<SelectValue placeholder={t("select_project_placeholder")} />
 							</SelectTrigger>
 							<SelectContent>
-								{projects.map((project) => (
+								{projects.map((project: Doc<"projects">) => (
 									<SelectItem key={project._id} value={project._id}>
 										{project.name}
 									</SelectItem>

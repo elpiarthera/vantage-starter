@@ -10,7 +10,7 @@ export const clerkLocalizations: Record<
 		signIn: {
 			start: {
 				title: "Connexion",
-				subtitle: "Connectez-vous pour continuer vers MyShortReel",
+				subtitle: "Connectez-vous pour continuer vers VantageStarter",
 				actionText: "Pas encore de compte ?",
 				actionLink: "S'inscrire",
 			},
@@ -18,7 +18,7 @@ export const clerkLocalizations: Record<
 		signUp: {
 			start: {
 				title: "Créer un compte",
-				subtitle: "Inscrivez-vous pour commencer avec MyShortReel",
+				subtitle: "Inscrivez-vous pour commencer avec VantageStarter",
 				actionText: "Déjà un compte ?",
 				actionLink: "Se connecter",
 			},
@@ -32,7 +32,7 @@ export const clerkLocalizations: Record<
 		signIn: {
 			start: {
 				title: "Anmelden",
-				subtitle: "Melden Sie sich an, um zu MyShortReel fortzufahren",
+				subtitle: "Melden Sie sich an, um zu VantageStarter fortzufahren",
 				actionText: "Noch kein Konto?",
 				actionLink: "Registrieren",
 			},
@@ -40,7 +40,7 @@ export const clerkLocalizations: Record<
 		signUp: {
 			start: {
 				title: "Konto erstellen",
-				subtitle: "Registrieren Sie sich, um mit MyShortReel zu beginnen",
+				subtitle: "Registrieren Sie sich, um mit VantageStarter zu beginnen",
 				actionText: "Bereits ein Konto?",
 				actionLink: "Anmelden",
 			},
@@ -54,7 +54,7 @@ export const clerkLocalizations: Record<
 		signIn: {
 			start: {
 				title: "Accedi",
-				subtitle: "Accedi per continuare su MyShortReel",
+				subtitle: "Accedi per continuare su VantageStarter",
 				actionText: "Non hai un account?",
 				actionLink: "Registrati",
 			},
@@ -62,7 +62,7 @@ export const clerkLocalizations: Record<
 		signUp: {
 			start: {
 				title: "Crea un account",
-				subtitle: "Registrati per iniziare con MyShortReel",
+				subtitle: "Registrati per iniziare con VantageStarter",
 				actionText: "Hai già un account?",
 				actionLink: "Accedi",
 			},
@@ -76,7 +76,7 @@ export const clerkLocalizations: Record<
 		signIn: {
 			start: {
 				title: "Iniciar sesión",
-				subtitle: "Inicia sesión para continuar a MyShortReel",
+				subtitle: "Inicia sesión para continuar a VantageStarter",
 				actionText: "¿No tienes cuenta?",
 				actionLink: "Regístrate",
 			},
@@ -84,7 +84,7 @@ export const clerkLocalizations: Record<
 		signUp: {
 			start: {
 				title: "Crear cuenta",
-				subtitle: "Regístrate para comenzar con MyShortReel",
+				subtitle: "Regístrate para comenzar con VantageStarter",
 				actionText: "¿Ya tienes una cuenta?",
 				actionLink: "Iniciar sesión",
 			},
@@ -98,7 +98,7 @@ export const clerkLocalizations: Record<
 		signIn: {
 			start: {
 				title: "Entrar",
-				subtitle: "Entre para continuar no MyShortReel",
+				subtitle: "Entre para continuar no VantageStarter",
 				actionText: "Não tem uma conta?",
 				actionLink: "Cadastre-se",
 			},
@@ -106,7 +106,7 @@ export const clerkLocalizations: Record<
 		signUp: {
 			start: {
 				title: "Criar conta",
-				subtitle: "Cadastre-se para começar com MyShortReel",
+				subtitle: "Cadastre-se para começar com VantageStarter",
 				actionText: "Já tem uma conta?",
 				actionLink: "Entrar",
 			},
@@ -120,7 +120,7 @@ export const clerkLocalizations: Record<
 		signIn: {
 			start: {
 				title: "Вход",
-				subtitle: "Войдите, чтобы продолжить в MyShortReel",
+				subtitle: "Войдите, чтобы продолжить в VantageStarter",
 				actionText: "Нет аккаунта?",
 				actionLink: "Зарегистрироваться",
 			},
@@ -128,7 +128,7 @@ export const clerkLocalizations: Record<
 		signUp: {
 			start: {
 				title: "Создать аккаунт",
-				subtitle: "Зарегистрируйтесь, чтобы начать работу с MyShortReel",
+				subtitle: "Зарегистрируйтесь, чтобы начать работу с VantageStarter",
 				actionText: "Уже есть аккаунт?",
 				actionLink: "Войти",
 			},

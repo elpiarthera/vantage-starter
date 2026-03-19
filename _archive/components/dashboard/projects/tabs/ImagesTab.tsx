@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/dashboard/shared/EmptyState";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { Link } from "@/i18n/routing";
 
 interface ImagesTabProps {
@@ -56,7 +56,7 @@ export function ImagesTab({ projectId }: ImagesTabProps) {
 	return (
 		<div className="space-y-4">
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
-				{images.map((entry) => {
+				{images.map((entry: Doc<"imageToolHistory">) => {
 					const imageUrl = entry.imageUrl ?? entry.imageUrls?.[0] ?? null;
 					return (
 						<Link

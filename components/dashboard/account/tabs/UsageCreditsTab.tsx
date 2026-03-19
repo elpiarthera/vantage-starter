@@ -50,18 +50,14 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 
 	// Get real usage history from Convex
 	const usageHistory = useQuery(api.usageTracking.listByUser, { limit: 50 });
-	const projects = useQuery(api.projects.list);
 
 	const isLoading = creditsLoading || usageHistory === undefined;
 
 	// Date formatter hook for i18n
 	const { formatShort } = useDateFormatter();
 
-	// Map projectId -> project name for Usage History table
-	const projectNameMap = useMemo(() => {
-		if (!projects) return {} as Record<string, string>;
-		return Object.fromEntries(projects.map((p) => [p._id, p.name]));
-	}, [projects]);
+	// Placeholder — wire up to product-specific project data when available
+	const projectNameMap: Record<string, string> = {};
 
 	// Calculate usage statistics from real data
 	const usageStats = useMemo(() => {

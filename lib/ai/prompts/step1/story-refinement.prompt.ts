@@ -41,7 +41,7 @@ Guidelines:
 			temperature: 0.7,
 			maxTokens: 500,
 			updatedAt: "2025-11-29",
-			author: "MyShortReel",
+			author: "VantageStarter",
 			notes: "Used for 'Let AI Refine It' button in Step 1",
 		},
 

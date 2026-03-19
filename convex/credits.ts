@@ -15,8 +15,6 @@
  */
 
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
 import {
 	internalMutation,
 	internalQuery,
@@ -394,7 +392,6 @@ export const getCreditCost = query({
 			credits: creditCost.credits,
 			description: creditCost.description,
 			category: creditCost.category,
-			step: creditCost.step,
 			isActive: creditCost.isActive,
 		};
 	},
@@ -949,117 +946,6 @@ export const initializeForSubscription = internalMutation({
 		});
 
 		return { success: true, creditsGranted: tier.initialCredits };
-	},
-});
-
-// ============================================================
-// SPRINT 37: VIDEO CREDIT HELPERS
-// deductCreditsForVideo — exported helper (not a registered mutation)
-// refundVideoCredits — internalMutation for polling failure refunds
-// ============================================================
-
-/**
- * Deduct credits for video generation with duration scaling.
- * Exported as a plain async function so startGenericVideoGeneration can call it
- * directly with ctx — a registered mutation cannot call another registered mutation.
- */
-export async function deductCreditsForVideo(
-	ctx: MutationCtx,
-	args: {
-		clerkUserId: string;
-		actionType: string;
-		durationSeconds: number;
-		baseDurationSeconds: number; // always 5 (creditBaseDuration)
-	},
-): Promise<{ success: boolean; transactionId?: Id<"creditTransactions"> }> {
-	// 1. Lookup base credit cost
-	const costRow = await ctx.db
-		.query("creditCosts")
-		.withIndex("by_action_type", (q) => q.eq("actionType", args.actionType))
-		.unique();
-	if (!costRow) throw new Error(`Unknown actionType: ${args.actionType}`);
-
-	// 2. Scale by duration ratio
-	const scaledCost = Math.ceil(
-		(costRow.credits * args.durationSeconds) / args.baseDurationSeconds,
-	);
-
-	// 3. Check + deduct balance (inline — mirrors the core logic from deductCredits handler)
-	const userCredits = await ctx.db
-		.query("userCredits")
-		.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", args.clerkUserId))
-		.unique();
-	if (!userCredits || userCredits.balance < scaledCost) {
-		return { success: false };
-	}
-
-	await ctx.db.patch(userCredits._id, {
-		balance: userCredits.balance - scaledCost,
-		totalUsed: (userCredits.totalUsed ?? 0) + scaledCost,
-		updatedAt: Date.now(),
-	});
-
-	// 4. Record transaction for refund-on-failure traceability
-	// Field names MUST match creditTransactions schema exactly:
-	// type, amount, balanceAfter, description, timestamp are all required fields.
-	const newBalance = userCredits.balance - scaledCost;
-	const transactionId = await ctx.db.insert("creditTransactions", {
-		clerkUserId: args.clerkUserId,
-		type: "usage",
-		amount: -scaledCost,
-		balanceAfter: newBalance,
-		actionType: args.actionType,
-		description: `Video generation: ${args.actionType}`,
-		timestamp: Date.now(),
-	});
-
-	return { success: true, transactionId };
-}
-
-/**
- * Refund credits on video generation failure.
- * Called by pollVideoGeneration via internal.credits.refundVideoCredits.
- */
-export const refundVideoCredits = internalMutation({
-	args: {
-		creditTransactionId: v.id("creditTransactions"),
-		clerkUserId: v.string(),
-	},
-	handler: async (ctx, { creditTransactionId, clerkUserId }) => {
-		const original = await ctx.db.get(creditTransactionId);
-		if (!original) return; // missing — safe no-op
-
-		// Idempotency: don't refund the same transaction twice (guards against concurrent polls)
-		const existingRefund = await ctx.db
-			.query("creditTransactions")
-			.withIndex("by_user_and_timestamp", (q) =>
-				q.eq("clerkUserId", clerkUserId),
-			)
-			.filter((q) =>
-				q.eq(q.field("originalTransactionId"), creditTransactionId),
-			)
-			.first();
-		if (existingRefund) return; // already refunded — safe no-op
-
-		const refundAmount = Math.abs(original.amount);
-		const userCredits = await ctx.db
-			.query("userCredits")
-			.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", clerkUserId))
-			.unique();
-		if (!userCredits) return;
-
-		await ctx.db.patch(userCredits._id, {
-			balance: userCredits.balance + refundAmount,
-		});
-		await ctx.db.insert("creditTransactions", {
-			clerkUserId,
-			type: "refund",
-			amount: refundAmount,
-			balanceAfter: userCredits.balance + refundAmount,
-			description: "Video generation failed — credits refunded",
-			originalTransactionId: creditTransactionId,
-			timestamp: Date.now(),
-		});
 	},
 });
 

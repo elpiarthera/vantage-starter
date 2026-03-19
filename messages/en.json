@@ -31,7 +31,7 @@
 	},
 	"sign_in_page": {
 		"title": "Welcome Back",
-		"subtitle": "Sign in to continue to MyShortReel"
+		"subtitle": "Sign in to continue to VantageStarter"
 	},
 	"sign_up_page": {
 		"title": "Create Account",
@@ -1860,7 +1860,7 @@
 		"admin_required_description": "You need administrator privileges to access this page",
 		"back_to_dashboard": "Back to Dashboard",
 		"panel_title": "Admin Panel",
-		"panel_subtitle": "MyShortReel",
+		"panel_subtitle": "VantageStarter",
 		"sidebar": {
 			"meta_categories": "Meta Categories",
 			"categories": "Categories",
@@ -2228,9 +2228,9 @@
 		}
 	},
 	"watch_page": {
-		"page_title": "{title} | MyShortReel",
-		"meta_description": "Watch this video created with MyShortReel",
-		"created_with": "Created with MyShortReel",
+		"page_title": "{title} | VantageStarter",
+		"meta_description": "Watch this video created with VantageStarter",
+		"created_with": "Created with VantageStarter",
 		"share_title": "Share this video",
 		"share_whatsapp": "WhatsApp",
 		"share_twitter": "Twitter",

@@ -1,13 +1,10 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDashboardBreadcrumb } from "@/contexts/DashboardBreadcrumbContext";
 import { useDevice } from "@/contexts/DeviceContext";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 
 interface Breadcrumb {
 	label: string;
@@ -20,50 +17,30 @@ export function DashboardNav() {
 	const breadcrumbContext = useDashboardBreadcrumb();
 
 	const paths = pathname.split("/").filter(Boolean);
-	const projectsIdx = paths.indexOf("projects");
-	const templatesIdx = paths.indexOf("templates");
-	const isProjectDetailPage =
-		projectsIdx >= 0 && projectsIdx === paths.length - 2;
-	const isTemplateDetailPage =
-		templatesIdx >= 0 && templatesIdx === paths.length - 2;
-	const projectIdFromPath = isProjectDetailPage
-		? (paths[paths.length - 1] as Id<"projects">)
-		: undefined;
 
-	const project = useQuery(
-		api.projects.get,
-		projectIdFromPath ? { projectId: projectIdFromPath } : "skip",
-	);
-
-	// Generate breadcrumbs from pathname (template name from context — TemplateDetail sets it to avoid duplicate query)
+	// Generate breadcrumbs from pathname
 	const generateBreadcrumbs = (): Breadcrumb[] => {
 		const breadcrumbs: Breadcrumb[] = [
 			{ label: "Home", href: "/" },
 			{ label: "Dashboard", href: "/dashboard" },
 		];
 
-		// Add additional breadcrumbs based on path
 		if (paths.length > 1) {
 			for (let i = 1; i < paths.length; i++) {
 				const path = paths[i];
 				const href = `/${paths.slice(0, i + 1).join("/")}`;
-
 				const isLastSegment = i === paths.length - 1;
-				const useProjectName =
-					isProjectDetailPage && isLastSegment && project?.name;
-				const useTemplateName =
-					isTemplateDetailPage &&
-					isLastSegment &&
-					breadcrumbContext?.templateName;
+				const contextLabel =
+					isLastSegment && breadcrumbContext?.templateName
+						? breadcrumbContext.templateName
+						: null;
 
-				const label = useProjectName
-					? project.name
-					: useTemplateName
-						? (breadcrumbContext?.templateName ?? "Template")
-						: path
-								.split("-")
-								.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-								.join(" ");
+				const label = contextLabel
+					? contextLabel
+					: path
+							.split("-")
+							.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+							.join(" ");
 
 				breadcrumbs.push({ label, href });
 			}
@@ -73,7 +50,6 @@ export function DashboardNav() {
 	};
 
 	const breadcrumbs = generateBreadcrumbs();
-
 	const visibleBreadcrumbs =
 		isMobile && breadcrumbs.length > 2 ? breadcrumbs.slice(-2) : breadcrumbs;
 

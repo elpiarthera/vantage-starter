@@ -179,7 +179,7 @@ export function DashboardHeader() {
 								isMobile ? "active:scale-95" : "hover:bg-accent"
 							}`}
 						>
-							<span className="font-semibold">MyShortReel</span>
+							<span className="font-semibold">VantageStarter</span>
 							<ChevronDown className="h-4 w-4 opacity-50" />
 						</Button>
 					</div>

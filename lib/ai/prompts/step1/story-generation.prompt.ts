@@ -61,7 +61,7 @@ Important: Return ONLY valid JSON, no markdown code blocks or explanations.`,
 			temperature: 0.8,
 			maxTokens: 1000,
 			updatedAt: "2026-02-23",
-			author: "MyShortReel",
+			author: "VantageStarter",
 			notes: "Used for 'Continue to The Story' button in Step 1",
 		},
 

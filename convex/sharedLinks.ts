@@ -2,11 +2,11 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 /**
- * List all shared links for a video
+ * List all shared links for a resource
  */
 export const list = query({
 	args: {
-		videoId: v.id("videos"),
+		resourceId: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -16,7 +16,7 @@ export const list = query({
 
 		const links = await ctx.db
 			.query("sharedLinks")
-			.withIndex("by_video", (q) => q.eq("videoId", args.videoId))
+			.withIndex("by_resource", (q) => q.eq("resourceId", args.resourceId))
 			.collect();
 
 		return links;
@@ -28,7 +28,7 @@ export const list = query({
  */
 export const create = mutation({
 	args: {
-		videoId: v.id("videos"),
+		resourceId: v.string(),
 		organizationId: v.string(),
 		expiresAt: v.optional(v.number()),
 		password: v.optional(v.string()),
@@ -47,7 +47,7 @@ export const create = mutation({
 
 		const linkId = await ctx.db.insert("sharedLinks", {
 			organizationId: args.organizationId,
-			videoId: args.videoId,
+			resourceId: args.resourceId,
 			userId,
 			token,
 			expiresAt: args.expiresAt,
@@ -80,7 +80,6 @@ export const remove = mutation({
 			throw new Error("Link not found");
 		}
 
-		// Verify ownership
 		if (link.userId !== identity.subject) {
 			throw new Error("Unauthorized");
 		}

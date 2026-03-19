@@ -83,8 +83,6 @@ export const syncUser = mutation({
 			lastName: args.lastName,
 			username: args.username,
 			imageUrl: args.imageUrl,
-			// Schema doc required fields with defaults
-			totalProjects: 0,
 			lastActiveAt: now,
 			createdAt: now,
 			updatedAt: now,

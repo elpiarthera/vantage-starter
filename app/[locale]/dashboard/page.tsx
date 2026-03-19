@@ -23,10 +23,6 @@ export default function DashboardPage() {
 	);
 
 	// Only fetch data after user is synced (prevents "Not authenticated" error)
-	const projects = useQuery(
-		api.projects.list,
-		isUserSynced ? undefined : "skip",
-	);
 	const currentUser = useQuery(
 		api.users.getCurrentUser,
 		isUserSynced ? undefined : "skip",
@@ -40,14 +36,12 @@ export default function DashboardPage() {
 	const isLoading =
 		isSyncing ||
 		!isUserSynced ||
-		projects === undefined ||
 		currentUser === undefined ||
 		creditsLoading ||
 		storageUsage === undefined;
 
 	// Error state: null means query failed
-	const hasError =
-		projects === null || currentUser === null || storageUsage === null;
+	const hasError = currentUser === null || storageUsage === null;
 
 	const handleRetry = () => {
 		window.location.reload();
@@ -95,25 +89,15 @@ export default function DashboardPage() {
 		);
 	}
 
-	// Calculate stats from real data
-	const totalProjects = currentUser?.totalProjects || 0;
-	const videosGenerated =
-		projects?.filter((p) => p.status === "completed").length || 0;
-
-	// Get recent projects (top 3)
-	const recentProjects = projects?.slice(0, 3) || [];
-
 	return (
 		<div className="container mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-8 animate-in fade-in duration-300">
 			<WelcomeHeader
-				totalProjects={totalProjects}
 				creditsRemaining={creditsRemaining}
-				videosGenerated={videosGenerated}
 				storageUsed={storageUsage || { totalGB: 0 }}
 			/>
 			<QuickActions />
-			<RecentProjects projects={recentProjects} />
-			<ActivityFeed projects={projects || []} />
+			<RecentProjects />
+			<ActivityFeed />
 		</div>
 	);
 }

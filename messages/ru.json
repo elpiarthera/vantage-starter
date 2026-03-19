@@ -31,7 +31,7 @@
   },
   "sign_in_page": {
     "title": "С возвращением",
-    "subtitle": "Войдите, чтобы продолжить работу с MyShortReel"
+    "subtitle": "Войдите, чтобы продолжить работу с VantageStarter"
   },
   "sign_up_page": {
     "title": "Создать аккаунт",
@@ -1859,7 +1859,7 @@
     "admin_required_description": "Вам нужны права администратора для доступа к этой странице",
     "back_to_dashboard": "Назад к панели управления",
     "panel_title": "Панель администратора",
-    "panel_subtitle": "MyShortReel",
+    "panel_subtitle": "VantageStarter",
     "sidebar": {
       "meta_categories": "Мета-категории",
       "categories": "Категории",
@@ -2227,9 +2227,9 @@
     }
   },
   "watch_page": {
-    "page_title": "{title} | MyShortReel",
-    "meta_description": "Посмотрите это видео, созданное с помощью MyShortReel",
-    "created_with": "Создано с помощью MyShortReel",
+    "page_title": "{title} | VantageStarter",
+    "meta_description": "Посмотрите это видео, созданное с помощью VantageStarter",
+    "created_with": "Создано с помощью VantageStarter",
     "share_title": "Поделиться этим видео",
     "share_whatsapp": "WhatsApp",
     "share_twitter": "Twitter",

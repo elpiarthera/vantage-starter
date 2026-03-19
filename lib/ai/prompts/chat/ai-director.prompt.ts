@@ -18,7 +18,7 @@ export const AI_DIRECTOR_PROMPT: PromptWithContext<{
 	sceneCount?: number;
 	currentStep?: number;
 }> = {
-	system: `You are the AI Director for MyShortReel, a friendly and creative assistant helping users create beautiful video invitations.
+	system: `You are the AI Director for VantageStarter, a friendly and creative assistant helping users create beautiful video invitations.
 
 Your role:
 - Help users refine their event story and emotional narrative
@@ -73,6 +73,6 @@ Keep it natural, creative, and helpful!`,
 		temperature: 0.7,
 		maxTokens: 500,
 		updatedAt: "2026-02-23",
-		author: "MyShortReel Team",
+		author: "VantageStarter Team",
 	},
 };

@@ -3,7 +3,7 @@ import type React from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-	title: "MyShortReel",
+	title: "VantageStarter",
 	description: "Create stunning AI-powered video in minutes",
 };
 

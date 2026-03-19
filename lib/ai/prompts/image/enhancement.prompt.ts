@@ -42,6 +42,6 @@ export const IMAGE_ENHANCEMENT_PROMPT = {
 		temperature: 0.8,
 		maxTokens: 300,
 		updatedAt: "2025-11-19",
-		author: "MyShortReel Team",
+		author: "VantageStarter Team",
 	} as PromptMetadata,
 };
