@@ -287,7 +287,6 @@ body::before {
    as a fallback after 800ms — this catches cases where Framer Motion fails */
 section > div[style*="opacity: 0"],
 section > div[style*="opacity:0"] {
-  animation: force-visible 0ms 800ms forwards;
 }
 
 /* ============================================================================
@@ -304,5 +303,11 @@ section > div[style*="opacity:0"] {
 
 /* Apply safety net — sections visible after 0.8s regardless of JS */
 section {
-  animation: force-visible 0.5s ease-out 0.8s both;
+}
+
+/* Nuclear safety net — force sections visible after 1s regardless of Framer Motion inline styles */
+section {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
 }
