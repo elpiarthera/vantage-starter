@@ -3,10 +3,12 @@
 import { useRef, useEffect, useState } from "react";
 
 interface ShaderBackgroundProps {
-	/** Path to the shader HTML file served from /public */
+	/** Path to the shader HTML file served from /public. Default: fluid-amber. */
 	src?: string;
-	/** Opacity of the shader layer (0–1). Default 0.9. */
+	/** Opacity of the shader layer (0–1). Default 0.6. */
 	opacity?: number;
+	/** Time scale sent to the shader once loaded. Lower = calmer. Default 0.07. */
+	timeScale?: number;
 }
 
 /**
@@ -14,13 +16,14 @@ interface ShaderBackgroundProps {
  *
  * Accessibility: aria-hidden, tabIndex -1, pointer-events none.
  * Motion: respects prefers-reduced-motion — falls back to static gradient.
- * Mobile: on < md the shader still renders (WebGL is GPU-side and performant),
- *         but if reduced-motion is set we skip it entirely.
- * SSR: safe — component only mounts client-side, iframe is an HTML element.
+ * Mobile: WebGL is GPU-side; renders on mobile. Reduced-motion skips entirely.
+ * SSR: safe — component only mounts client-side; iframe is a plain HTML element.
+ * X-Frame-Options: next.config.mjs must set SAMEORIGIN (not DENY) for same-origin iframes.
  */
 export function ShaderBackground({
-	src = "/shaders/hero-bg.html",
-	opacity = 0.9,
+	src = "/shaders/fluid-amber.html",
+	opacity = 0.6,
+	timeScale = 0.07,
 }: ShaderBackgroundProps) {
 	const iframeRef = useRef<HTMLIFrameElement>(null);
 	const [prefersReduced, setPrefersReduced] = useState(false);
@@ -34,19 +37,19 @@ export function ShaderBackground({
 		return () => mq.removeEventListener("change", handler);
 	}, []);
 
-	// Slow down the animation slightly once the iframe loads — more calming for a hero
+	// Send timeScale to shader once iframe has loaded
 	useEffect(() => {
 		if (!iframeReady || prefersReduced) return;
 		const timer = setTimeout(() => {
 			iframeRef.current?.contentWindow?.postMessage(
-				{ type: "param", name: "timeScale", value: 0.07 },
+				{ type: "param", name: "timeScale", value: timeScale },
 				"*",
 			);
 		}, 400);
 		return () => clearTimeout(timer);
-	}, [iframeReady, prefersReduced]);
+	}, [iframeReady, prefersReduced, timeScale]);
 
-	// Static fallback gradient — used when prefers-reduced-motion is set
+	// Static fallback gradient — prefers-reduced-motion
 	if (prefersReduced) {
 		return (
 			<div
@@ -62,7 +65,7 @@ export function ShaderBackground({
 
 	return (
 		<>
-			{/* Fallback gradient — renders immediately, hidden once iframe loads */}
+			{/* CSS fallback renders immediately; fades out once shader is ready */}
 			<div
 				className="absolute inset-0 pointer-events-none transition-opacity duration-700"
 				aria-hidden="true"

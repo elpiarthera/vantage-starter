@@ -73,14 +73,14 @@ const config: Config = {
     				'5': 'oklch(var(--chart-5) / <alpha-value>)'
     			},
     			sidebar: {
-    				DEFAULT: 'hsl(var(--sidebar-background))',
-    				foreground: 'hsl(var(--sidebar-foreground))',
-    				primary: 'hsl(var(--sidebar-primary))',
-    				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-    				accent: 'hsl(var(--sidebar-accent))',
-    				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-    				border: 'hsl(var(--sidebar-border))',
-    				ring: 'hsl(var(--sidebar-ring))'
+    				DEFAULT: 'var(--sidebar-background)',
+    				foreground: 'var(--sidebar-foreground)',
+    				primary: 'var(--sidebar-primary)',
+    				'primary-foreground': 'var(--sidebar-primary-foreground)',
+    				accent: 'var(--sidebar-accent)',
+    				'accent-foreground': 'var(--sidebar-accent-foreground)',
+    				border: 'var(--sidebar-border)',
+    				ring: 'var(--sidebar-ring)'
     			}
     		},
     		borderRadius: {
@@ -113,6 +113,18 @@ const config: Config = {
     		animation: {
     			'accordion-down': 'accordion-down 0.2s ease-out',
     			'accordion-up': 'accordion-up 0.2s ease-out'
+    		},
+    		boxShadow: {
+    			'xs':            '0 1px 2px oklch(0 0 0 / 5%)',
+    			'sm':            '0 1px 3px oklch(0 0 0 / 8%), 0 1px 2px oklch(0 0 0 / 5%)',
+    			'md':            '0 4px 8px oklch(0 0 0 / 8%), 0 2px 4px oklch(0 0 0 / 5%)',
+    			'lg':            '0 8px 24px oklch(0 0 0 / 10%), 0 4px 8px oklch(0 0 0 / 6%)',
+    			'xl':            '0 16px 48px oklch(0 0 0 / 12%), 0 8px 16px oklch(0 0 0 / 8%)',
+    			'amber-sm':      '0 2px 8px oklch(0.62 0.16 44 / 25%)',
+    			'amber-md':      '0 4px 16px oklch(0.62 0.16 44 / 20%)',
+    			'amber-lg':      '0 8px 32px oklch(0.62 0.16 44 / 25%)',
+    			'amber-dark-sm': '0 2px 8px oklch(0.72 0.16 44 / 15%)',
+    			'amber-dark-lg': '0 8px 32px oklch(0.72 0.16 44 / 12%)',
     		}
     	}
     },

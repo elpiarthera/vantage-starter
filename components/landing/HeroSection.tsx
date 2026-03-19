@@ -13,79 +13,83 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			className="relative overflow-hidden py-20 md:py-32"
+			className="relative min-h-[85vh] flex items-center overflow-hidden"
 		>
-			{/* Layer 0 — Radiant WebGL shader (z-0, fills section) */}
-			<ShaderBackground opacity={0.85} />
+			{/* Layer 0 — fluid-amber WebGL shader (opacity 0.55, timeScale 0.07) */}
+			<ShaderBackground src="/shaders/fluid-amber.html" opacity={0.55} timeScale={0.07} />
 
-			{/* Layer 1 — Dark gradient overlay for text readability (z-10) */}
-			<div
-				className="pointer-events-none absolute inset-0 z-10"
-				aria-hidden="true"
-				style={{
-					background: [
-						// Deep vignette from top + bottom edges
-						"linear-gradient(to bottom, oklch(0.06 0.02 44 / 0.55) 0%, transparent 35%, transparent 60%, oklch(0.05 0.015 44 / 0.7) 100%)",
-					].join(", "),
-				}}
-			/>
-
-			{/* Layer 2 — Subtle centre radial to lift text legibility */}
+			{/* Layer 1 — gradient fade to background at bottom */}
 			<div
 				className="pointer-events-none absolute inset-0 z-10"
 				aria-hidden="true"
 				style={{
 					background:
-						"radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.06 0.02 44 / 0.45) 0%, transparent 70%)",
+						"linear-gradient(to bottom, transparent 0%, transparent 50%, var(--background) 100%)",
 				}}
 			/>
 
-			<div className="relative z-20 max-w-5xl mx-auto px-6 text-center">
+			{/* Layer 2 — dark vignette edges for text readability */}
+			<div
+				className="pointer-events-none absolute inset-0 z-10"
+				aria-hidden="true"
+				style={{
+					background: [
+						"linear-gradient(to bottom, oklch(0.06 0.02 44 / 0.5) 0%, transparent 30%)",
+						"radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.06 0.02 44 / 0.35) 0%, transparent 70%)",
+					].join(", "),
+				}}
+			/>
+
+			{/* Layer 3 — content */}
+			<div className="relative z-20 max-w-5xl mx-auto px-6 py-24 md:py-32 w-full">
 				<motion.div
-					initial={{ opacity: 0, y: 20 }}
+					initial={{ opacity: 0, y: 12 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.35, ease: "easeOut" }}
+					transition={{ duration: 0.4, ease: "easeOut" }}
 				>
-					{/* Badge — amber border/tint over dark shader */}
+					{/* Eyebrow badge */}
 					<span className="inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.78_0.14_44/0.5)] bg-[oklch(0.78_0.14_44/0.12)] px-3.5 py-1 text-xs font-medium text-[oklch(0.88_0.12_44)] mb-8 tracking-[0.01em]">
 						{t("badge")}
 					</span>
 
-					{/* Headline — white on dark shader */}
+					{/* H1 — white on dark shader, tight tracking */}
 					<h1
-						className={[
-							"font-semibold text-white",
-							"text-5xl sm:text-6xl md:text-7xl",
-							"tracking-[-0.03em] leading-[1.04]",
-							"mb-6",
-							// Subtle text-shadow to lift off shader
-							"drop-shadow-[0_2px_24px_oklch(0.78_0.14_44/0.3)]",
-						].join(" ")}
+						className="font-semibold text-white text-balance mb-6 drop-shadow-[0_2px_24px_oklch(0.78_0.14_44/0.3)]"
+						style={{
+							fontSize: "clamp(3rem, 6vw, 5rem)",
+							lineHeight: 1.05,
+							letterSpacing: "-0.03em",
+						}}
 					>
 						{t("headline")}
 					</h1>
 
-					{/* Subline — light warm gray */}
-					<p className="mx-auto max-w-xl text-lg md:text-xl text-white/75 mb-3 leading-relaxed tracking-[-0.01em]">
+					{/* Subline */}
+					<motion.p
+						className="text-lg md:text-xl text-white/75 max-w-2xl mb-3 leading-relaxed tracking-[-0.01em]"
+						initial={{ opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.4, ease: "easeOut", delay: 0.08 }}
+					>
 						{t("subline")}
-					</p>
+					</motion.p>
 
 					{/* Supporting detail */}
-					<p className="mx-auto max-w-lg text-sm text-white/50 mb-10 leading-relaxed">
+					<p className="text-sm text-white/50 max-w-lg mb-10 leading-relaxed">
 						{t("subline_detail")}
 					</p>
 
 					{/* CTAs */}
 					<motion.div
-						className="flex flex-col sm:flex-row items-center justify-center gap-3"
-						initial={{ opacity: 0, y: 10 }}
+						className="flex flex-col sm:flex-row items-center justify-start gap-4"
+						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.3, ease: "easeOut", delay: 0.12 }}
+						transition={{ duration: 0.4, ease: "easeOut", delay: 0.16 }}
 					>
 						<Link href="/sign-up">
 							<Button
 								size="lg"
-								className="min-w-[180px] gap-2 shadow-[0_2px_24px_oklch(0.62_0.16_44/0.45)] hover:shadow-[0_4px_28px_oklch(0.62_0.16_44/0.6)] transition-shadow duration-200"
+								className="min-w-[180px] gap-2 shadow-amber-sm hover:shadow-amber-md transition-shadow duration-200"
 							>
 								{t("cta_primary")}
 								<ArrowRight className="size-4" aria-hidden="true" />
