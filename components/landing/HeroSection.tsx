@@ -32,7 +32,7 @@ export function HeroSection() {
 						<span
 							className="inline-grid"
 							aria-label={t("headline_animated_aria")}
-							aria-live="polite"
+							aria-live="off"
 						>
 							<span
 								className="hero-animated-word hero-word-1"

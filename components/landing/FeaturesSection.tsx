@@ -140,8 +140,6 @@ export function FeaturesSection() {
 					{/* Row 3 */}
 					<FeatureCard feature={FEATURES[4]} t={t} />
 					<FeatureCard feature={FEATURES[5]} t={t} />
-					{/* Row 3 filler — keeps the grid from leaving an orphan gap */}
-					<div className="hidden md:block border-t border-l border-[var(--border)] bg-[var(--card)]" />
 				</div>
 			</div>
 		</section>

@@ -78,7 +78,7 @@ export function PricingSection() {
 				</div>
 
 				{/* 2-column grid, max-w-3xl centered */}
-				<div className="max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+				<div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 					{TIERS.map((tier) => (
 						<PricingCard key={tier.nameKey} tier={tier} t={t} />
 					))}
@@ -166,18 +166,17 @@ function PricingCard({
 			</ul>
 
 			{/* CTA */}
-			<a href={tier.ctaHref} className="block">
-				<Button
-					className={cn(
-						"w-full h-12 rounded-full font-medium transition-opacity duration-150 ease-out hover:opacity-90",
-						isHighlighted
-							? "bg-primary text-primary-foreground border-0"
-							: "bg-transparent border border-border text-foreground hover:bg-transparent",
-					)}
-				>
-					{t(tier.ctaKey)}
-				</Button>
-			</a>
+			<Button
+				asChild
+				className={cn(
+					"w-full h-12 rounded-full font-medium transition-opacity duration-150 ease-out hover:opacity-90",
+					isHighlighted
+						? "bg-primary text-primary-foreground border-0"
+						: "bg-transparent border border-border text-foreground hover:bg-transparent",
+				)}
+			>
+				<a href={tier.ctaHref}>{t(tier.ctaKey)}</a>
+			</Button>
 		</article>
 	);
 }

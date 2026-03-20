@@ -35,7 +35,7 @@ export function LandingFooter() {
 							</li>
 							<li>
 								<a
-									href="mailto:[YOUR_SUPPORT_EMAIL]"
+									href="mailto:hello@vantagestarter.ai"
 									className="hover:text-foreground transition-colors duration-150 ease-out"
 								>
 									{t("contact")}
