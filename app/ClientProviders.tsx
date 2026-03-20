@@ -8,10 +8,24 @@ import { Toaster } from "sonner";
 import { clerkLocalizations } from "@/i18n/clerk-localization";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
-// Amber-gold primary: oklch(0.62 0.16 44) → approx #c47a1e in light, oklch(0.72 0.16 44) → #d9901f in dark
-// Using CSS hex approximation for Clerk appearance API (does not accept oklch() strings)
-const CLERK_PRIMARY = "#c47a1e"; // oklch(0.62 0.16 44) — warm amber
-const CLERK_PRIMARY_DARK = "#d9901f"; // oklch(0.72 0.16 44) — lighter for dark mode
+// Dark electric blue palette — matches dark-electric-blue.css .dark tokens
+// Clerk appearance API does not accept oklch() — using hex approximations.
+// oklch(0.62 0.18 240) → #4a7fd4 approx (primary blue)
+// oklch(0.08 0.01 240) → #0b0d12 approx (deep background)
+// oklch(0.12 0.015 240) → #111520 approx (card/popover surface)
+// oklch(0.17 0.01 240) → #181d2a approx (input background)
+// oklch(0.20 0.02 240) → #1c2130 approx (border)
+// oklch(0.93 0.01 240) → #eaecf2 approx (primary text)
+// oklch(0.65 0.01 240) → #9da3b0 approx (secondary text / muted)
+
+const CLERK_PRIMARY = "#4a7fd4"; // oklch(0.62 0.18 240)
+const CLERK_BG = "#0b0d12"; // oklch(0.08 0.01 240)
+const CLERK_CARD = "#111520"; // oklch(0.12 0.015 240)
+const CLERK_INPUT_BG = "#181d2a"; // oklch(0.17 0.01 240)
+const CLERK_BORDER = "#1c2130"; // oklch(0.20 0.02 240)
+const CLERK_TEXT = "#eaecf2"; // oklch(0.93 0.01 240)
+const CLERK_TEXT_MUTED = "#9da3b0"; // oklch(0.65 0.01 240)
+const CLERK_DANGER = "#c0392b"; // oklch(0.65 0.22 25)
 
 export function ClientProviders({ children }: { children: ReactNode }) {
 	const locale = useLocale();
@@ -27,93 +41,202 @@ export function ClientProviders({ children }: { children: ReactNode }) {
 			appearance={{
 				baseTheme: dark,
 				variables: {
-					// OKLCH amber-gold primary (hue 44°)
-					colorPrimary: CLERK_PRIMARY_DARK,
-					// Dark backgrounds — matches .dark mode tokens
-					colorBackground: "#1a1208", // oklch(0.10 0.01 44) approx
-					colorInputBackground: "#2a1e0a", // oklch(0.22 0.02 44) approx
-					colorInputText: "#f8f4ee",        // oklch(0.97 0 0) approx
-					colorText: "#f8f4ee",
-					colorTextSecondary: "#a09080",     // oklch(0.65 0 0) approx
-					colorDanger: "#c0392b",             // oklch(0.65 0.22 25) approx
+					colorPrimary: CLERK_PRIMARY,
+					colorBackground: CLERK_BG,
+					colorInputBackground: CLERK_INPUT_BG,
+					colorInputText: CLERK_TEXT,
+					colorText: CLERK_TEXT,
+					colorTextSecondary: CLERK_TEXT_MUTED,
+					colorDanger: CLERK_DANGER,
 
-					// Typography
-					fontFamily: '"Instrument Sans", system-ui, sans-serif',
-					fontSize: "1rem",
+					// Space Grotesk — inherits from page CSS via "inherit"
+					fontFamily: '"Space Grotesk", system-ui, sans-serif',
+					fontSize: "0.9375rem",
 					fontWeight: { normal: 400, medium: 500, bold: 700 },
 
-					// Border radius contract: rounded-xl = 0.75rem
-					borderRadius: "0.75rem",
+					// Sharp corners everywhere — editorial design system
+					borderRadius: "0px",
 
 					spacingUnit: "1rem",
 				},
 				elements: {
+					// --- Global containers ---
 					rootBox: {
-						margin: "0 auto",
+						margin: "0",
 					},
 					card: {
-						// oklch(0.15 0.01 44) approx
-						backgroundColor: "#221508",
-						borderColor: "rgba(255,255,255,0.10)",
+						backgroundColor: CLERK_CARD,
+						borderColor: CLERK_BORDER,
 						borderWidth: "1px",
 						borderStyle: "solid",
-						borderRadius: "0.75rem",
-						boxShadow: "0 10px 15px -3px rgba(0,0,0,0.3)",
+						borderRadius: "0px",
+						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
 					},
+
+					// --- OrganizationSwitcher popover ---
+					organizationSwitcherPopoverCard: {
+						backgroundColor: CLERK_CARD,
+						borderColor: CLERK_BORDER,
+						borderWidth: "1px",
+						borderStyle: "solid",
+						borderRadius: "0px",
+						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+					},
+					organizationSwitcherPopoverActionButton: {
+						color: CLERK_TEXT,
+						borderRadius: "0px",
+					},
+					organizationSwitcherPopoverActionButton__createOrganization: {
+						color: CLERK_TEXT,
+					},
+					organizationSwitcherPopoverActionButton__manageOrganization: {
+						color: CLERK_TEXT,
+					},
+					organizationPreviewMainIdentifier: {
+						color: CLERK_TEXT,
+					},
+					organizationPreviewSecondaryIdentifier: {
+						color: CLERK_TEXT_MUTED,
+					},
+					// Trigger button — styled in DashboardHeader; keep minimal here
+					organizationSwitcherTrigger: {
+						borderRadius: "0px",
+					},
+					organizationSwitcherTriggerIcon: {
+						color: CLERK_TEXT_MUTED,
+					},
+
+					// --- UserButton / UserProfile popover ---
+					userButtonPopoverCard: {
+						backgroundColor: CLERK_CARD,
+						borderColor: CLERK_BORDER,
+						borderWidth: "1px",
+						borderStyle: "solid",
+						borderRadius: "0px",
+						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+					},
+					userButtonPopoverActionButton: {
+						color: CLERK_TEXT,
+						borderRadius: "0px",
+					},
+					userPreviewMainIdentifier: {
+						color: CLERK_TEXT,
+					},
+					userPreviewSecondaryIdentifier: {
+						color: CLERK_TEXT_MUTED,
+					},
+
+					// --- Org/User profile modal ---
+					modalContent: {
+						backgroundColor: CLERK_CARD,
+						borderColor: CLERK_BORDER,
+						borderRadius: "0px",
+					},
+					profileSection: {
+						backgroundColor: CLERK_CARD,
+					},
+					profileSectionTitle: {
+						color: CLERK_TEXT,
+					},
+					profileSectionContent: {
+						color: CLERK_TEXT_MUTED,
+					},
+					navbar: {
+						backgroundColor: CLERK_BG,
+						borderColor: CLERK_BORDER,
+					},
+					navbarButton: {
+						color: CLERK_TEXT_MUTED,
+					},
+					navbarButtonIcon: {
+						color: CLERK_TEXT_MUTED,
+					},
+					// Active nav item
+					"navbarButton:focus": {
+						color: CLERK_TEXT,
+					},
+
+					// --- Form elements ---
 					headerTitle: {
-						color: "#f8f4ee",
+						color: CLERK_TEXT,
 						fontWeight: "700",
 					},
 					headerSubtitle: {
-						color: "#a09080",
+						color: CLERK_TEXT_MUTED,
 					},
 					socialButtonsBlockButton: {
 						minHeight: "44px",
-						backgroundColor: "#2a1e0a",
-						borderColor: "rgba(255,255,255,0.10)",
-						color: "#f8f4ee",
+						backgroundColor: CLERK_INPUT_BG,
+						borderColor: CLERK_BORDER,
+						borderRadius: "0px",
+						color: CLERK_TEXT,
 						fontWeight: "500",
 					},
 					formButtonPrimary: {
 						minHeight: "44px",
-						backgroundColor: CLERK_PRIMARY_DARK,
-						// Dark text on amber: contrast 6.6:1 in dark mode — WCAG AA pass
-						color: "#1a1208",
+						backgroundColor: CLERK_PRIMARY,
+						borderRadius: "0px",
+						color: "#0b0d12",
 						fontWeight: "600",
+					},
+					formButtonReset: {
+						borderRadius: "0px",
+						color: CLERK_TEXT_MUTED,
 					},
 					formFieldInput: {
 						minHeight: "48px",
-						backgroundColor: "#2a1e0a",
-						borderColor: "rgba(255,255,255,0.10)",
-						color: "#f8f4ee",
+						backgroundColor: CLERK_INPUT_BG,
+						borderColor: CLERK_BORDER,
+						borderRadius: "0px",
+						color: CLERK_TEXT,
 					},
 					formFieldLabel: {
-						color: "#a09080",
+						color: CLERK_TEXT_MUTED,
 					},
 					footerActionLink: {
-						minHeight: "44px",
-						color: CLERK_PRIMARY_DARK,
+						color: CLERK_PRIMARY,
 					},
 					footerActionText: {
-						color: "#a09080",
+						color: CLERK_TEXT_MUTED,
 					},
 					identityPreviewText: {
-						color: "#f8f4ee",
+						color: CLERK_TEXT,
 					},
 					identityPreviewEditButton: {
-						color: CLERK_PRIMARY_DARK,
+						color: CLERK_PRIMARY,
 					},
 					otpCodeFieldInput: {
-						backgroundColor: "#2a1e0a",
-						borderColor: "rgba(255,255,255,0.10)",
-						color: "#f8f4ee",
+						backgroundColor: CLERK_INPUT_BG,
+						borderColor: CLERK_BORDER,
+						borderRadius: "0px",
+						color: CLERK_TEXT,
 					},
 					alternativeMethodsBlockButton: {
-						borderColor: "rgba(255,255,255,0.10)",
-						color: "#a09080",
+						borderColor: CLERK_BORDER,
+						borderRadius: "0px",
+						color: CLERK_TEXT_MUTED,
 					},
 					formResendCodeLink: {
-						color: CLERK_PRIMARY_DARK,
+						color: CLERK_PRIMARY,
+					},
+					dividerLine: {
+						backgroundColor: CLERK_BORDER,
+					},
+					dividerText: {
+						color: CLERK_TEXT_MUTED,
+					},
+
+					// --- Hide Clerk branding ---
+					footer: {
+						display: "none",
+					},
+					// Development mode badge
+					badge: {
+						display: "none",
+					},
+					// "Secured by Clerk" text
+					footerPages: {
+						display: "none",
 					},
 				},
 			}}

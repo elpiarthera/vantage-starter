@@ -190,19 +190,15 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						<OrganizationSwitcher
 							hidePersonal={false}
 							afterCreateOrganizationUrl="/dashboard"
-							afterLeaveOrganizationUrl="/"
+							afterLeaveOrganizationUrl="/dashboard"
 							afterSelectOrganizationUrl="/dashboard"
 							afterSelectPersonalUrl="/dashboard"
-							createOrganizationMode="navigation"
-							createOrganizationUrl="/dashboard/account?tab=new-org"
+							createOrganizationMode="modal"
 							appearance={{
 								elements: {
 									rootBox: "flex items-center",
 									organizationSwitcherTrigger:
-										"min-h-[36px] px-3 py-1.5 rounded-none hover:bg-accent transition-colors duration-150 ease-out text-sm gap-2",
-									organizationSwitcherPopoverCard:
-										"rounded-none border border-border shadow-md",
-									organizationSwitcherPopoverActions: "rounded-none",
+										"min-h-[36px] px-3 py-1.5 rounded-none hover:bg-accent transition-colors duration-150 ease-out text-sm gap-2 text-foreground",
 								},
 							}}
 						/>
