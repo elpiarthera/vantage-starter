@@ -9,22 +9,22 @@ import { clerkLocalizations } from "@/i18n/clerk-localization";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
 // Dark electric blue palette — matches dark-electric-blue.css .dark tokens
-// Clerk appearance API does not accept oklch() — using hex approximations.
-// oklch(0.62 0.18 240) → #4a7fd4 approx (primary blue)
-// oklch(0.08 0.01 240) → #0b0d12 approx (deep background)
-// oklch(0.12 0.015 240) → #111520 approx (card/popover surface)
-// oklch(0.17 0.01 240) → #181d2a approx (input background)
-// oklch(0.20 0.02 240) → #1c2130 approx (border)
-// oklch(0.93 0.01 240) → #eaecf2 approx (primary text)
-// oklch(0.65 0.01 240) → #9da3b0 approx (secondary text / muted)
+// Clerk appearance API does not accept oklch() — using verified hex approximations.
+// oklch(0.55 0.15 250) → #3366cc (primary blue)
+// oklch(0.08 0.01 240) → #101218 (deep background)
+// oklch(0.12 0.01 240) → #1a1c2e (card/modal/popover surface)
+// oklch(0.16 0.015 240) → #22243a (input background — slightly lighter than card)
+// oklch(0.22 0.02 240) → #2e3148 (border)
+// oklch(0.93 0.01 240) → #e8e9f0 (primary text)
+// oklch(0.65 0.01 240) → #9a9baa (secondary text / muted)
 
-const CLERK_PRIMARY = "#4a7fd4"; // oklch(0.62 0.18 240)
-const CLERK_BG = "#0b0d12"; // oklch(0.08 0.01 240)
-const CLERK_CARD = "#111520"; // oklch(0.12 0.015 240)
-const CLERK_INPUT_BG = "#181d2a"; // oklch(0.17 0.01 240)
-const CLERK_BORDER = "#1c2130"; // oklch(0.20 0.02 240)
-const CLERK_TEXT = "#eaecf2"; // oklch(0.93 0.01 240)
-const CLERK_TEXT_MUTED = "#9da3b0"; // oklch(0.65 0.01 240)
+const CLERK_PRIMARY = "#3366cc"; // oklch(0.55 0.15 250)
+const CLERK_BG = "#101218"; // oklch(0.08 0.01 240)
+const CLERK_CARD = "#1a1c2e"; // oklch(0.12 0.01 240) — modal/card/popover bg
+const CLERK_INPUT_BG = "#22243a"; // oklch(0.16 0.015 240) — slightly lighter than card
+const CLERK_BORDER = "#2e3148"; // oklch(0.22 0.02 240)
+const CLERK_TEXT = "#e8e9f0"; // oklch(0.93 0.01 240)
+const CLERK_TEXT_MUTED = "#9a9baa"; // oklch(0.65 0.01 240)
 const CLERK_DANGER = "#c0392b"; // oklch(0.65 0.22 25)
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -126,11 +126,22 @@ export function ClientProviders({ children }: { children: ReactNode }) {
 						color: CLERK_TEXT_MUTED,
 					},
 
-					// --- Org/User profile modal ---
+					// --- Create Organization / profile modals ---
 					modalContent: {
 						backgroundColor: CLERK_CARD,
 						borderColor: CLERK_BORDER,
+						borderWidth: "1px",
+						borderStyle: "solid",
 						borderRadius: "0px",
+						boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
+					},
+					modalBackdrop: {
+						backgroundColor: "rgba(0,0,0,0.75)",
+						backdropFilter: "blur(4px)",
+					},
+					// CreateOrganization modal specifically
+					createOrganizationBox: {
+						backgroundColor: CLERK_CARD,
 					},
 					profileSection: {
 						backgroundColor: CLERK_CARD,
@@ -176,7 +187,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
 						minHeight: "44px",
 						backgroundColor: CLERK_PRIMARY,
 						borderRadius: "0px",
-						color: "#0b0d12",
+						color: "#ffffff",
 						fontWeight: "600",
 					},
 					formButtonReset: {
