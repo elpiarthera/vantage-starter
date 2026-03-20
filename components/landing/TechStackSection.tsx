@@ -62,7 +62,7 @@ export function TechStackSection() {
 							title={name}
 						>
 							<div
-								className="w-10 h-10 opacity-40 grayscale transition-all duration-150 ease-out group-hover:opacity-100 group-hover:grayscale-0"
+								className="w-10 h-10 opacity-50 grayscale transition-all duration-150 ease-out group-hover:opacity-100 group-hover:grayscale-0 dark:opacity-40"
 								aria-label={name}
 								dangerouslySetInnerHTML={{ __html: svg }}
 							/>

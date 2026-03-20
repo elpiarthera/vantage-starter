@@ -10,8 +10,7 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			className="relative min-h-[100vh] flex items-center justify-center overflow-hidden"
-			style={{ backgroundColor: "oklch(0.13 0.01 240)" }}
+			className="relative min-h-[100vh] flex items-center justify-center overflow-hidden bg-background"
 		>
 			{/* Content */}
 			<div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-12 py-24 w-full flex flex-col items-center text-center">
@@ -63,9 +62,8 @@ export function HeroSection() {
 
 				{/* Subline */}
 				<p
-					className="text-lg leading-relaxed mb-10 hero-enter-delay-1"
+					className="text-lg leading-relaxed text-muted-foreground mb-10 hero-enter-delay-1"
 					style={{
-						color: "oklch(0.65 0.01 240)",
 						maxWidth: "52ch",
 						letterSpacing: "-0.01em",
 					}}
@@ -78,8 +76,7 @@ export function HeroSection() {
 					<Link href="/sign-up">
 						<Button
 							size="lg"
-							className="h-12 px-8 rounded-full border-0 hover:opacity-90 transition-opacity duration-150"
-							style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+							className="h-12 px-8 rounded-full border-0 bg-primary text-primary-foreground hover:opacity-90 transition-opacity duration-150"
 						>
 							{t("cta_primary")}
 						</Button>
@@ -88,11 +85,7 @@ export function HeroSection() {
 						<Button
 							variant="ghost"
 							size="lg"
-							className="h-12 px-8 rounded-full bg-transparent hover:bg-transparent hover:opacity-80 transition-opacity duration-150"
-							style={{
-								border: "1px solid oklch(0.25 0.01 240)",
-								color: "oklch(0.93 0.01 240)",
-							}}
+							className="h-12 px-8 rounded-full bg-transparent border border-border text-foreground hover:bg-transparent hover:opacity-80 transition-opacity duration-150"
 						>
 							{t("cta_secondary")}
 						</Button>
@@ -101,8 +94,7 @@ export function HeroSection() {
 
 				{/* Social proof line */}
 				<p
-					className="mt-8 text-xs tracking-[0.01em] hero-enter-delay-3"
-					style={{ color: "oklch(0.93 0.01 240 / 0.35)" }}
+					className="mt-8 text-xs tracking-[0.01em] text-muted-foreground/50 hero-enter-delay-3"
 				>
 					{t("social_proof_micro")}
 				</p>
@@ -110,7 +102,7 @@ export function HeroSection() {
 
 			{/* Bottom fade — blends into next section */}
 			<div
-				className="pointer-events-none absolute bottom-0 left-0 right-0 h-[200px]"
+				className="pointer-events-none absolute bottom-0 left-0 right-0 h-[120px]"
 				aria-hidden="true"
 				style={{
 					background: "linear-gradient(to bottom, transparent, var(--background))",

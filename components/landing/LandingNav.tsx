@@ -59,6 +59,12 @@ export function LandingNav() {
 						>
 							{t("nav.pricing")}
 						</a>
+						<a
+							href="#faq"
+							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out"
+						>
+							{t("nav.faq")}
+						</a>
 					</nav>
 
 					{/* Actions */}
@@ -145,6 +151,13 @@ export function LandingNav() {
 							className="flex items-center h-12 text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-150"
 						>
 							{t("nav.pricing")}
+						</a>
+						<a
+							href="#faq"
+							onClick={() => setMobileOpen(false)}
+							className="flex items-center h-12 text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-150"
+						>
+							{t("nav.faq")}
 						</a>
 					</nav>
 

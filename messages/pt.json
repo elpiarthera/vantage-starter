@@ -2592,7 +2592,8 @@
       "features": "Funcionalidades",
       "pricing": "Preços",
       "sign_in": "Entrar",
-      "get_started": "Começar"
+      "get_started": "Começar",
+      "faq": "FAQ"
     },
     "hero": {
       "aria_label": "Seção hero",

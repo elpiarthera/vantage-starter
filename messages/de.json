@@ -2592,7 +2592,8 @@
       "features": "Funktionen",
       "pricing": "Preise",
       "sign_in": "Anmelden",
-      "get_started": "Loslegen"
+      "get_started": "Loslegen",
+      "faq": "FAQ"
     },
     "hero": {
       "aria_label": "Hero-Bereich",

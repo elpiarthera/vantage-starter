@@ -2592,7 +2592,8 @@
       "features": "Features",
       "pricing": "Pricing",
       "sign_in": "Sign in",
-      "get_started": "Get started"
+      "get_started": "Get started",
+      "faq": "FAQ"
     },
     "hero": {
       "aria_label": "Hero section",

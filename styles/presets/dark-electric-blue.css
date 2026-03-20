@@ -10,6 +10,7 @@
   --primary-foreground: oklch(0.99 0 0);
   --accent: oklch(0.92 0.06 232);
   --accent-foreground: oklch(0.20 0 0);
+  --accent-warm: oklch(0.60 0.14 65);
   --muted: oklch(0.96 0.00 0);
   --muted-foreground: oklch(0.52 0 0);
   --background: oklch(0.99 0 0);
@@ -20,6 +21,9 @@
   --popover-foreground: oklch(0.10 0.01 232);
   --border: oklch(0.88 0.02 232);
   --ring: oklch(0.50 0.22 232);
+  /* Hover state tokens — light mode */
+  --card-hover: oklch(0.94 0.02 232);
+  --border-hover: oklch(0.80 0.04 232);
 }
 
 .dark {
@@ -29,7 +33,7 @@
   --accent-foreground: oklch(0.94 0.01 232);
   --accent-warm: oklch(0.75 0.14 65);
   --muted: oklch(0.14 0.01 240);
-  --muted-foreground: oklch(0.55 0.01 240);
+  --muted-foreground: oklch(0.65 0.01 240);
   --background: oklch(0.08 0.01 240);
   --foreground: oklch(0.93 0.01 240);
   --card: oklch(0.12 0.015 240);
@@ -38,4 +42,7 @@
   --popover-foreground: oklch(0.93 0.01 240);
   --border: oklch(0.20 0.02 240);
   --ring: oklch(0.62 0.18 240);
+  /* Hover state tokens — dark mode */
+  --card-hover: oklch(0.15 0.02 240);
+  --border-hover: oklch(0.30 0.03 240);
 }

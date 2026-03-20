@@ -31,9 +31,7 @@
     /* Border radius — 0 for cards/inputs, pill for buttons/badges */
     --radius: 0rem;
 
-    /* Hover state tokens */
-    --card-hover: oklch(0.15 0.02 240);
-    --border-hover: oklch(0.30 0.03 240);
+    /* Hover state tokens — defined per-preset in preset files */
 
     /* Status colors */
     --success: oklch(0.55 0.18 145);
@@ -320,33 +318,31 @@ section > div[style*="opacity:0"] {
    Each word is shown for 3s (9s total loop). No Framer Motion.
    ============================================================================ */
 
+/*
+ * Word cycling: 9s loop, 3s per word, 0.3s crossfade
+ * Word 1 visible: 0%–28%, fades out 28%–33%
+ * Word 2 visible: 33%–61%, fades in 33%–38%, fades out 61%–66%
+ * Word 3 visible: 66%–95%, fades in 66%–71%, fades out 95%–100%
+ */
 @keyframes hero-word-cycle {
-  /* Word 1: "retrofitted" visible 0–3s */
   0%        { opacity: 1; }
   28%       { opacity: 1; }
-  33.33%    { opacity: 0; }
-  /* Word 2: "refactored" visible 3–6s */
-  33.34%    { opacity: 0; }
-  38%       { opacity: 0; }
-  66.66%    { opacity: 0; }
-  /* gap */
+  33%       { opacity: 0; }
   100%      { opacity: 0; }
 }
 
 @keyframes hero-word-cycle-2 {
-  /* Word 2: "refactored" visible 3–6s */
   0%        { opacity: 0; }
-  33.33%    { opacity: 0; }
+  33%       { opacity: 0; }
   38%       { opacity: 1; }
   61%       { opacity: 1; }
-  66.66%    { opacity: 0; }
+  66%       { opacity: 0; }
   100%      { opacity: 0; }
 }
 
 @keyframes hero-word-cycle-3 {
-  /* Word 3: "patched" visible 6–9s */
   0%        { opacity: 0; }
-  66.66%    { opacity: 0; }
+  66%       { opacity: 0; }
   71%       { opacity: 1; }
   95%       { opacity: 1; }
   100%      { opacity: 0; }
@@ -358,22 +354,25 @@ section > div[style*="opacity:0"] {
   /* strikethrough via text-decoration */
   text-decoration: line-through;
   text-decoration-thickness: 2px;
-  color: oklch(0.65 0.01 240); /* muted — struck-through words are de-emphasized */
+  color: var(--muted-foreground); /* uses theme token — works in both modes */
 }
 
 .hero-word-1 {
-  animation: hero-word-cycle 9s step-start infinite;
-  animation-delay: 1.2s; /* let entrance animation settle first */
+  /* Starts visible, then cycles */
+  opacity: 1;
+  animation: hero-word-cycle 9s linear 1.2s infinite;
 }
 
 .hero-word-2 {
-  animation: hero-word-cycle-2 9s step-start infinite;
-  animation-delay: 1.2s;
+  /* Starts hidden — becomes visible at 33% of cycle */
+  opacity: 0;
+  animation: hero-word-cycle-2 9s linear 1.2s infinite;
 }
 
 .hero-word-3 {
-  animation: hero-word-cycle-3 9s step-start infinite;
-  animation-delay: 1.2s;
+  /* Starts hidden — becomes visible at 66% of cycle */
+  opacity: 0;
+  animation: hero-word-cycle-3 9s linear 1.2s infinite;
 }
 
 /* Entrance animations — CSS only, no Framer Motion */

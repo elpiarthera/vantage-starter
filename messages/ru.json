@@ -2592,7 +2592,8 @@
       "features": "Возможности",
       "pricing": "Цены",
       "sign_in": "Войти",
-      "get_started": "Начать"
+      "get_started": "Начать",
+      "faq": "FAQ"
     },
     "hero": {
       "aria_label": "Секция hero",
