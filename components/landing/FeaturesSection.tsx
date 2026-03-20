@@ -127,7 +127,7 @@ export function FeaturesSection() {
 				 */}
 				<div
 					ref={gridRef}
-					className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-[var(--border)]"
+					className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-l border-[var(--border)]"
 				>
 					{/* Row 1 */}
 					<FeatureCard feature={FEATURES[0]} t={t} className="md:col-span-2" />
@@ -137,9 +137,9 @@ export function FeaturesSection() {
 					<FeatureCard feature={FEATURES[2]} t={t} />
 					<FeatureCard feature={FEATURES[3]} t={t} className="md:col-span-2" />
 
-					{/* Row 3 */}
-					<FeatureCard feature={FEATURES[4]} t={t} />
-					<FeatureCard feature={FEATURES[5]} t={t} />
+					{/* Row 3 — 2 equal cells spanning full 3-col width */}
+					<FeatureCard feature={FEATURES[4]} t={t} className="md:col-span-1" />
+					<FeatureCard feature={FEATURES[5]} t={t} className="md:col-span-2" />
 				</div>
 			</div>
 		</section>
@@ -160,15 +160,16 @@ function FeatureCard({
 	return (
 		<article
 			className={cn(
-				// Grid borders: top + left on every cell, outer border from parent
-				"border-t border-l border-[var(--border)]",
+				// Inner grid borders: each cell closes rightward and downward.
+				// Container carries border-t + border-l — no double borders.
+				"border-r border-b border-[var(--border)]",
 				// Background
 				"bg-[var(--card)]",
 				// Padding: large cards get extra breathing room
 				isLarge ? "p-10 md:p-12" : "p-8",
 				// Hover: color shift only — no shadow, no scale, no border-radius
 				"transition-colors duration-150",
-				"hover:bg-[var(--card-hover)] hover:border-[var(--border-hover)]",
+				"hover:bg-[var(--card-hover)]",
 				// Caller-supplied span classes
 				className,
 			)}
