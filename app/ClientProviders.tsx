@@ -237,15 +237,17 @@ export function ClientProviders({ children }: { children: ReactNode }) {
 						color: CLERK_TEXT_MUTED,
 					},
 
-					// --- Hide Clerk branding ---
-					footer: {
-						display: "none",
-					},
+					// --- Hide Clerk branding only ---
+					// IMPORTANT: Do NOT hide `footer` — in Clerk v6 it is the action/nav bar
+					// inside OrganizationProfile modals (save changes, section nav, member invite).
+					// Hiding it breaks all org management flows.
+					// Only hide the specific branding sub-elements below.
+
 					// Development mode badge
 					badge: {
 						display: "none",
 					},
-					// "Secured by Clerk" text
+					// "Secured by Clerk" page links (sign-in/up cards)
 					footerPages: {
 						display: "none",
 					},

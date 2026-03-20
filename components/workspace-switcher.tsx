@@ -10,7 +10,7 @@
  * dev-convex-expert. This component covers the UI layer only.
  *
  * Design gate applied:
- * - rounded-xl (12px) on trigger
+ * - rounded-none (0px) matches editorial design system sharp corners
  * - OKLCH tokens via CSS vars (Clerk appearance API uses CSS classes)
  */
 
@@ -36,11 +36,10 @@ export function WorkspaceSwitcher() {
 			<OrganizationSwitcher
 				hidePersonal={false}
 				afterCreateOrganizationUrl="/dashboard"
-				afterLeaveOrganizationUrl="/"
+				afterLeaveOrganizationUrl="/dashboard"
 				afterSelectOrganizationUrl="/dashboard"
 				afterSelectPersonalUrl="/dashboard"
-				createOrganizationMode="navigation"
-				createOrganizationUrl="/dashboard/account?tab=new-org"
+				createOrganizationMode="modal"
 				appearance={{
 					elements: {
 						rootBox: "w-full",
