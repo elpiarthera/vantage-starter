@@ -138,3 +138,61 @@ export async function assertUserOwnsResource(
 		throw new Error("Unauthorized — you don't own this resource");
 	}
 }
+
+// ============================================================================
+// WORKSPACE-SCOPED AUTH HELPERS (Phase 2 — orchestration functions)
+// Adapted from AUTH-FIELD-MAPPING.md section 8 & 9.
+// vantage-starter has no memberships table — access is determined by:
+//   - workspace.ownerId === user.clerkUserId  (personal)
+//   - workspace.organizationId === user.organizationId  (org member)
+// ============================================================================
+
+import type { Id } from "../_generated/dataModel";
+
+/**
+ * Require auth AND validate workspace access.
+ * Returns { user, workspace }.
+ * Throws if: not authenticated, workspace not found, user has no access.
+ */
+export async function requireAuthWithWorkspace(
+	ctx: QueryCtx | MutationCtx,
+	workspaceId: Id<"workspaces">,
+) {
+	const user = await requireAuth(ctx);
+
+	const workspace = await ctx.db.get(workspaceId);
+	if (!workspace) {
+		throw new Error("Workspace not found");
+	}
+
+	const isOwner = workspace.ownerId === user.clerkUserId;
+	const isOrgMember =
+		workspace.organizationId !== null &&
+		workspace.organizationId !== undefined &&
+		workspace.organizationId === user.organizationId;
+
+	if (!isOwner && !isOrgMember) {
+		throw new Error("Unauthorized: no access to this workspace");
+	}
+
+	return { user, workspace };
+}
+
+/**
+ * Get workspace context for scoped queries.
+ * Reads organizationId from users table (not raw Clerk JWT claim).
+ * Returns the resolved user + their org context.
+ *
+ * KEY DIFFERENCE from vantage-studio: vantage-studio reads org_id from JWT.
+ * vantage-starter reads organizationId from users row (stable, set at webhook sync).
+ */
+export async function getWorkspaceContext(ctx: QueryCtx | MutationCtx) {
+	const user = await requireAuth(ctx);
+
+	return {
+		user,
+		clerkUserId: user.clerkUserId,
+		organizationId: user.organizationId ?? undefined,
+		isPersonal: !user.organizationId,
+	};
+}

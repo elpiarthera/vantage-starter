@@ -10,16 +10,16 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: ^3.0.58
-        version: 3.0.58(zod@3.25.76)
+        version: 3.0.58(zod@4.3.6)
       '@ai-sdk/google':
         specifier: ^3.0.43
-        version: 3.0.43(zod@3.25.76)
+        version: 3.0.43(zod@4.3.6)
       '@ai-sdk/openai':
         specifier: ^3.0.41
-        version: 3.0.41(zod@3.25.76)
+        version: 3.0.41(zod@4.3.6)
       '@ai-sdk/react':
         specifier: latest
-        version: 2.0.93(react@19.2.4)(zod@3.25.76)
+        version: 2.0.93(react@19.2.4)(zod@4.3.6)
       '@clerk/nextjs':
         specifier: ^6.35.1
         version: 6.35.1(next@15.3.9(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -31,19 +31,19 @@ importers:
         version: 4.101.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@convex-dev/polar':
         specifier: ^0.8.1
-        version: 0.8.1(@polar-sh/checkout@0.2.0(@stripe/react-stripe-js@4.0.2(@stripe/stripe-js@7.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@stripe/stripe-js@7.9.0)(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react-is@18.3.1)(react@19.2.4)(redux@5.0.1))(@polar-sh/sdk@0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76)))(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)
+        version: 0.8.1(@polar-sh/checkout@0.2.0(@stripe/react-stripe-js@4.0.2(@stripe/stripe-js@7.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@stripe/stripe-js@7.9.0)(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react-is@18.3.1)(react@19.2.4)(redux@5.0.1))(@polar-sh/sdk@0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6)))(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)
       '@convex-dev/rag':
         specifier: ^0.7.2
-        version: 0.7.2(@convex-dev/workpool@0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)))(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(zod@3.25.76)
+        version: 0.7.2(@convex-dev/workpool@0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)))(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(zod@4.3.6)
       '@convex-dev/ratelimiter':
         specifier: ^0.1.7
         version: 0.1.7(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
       '@convex-dev/resend':
         specifier: ^0.2.3
-        version: 0.2.3(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)
+        version: 0.2.3(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)
       '@convex-dev/workpool':
         specifier: ^0.4.2
-        version: 0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
+        version: 0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -62,9 +62,15 @@ importers:
       '@hugeicons/react':
         specifier: ^1.1.4
         version: 1.1.4(react@19.2.4)
+      '@json-render/core':
+        specifier: ^0.14.1
+        version: 0.14.1(zod@4.3.6)
+      '@json-render/react':
+        specifier: ^0.14.1
+        version: 0.14.1(react@19.2.4)(zod@4.3.6)
       '@polar-sh/sdk':
         specifier: ^0.35.4
-        version: 0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76))
+        version: 0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6))
       '@radix-ui/react-accordion':
         specifier: 1.2.2
         version: 1.2.2(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -151,7 +157,7 @@ importers:
         version: 1.5.0(next@15.3.9(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
       ai:
         specifier: ^6.0.116
-        version: 6.0.116(zod@3.25.76)
+        version: 6.0.116(zod@4.3.6)
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.5.0)
@@ -240,8 +246,8 @@ importers:
         specifier: ^0.9.6
         version: 0.9.6(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       zod:
-        specifier: ^3.25.76
-        version: 3.25.76
+        specifier: ^4.3.6
+        version: 4.3.6
       zustand:
         specifier: latest
         version: 5.0.8(@types/react@18.0.0)(immer@10.2.0)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
@@ -251,7 +257,7 @@ importers:
         version: 2.3.13
       '@browserbasehq/stagehand':
         specifier: ^3.0.6
-        version: 3.0.6(@cfworker/json-schema@4.1.1)(@opentelemetry/api@1.9.0)(deepmerge@4.3.1)(dotenv@17.2.3)(zod@3.25.76)
+        version: 3.0.6(@cfworker/json-schema@4.1.1)(@opentelemetry/api@1.9.0)(deepmerge@4.3.1)(dotenv@17.2.3)(zod@4.3.6)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -296,7 +302,7 @@ importers:
         version: 30.2.0(bufferutil@4.0.9)
       openai:
         specifier: ^6.13.0
-        version: 6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)
+        version: 6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6)
       postcss:
         specifier: ^8.5
         version: 8.5.0
@@ -1564,6 +1570,16 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@json-render/core@0.14.1':
+    resolution: {integrity: sha512-Z1lctUILswRS9xvQbLgsLGRXY4M31CtG0H6wCouGlk9lxXpB5hkuoIoAJ4bJ/HXDVoBgYzI18XI/O8luE3CuzA==}
+    peerDependencies:
+      zod: ^4.0.0
+
+  '@json-render/react@0.14.1':
+    resolution: {integrity: sha512-0LsX4yL+int7CS0cb6EWquQmLYipP0qYaSGdoLALXQ5nu6zEo9a1phGQSqJQ58bhv10/d0a4N3+2bHbVv+VDWw==}
+    peerDependencies:
+      react: ^19.2.3
 
   '@langchain/core@0.3.79':
     resolution: {integrity: sha512-ZLAs5YMM5N2UXN3kExMglltJrKKoW7hs3KMZFlXUnD7a5DFKBYxPFMeXA4rT+uvTxuJRZPCYX0JKI5BhyAWx4A==}
@@ -6851,6 +6867,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
   zustand@5.0.8:
     resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
     engines: {node: '>=12.20.0'}
@@ -6876,150 +6895,150 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/anthropic@2.0.56(zod@3.25.76)':
+  '@ai-sdk/anthropic@2.0.56(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/anthropic@3.0.58(zod@3.25.76)':
+  '@ai-sdk/anthropic@3.0.58(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
+      zod: 4.3.6
 
-  '@ai-sdk/azure@2.0.88(zod@3.25.76)':
+  '@ai-sdk/azure@2.0.88(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/openai': 2.0.86(zod@3.25.76)
+      '@ai-sdk/openai': 2.0.86(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/cerebras@1.0.33(zod@3.25.76)':
+  '@ai-sdk/cerebras@1.0.33(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/openai-compatible': 1.0.29(zod@3.25.76)
+      '@ai-sdk/openai-compatible': 1.0.29(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/deepseek@1.0.32(zod@3.25.76)':
+  '@ai-sdk/deepseek@1.0.32(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/gateway@2.0.10(zod@3.25.76)':
+  '@ai-sdk/gateway@2.0.10(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.6)
       '@vercel/oidc': 3.0.3
-      zod: 3.25.76
+      zod: 4.3.6
 
-  '@ai-sdk/gateway@2.0.9(zod@3.25.76)':
+  '@ai-sdk/gateway@2.0.9(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.6)
       '@vercel/oidc': 3.0.3
-      zod: 3.25.76
+      zod: 4.3.6
 
-  '@ai-sdk/gateway@3.0.66(zod@3.25.76)':
+  '@ai-sdk/gateway@3.0.66(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@3.25.76)
+      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
       '@vercel/oidc': 3.1.0
-      zod: 3.25.76
+      zod: 4.3.6
 
-  '@ai-sdk/google-vertex@3.0.91(zod@3.25.76)':
+  '@ai-sdk/google-vertex@3.0.91(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/anthropic': 2.0.56(zod@3.25.76)
-      '@ai-sdk/google': 2.0.46(zod@3.25.76)
+      '@ai-sdk/anthropic': 2.0.56(zod@4.3.6)
+      '@ai-sdk/google': 2.0.46(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
       google-auth-library: 10.5.0
-      zod: 3.25.76
+      zod: 4.3.6
     transitivePeerDependencies:
       - supports-color
     optional: true
 
-  '@ai-sdk/google@2.0.46(zod@3.25.76)':
+  '@ai-sdk/google@2.0.46(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/google@3.0.43(zod@3.25.76)':
+  '@ai-sdk/google@3.0.43(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
+      zod: 4.3.6
 
-  '@ai-sdk/groq@2.0.33(zod@3.25.76)':
+  '@ai-sdk/groq@2.0.33(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/mistral@2.0.26(zod@3.25.76)':
+  '@ai-sdk/mistral@2.0.26(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/openai-compatible@1.0.29(zod@3.25.76)':
+  '@ai-sdk/openai-compatible@1.0.29(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/openai@2.0.86(zod@3.25.76)':
+  '@ai-sdk/openai@2.0.86(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/openai@3.0.41(zod@3.25.76)':
+  '@ai-sdk/openai@3.0.41(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
+      zod: 4.3.6
 
-  '@ai-sdk/perplexity@2.0.22(zod@3.25.76)':
+  '@ai-sdk/perplexity@2.0.22(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/provider-utils@3.0.17(zod@3.25.76)':
+  '@ai-sdk/provider-utils@3.0.17(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
-      zod: 3.25.76
+      zod: 4.3.6
 
-  '@ai-sdk/provider-utils@3.0.19(zod@3.25.76)':
+  '@ai-sdk/provider-utils@3.0.19(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
-      zod: 3.25.76
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/provider-utils@4.0.19(zod@3.25.76)':
+  '@ai-sdk/provider-utils@4.0.19(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
-      zod: 3.25.76
+      zod: 4.3.6
 
   '@ai-sdk/provider@2.0.0':
     dependencies:
@@ -7029,30 +7048,30 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@2.0.93(react@19.2.4)(zod@3.25.76)':
+  '@ai-sdk/react@2.0.93(react@19.2.4)(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
-      ai: 5.0.93(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.6)
+      ai: 5.0.93(zod@4.3.6)
       react: 19.2.4
       swr: 2.3.6(react@19.2.4)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 3.25.76
+      zod: 4.3.6
 
-  '@ai-sdk/togetherai@1.0.30(zod@3.25.76)':
+  '@ai-sdk/togetherai@1.0.30(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/openai-compatible': 1.0.29(zod@3.25.76)
+      '@ai-sdk/openai-compatible': 1.0.29(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
-  '@ai-sdk/xai@2.0.40(zod@3.25.76)':
+  '@ai-sdk/xai@2.0.40(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/openai-compatible': 1.0.29(zod@3.25.76)
+      '@ai-sdk/openai-compatible': 1.0.29(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
   '@alloc/quick-lru@5.2.0': {}
@@ -7315,44 +7334,44 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@browserbasehq/stagehand@3.0.6(@cfworker/json-schema@4.1.1)(@opentelemetry/api@1.9.0)(deepmerge@4.3.1)(dotenv@17.2.3)(zod@3.25.76)':
+  '@browserbasehq/stagehand@3.0.6(@cfworker/json-schema@4.1.1)(@opentelemetry/api@1.9.0)(deepmerge@4.3.1)(dotenv@17.2.3)(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@anthropic-ai/sdk': 0.39.0
       '@browserbasehq/sdk': 2.6.0
-      '@google/genai': 1.33.0(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76))(bufferutil@4.0.9)
-      '@langchain/openai': 0.4.9(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)))(ws@8.18.3(bufferutil@4.0.9))
-      '@modelcontextprotocol/sdk': 1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76)
-      ai: 5.0.94(zod@3.25.76)
+      '@google/genai': 1.33.0(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6))(bufferutil@4.0.9)
+      '@langchain/openai': 0.4.9(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6)))(ws@8.18.3(bufferutil@4.0.9))
+      '@modelcontextprotocol/sdk': 1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6)
+      ai: 5.0.94(zod@4.3.6)
       deepmerge: 4.3.1
       devtools-protocol: 0.0.1464554
       dotenv: 17.2.3
       fetch-cookie: 3.1.0
-      openai: 4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)
+      openai: 4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6)
       pino: 9.14.0
       pino-pretty: 13.1.3
       playwright: 1.57.0
       uuid: 11.1.0
       ws: 8.18.3(bufferutil@4.0.9)
-      zod: 3.25.76
-      zod-to-json-schema: 3.25.0(zod@3.25.76)
+      zod: 4.3.6
+      zod-to-json-schema: 3.25.0(zod@4.3.6)
     optionalDependencies:
-      '@ai-sdk/anthropic': 2.0.56(zod@3.25.76)
-      '@ai-sdk/azure': 2.0.88(zod@3.25.76)
-      '@ai-sdk/cerebras': 1.0.33(zod@3.25.76)
-      '@ai-sdk/deepseek': 1.0.32(zod@3.25.76)
-      '@ai-sdk/google': 2.0.46(zod@3.25.76)
-      '@ai-sdk/google-vertex': 3.0.91(zod@3.25.76)
-      '@ai-sdk/groq': 2.0.33(zod@3.25.76)
-      '@ai-sdk/mistral': 2.0.26(zod@3.25.76)
-      '@ai-sdk/openai': 2.0.86(zod@3.25.76)
-      '@ai-sdk/perplexity': 2.0.22(zod@3.25.76)
-      '@ai-sdk/togetherai': 1.0.30(zod@3.25.76)
-      '@ai-sdk/xai': 2.0.40(zod@3.25.76)
-      '@langchain/core': 0.3.79(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76))
+      '@ai-sdk/anthropic': 2.0.56(zod@4.3.6)
+      '@ai-sdk/azure': 2.0.88(zod@4.3.6)
+      '@ai-sdk/cerebras': 1.0.33(zod@4.3.6)
+      '@ai-sdk/deepseek': 1.0.32(zod@4.3.6)
+      '@ai-sdk/google': 2.0.46(zod@4.3.6)
+      '@ai-sdk/google-vertex': 3.0.91(zod@4.3.6)
+      '@ai-sdk/groq': 2.0.33(zod@4.3.6)
+      '@ai-sdk/mistral': 2.0.26(zod@4.3.6)
+      '@ai-sdk/openai': 2.0.86(zod@4.3.6)
+      '@ai-sdk/perplexity': 2.0.22(zod@4.3.6)
+      '@ai-sdk/togetherai': 1.0.30(zod@4.3.6)
+      '@ai-sdk/xai': 2.0.40(zod@4.3.6)
+      '@langchain/core': 0.3.79(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6))
       bufferutil: 4.0.9
       chrome-launcher: 1.2.1
-      ollama-ai-provider-v2: 1.5.5(zod@3.25.76)
+      ollama-ai-provider-v2: 1.5.5(zod@4.3.6)
       patchright-core: 1.57.0
       playwright-core: 1.57.0
       puppeteer-core: 22.15.0(bufferutil@4.0.9)
@@ -7439,13 +7458,13 @@ snapshots:
       - react
       - react-dom
 
-  '@convex-dev/polar@0.8.1(@polar-sh/checkout@0.2.0(@stripe/react-stripe-js@4.0.2(@stripe/stripe-js@7.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@stripe/stripe-js@7.9.0)(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react-is@18.3.1)(react@19.2.4)(redux@5.0.1))(@polar-sh/sdk@0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76)))(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)':
+  '@convex-dev/polar@0.8.1(@polar-sh/checkout@0.2.0(@stripe/react-stripe-js@4.0.2(@stripe/stripe-js@7.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@stripe/stripe-js@7.9.0)(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react-is@18.3.1)(react@19.2.4)(redux@5.0.1))(@polar-sh/sdk@0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6)))(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)':
     dependencies:
       '@polar-sh/checkout': 0.2.0(@stripe/react-stripe-js@4.0.2(@stripe/stripe-js@7.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@stripe/stripe-js@7.9.0)(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@19.2.4(react@19.2.4))(react-is@18.3.1)(react@19.2.4)(redux@5.0.1)
-      '@polar-sh/sdk': 0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76))
+      '@polar-sh/sdk': 0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6))
       buffer: 6.0.3
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)
+      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
       remeda: 2.33.6
@@ -7456,12 +7475,12 @@ snapshots:
       - typescript
       - zod
 
-  '@convex-dev/rag@0.7.2(@convex-dev/workpool@0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)))(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(zod@3.25.76)':
+  '@convex-dev/rag@0.7.2(@convex-dev/workpool@0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)))(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(zod@4.3.6)':
     dependencies:
-      '@convex-dev/workpool': 0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
-      ai: 6.0.116(zod@3.25.76)
+      '@convex-dev/workpool': 0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
+      ai: 6.0.116(zod@4.3.6)
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)
+      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)
     transitivePeerDependencies:
       - zod
 
@@ -7475,12 +7494,12 @@ snapshots:
     dependencies:
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
 
-  '@convex-dev/resend@0.2.3(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)':
+  '@convex-dev/resend@0.2.3(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@convex-dev/rate-limiter': 0.3.2(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      '@convex-dev/workpool': 0.3.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
+      '@convex-dev/workpool': 0.3.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)
+      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)
       remeda: 2.33.6
       resend: 6.9.4
       svix: 1.88.0
@@ -7488,15 +7507,15 @@ snapshots:
       - '@react-email/render'
       - react
 
-  '@convex-dev/workpool@0.3.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))':
+  '@convex-dev/workpool@0.3.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))':
     dependencies:
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)
+      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)
 
-  '@convex-dev/workpool@0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))':
+  '@convex-dev/workpool@0.4.2(convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6))(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))':
     dependencies:
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
-      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76)
+      convex-helpers: 0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6)
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -7813,12 +7832,12 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@google/genai@1.33.0(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76))(bufferutil@4.0.9)':
+  '@google/genai@1.33.0(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6))(bufferutil@4.0.9)':
     dependencies:
       google-auth-library: 10.5.0
       ws: 8.18.3(bufferutil@4.0.9)
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76)
+      '@modelcontextprotocol/sdk': 1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -8181,14 +8200,25 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76))':
+  '@json-render/core@0.14.1(zod@4.3.6)':
+    dependencies:
+      zod: 4.3.6
+
+  '@json-render/react@0.14.1(react@19.2.4)(zod@4.3.6)':
+    dependencies:
+      '@json-render/core': 0.14.1(zod@4.3.6)
+      react: 19.2.4
+    transitivePeerDependencies:
+      - zod
+
+  '@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.21
-      langsmith: 0.3.87(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76))
+      langsmith: 0.3.87(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6))
       mustache: 4.2.0
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -8201,9 +8231,9 @@ snapshots:
       - '@opentelemetry/sdk-trace-base'
       - openai
 
-  '@langchain/openai@0.4.9(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)))(ws@8.18.3(bufferutil@4.0.9))':
+  '@langchain/openai@0.4.9(@langchain/core@0.3.79(@opentelemetry/api@1.9.0)(openai@4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6)))(ws@8.18.3(bufferutil@4.0.9))':
     dependencies:
-      '@langchain/core': 0.3.79(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76))
+      '@langchain/core': 0.3.79(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6))
       js-tiktoken: 1.0.21
       openai: 4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)
       zod: 3.25.76
@@ -8212,7 +8242,7 @@ snapshots:
       - encoding
       - ws
 
-  '@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76)':
+  '@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6)':
     dependencies:
       ajv: 8.17.1
       ajv-formats: 3.0.1(ajv@8.17.1)
@@ -8226,8 +8256,8 @@ snapshots:
       jose: 6.1.3
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 3.25.76
-      zod-to-json-schema: 3.25.0(zod@3.25.76)
+      zod: 4.3.6
+      zod-to-json-schema: 3.25.0(zod@4.3.6)
     optionalDependencies:
       '@cfworker/json-schema': 4.1.1
     transitivePeerDependencies:
@@ -8365,12 +8395,12 @@ snapshots:
       - react-is
       - redux
 
-  '@polar-sh/sdk@0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76))':
+  '@polar-sh/sdk@0.35.4(@modelcontextprotocol/sdk@1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6))':
     dependencies:
       standardwebhooks: 1.0.0
       zod: 3.25.76
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.24.3(@cfworker/json-schema@4.1.1)(zod@3.25.76)
+      '@modelcontextprotocol/sdk': 1.24.3(@cfworker/json-schema@4.1.1)(zod@4.3.6)
 
   '@polar-sh/sdk@0.42.5':
     dependencies:
@@ -10136,29 +10166,29 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai@5.0.93(zod@3.25.76):
+  ai@5.0.93(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 2.0.9(zod@3.25.76)
+      '@ai-sdk/gateway': 2.0.9(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.3.6
 
-  ai@5.0.94(zod@3.25.76):
+  ai@5.0.94(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 2.0.10(zod@3.25.76)
+      '@ai-sdk/gateway': 2.0.10(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.3.6
 
-  ai@6.0.116(zod@3.25.76):
+  ai@6.0.116(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 3.0.66(zod@3.25.76)
+      '@ai-sdk/gateway': 3.0.66(zod@4.3.6)
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.19(zod@3.25.76)
+      '@ai-sdk/provider-utils': 4.0.19(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.3.6
 
   ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
@@ -10579,14 +10609,14 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@3.25.76):
+  convex-helpers@0.1.113(@standard-schema/spec@1.1.0)(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4))(react@19.2.4)(typescript@5.0.2)(zod@4.3.6):
     dependencies:
       convex: 1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
     optionalDependencies:
       '@standard-schema/spec': 1.1.0
       react: 19.2.4
       typescript: 5.0.2
-      zod: 3.25.76
+      zod: 4.3.6
 
   convex-test@0.0.38(convex@1.31.6(@clerk/clerk-react@5.55.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)):
     dependencies:
@@ -12002,7 +12032,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  langsmith@0.3.87(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)):
+  langsmith@0.3.87(@opentelemetry/api@1.9.0)(openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6)):
     dependencies:
       '@types/uuid': 10.0.0
       chalk: 4.1.2
@@ -12012,7 +12042,7 @@ snapshots:
       uuid: 10.0.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
-      openai: 6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76)
+      openai: 6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6)
 
   leven@3.1.0: {}
 
@@ -12490,11 +12520,11 @@ snapshots:
       node-fetch-native: 1.6.7
       ufo: 1.6.3
 
-  ollama-ai-provider-v2@1.5.5(zod@3.25.76):
+  ollama-ai-provider-v2@1.5.5(zod@4.3.6):
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      zod: 4.3.6
     optional: true
 
   on-exit-leak-free@2.1.2: {}
@@ -12526,10 +12556,25 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@3.25.76):
+  openai@4.104.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6):
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.13
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
     optionalDependencies:
       ws: 8.18.3(bufferutil@4.0.9)
-      zod: 3.25.76
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - encoding
+
+  openai@6.13.0(ws@8.18.3(bufferutil@4.0.9))(zod@4.3.6):
+    optionalDependencies:
+      ws: 8.18.3(bufferutil@4.0.9)
+      zod: 4.3.6
 
   optionator@0.9.4:
     dependencies:
@@ -13975,10 +14020,16 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
+  zod-to-json-schema@3.25.0(zod@4.3.6):
+    dependencies:
+      zod: 4.3.6
+
   zod@3.23.8:
     optional: true
 
   zod@3.25.76: {}
+
+  zod@4.3.6: {}
 
   zustand@5.0.8(@types/react@18.0.0)(immer@10.2.0)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4)):
     optionalDependencies:

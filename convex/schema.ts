@@ -404,4 +404,344 @@ export default defineSchema({
 		updatedAt: v.number(),
 		updatedBy: v.optional(v.string()),
 	}).index("by_key", ["key"]),
+
+	// ============================================================================
+	// ORCHESTRATION TABLES (Phase 1 — ported from vantage-studio)
+	// ============================================================================
+
+	/**
+	 * 16. Skills Table
+	 * Reusable agent capabilities — the SKILL.md body stored in DB.
+	 */
+	skills: defineTable({
+		name: v.string(),
+		slug: v.string(),
+		description: v.string(),
+		instructions: v.string(), // Markdown — the SKILL.md body
+		category: v.union(
+			v.literal("document"),
+			v.literal("analysis"),
+			v.literal("research"),
+			v.literal("communication"),
+			v.literal("development"),
+			v.literal("creative"),
+		),
+		isSystem: v.boolean(),
+		createdBy: v.optional(v.string()), // Clerk user ID
+		workspaceId: v.optional(v.id("workspaces")),
+		visibility: v.union(
+			v.literal("system"),
+			v.literal("workspace"),
+			v.literal("private"),
+		),
+		sourceUrl: v.optional(v.string()),
+		usageCount: v.number(),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_category", ["category"])
+		.index("by_system", ["isSystem"])
+		.index("by_slug", ["slug"]),
+
+	/**
+	 * 17. Custom Roles Table
+	 * User-created professional roles for the 4-Pillars agent composition model.
+	 */
+	customRoles: defineTable({
+		name: v.string(),
+		icon: v.string(),
+		description: v.string(),
+		category: v.string(),
+		expertise: v.array(v.string()),
+		systemPrompt: v.string(),
+		isSystem: v.optional(v.boolean()),
+		workspaceId: v.optional(v.id("workspaces")),
+		createdBy: v.optional(v.string()), // Clerk user ID
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		.index("by_category", ["category"])
+		.index("by_system", ["isSystem"]),
+
+	/**
+	 * 18. Custom Personas Table
+	 * User-created communication styles for the 4-Pillars agent composition model.
+	 */
+	customPersonas: defineTable({
+		name: v.string(),
+		icon: v.string(),
+		description: v.string(),
+		traits: v.array(v.string()),
+		communicationStyle: v.string(),
+		decisionMaking: v.string(),
+		systemPromptModifier: v.string(),
+		isSystem: v.optional(v.boolean()),
+		workspaceId: v.optional(v.id("workspaces")),
+		createdBy: v.optional(v.string()), // Clerk user ID
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		.index("by_system", ["isSystem"]),
+
+	/**
+	 * 19. Custom Frameworks Table
+	 * User-created thinking methodologies for the 4-Pillars agent composition model.
+	 */
+	customFrameworks: defineTable({
+		name: v.string(),
+		icon: v.string(),
+		description: v.string(),
+		methodology: v.string(),
+		bestFor: v.array(v.string()),
+		steps: v.array(v.string()),
+		systemPromptModifier: v.string(),
+		isSystem: v.optional(v.boolean()),
+		workspaceId: v.optional(v.id("workspaces")),
+		createdBy: v.optional(v.string()), // Clerk user ID
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		.index("by_system", ["isSystem"]),
+
+	/**
+	 * 20. Agents Table
+	 * Configured AI workers composed via the 4-Pillars model (Role + Persona + Framework + Skills).
+	 * Pre-build blocker #4: roleId/personaId/frameworkId use typed v.id() — not v.string().
+	 * Added: token field for per-agent HTTP auth (not in vantage-studio).
+	 */
+	agents: defineTable({
+		workspaceId: v.optional(v.id("workspaces")), // undefined = system agent (global)
+		createdBy: v.string(), // Clerk user ID or "system"
+
+		// Identity
+		name: v.string(),
+		description: v.optional(v.string()),
+		avatar: v.optional(v.string()), // Emoji or URL
+
+		// 4-Pillars composition — typed foreign keys (pre-build blocker #4)
+		roleId: v.id("customRoles"),
+		roleName: v.string(), // Denormalized for display
+		roleSystemPrompt: v.string(),
+		personaId: v.id("customPersonas"),
+		personaName: v.string(),
+		personaModifier: v.string(),
+		frameworkId: v.optional(v.id("customFrameworks")),
+		frameworkName: v.optional(v.string()),
+		frameworkModifier: v.optional(v.string()),
+		skillIds: v.array(v.id("skills")),
+
+		// Model selection
+		model: v.string(), // e.g., "claude-sonnet-4-5"
+		provider: v.string(), // e.g., "anthropic"
+		customInstructions: v.optional(v.string()),
+		temperature: v.optional(v.number()),
+		maxTokens: v.optional(v.number()),
+
+		// Per-agent auth token (NOT in vantage-studio — added for HTTP endpoint auth)
+		// 32-byte hex, generated at creation. Stored plain (Convex DB is at-rest encrypted).
+		token: v.optional(v.string()),
+		tokenCreatedAt: v.optional(v.number()),
+
+		// Status
+		isSystem: v.boolean(),
+		isActive: v.boolean(),
+		usageCount: v.number(),
+		visibility: v.union(v.literal("private"), v.literal("workspace")),
+
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		.index("by_workspace_active", ["workspaceId", "isActive"])
+		.index("by_system", ["isSystem"]),
+
+	/**
+	 * 21. Missions Table
+	 * High-level work containers. Scoped to workspace.
+	 * Pre-build blocker #2: projectId removed — projects table does not exist in vantage-starter.
+	 * Status enum uses the execution-oriented values (not vantage-studio's brainstorm/plan/execute).
+	 */
+	missions: defineTable({
+		name: v.string(),
+		description: v.optional(v.string()),
+		brief: v.optional(v.string()),
+		objective: v.optional(v.string()),
+		status: v.union(
+			v.literal("pending"),
+			v.literal("executing"),
+			v.literal("awaiting_checkpoint"),
+			v.literal("completed"),
+			v.literal("failed"),
+		),
+		intent: v.optional(
+			v.union(
+				v.literal("delivery"),
+				v.literal("experiment"),
+				v.literal("internal"),
+			),
+		),
+		structure: v.optional(
+			v.union(
+				v.literal("linear"),
+				v.literal("milestones"),
+				v.literal("multi-stream"),
+			),
+		),
+		priority: v.optional(
+			v.union(
+				v.literal("urgent"),
+				v.literal("high"),
+				v.literal("medium"),
+				v.literal("low"),
+			),
+		),
+		successCriteria: v.optional(v.array(v.string())),
+		progress: v.optional(v.number()),
+		startDate: v.optional(v.number()),
+		targetDate: v.optional(v.number()),
+		workspaceId: v.id("workspaces"),
+		// projectId intentionally omitted — projects table is post-MVP
+		createdBy: v.string(), // Clerk user ID
+		ownerId: v.optional(v.string()),
+		isArchived: v.optional(v.boolean()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_workspace_status", ["workspaceId", "status"])
+		.index("by_workspace_priority", ["workspaceId", "priority"])
+		.index("by_workspace_archived", ["workspaceId", "isArchived"])
+		.index("by_created_by", ["createdBy"]),
+
+	/**
+	 * 22. Operations Table
+	 * Tasks within a mission — flat with dependency graph.
+	 * Pre-build blocker #3: dependsOn resolved via two-pass insert in commitPlan.
+	 */
+	operations: defineTable({
+		missionId: v.id("missions"),
+		workspaceId: v.id("workspaces"),
+		name: v.string(),
+		description: v.optional(v.string()),
+		type: v.union(v.literal("ai"), v.literal("human")),
+		status: v.union(
+			v.literal("pending"),
+			v.literal("blocked"), // Waiting on dependencies
+			v.literal("in_progress"),
+			v.literal("awaiting_review"),
+			v.literal("completed"),
+			v.literal("failed"),
+		),
+		assignedAgentId: v.optional(v.id("agents")),
+		assignedTo: v.optional(v.string()), // Clerk user ID for human ops
+		dependsOn: v.optional(v.array(v.id("operations"))),
+		requiresReview: v.optional(v.boolean()),
+		requiredTools: v.optional(v.array(v.string())),
+		prompt: v.optional(v.string()),
+		output: v.optional(v.string()),
+		error: v.optional(v.string()),
+		artifacts: v.optional(v.array(v.string())),
+		priority: v.optional(
+			v.union(
+				v.literal("urgent"),
+				v.literal("high"),
+				v.literal("medium"),
+				v.literal("low"),
+			),
+		),
+		estimatedMinutes: v.optional(v.number()),
+		actualMinutes: v.optional(v.number()),
+		claimedAt: v.optional(v.number()),
+		startedAt: v.optional(v.number()),
+		completedAt: v.optional(v.number()),
+		orderPosition: v.optional(v.number()),
+		createdBy: v.string(), // Clerk user ID
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_mission", ["missionId"])
+		.index("by_workspace", ["workspaceId"])
+		.index("by_workspace_status", ["workspaceId", "status"])
+		.index("by_mission_status", ["missionId", "status"])
+		.index("by_assigned_agent", ["assignedAgentId"])
+		.index("by_assigned_to", ["assignedTo"])
+		.index("by_created_by", ["createdBy"]),
+
+	/**
+	 * 23. Checkpoints Table
+	 * Human approval gates — blocks downstream operations until approved.
+	 * Rejection is a hard kill: mission.status = "failed" with no recovery (MVP).
+	 */
+	checkpoints: defineTable({
+		missionId: v.id("missions"),
+		afterOperationId: v.id("operations"),
+		description: v.string(),
+		status: v.union(
+			v.literal("pending"),
+			v.literal("approved"),
+			v.literal("rejected"),
+		),
+		approvedBy: v.optional(v.string()), // Clerk user ID
+		approvedAt: v.optional(v.number()),
+		rejectionReason: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_mission", ["missionId"])
+		.index("by_operation", ["afterOperationId"])
+		.index("by_mission_status", ["missionId", "status"]),
+
+	/**
+	 * 24. Architect Sessions Table
+	 * Conversation history for AI-driven mission planning.
+	 * Pre-build blocker #2: projectId removed — projects table is post-MVP.
+	 */
+	architectSessions: defineTable({
+		workspaceId: v.id("workspaces"),
+		status: v.union(
+			v.literal("active"),
+			v.literal("completed"),
+			v.literal("abandoned"),
+		),
+		existingMissionId: v.optional(v.id("missions")),
+		missionContext: v.optional(
+			v.object({
+				missionId: v.string(),
+				missionName: v.string(),
+				missionBrief: v.optional(v.string()),
+			}),
+		),
+		createdBy: v.string(), // Clerk user ID
+		title: v.optional(v.string()),
+		// projectId intentionally omitted — projects table is post-MVP
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_workspace_created", ["workspaceId", "createdAt"])
+		.index("by_user", ["createdBy"])
+		.index("by_status", ["status"])
+		.index("by_existing_mission", ["existingMissionId"]),
+
+	/**
+	 * 25. Architect Messages Table
+	 * Individual messages within an Architect session.
+	 */
+	architectMessages: defineTable({
+		sessionId: v.id("architectSessions"),
+		role: v.union(v.literal("user"), v.literal("assistant")),
+		content: v.string(),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_session", ["sessionId"])
+		.index("by_session_created", ["sessionId", "createdAt"]),
 });
