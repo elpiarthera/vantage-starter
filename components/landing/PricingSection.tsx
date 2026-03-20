@@ -1,6 +1,3 @@
-"use client";
-
-import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -9,12 +6,12 @@ import { Button } from "@/components/ui/button";
 type Tier = {
 	nameKey: string;
 	price: string;
-	earlyBirdPrice?: string;
 	descKey: string;
 	ctaKey: string;
 	ctaHref: string;
 	featuresKey: string[];
 	highlighted?: boolean;
+	badgeKey?: string;
 };
 
 const TIERS: Tier[] = [
@@ -23,67 +20,52 @@ const TIERS: Tier[] = [
 		price: "$0",
 		descKey: "starter_desc",
 		ctaKey: "starter_cta",
-		ctaHref: "/sign-up",
+		ctaHref: "https://github.com/vantage-starter/vantage-starter",
 		featuresKey: [
 			"starter_f1",
 			"starter_f2",
 			"starter_f3",
 			"starter_f4",
+			"starter_f5",
+			"starter_f6",
+			"starter_f7",
 		],
 	},
 	{
 		nameKey: "pro_name",
-		price: "$499",
-		earlyBirdPrice: "$399",
+		price: "$99",
 		descKey: "pro_desc",
 		ctaKey: "pro_cta",
-		ctaHref: "https://polar.sh/checkout/[POLAR_PRO_PRODUCT_ID]",
+		ctaHref: "https://polar.sh/checkout/vantage-starter-pro",
 		featuresKey: [
 			"pro_f1",
 			"pro_f2",
 			"pro_f3",
 			"pro_f4",
 			"pro_f5",
+			"pro_f6",
+			"pro_f7",
+			"pro_f8",
+			"pro_f9",
+			"pro_f10",
 		],
 		highlighted: true,
-	},
-	{
-		nameKey: "team_name",
-		price: "$899",
-		descKey: "team_desc",
-		ctaKey: "team_cta",
-		ctaHref: "https://polar.sh/checkout/[POLAR_TEAM_PRODUCT_ID]",
-		featuresKey: [
-			"team_f1",
-			"team_f2",
-			"team_f3",
-			"team_f4",
-			"team_f5",
-			"team_f6",
-		],
+		badgeKey: "pro_badge",
 	},
 ];
 
 export function PricingSection() {
 	const t = useTranslations("landing.pricing");
-	const reduced = useReducedMotion();
 
 	return (
 		<section
 			id="pricing"
 			aria-labelledby="pricing-heading"
-			className="py-20 md:py-32"
+			className="py-24"
 		>
-			<div className="max-w-5xl mx-auto px-4 sm:px-6">
+			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Header */}
-				<motion.div
-					className="mb-12 md:mb-16 max-w-xl"
-					initial={{ opacity: 0, y: reduced ? 0 : 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, amount: 0.15 }}
-					transition={{ duration: 0.4, ease: "easeOut" }}
-				>
-					{/* Eyebrow */}
+				<div className="mb-12 max-w-xl">
 					<p className="text-xs font-medium tracking-[0.05em] uppercase text-[var(--accent-warm)] mb-3">
 						{t("eyebrow")}
 					</p>
@@ -93,25 +75,16 @@ export function PricingSection() {
 					>
 						{t("heading")}
 					</h2>
-					<p className="text-muted-foreground text-lg leading-relaxed">
-						{t("subheading")}
-					</p>
-				</motion.div>
+				</div>
 
-				{/* Tiers grid */}
-				<motion.div
-					className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-start"
-					initial={{ opacity: 0, y: reduced ? 0 : 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, amount: 0.15 }}
-					transition={{ duration: 0.5, ease: "easeOut" }}
-				>
+				{/* 2-column grid, max-w-3xl centered */}
+				<div className="max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 					{TIERS.map((tier) => (
 						<PricingCard key={tier.nameKey} tier={tier} t={t} />
 					))}
-				</motion.div>
+				</div>
 
-				<p className="mt-8 text-xs text-muted-foreground text-center">
+				<p className="mt-8 text-sm text-muted-foreground max-w-3xl">
 					{t("one_time_note")}
 				</p>
 			</div>
@@ -138,10 +111,10 @@ function PricingCard({
 					: "border border-border",
 			)}
 		>
-			{/* Most popular badge — only on highlighted card */}
-			{isHighlighted && (
-				<span className="inline-flex items-center rounded-full bg-[var(--accent-warm)] text-black px-3 py-1 text-xs font-medium mb-3 self-start">
-					{t("popular_badge")}
+			{/* Badge — only on Pro */}
+			{isHighlighted && tier.badgeKey && (
+				<span className="inline-flex items-center rounded-full bg-[var(--accent-warm)] text-black px-3 py-1 text-xs font-medium mb-4 self-start">
+					{t(tier.badgeKey)}
 				</span>
 			)}
 
@@ -167,15 +140,8 @@ function PricingCard({
 				)}
 			</div>
 
-			{/* Early bird note */}
-			{tier.earlyBirdPrice && (
-				<p className="text-xs font-medium mb-5 text-primary">
-					{t("early_bird_note", { price: tier.earlyBirdPrice })}
-				</p>
-			)}
-
 			{/* Divider */}
-			<div className="h-px mb-5 bg-border" />
+			<div className="h-px my-5 bg-border" />
 
 			{/* Features list */}
 			<ul
@@ -185,7 +151,7 @@ function PricingCard({
 				{tier.featuresKey.map((fk) => (
 					<li
 						key={fk}
-						className="flex items-start gap-2.5 text-base text-foreground"
+						className="flex items-start gap-2.5 text-sm text-foreground"
 					>
 						<Check
 							className={cn(
@@ -203,7 +169,7 @@ function PricingCard({
 			<a href={tier.ctaHref} className="block">
 				<Button
 					className={cn(
-						"w-full h-12 rounded-full font-medium transition-opacity duration-100 hover:opacity-90",
+						"w-full h-12 rounded-full font-medium transition-opacity duration-150 ease-out hover:opacity-90",
 						isHighlighted
 							? "bg-primary text-primary-foreground border-0"
 							: "bg-transparent border border-border text-foreground hover:bg-transparent",

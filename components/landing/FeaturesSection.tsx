@@ -1,17 +1,8 @@
 "use client";
 
 import type React from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-	Bot,
-	Brain,
-	Coins,
-	Globe,
-	Layers,
-	ShieldCheck,
-	Sparkles,
-	Zap,
-} from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Sparkles, Zap, Coins, Image, Bot, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
@@ -19,115 +10,139 @@ type FeatureItem = {
 	icon: React.ReactNode;
 	titleKey: string;
 	descKey: string;
-	primary?: boolean;
+	/** "large" cards span 2 cols on desktop and get extra padding / larger title */
+	size?: "large" | "standard";
 };
 
 const FEATURES: FeatureItem[] = [
 	{
 		icon: <Sparkles className="size-5" aria-hidden="true" />,
-		titleKey: "generative_ui_title",
-		descKey: "generative_ui_desc",
-		primary: true,
-	},
-	{
-		icon: <Coins className="size-5" aria-hidden="true" />,
-		titleKey: "credits_title",
-		descKey: "credits_desc",
+		titleKey: "ai_renders_title",
+		descKey: "ai_renders_desc",
+		size: "large",
 	},
 	{
 		icon: <Zap className="size-5" aria-hidden="true" />,
 		titleKey: "realtime_title",
 		descKey: "realtime_desc",
+		size: "standard",
+	},
+	{
+		icon: <Coins className="size-5" aria-hidden="true" />,
+		titleKey: "credits_title",
+		descKey: "credits_desc",
+		size: "standard",
+	},
+	{
+		icon: <Image className="size-5" aria-hidden="true" />,
+		titleKey: "media_title",
+		descKey: "media_desc",
+		size: "large",
 	},
 	{
 		icon: <Bot className="size-5" aria-hidden="true" />,
 		titleKey: "agents_title",
 		descKey: "agents_desc",
-	},
-	{
-		icon: <Brain className="size-5" aria-hidden="true" />,
-		titleKey: "rag_title",
-		descKey: "rag_desc",
-	},
-	{
-		icon: <ShieldCheck className="size-5" aria-hidden="true" />,
-		titleKey: "accessibility_title",
-		descKey: "accessibility_desc",
-	},
-	{
-		icon: <Layers className="size-5" aria-hidden="true" />,
-		titleKey: "stack_title",
-		descKey: "stack_desc",
+		size: "standard",
 	},
 	{
 		icon: <Globe className="size-5" aria-hidden="true" />,
-		titleKey: "no_sql_title",
-		descKey: "no_sql_desc",
+		titleKey: "i18n_title",
+		descKey: "i18n_desc",
+		size: "standard",
 	},
 ];
 
-function useSectionVariants(delay = 0) {
-	const reduced = useReducedMotion();
-	return {
-		hidden: { opacity: 0, y: reduced ? 0 : 20 },
-		visible: {
-			opacity: 1,
-			y: 0,
-			transition: { duration: 0.4, ease: "easeOut", delay },
-		},
-	};
+function useRevealOnScroll(ref: React.RefObject<HTMLElement | null>) {
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+
+		// Respect reduced motion — skip animation entirely
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			el.style.opacity = "1";
+			el.style.transform = "none";
+			return;
+		}
+
+		el.style.opacity = "0";
+		el.style.transform = "translateY(16px)";
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					el.style.transition = "opacity 0.35s ease-out, transform 0.35s ease-out";
+					el.style.opacity = "1";
+					el.style.transform = "translateY(0)";
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.12 },
+		);
+
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, [ref]);
 }
 
 export function FeaturesSection() {
 	const t = useTranslations("landing.features");
-	const headerVariants = useSectionVariants(0);
-	const gridVariants = useSectionVariants(0.1);
+	const headerRef = useRef<HTMLDivElement>(null);
+	const gridRef = useRef<HTMLDivElement>(null);
+
+	useRevealOnScroll(headerRef as React.RefObject<HTMLElement | null>);
+	useRevealOnScroll(gridRef as React.RefObject<HTMLElement | null>);
 
 	return (
 		<section
 			id="features"
 			aria-labelledby="features-heading"
-			className="py-20 md:py-32"
+			className="py-24 md:py-32"
 		>
-			<div className="max-w-5xl mx-auto px-4 sm:px-6">
+			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Section header */}
-				<motion.div
-					className="mb-12 md:mb-16 max-w-xl"
-					initial="hidden"
-					whileInView="visible"
-					viewport={{ once: true, amount: 0.15 }}
-					variants={headerVariants}
-				>
-					{/* Eyebrow — uppercase, wide tracking, accent-warm */}
+				<div ref={headerRef} className="mb-12 md:mb-16 max-w-2xl">
 					<p
-						className="text-xs font-medium uppercase tracking-[0.05em] mb-3"
+						className="text-xs font-medium uppercase tracking-[0.08em] mb-3"
 						style={{ color: "var(--accent-warm)" }}
 					>
 						{t("eyebrow")}
 					</p>
 					<h2
 						id="features-heading"
-						className="font-heading font-bold text-foreground mb-4"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.02em]"
 					>
 						{t("heading")}
 					</h2>
-					<p className="text-muted-foreground text-lg leading-relaxed">
-						{t("subheading")}
-					</p>
-				</motion.div>
+				</div>
 
-				{/* 3-column grid — flat layout, all cards equal */}
-				<motion.div
-					className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
-					initial="hidden"
-					whileInView="visible"
-					viewport={{ once: true, amount: 0.15 }}
-					variants={gridVariants}
+				{/*
+				 * Asymmetric bento layout — 3-column base grid
+				 *
+				 * Row 1: [feature 1 — large, col-span-2] [feature 2 — standard]
+				 * Row 2: [feature 3 — standard] [feature 4 — large, col-span-2]
+				 * Row 3: [feature 5 — equal] [feature 6 — equal]
+				 *
+				 * Mobile: single column, all same size
+				 */}
+				<div
+					ref={gridRef}
+					className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-[var(--border)]"
 				>
-					{FEATURES.map((f) => (
-						<FeatureCard key={f.titleKey} feature={f} t={t} />
-					))}
-				</motion.div>
+					{/* Row 1 */}
+					<FeatureCard feature={FEATURES[0]} t={t} className="md:col-span-2" />
+					<FeatureCard feature={FEATURES[1]} t={t} />
+
+					{/* Row 2 */}
+					<FeatureCard feature={FEATURES[2]} t={t} />
+					<FeatureCard feature={FEATURES[3]} t={t} className="md:col-span-2" />
+
+					{/* Row 3 */}
+					<FeatureCard feature={FEATURES[4]} t={t} />
+					<FeatureCard feature={FEATURES[5]} t={t} />
+					{/* Row 3 filler — keeps the grid from leaving an orphan gap */}
+					<div className="hidden md:block border-t border-l border-[var(--border)] bg-[var(--card)]" />
+				</div>
 			</div>
 		</section>
 	);
@@ -136,37 +151,46 @@ export function FeaturesSection() {
 function FeatureCard({
 	feature,
 	t,
+	className,
 }: {
 	feature: FeatureItem;
 	t: ReturnType<typeof useTranslations>;
+	className?: string;
 }) {
+	const isLarge = feature.size === "large";
+
 	return (
 		<article
 			className={cn(
-				// Shape: sharp, editorial
-				"rounded-none border border-[var(--border)]",
-				// Surface
+				// Grid borders: top + left on every cell, outer border from parent
+				"border-t border-l border-[var(--border)]",
+				// Background
 				"bg-[var(--card)]",
-				// Spacing
-				"p-6 md:p-8",
-				// Hover: color shift only — no shadow, no scale
+				// Padding: large cards get extra breathing room
+				isLarge ? "p-10 md:p-12" : "p-8",
+				// Hover: color shift only — no shadow, no scale, no border-radius
 				"transition-colors duration-150",
 				"hover:bg-[var(--card-hover)] hover:border-[var(--border-hover)]",
-				// Primary card: left border accent only
-				feature.primary && "border-l-4 border-l-primary",
+				// Caller-supplied span classes
+				className,
 			)}
 		>
-			{/* Icon — bare, 20px, muted-foreground, no container */}
+			{/* Icon — bare Lucide, 20px, muted-foreground, no container */}
 			<div className="mb-5 text-muted-foreground" aria-hidden="true">
 				{feature.icon}
 			</div>
 
-			{/* Title — H3, Space Grotesk 500, 20px */}
-			<h3 className="font-heading font-medium text-[1.25rem] leading-[1.3] tracking-[-0.015em] text-foreground mb-2">
+			{/* Title */}
+			<h3
+				className={cn(
+					"font-heading font-medium leading-[1.3] tracking-[-0.015em] text-foreground mb-3",
+					isLarge ? "text-xl" : "text-[1.125rem]",
+				)}
+			>
 				{t(feature.titleKey)}
 			</h3>
 
-			{/* Description — body, muted */}
+			{/* Description */}
 			<p className="text-muted-foreground text-sm leading-relaxed">
 				{t(feature.descKey)}
 			</p>

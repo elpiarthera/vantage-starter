@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
+import { FAQSection } from "@/components/landing/FAQSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { TechStackSection } from "@/components/landing/TechStackSection";
 
 type Props = {
 	params: Promise<{ locale: string }>;
@@ -56,7 +58,9 @@ export default async function LandingPage({ params }: Props) {
 			<main id="main-content">
 				<HeroSection />
 				<FeaturesSection />
+				<TechStackSection />
 				<PricingSection />
+				<FAQSection />
 			</main>
 			<LandingFooter />
 		</div>

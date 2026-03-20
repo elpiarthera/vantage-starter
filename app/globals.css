@@ -316,6 +316,120 @@ section > div[style*="opacity:0"] {
 }
 
 /* ============================================================================
+   HERO WORD ANIMATION — CSS-only, 3-word cycling with strikethrough
+   Each word is shown for 3s (9s total loop). No Framer Motion.
+   ============================================================================ */
+
+@keyframes hero-word-cycle {
+  /* Word 1: "retrofitted" visible 0–3s */
+  0%        { opacity: 1; }
+  28%       { opacity: 1; }
+  33.33%    { opacity: 0; }
+  /* Word 2: "refactored" visible 3–6s */
+  33.34%    { opacity: 0; }
+  38%       { opacity: 0; }
+  66.66%    { opacity: 0; }
+  /* gap */
+  100%      { opacity: 0; }
+}
+
+@keyframes hero-word-cycle-2 {
+  /* Word 2: "refactored" visible 3–6s */
+  0%        { opacity: 0; }
+  33.33%    { opacity: 0; }
+  38%       { opacity: 1; }
+  61%       { opacity: 1; }
+  66.66%    { opacity: 0; }
+  100%      { opacity: 0; }
+}
+
+@keyframes hero-word-cycle-3 {
+  /* Word 3: "patched" visible 6–9s */
+  0%        { opacity: 0; }
+  66.66%    { opacity: 0; }
+  71%       { opacity: 1; }
+  95%       { opacity: 1; }
+  100%      { opacity: 0; }
+}
+
+.hero-animated-word {
+  display: inline-block;
+  position: relative;
+  /* strikethrough via text-decoration */
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: oklch(0.65 0.01 240); /* muted — struck-through words are de-emphasized */
+}
+
+.hero-word-1 {
+  animation: hero-word-cycle 9s step-start infinite;
+  animation-delay: 1.2s; /* let entrance animation settle first */
+}
+
+.hero-word-2 {
+  animation: hero-word-cycle-2 9s step-start infinite;
+  animation-delay: 1.2s;
+}
+
+.hero-word-3 {
+  animation: hero-word-cycle-3 9s step-start infinite;
+  animation-delay: 1.2s;
+}
+
+/* Entrance animations — CSS only, no Framer Motion */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  animation: hero-enter 600ms ease-out forwards;
+}
+
+.hero-enter-delay-1 {
+  opacity: 0;
+  animation: hero-enter 600ms ease-out 120ms forwards;
+}
+
+.hero-enter-delay-2 {
+  opacity: 0;
+  animation: hero-enter 600ms ease-out 240ms forwards;
+}
+
+.hero-enter-delay-3 {
+  opacity: 0;
+  animation: hero-enter 400ms ease-out 360ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter,
+  .hero-enter-delay-1,
+  .hero-enter-delay-2,
+  .hero-enter-delay-3 {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-word-1,
+  .hero-word-2,
+  .hero-word-3 {
+    animation: none;
+  }
+
+  /* Show only the first word when motion is reduced */
+  .hero-word-1 { opacity: 1; }
+  .hero-word-2 { opacity: 0; }
+  .hero-word-3 { opacity: 0; }
+}
+
+/* ============================================================================
    TOUCH-FRIENDLY HELPERS
    ============================================================================ */
 
