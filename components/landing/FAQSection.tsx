@@ -39,7 +39,7 @@ export function FAQSection() {
 				<div className="max-w-3xl">
 					<h2
 						id="faq-heading"
-						className="font-heading font-bold text-foreground mb-10"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.02em] mb-10"
 					>
 						{t("heading")}
 					</h2>

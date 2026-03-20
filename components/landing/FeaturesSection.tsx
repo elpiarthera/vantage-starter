@@ -97,7 +97,7 @@ export function FeaturesSection() {
 		<section
 			id="features"
 			aria-labelledby="features-heading"
-			className="py-24 md:py-32"
+			className="py-24"
 		>
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Section header */}
@@ -127,7 +127,7 @@ export function FeaturesSection() {
 				 */}
 				<div
 					ref={gridRef}
-					className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-l border-[var(--border)]"
+					className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-l border-border"
 				>
 					{/* Row 1 */}
 					<FeatureCard feature={FEATURES[0]} t={t} className="md:col-span-2" />
@@ -162,7 +162,7 @@ function FeatureCard({
 			className={cn(
 				// Inner grid borders: each cell closes rightward and downward.
 				// Container carries border-t + border-l — no double borders.
-				"border-r border-b border-[var(--border)]",
+				"border-r border-b border-border",
 				// Background
 				"bg-[var(--card)]",
 				// Padding: large cards get extra breathing room

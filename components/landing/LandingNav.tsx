@@ -26,13 +26,13 @@ export function LandingNav() {
 		<>
 			<header
 				className={cn(
-					"fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200",
+					"fixed top-0 left-0 right-0 z-50 w-full transition-all duration-150",
 					scrolled
 						? "bg-background/80 backdrop-blur-md border-b border-border"
 						: "bg-transparent"
 				)}
 			>
-				<div className="max-w-5xl mx-auto px-4 sm:px-6 flex h-16 items-center justify-between">
+				<div className="max-w-6xl mx-auto px-6 lg:px-12 flex h-16 items-center justify-between">
 					{/* Logo — text only, no icon box */}
 					<Link
 						href="/"
@@ -118,7 +118,7 @@ export function LandingNav() {
 					className="fixed inset-0 bg-background z-50 md:hidden flex flex-col"
 				>
 					{/* Header row */}
-					<div className="flex h-16 items-center justify-between px-4 sm:px-6 border-b border-border">
+					<div className="flex h-16 items-center justify-between px-6 lg:px-12 border-b border-border">
 						<Link
 							href="/"
 							className="font-heading font-bold text-foreground tracking-[-0.02em]"
@@ -137,7 +137,7 @@ export function LandingNav() {
 					</div>
 
 					{/* Nav links */}
-					<nav className="flex flex-col px-4 sm:px-6 pt-6 gap-1 flex-1">
+					<nav className="flex flex-col px-6 pt-6 gap-1 flex-1">
 						<a
 							href="#features"
 							onClick={() => setMobileOpen(false)}
@@ -162,7 +162,7 @@ export function LandingNav() {
 					</nav>
 
 					{/* CTA buttons */}
-					<div className="px-4 sm:px-6 pb-8 flex flex-col gap-3">
+					<div className="px-6 pb-8 flex flex-col gap-3">
 						<Link href="/sign-in" onClick={() => setMobileOpen(false)}>
 							<Button variant="ghost" size="lg" className="w-full text-muted-foreground hover:text-foreground">
 								{t("nav.sign_in")}

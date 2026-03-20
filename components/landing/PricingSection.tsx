@@ -71,7 +71,7 @@ export function PricingSection() {
 					</p>
 					<h2
 						id="pricing-heading"
-						className="font-heading font-bold text-foreground mb-4"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.02em] mb-4"
 					>
 						{t("heading")}
 					</h2>

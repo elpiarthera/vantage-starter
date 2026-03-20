@@ -6,7 +6,7 @@ export function LandingFooter() {
 
 	return (
 		<footer className="border-t border-border bg-background" role="contentinfo">
-			<div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8">
 				{/* Single row on desktop, stacked on mobile */}
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 					{/* Logo text */}

@@ -16,9 +16,9 @@ export function TestimonialsSection() {
 	return (
 		<section
 			aria-labelledby="testimonials-heading"
-			className="py-28 md:py-40"
+			className="py-24"
 		>
-			<div className="max-w-5xl mx-auto px-4 sm:px-6">
+			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
 					initial={{ opacity: 1, y: 0 }}
@@ -32,7 +32,7 @@ export function TestimonialsSection() {
 					</p>
 					<h2
 						id="testimonials-heading"
-						className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-foreground mb-4"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.02em] mb-4"
 					>
 						{t("heading")}
 					</h2>
