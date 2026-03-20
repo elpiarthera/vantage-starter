@@ -91,7 +91,7 @@ export function AppSidebar() {
 											aria-hidden="true"
 										/>
 									</div>
-									<span className="text-base font-semibold tracking-[-0.03em] font-[Space_Grotesk,sans-serif]">
+									<span className="text-base font-semibold tracking-[-0.03em] font-heading">
 										VantageStarter
 									</span>
 								</Link>

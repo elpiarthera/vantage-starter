@@ -84,7 +84,7 @@ function MissionCard({ mission, operationCount, locale }: MissionCardProps) {
 				{/* Header row */}
 				<div className="flex items-start justify-between gap-3">
 					<div className="min-w-0">
-						<h2 className="font-semibold text-foreground truncate text-base leading-snug font-[Space_Grotesk,sans-serif] group-hover:text-primary transition-colors duration-150">
+						<h2 className="font-semibold text-foreground truncate text-base leading-snug font-heading group-hover:text-primary transition-colors duration-150">
 							{mission.name}
 						</h2>
 						{mission.description && (
@@ -149,7 +149,7 @@ function EmptyState() {
 			<div className="w-12 h-12 border border-border flex items-center justify-center mb-6">
 				<Target className="size-5 text-muted-foreground" aria-hidden="true" />
 			</div>
-			<h2 className="text-base font-semibold text-foreground mb-2 font-[Space_Grotesk,sans-serif]">
+			<h2 className="text-base font-semibold text-foreground mb-2 font-heading">
 				No missions yet
 			</h2>
 			<p className="text-sm text-muted-foreground max-w-xs">
@@ -235,7 +235,7 @@ export default function MissionsPage() {
 		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10">
 			{/* Page header */}
 			<header className="mb-8">
-				<h1 className="text-2xl font-bold tracking-tight text-foreground font-[Space_Grotesk,sans-serif]">
+				<h1 className="text-2xl font-bold tracking-tight text-foreground font-heading">
 					Missions
 				</h1>
 				<p className="text-sm text-muted-foreground mt-1">
