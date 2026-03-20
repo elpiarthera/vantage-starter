@@ -46,6 +46,7 @@ export function UserSyncProvider({ children }: { children: React.ReactNode }) {
 	const { isSignedIn } = useAuth();
 	const { user } = useUser();
 	const syncUser = useMutation(api.users.syncUser);
+	const ensureMyWorkspace = useMutation(api.workspaces.ensureMyWorkspace);
 	const storedLanguage = useQuery(
 		api.users.getLanguagePreference,
 		isSignedIn ? {} : "skip",
@@ -79,6 +80,7 @@ export function UserSyncProvider({ children }: { children: React.ReactNode }) {
 				username: user.username || undefined,
 				imageUrl: user.imageUrl || undefined,
 			})
+				.then(() => ensureMyWorkspace())
 				.then(() => {
 					console.log("[UserSync] ✅ User synced successfully:", {
 						userId: user.id,
@@ -97,7 +99,7 @@ export function UserSyncProvider({ children }: { children: React.ReactNode }) {
 					// Don't set hasSynced = true, allowing retry on next render
 				});
 		}
-	}, [isSignedIn, user?.id, hasSynced, isSyncing, syncUser]);
+	}, [isSignedIn, user?.id, hasSynced, isSyncing, syncUser, ensureMyWorkspace]);
 
 	// Apply stored language preference after sync (once per session)
 	useEffect(() => {

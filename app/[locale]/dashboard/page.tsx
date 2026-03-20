@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
 	if (isLoading) {
 		return (
-			<div className="container mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-8 animate-in fade-in duration-300">
+			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10 space-y-8 animate-in fade-in duration-300">
 				{/* Welcome Header Skeleton */}
 				<div className="space-y-4 md:space-y-6">
 					<div className="text-center md:text-left">
@@ -58,8 +58,8 @@ export default function DashboardPage() {
 					</div>
 					{/* Quick Stats Skeleton */}
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-						{[1, 2, 3, 4].map((i) => (
-							<Skeleton key={i} className="h-24 md:h-32" />
+						{["stat-1", "stat-2", "stat-3", "stat-4"].map((id) => (
+							<Skeleton key={id} className="h-24 md:h-32" />
 						))}
 					</div>
 				</div>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
 
 	if (hasError) {
 		return (
-			<div className="container mx-auto px-4 md:px-6 py-6 md:py-10 animate-in fade-in duration-300">
+			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10 animate-in fade-in duration-300">
 				<ErrorState
 					title="Failed to Load Dashboard"
 					description="Unable to load dashboard data. Please try again."
@@ -90,7 +90,7 @@ export default function DashboardPage() {
 	}
 
 	return (
-		<div className="container mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-8 animate-in fade-in duration-300">
+		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10 space-y-8 animate-in fade-in duration-300">
 			<WelcomeHeader
 				creditsRemaining={creditsRemaining}
 				storageUsed={storageUsage || { totalGB: 0 }}

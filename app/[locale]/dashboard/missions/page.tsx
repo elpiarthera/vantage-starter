@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
-import { LayoutList, Target } from "lucide-react";
+import { Target } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -185,8 +185,8 @@ function MissionsList({ locale }: { locale: string }) {
 	if (isLoading) {
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				{[1, 2, 3, 4].map((i) => (
-					<MissionCardSkeleton key={i} />
+				{["sk-1", "sk-2", "sk-3", "sk-4"].map((id) => (
+					<MissionCardSkeleton key={id} />
 				))}
 			</div>
 		);
@@ -235,15 +235,9 @@ export default function MissionsPage() {
 		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10">
 			{/* Page header */}
 			<header className="mb-8">
-				<div className="flex items-center gap-3 mb-1">
-					<LayoutList
-						className="size-5 text-muted-foreground"
-						aria-hidden="true"
-					/>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground font-[Space_Grotesk,sans-serif]">
-						Missions
-					</h1>
-				</div>
+				<h1 className="text-2xl font-bold tracking-tight text-foreground font-[Space_Grotesk,sans-serif]">
+					Missions
+				</h1>
 				<p className="text-sm text-muted-foreground mt-1">
 					Committed plans and their execution status.
 				</p>

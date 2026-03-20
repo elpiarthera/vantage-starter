@@ -36,9 +36,9 @@ export const getCurrentUser = query({
 });
 
 /**
- * Sync user from Clerk to Convex database
- * Creates or updates user record
- * Called automatically when user signs in/up
+ * Sync user from Clerk to Convex database.
+ * Creates or updates user record, then ensures a default workspace exists.
+ * Called automatically when user signs in/up via UserSyncProvider.
  */
 export const syncUser = mutation({
 	args: {
@@ -49,6 +49,7 @@ export const syncUser = mutation({
 		username: v.optional(v.string()),
 		imageUrl: v.optional(v.string()),
 	},
+	returns: v.id("users"),
 	handler: async (ctx, args) => {
 		// Check if user already exists
 		const existingUser = await ctx.db
@@ -72,6 +73,24 @@ export const syncUser = mutation({
 				updatedAt: now,
 			});
 
+			// Ensure workspace exists for existing users who may have been created
+			// before auto-workspace logic was added.
+			const existingWorkspace = await ctx.db
+				.query("workspaces")
+				.withIndex("by_owner", (q) => q.eq("ownerId", args.clerkUserId))
+				.first();
+
+			if (!existingWorkspace) {
+				await ctx.db.insert("workspaces", {
+					name: "Personal",
+					organizationId: "personal",
+					ownerId: args.clerkUserId,
+					isDefault: true,
+					createdAt: now,
+					updatedAt: now,
+				});
+			}
+
 			return existingUser._id;
 		}
 
@@ -84,6 +103,16 @@ export const syncUser = mutation({
 			username: args.username,
 			imageUrl: args.imageUrl,
 			lastActiveAt: now,
+			createdAt: now,
+			updatedAt: now,
+		});
+
+		// Auto-create default workspace for every new user
+		await ctx.db.insert("workspaces", {
+			name: "Personal",
+			organizationId: "personal",
+			ownerId: args.clerkUserId,
+			isDefault: true,
 			createdAt: now,
 			updatedAt: now,
 		});

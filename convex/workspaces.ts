@@ -185,6 +185,41 @@ export const ensureDefault = mutation({
 });
 
 /**
+ * Ensure the currently authenticated user has a default workspace.
+ * Auth-gated version of ensureDefault — safe to call from the client.
+ * Returns the existing or newly created workspace ID.
+ */
+export const ensureMyWorkspace = mutation({
+	args: {},
+	returns: v.id("workspaces"),
+	handler: async (ctx) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new Error("Unauthenticated");
+
+		const clerkUserId = identity.subject;
+
+		// Return existing default workspace if already present
+		const existing = await ctx.db
+			.query("workspaces")
+			.withIndex("by_owner", (q) => q.eq("ownerId", clerkUserId))
+			.first();
+
+		if (existing) return existing._id;
+
+		// Create default workspace
+		const now = Date.now();
+		return await ctx.db.insert("workspaces", {
+			name: "Personal",
+			organizationId: "personal",
+			ownerId: clerkUserId,
+			isDefault: true,
+			createdAt: now,
+			updatedAt: now,
+		});
+	},
+});
+
+/**
  * Switch the user's active workspace.
  * Updates lastAccessedAt for workspace sorting.
  */

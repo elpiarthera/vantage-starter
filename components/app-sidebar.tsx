@@ -69,7 +69,7 @@ export function AppSidebar() {
 		<TooltipProvider delayDuration={0}>
 			<Sidebar
 				collapsible="icon"
-				className="group-data-[side=left]:border-r border-border bg-muted/30"
+				className="group-data-[side=left]:border-r border-sidebar-border bg-sidebar-background"
 				aria-label="Main navigation"
 			>
 				{/* ── Header: Logo ── */}
@@ -78,7 +78,7 @@ export function AppSidebar() {
 						<SidebarMenuItem>
 							<SidebarMenuButton
 								asChild
-								className="h-10 min-h-[44px] rounded-xl px-3 gap-2"
+								className="h-10 min-h-[44px] rounded-none px-3 gap-2"
 							>
 								<Link
 									href="/dashboard"
@@ -91,7 +91,7 @@ export function AppSidebar() {
 											aria-hidden="true"
 										/>
 									</div>
-									<span className="text-base font-semibold tracking-[-0.03em]">
+									<span className="text-base font-semibold tracking-[-0.03em] font-[Space_Grotesk,sans-serif]">
 										VantageStarter
 									</span>
 								</Link>
@@ -118,7 +118,7 @@ export function AppSidebar() {
 											pathname.endsWith("/dashboard")
 										}
 										className={cn(
-											"h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground",
+											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
 											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
 										)}
 									>
@@ -135,7 +135,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/chat")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground",
+											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
 											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
 										)}
 									>
@@ -152,7 +152,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/missions")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground",
+											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
 											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
 										)}
 									>
@@ -169,7 +169,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/architect")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground",
+											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
 											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
 										)}
 									>
@@ -206,7 +206,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.startsWith("/dashboard/settings")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground",
+											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
 											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
 										)}
 									>
@@ -260,7 +260,7 @@ export function AppSidebar() {
 								<TooltipTrigger asChild>
 									<SidebarMenuButton
 										onClick={toggleSidebar}
-										className="h-9 min-h-[44px] rounded-xl px-3 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors duration-150"
+										className="h-9 min-h-[44px] rounded-none px-3 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors duration-150"
 										aria-label={
 											isCollapsed ? "Expand sidebar" : "Collapse sidebar"
 										}
