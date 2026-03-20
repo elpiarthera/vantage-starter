@@ -1,6 +1,6 @@
 "use client";
 
-import { SignOutButton, useUser } from "@clerk/nextjs";
+import { OrganizationSwitcher, SignOutButton, useUser } from "@clerk/nextjs";
 import {
 	Bell,
 	ChevronDown,
@@ -180,12 +180,32 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 		<>
 			<header className="sticky top-0 z-50 w-full border-b border-border bg-background">
 				<div className="container flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
-					{/* Left: Hamburger (mobile only) */}
-					<div className="flex items-center gap-1">
+					{/* Left: Hamburger (mobile only) + Org Switcher */}
+					<div className="flex items-center gap-2">
 						{/* SidebarTrigger: shown on mobile; sidebar handles its own md:hidden logic */}
 						{sidebarTrigger && (
 							<div className="md:hidden">{sidebarTrigger}</div>
 						)}
+						{/* Org Switcher — visible on all breakpoints */}
+						<OrganizationSwitcher
+							hidePersonal={false}
+							afterCreateOrganizationUrl="/dashboard"
+							afterLeaveOrganizationUrl="/"
+							afterSelectOrganizationUrl="/dashboard"
+							afterSelectPersonalUrl="/dashboard"
+							createOrganizationMode="navigation"
+							createOrganizationUrl="/dashboard/account?tab=new-org"
+							appearance={{
+								elements: {
+									rootBox: "flex items-center",
+									organizationSwitcherTrigger:
+										"min-h-[36px] px-3 py-1.5 rounded-none hover:bg-accent transition-colors duration-150 ease-out text-sm gap-2",
+									organizationSwitcherPopoverCard:
+										"rounded-none border border-border shadow-md",
+									organizationSwitcherPopoverActions: "rounded-none",
+								},
+							}}
+						/>
 					</div>
 
 					{/* Right: Language Switcher + Credits + Notifications + User Menu */}
