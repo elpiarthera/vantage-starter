@@ -28,7 +28,6 @@ import {
 	MessageSquare,
 	Settings,
 	Sparkles,
-	Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -78,20 +77,14 @@ export function AppSidebar() {
 						<SidebarMenuItem>
 							<SidebarMenuButton
 								asChild
-								className="h-10 min-h-[44px] rounded-none px-3 gap-2"
+								className="h-10 min-h-[44px] rounded-none px-3 gap-2 hover:bg-transparent"
 							>
 								<Link
 									href="/dashboard"
 									onClick={handleNavClick}
 									aria-label="VantageStarter home"
 								>
-									<div className="size-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
-										<Zap
-											className="size-3.5 text-primary-foreground"
-											aria-hidden="true"
-										/>
-									</div>
-									<span className="text-base font-semibold tracking-[-0.03em] font-heading">
+									<span className="font-heading font-bold tracking-[-0.02em] text-foreground">
 										VantageStarter
 									</span>
 								</Link>
@@ -104,7 +97,7 @@ export function AppSidebar() {
 				<SidebarContent>
 					{/* ─── OVERVIEW ─── */}
 					<SidebarGroup>
-						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
 							Overview
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -118,12 +111,15 @@ export function AppSidebar() {
 											pathname.endsWith("/dashboard")
 										}
 										className={cn(
-											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
-											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
+											"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground transition-colors duration-150",
+											"hover:text-foreground data-[active=true]:text-foreground data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
 										)}
 									>
 										<Link href="/dashboard" onClick={handleNavClick}>
-											<LayoutGrid className="size-4" aria-hidden="true" />
+											<LayoutGrid
+												className="size-[18px] shrink-0"
+												aria-hidden="true"
+											/>
 											<span>Dashboard</span>
 										</Link>
 									</SidebarMenuButton>
@@ -135,12 +131,15 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/chat")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
-											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
+											"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground transition-colors duration-150",
+											"hover:text-foreground data-[active=true]:text-foreground data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
 										)}
 									>
 										<Link href="/dashboard/chat" onClick={handleNavClick}>
-											<MessageSquare className="size-4" aria-hidden="true" />
+											<MessageSquare
+												className="size-[18px] shrink-0"
+												aria-hidden="true"
+											/>
 											<span>Chat</span>
 										</Link>
 									</SidebarMenuButton>
@@ -152,12 +151,15 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/missions")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
-											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
+											"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground transition-colors duration-150",
+											"hover:text-foreground data-[active=true]:text-foreground data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
 										)}
 									>
 										<Link href="/dashboard/missions" onClick={handleNavClick}>
-											<LayoutList className="size-4" aria-hidden="true" />
+											<LayoutList
+												className="size-[18px] shrink-0"
+												aria-hidden="true"
+											/>
 											<span>Missions</span>
 										</Link>
 									</SidebarMenuButton>
@@ -169,12 +171,15 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/architect")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
-											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
+											"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground transition-colors duration-150",
+											"hover:text-foreground data-[active=true]:text-foreground data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
 										)}
 									>
 										<Link href="/dashboard/architect" onClick={handleNavClick}>
-											<Sparkles className="size-4" aria-hidden="true" />
+											<Sparkles
+												className="size-[18px] shrink-0"
+												aria-hidden="true"
+											/>
 											<span>Architect</span>
 										</Link>
 									</SidebarMenuButton>
@@ -188,7 +193,7 @@ export function AppSidebar() {
 
 					{/* ─── WORKSPACE ─── */}
 					<SidebarGroup>
-						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
 							Workspace
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -206,12 +211,15 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.startsWith("/dashboard/settings")}
 										className={cn(
-											"h-9 min-h-[44px] rounded-none px-3 text-muted-foreground",
-											"data-[active=true]:text-primary data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary",
+											"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground transition-colors duration-150",
+											"hover:text-foreground data-[active=true]:text-foreground data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
 										)}
 									>
 										<Link href="/dashboard/account" onClick={handleNavClick}>
-											<Settings className="size-4" aria-hidden="true" />
+											<Settings
+												className="size-[18px] shrink-0"
+												aria-hidden="true"
+											/>
 											<span>Settings</span>
 										</Link>
 									</SidebarMenuButton>
@@ -230,8 +238,13 @@ export function AppSidebar() {
 					<div className="hidden group-data-[collapsible=icon]:flex items-center justify-center py-1">
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center">
-									<Zap className="size-3.5 text-primary" aria-hidden="true" />
+								<div className="size-7 flex items-center justify-center">
+									<span
+										className="font-heading font-bold text-xs text-foreground select-none"
+										aria-hidden="true"
+									>
+										VS
+									</span>
 								</div>
 							</TooltipTrigger>
 							<TooltipContent side="right">Workspace</TooltipContent>

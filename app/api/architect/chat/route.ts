@@ -13,7 +13,7 @@
  * Workspace context injected manually (Phase 5 RAG deferred per ORCHESTRATION-PLAN.md).
  */
 
-import { gateway } from "@ai-sdk/gateway";
+import { openai } from "@ai-sdk/openai";
 import { auth } from "@clerk/nextjs/server";
 import { streamText } from "ai";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
@@ -151,11 +151,9 @@ export async function POST(req: Request) {
 		throw new Error("Failed to save message");
 	});
 
-	// 11. Stream using gateway (matches AI SDK v6 + Vercel AI Gateway pattern)
-	const model = gateway("anthropic/claude-sonnet-4-5");
-
+	// 11. Stream using OpenAI (same provider as /api/chat)
 	const result = streamText({
-		model,
+		model: openai("gpt-4o"),
 		system: fullSystemPrompt,
 		prompt: message,
 	});

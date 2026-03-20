@@ -23,7 +23,7 @@ export function WorkspaceSwitcher() {
 	if (!isLoaded) {
 		return (
 			<div className="flex items-center gap-2 px-3 py-1.5">
-				<Skeleton className="size-6 rounded-xl" />
+				<Skeleton className="size-6 rounded-none" />
 				<Skeleton className="h-4 w-28" />
 			</div>
 		);
@@ -45,10 +45,10 @@ export function WorkspaceSwitcher() {
 					elements: {
 						rootBox: "w-full",
 						organizationSwitcherTrigger:
-							"w-full min-h-[44px] justify-between px-3 py-2 rounded-xl hover:bg-sidebar-accent transition-colors duration-150 ease-out text-sm",
+							"w-full min-h-[44px] justify-between px-3 py-2 rounded-none hover:bg-sidebar-accent transition-colors duration-150 ease-out text-sm",
 						organizationSwitcherPopoverCard:
-							"rounded-xl border border-border shadow-md",
-						organizationSwitcherPopoverActions: "rounded-b-xl",
+							"rounded-none border border-border shadow-md",
+						organizationSwitcherPopoverActions: "rounded-none",
 					},
 				}}
 			/>
