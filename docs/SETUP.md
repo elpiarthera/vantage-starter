@@ -4,7 +4,7 @@ This guide takes a developer from zero to a running local environment. No prior 
 
 **Time estimate:** 45–60 minutes
 
-**Stack:** Next.js 14 + Convex + Clerk + Polar
+**Stack:** Next.js 15 + Convex + Clerk + Polar + ElevenLabs
 
 ---
 
@@ -31,8 +31,9 @@ If Node.js is not installed: https://nodejs.org/en/download
 | Clerk | Authentication | https://clerk.com/sign-up |
 | Polar | Billing and subscriptions | https://polar.sh |
 | Resend | Transactional email | https://resend.com/signup |
+| ElevenLabs | Voice Architect (optional) | https://elevenlabs.io/sign-up |
 
-Create all four accounts before continuing. You will need them in order.
+Create all accounts before continuing. ElevenLabs is optional — the app runs without it. Skip Section 8 if you are not enabling voice.
 
 ---
 
@@ -265,7 +266,56 @@ RESEND_API_KEY=re_your_key_here
 
 ---
 
-## Section 8 — Start Development
+## Section 8 — ElevenLabs Setup (Optional — Voice Architect)
+
+Voice is opt-in. If you skip this section, the Voice Architect button will not appear in the UI (`NEXT_PUBLIC_ELEVENLABS_ENABLED=false` is the default). Zero ElevenLabs API cost on idle.
+
+### Step 8.1 — Get your API key
+
+1. Go to https://elevenlabs.io and log in
+2. Click your avatar → **"Profile + API Key"**
+3. Copy the API key
+
+Add to `.env.local`:
+
+```
+ELEVENLABS_API_KEY=your_key_here
+```
+
+### Step 8.2 — Create the Architect voice agent
+
+1. Go to https://elevenlabs.io/conversational-ai
+2. Click **"Create Agent"**
+3. Set the agent name: `Architect`
+4. Set the system prompt (copy from `docs/ELEVENLABS-INTEGRATION-PLAN.md` — Section Q1, "ElevenLabs agent system prompt")
+5. Set LLM model: `claude-haiku-4-5`
+6. Set temperature: `0.3`
+7. Select a voice — choose any voice from the library (note the Voice ID for step 8.3)
+8. Under **Client Tools**, add the five tools: `decomposeIntent`, `confirmPlan`, `searchContext`, `getMissionStatus`, `getAgents` (parameters defined in `docs/ELEVENLABS-INTEGRATION-PLAN.md` — Section Q5)
+9. Save the agent. Copy the **Agent ID** from the URL or agent settings page.
+
+### Step 8.3 — Add remaining env vars
+
+```
+ELEVENLABS_ARCHITECT_AGENT_ID=your_agent_id_here
+ELEVENLABS_NARRATOR_VOICE_ID=your_voice_id_here   # Used for operation status announcements
+NEXT_PUBLIC_ELEVENLABS_ENABLED=true               # Activates the VoiceButton in the UI
+```
+
+### Step 8.4 — Add ElevenLabs API key to Convex dashboard
+
+The webhook handler (`/api/webhooks/elevenlabs`) runs server-side but the credit deduction uses a Convex mutation. No Convex env var is needed for ElevenLabs — the API key is only used in Next.js server routes.
+
+### Notes
+
+- Voice sessions cost **10 credits/minute** (ElevenLabs Conversational AI rate). A user needs at least 10 credits to start a session.
+- Operation status announcements (TTS) cost **1 credit per announcement** and are opt-in (default off — user preference).
+- `searchContext` tool (Firecrawl inside voice session) costs **5 credits per search**.
+- All costs are configurable via the `creditCosts` table in Convex. Run `npx convex run seed:systemData` after seeding to add the `voice_session_minute` cost row.
+
+---
+
+## Section 9 — Start Development
 
 You need two terminal windows running simultaneously.
 
@@ -287,7 +337,7 @@ Open http://localhost:3000 in your browser.
 
 ---
 
-## Section 9 — Verify Everything Works
+## Section 10 — Verify Everything Works
 
 Work through this checklist after both servers are running.
 
@@ -316,7 +366,7 @@ Work through this checklist after both servers are running.
 
 ---
 
-## Section 10 — Environment Variables Reference
+## Section 11 — Environment Variables Reference
 
 Complete table of all environment variables.
 
@@ -342,6 +392,11 @@ Complete table of all environment variables.
 | `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | Yes | `sk-proj-...` | Used by `app/api/chat/route.ts` (via `@ai-sdk/openai`) and `scripts/translate.js`. Not read directly by the raw `openai` package. |
 | `FAL_KEY` | Required for AI features | https://fal.ai/dashboard/keys | Yes | `key_id:key_secret` |
 | `TOGETHER_API_KEY` | Optional (fallback AI) | https://api.together.xyz/settings/api-keys | Yes | `abc123...` |
+| `ELEVENLABS_API_KEY` | Optional (voice features) | https://elevenlabs.io → Profile + API Key | Yes | `sk_abc123...` |
+| `ELEVENLABS_ARCHITECT_AGENT_ID` | Optional (voice features) | ElevenLabs dashboard → your Architect agent | Yes | `abc123...` |
+| `ELEVENLABS_NARRATOR_VOICE_ID` | Optional (voice features) | ElevenLabs dashboard → Voices | Yes | `abc123...` |
+| `NEXT_PUBLIC_ELEVENLABS_ENABLED` | Optional | Hard-coded value | Yes | `false` |
+| `FIRECRAWL_API_KEY` | Optional (voice searchContext + scraping) | https://firecrawl.dev/app/api-keys | Yes | `fc-abc123...` |
 
 ### Variables also required in Convex Dashboard
 
@@ -356,17 +411,17 @@ Go to: https://dashboard.convex.dev → your project → Settings → Environmen
 
 ---
 
-## Section 11 — Deploy to Vercel
+## Section 12 — Deploy to Vercel
 
 Follow this section after your local environment works end-to-end. Do not deploy first and debug later.
 
-### Step 11.1 — Import the repository
+### Step 12.1 — Import the repository
 
 1. Go to https://vercel.com/new
 2. Under "Import Git Repository", find `elpiarthera/vantage-starter` and click **"Import"**
 3. Framework preset: **Next.js** (auto-detected — verify it shows Next.js before proceeding)
 
-### Step 11.2 — Add environment variables
+### Step 12.2 — Add environment variables
 
 In the "Environment Variables" section of the import screen, add all of the following. Do not skip any.
 
@@ -387,15 +442,15 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
 
 > `NEXT_PUBLIC_CONVEX_SITE_URL` is the production URL Convex uses to generate absolute links. Set it to your Vercel domain once you know it (e.g. `https://my-app.vercel.app`). You can add it after the first deploy.
 
-### Step 11.3 — Deploy
+### Step 12.3 — Deploy
 
 Click **"Deploy"**. The first build takes 2–4 minutes.
 
-If the build fails, check Section 12 (Common Build Errors) below.
+If the build fails, check Section 13 (Common Build Errors) below.
 
 ---
 
-## Section 12 — Common Build Errors
+## Section 13 — Common Build Errors
 
 ### pnpm lockfile stale
 

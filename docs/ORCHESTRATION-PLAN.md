@@ -41,6 +41,9 @@ These 6 issues will cause silent failures or incorrect behavior. Fix before writ
 | Framework alignment | Maximize Vercel OSS (Next.js 15, AI SDK v6, json-render, @vercel/analytics) | Custom tooling |
 | Phase 0 prerequisite | Install json-render + verify SpecStream compatibility — Next.js 15 already at 15.3.9 | Upgrade first |
 | Knowledge agent template | Steal complexity router pattern only — skip porting full codebase | Full port |
+| Voice interface | ElevenLabs Conversational AI (WebRTC, clientTools bridge) — voice IS the Architect interface | Text-only input, third-party STT |
+| Voice billing | Credits mapped to ElevenLabs minutes (10 credits/min) — feature-flagged, zero cost when off | Separate billing system |
+| Voice integration structure | Voice woven into existing phases (0, 1, 3, 4, 6, 6.5) — NOT a separate Phase 13 | Standalone voice phase |
 
 ---
 
@@ -95,14 +98,23 @@ Clerk (middleware, per-user auth)
 | Architect UI | MISSING in vantage-starter | BUILD (uses json-render SpecStream) |
 | Agent management pages | UNKNOWN | BUILD after schema confirmed |
 | Mission board | UNKNOWN | BUILD after schema confirmed |
+| `app/api/elevenlabs/signed-url/route.ts` | MISSING | BUILD (Phase 0 — EL-2) |
+| `app/api/elevenlabs/speak/route.ts` | MISSING | BUILD (Phase 6.5 — EL-3) |
+| `app/api/search/route.ts` | MISSING | BUILD (Phase 0 — EL-4) |
+| `app/api/webhooks/elevenlabs/route.ts` | MISSING | BUILD (Phase 6.5 — EL-5) |
+| `components/voice/architect-client-tools.ts` | MISSING | BUILD (Phase 4 stub, Phase 6 complete — EL-6) |
+| `hooks/use-conversation.ts` | MISSING | BUILD (Phase 4 — EL-7) |
+| `hooks/use-operation-announcements.ts` | MISSING | BUILD (Phase 6.5 — EL-8) |
+| `components/voice/VoiceArchitectButton.tsx` | MISSING | BUILD (Phase 6 — EL-10) |
+| `convex/schema.ts` — `voiceSessions` table | MISSING | BUILD (Phase 1 — EL-schema) |
 
 ---
 
-## Phase 0 — json-render Install + SpecStream Verification (Complexity: S)
+## Phase 0 — json-render Install + SpecStream Verification + ElevenLabs Scaffolding (Complexity: S→M)
 
 **Next.js is already at 15.3.9. No upgrade needed.**
 
-This phase installs json-render and verifies that vantage-studio's `prompts.ts` SpecStream output format is compatible before any porting begins.
+This phase installs json-render, verifies SpecStream compatibility, installs ElevenLabs dependencies, and scaffolds the three zero-cost API routes that unblock all voice work downstream. No ElevenLabs API calls are made until `NEXT_PUBLIC_ELEVENLABS_ENABLED=true` — so this is pure scaffolding with zero runtime cost.
 
 ### Step 0.1 — Install json-render
 
@@ -123,8 +135,85 @@ If there are mismatches, document them here before porting prompts.ts. Do not po
 
 Create a minimal `app/api/test-spec-stream/route.ts` that returns a hardcoded SpecStream object and verify `@json-render/react` renders it in a test page. Delete after passing.
 
-**Estimated complexity:** S — 30–60 min.
-**Hard dependency:** Phase 6 (Architect UI) cannot start without this confirmed.
+### Step 0.4 — EL-1: Add ElevenLabs env vars to `.env.example`
+
+```bash
+# .env.example additions
+ELEVENLABS_API_KEY=
+ELEVENLABS_ARCHITECT_AGENT_ID=    # Agent ID from ElevenLabs dashboard
+ELEVENLABS_NARRATOR_VOICE_ID=     # Voice for operation status announcements
+NEXT_PUBLIC_ELEVENLABS_ENABLED=false  # Set true to activate voice features
+FIRECRAWL_API_KEY=
+```
+
+All four vars are optional/off by default. Zero cost on idle.
+
+### Step 0.5 — Install ElevenLabs dependencies
+
+```bash
+pnpm add @elevenlabs/react @elevenlabs/elevenlabs-js
+npx @elevenlabs/cli@latest components add orb voice-button conversation-bar
+```
+
+`@elevenlabs/ui` components land in `components/ui/` (shadcn/ui style). The Three.js Orb requires a dynamic import to avoid SSR crash — add this wrapper now:
+
+```typescript
+// components/voice/Orb.tsx
+import dynamic from 'next/dynamic';
+export const Orb = dynamic(() => import('@/components/ui/orb'), { ssr: false });
+```
+
+### Step 0.6 — EL-2: Signed URL endpoint
+
+File: `app/api/elevenlabs/signed-url/route.ts`
+
+```typescript
+import { auth } from "@clerk/nextjs/server";
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY! });
+
+export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
+
+  const { signedUrl } = await client.conversationalAi.getSignedUrl({
+    agentId: process.env.ELEVENLABS_ARCHITECT_AGENT_ID!,
+  });
+  return Response.json({ signedUrl });
+}
+```
+
+Clerk-gated. No API call made if `ELEVENLABS_API_KEY` is empty — add a guard: `if (!process.env.ELEVENLABS_API_KEY) return new Response("Voice not configured", { status: 503 });`
+
+### Step 0.7 — EL-4: Firecrawl search endpoint
+
+File: `app/api/search/route.ts`
+
+Used by the `searchContext` clientTool inside voice sessions. Zero cost if never called.
+
+```typescript
+import { NextRequest } from "next/server";
+
+export async function GET(req: NextRequest) {
+  const q = req.nextUrl.searchParams.get("q");
+  if (!q) return Response.json({ results: [] });
+
+  const res = await fetch("https://api.firecrawl.dev/v1/search", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.FIRECRAWL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: q, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
+  });
+  const data = await res.json();
+  return Response.json({ results: data.data ?? [] });
+}
+```
+
+**Estimated complexity:** M — was S before EL additions. Add ~45 min for steps 0.4–0.7.
+**Hard dependencies:** Phase 6 (Architect UI) cannot start without json-render confirmed. EL-6 (clientTools) cannot start without EL-2 + EL-4.
 
 ---
 
@@ -518,7 +607,50 @@ architectMessages: defineTable({
   .index("by_session_created", ["sessionId", "createdAt"])
 ```
 
-**Estimated complexity:** M — 9 tables, ~220 lines. No logic.
+### Step 1.EL-A — Add `voiceSessions` table
+
+Tracks ElevenLabs Conversational AI sessions for credit reconciliation and audit. The webhook handler (EL-5, Phase 6.5) writes to this table after a session ends.
+
+```typescript
+voiceSessions: defineTable({
+  workspaceId: v.id("workspaces"),
+  clerkUserId: v.string(),
+  architectSessionId: v.optional(v.id("architectSessions")),  // FK if started from Architect
+  elevenLabsConversationId: v.string(),                        // from ElevenLabs webhook
+  durationSecs: v.optional(v.number()),
+  creditsDeducted: v.optional(v.number()),
+  status: v.union(
+    v.literal("active"),
+    v.literal("completed"),
+    v.literal("failed"),
+  ),
+  startedAt: v.number(),
+  endedAt: v.optional(v.number()),
+  createdAt: v.number(),
+})
+  .index("by_workspace", ["workspaceId"])
+  .index("by_user", ["clerkUserId"])
+  .index("by_elevenlabs_id", ["elevenLabsConversationId"])
+  .index("by_architect_session", ["architectSessionId"])
+```
+
+### Step 1.EL-B — Add credit mapping fields to `creditCosts` table
+
+The existing `creditCosts` table (already in VantageStarter) needs a `category` field to distinguish voice costs from AI costs. If `creditCosts` already has `category`, skip. If not, add:
+
+```typescript
+// Extend existing creditCosts table definition:
+category: v.optional(v.union(
+  v.literal("ai"),
+  v.literal("voice"),
+  v.literal("search"),
+  v.literal("storage"),
+)),
+```
+
+The `voice_session_minute` row (seeded in Phase 3.EL) uses `category: "voice"`.
+
+**Estimated complexity:** M — 9 tables + 1 voice table, ~250 lines. No logic.
 
 ---
 
@@ -571,7 +703,23 @@ Idempotent — check before insert.
 
 Run: `npx convex run seed:systemData`
 
-**Estimated complexity:** S — 1 hour.
+### Step 3.EL — EL-12: Voice credit config row
+
+Add to `convex/seed.ts` alongside other `creditCosts` seed entries:
+
+```typescript
+{
+  actionType: "voice_session_minute",
+  displayName: "Voice Architect (per minute)",
+  credits: 10,
+  category: "voice",
+  isActive: true,
+}
+```
+
+This row is data — zero cost until a voice session actually completes. Idempotent: check `actionType === "voice_session_minute"` before insert.
+
+**Estimated complexity:** S — 1 hour (seed port) + 5 min (EL-12 row).
 
 ---
 
@@ -676,7 +824,132 @@ const agentSystemPrompt = await ctx.runQuery(
 
 The response includes the composed system prompt so the agent has its full identity before executing.
 
-**Estimated complexity:** S — 2 files, pure logic.
+### Step 4.3 — EL-7: `hooks/use-conversation.ts` wrapper
+
+**Prerequisite:** EL-2 (signed URL endpoint) from Phase 0.
+
+Wrap `useConversation` from `@elevenlabs/react` with Clerk userId injection, error toast handling, and the credit balance check before session start.
+
+```typescript
+// hooks/use-conversation.ts
+'use client';
+import { useConversation } from "@elevenlabs/react";
+import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { fetchQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+export function useArchitectConversation() {
+  const { user } = useUser();
+  const conversation = useConversation();
+
+  const startSession = async (clientTools: Record<string, unknown>) => {
+    if (!user) return;
+
+    // Credit gate — minimum 10 credits to start
+    const balance = await fetchQuery(api.credits.getBalance, { clerkUserId: user.id });
+    if (balance < 10) {
+      toast.error("Need 10 credits to start a voice session.");
+      return;
+    }
+
+    // Request mic permission before fetching signed URL
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const res = await fetch("/api/elevenlabs/signed-url");
+    if (!res.ok) {
+      toast.error("Voice not available. Check ELEVENLABS_API_KEY.");
+      return;
+    }
+    const { signedUrl } = await res.json();
+
+    await conversation.startSession({
+      signedUrl,
+      connectionType: "webrtc",
+      clientTools,
+    });
+  };
+
+  return { ...conversation, startSession };
+}
+```
+
+### Step 4.4 — EL-6: `clientTools` bridge scaffold
+
+**Prerequisite:** EL-2, EL-4 (Phase 0). Full wiring requires Phase 6 (Architect mutations + chat route). Scaffold the file now; wire `decomposeIntent` and `confirmPlan` in Phase 6 once `api.architect.*` exists.
+
+File: `components/voice/architect-client-tools.ts`
+
+```typescript
+// components/voice/architect-client-tools.ts
+// Scaffold — decomposeIntent and confirmPlan wired in Phase 6
+import { fetchQuery, fetchMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+export function buildArchitectClientTools(workspaceId: string, sessionId: string) {
+  return {
+    decomposeIntent: async ({ intent }: { intent: string }) => {
+      // TODO (Phase 6): log message + call /api/architect/chat
+      return `Intent received: ${intent}`;
+    },
+
+    confirmPlan: async ({ plan }: { plan: object }) => {
+      // TODO (Phase 6): call api.architect.commitPlan
+      return "Plan confirmed.";
+    },
+
+    searchContext: async ({ query }: { query: string }) => {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const { results } = await res.json();
+      return (results as Array<{ title: string; description: string }>)
+        .slice(0, 3)
+        .map(r => `${r.title}: ${r.description}`)
+        .join("\n\n");
+    },
+
+    getMissionStatus: async ({ missionId }: { missionId: string }) => {
+      const mission = await fetchQuery(api.missions.getWithOperations, { missionId });
+      if (!mission) return "Mission not found.";
+      const opSummary = mission.operations.map(op => `${op.name}: ${op.status}`).join(", ");
+      return `Mission "${mission.name}" (${mission.status}). Operations: ${opSummary}`;
+    },
+
+    getAgents: async () => {
+      const agents = await fetchQuery(api.agents.listByWorkspace, { workspaceId });
+      return agents.map(a => `${a.name} (${a.roleName})`).join(", ");
+    },
+  };
+}
+```
+
+`searchContext` is fully implemented here — it only calls the Firecrawl route from Phase 0.7. The other two tools are stubbed and completed in Phase 6.
+
+### Step 4.5 — EL-9: Architect voice agent config (dashboard — manual step)
+
+Configure the Architect agent in the ElevenLabs dashboard. This is a one-time manual step. Document the required config so buyers can replicate it.
+
+```json
+{
+  "name": "Architect",
+  "llm": {
+    "model": "claude-haiku-4-5",
+    "system_prompt": "[ROLE]\nYou are the Architect — a strategic AI operations planner.\n\n[PERSONA]\nDirect. No padding. Responses spoken aloud — max 50 words.\n\n[FRAMEWORK]\nListen → clarify once if needed → call decomposeIntent → read back plan → confirm.\n\n[SKILLS]\nYou have: decomposeIntent, confirmPlan, searchContext, getMissionStatus, getAgents.",
+    "temperature": 0.3
+  },
+  "tts": { "voice_id": "[ARCHITECT_VOICE_ID]", "model": "eleven_turbo_v2" },
+  "client_tools": [
+    { "name": "decomposeIntent", "type": "client", "parameters": { "intent": "string", "workspaceId": "string" } },
+    { "name": "confirmPlan", "type": "client", "parameters": { "plan": "object", "sessionId": "string" } },
+    { "name": "searchContext", "type": "client", "parameters": { "query": "string" } },
+    { "name": "getMissionStatus", "type": "client", "parameters": { "missionId": "string" } },
+    { "name": "getAgents", "type": "client", "parameters": {} }
+  ]
+}
+```
+
+The 4-Pillars model maps directly: Role → core system prompt, Persona → speaking style directives, Framework → conversation flow rules, Skills → clientTools. Buyers extend VantageStarter by editing this config — the Architect IS a 4-Pillars-composed agent, documented and visible.
+
+**Estimated complexity:** S→M — 2 files pure logic (Steps 4.1–4.2) + voice scaffolding (Steps 4.3–4.5). Add ~1h for voice steps.
 
 ---
 
@@ -885,7 +1158,94 @@ Two panels:
 
 The "Confirm Plan" button appears when the AI's last message contains a SpecStream mission-proposal block. Clicking it calls `architect.commitPlan`.
 
-**Estimated complexity:** L — streaming AI, json-render integration, atomic commit.
+### Step 6.5-EL — EL-6 completion: Wire `decomposeIntent` and `confirmPlan`
+
+Now that `api.architect.commitPlan` and `/api/architect/chat` exist, replace the stubs in `components/voice/architect-client-tools.ts`:
+
+```typescript
+decomposeIntent: async ({ intent }: { intent: string }) => {
+  await fetchMutation(api.architect.addMessage, {
+    sessionId,
+    role: "user",
+    content: intent,
+  });
+  const res = await fetch("/api/architect/chat", {
+    method: "POST",
+    body: JSON.stringify({ sessionId, message: intent, workspaceId }),
+    headers: { "Content-Type": "application/json" },
+  });
+  const { summary, proposalJson } = await res.json();
+  window.dispatchEvent(new CustomEvent("architect:proposal", { detail: { proposalJson } }));
+  return summary; // spoken back by the agent
+},
+
+confirmPlan: async ({ plan }: { plan: object }) => {
+  const missionId = await fetchMutation(api.architect.commitPlan, {
+    sessionId,
+    missionProposal: plan,
+  });
+  return `Mission created. ID: ${missionId}`;
+},
+```
+
+### Step 6.6 — EL-10: `VoiceArchitectButton` component
+
+File: `components/voice/VoiceArchitectButton.tsx`
+
+Feature-flag gated. Credit-gated. Hidden entirely when disabled.
+
+```typescript
+'use client';
+import { Orb } from "@/components/voice/Orb";
+import { useArchitectConversation } from "@/hooks/use-conversation";
+import { buildArchitectClientTools } from "./architect-client-tools";
+
+interface Props {
+  workspaceId: string;
+  sessionId: string;
+}
+
+export function VoiceArchitectButton({ workspaceId, sessionId }: Props) {
+  const isEnabled = process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED === "true";
+  const { status, startSession, endSession } = useArchitectConversation();
+
+  if (!isEnabled) return null;
+
+  const clientTools = buildArchitectClientTools(workspaceId, sessionId);
+  const isActive = status === "connected" || status === "connecting";
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <Orb isListening={status === "connected"} />
+      <button
+        onClick={isActive ? endSession : () => startSession(clientTools)}
+        className="px-4 py-2 rounded-lg text-sm font-medium
+          bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+      >
+        {isActive ? "End Voice Session" : "Start Voice Session"}
+      </button>
+    </div>
+  );
+}
+```
+
+### Step 6.7 — EL-11: Wire `VoiceArchitectButton` into Architect page
+
+In `app/(dashboard)/architect/page.tsx`, add to the top-right of the right panel:
+
+```typescript
+// Wire after session is created
+{sessionId && workspaceId && (
+  <VoiceArchitectButton
+    workspaceId={workspaceId}
+    sessionId={sessionId}
+  />
+)}
+```
+
+Listen for the `"architect:proposal"` custom event dispatched by `decomposeIntent` to update React state with the proposed plan (same as the text flow — they share state).
+
+**Estimated complexity:** L→XL — streaming AI, json-render integration, atomic commit, voice wiring. Add ~1.5h for Steps 6.5-EL through 6.7.
 
 ---
 
@@ -931,7 +1291,135 @@ Read-only list of all committed missions in the workspace, with their operations
 | completed | green |
 | failed | red |
 
-**Estimated complexity:** M — read-only data display, real-time via useQuery, checkpoint action buttons.
+### Step 6.5.4 — EL-3: TTS speak endpoint
+
+File: `app/api/elevenlabs/speak/route.ts`
+
+Used by `useOperationAnnouncements`. Converts operation status changes to spoken audio. `eleven_turbo_v2` is the cheapest TTS model (~$0.015/1k chars). A "Research complete" message is ~15 chars = negligible. Gate behind user preference (opt-in, default off).
+
+```typescript
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY! });
+
+export async function POST(req: Request) {
+  if (!process.env.ELEVENLABS_API_KEY) {
+    return new Response("Voice not configured", { status: 503 });
+  }
+  const { text } = await req.json();
+  const stream = await client.textToSpeech.convert(
+    process.env.ELEVENLABS_NARRATOR_VOICE_ID!,
+    { text, model_id: "eleven_turbo_v2" }
+  );
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  const buffer = Buffer.concat(chunks);
+  return new Response(buffer, { headers: { "Content-Type": "audio/mpeg" } });
+}
+```
+
+### Step 6.5.5 — EL-8: `useOperationAnnouncements` hook
+
+File: `hooks/use-operation-announcements.ts`
+
+Mounts on the mission detail page. Detects status transitions via Convex reactive query. Speaks each change via the TTS endpoint. Default off — only fires when `NEXT_PUBLIC_ELEVENLABS_ENABLED=true`.
+
+```typescript
+'use client';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useEffect, useRef } from "react";
+import type { Id } from "@/convex/_generated/dataModel";
+
+export function useOperationAnnouncements(missionId: Id<"missions">) {
+  const isEnabled = process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED === "true";
+  const operations = useQuery(api.operations.listByMission, { missionId });
+  const prevStatusRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!isEnabled || !operations) return;
+    for (const op of operations) {
+      const prev = prevStatusRef.current[op._id];
+      if (prev && prev !== op.status) {
+        const message = buildAnnouncementText(op.name, op.status);
+        if (message) void announceViaElevenLabs(message);
+      }
+      prevStatusRef.current[op._id] = op.status;
+    }
+  }, [operations, isEnabled]);
+}
+
+function buildAnnouncementText(name: string, status: string): string | null {
+  switch (status) {
+    case "completed": return `${name} is complete.`;
+    case "in_progress": return `${name} is now running.`;
+    case "awaiting_checkpoint": return `${name} is ready for your review.`;
+    case "failed": return `${name} failed. Check the mission board.`;
+    default: return null;
+  }
+}
+
+async function announceViaElevenLabs(text: string) {
+  const res = await fetch("/api/elevenlabs/speak", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) return;
+  const audioBlob = await res.blob();
+  const audio = new Audio(URL.createObjectURL(audioBlob));
+  void audio.play();
+}
+```
+
+Mount in `app/(dashboard)/missions/[missionId]/page.tsx`:
+
+```typescript
+useOperationAnnouncements(missionId);
+```
+
+### Step 6.5.6 — EL-5: ElevenLabs webhook handler
+
+File: `app/api/webhooks/elevenlabs/route.ts`
+
+Fires after a Conversational AI session ends (`conversation.completed` event). Deducts credits from the user's balance based on session duration.
+
+```typescript
+import { NextRequest } from "next/server";
+import { fetchMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+export async function POST(req: NextRequest) {
+  // Validate signature (ElevenLabs sends HMAC-SHA256 in X-ElevenLabs-Signature)
+  const signature = req.headers.get("X-ElevenLabs-Signature");
+  // TODO: verify signature against ELEVENLABS_WEBHOOK_SECRET before processing
+
+  const event = await req.json();
+
+  if (event.type !== "conversation.completed") {
+    return Response.json({ received: true });
+  }
+
+  const durationSecs = event.conversation_duration_secs ?? 0;
+  const credits = Math.ceil(durationSecs / 60) * 10; // 10 credits/min
+  const clerkUserId = event.metadata?.userId; // passed in startSession
+
+  if (clerkUserId && credits > 0) {
+    await fetchMutation(api.credits.deductCredits, {
+      clerkUserId,
+      amount: credits,
+      actionType: "voice_session_minute",
+      description: `Voice session (${Math.ceil(durationSecs / 60)} min)`,
+    });
+  }
+
+  return Response.json({ received: true });
+}
+```
+
+Register the webhook endpoint in the ElevenLabs dashboard pointing to `https://your-domain.com/api/webhooks/elevenlabs`.
+
+**Estimated complexity:** M→L — read-only data display + voice announcements + webhook handler. Add ~1.5h for Steps 6.5.4–6.5.6.
 
 ---
 
@@ -1141,21 +1629,44 @@ Reads `CONVEX_URL` from `.env.local`. Uses Convex Python SDK for human-facing ca
 
 ## MVP Cut Line
 
-**Ship first (Phases 0, 0.5, 1, 2, 3, 4, 6, 6.5, 8):**
+**Ship first (Phases 0, 0.5, 1, 2, 3, 4, 6, 6.5, 8 — voice woven throughout):**
 
-| Phase | What |
-|-------|------|
-| 0 | json-render install + SpecStream verification |
-| 0.5 | Auth field mapping (clerkId → clerkUserId) |
-| 1 | Schema — 9 tables |
-| 2 | Port Convex functions |
-| 3 | Seed data |
-| 4 | Agent auth + composer |
-| 6 | Architect chat + commitPlan + json-render UI |
-| 6.5 | Mission Board (list + detail + checkpoint buttons) |
-| 8 | Execution engine (HTTP + dep resolution) |
+| Phase | What | Voice sub-tasks included |
+|-------|------|--------------------------|
+| 0 | json-render install + SpecStream verification + ElevenLabs scaffolding | EL-1, EL-2, EL-4 |
+| 0.5 | Auth field mapping (clerkId → clerkUserId) | — |
+| 1 | Schema — 9 tables + voiceSessions + credit category field | EL-schema |
+| 2 | Port Convex functions | — |
+| 3 | Seed data + voice credit config row | EL-12 |
+| 4 | Agent auth + composer + clientTools scaffold + use-conversation hook | EL-6, EL-7, EL-9 |
+| 6 | Architect chat + commitPlan + json-render UI + VoiceArchitectButton wired | EL-6 (complete), EL-10, EL-11 |
+| 6.5 | Mission Board (list + detail + checkpoint buttons) + TTS announcements + webhook | EL-3, EL-8, EL-5 |
+| 8 | Execution engine (HTTP + dep resolution) | — |
 
 > **Why Phase 8 is back:** Without the execution engine, every operation committed by the Architect stays `"pending"` forever. The Mission Board shows a static list that never changes. That is not a working demo — it is a mockup. Phase 8 is required for "born agentic" to be true.
+
+> **Why voice is woven, not a separate phase:** Voice is the primary Architect interface. The hackathon submission requires it. Every buyer gets the wired infrastructure even if they keep the feature flag off. Treating it as a separate phase would create a false dependency chain — each EL task is a small addition to an existing phase, not a standalone deliverable.
+
+**Voice task distribution summary:**
+
+| EL task | Lands in phase | Effort |
+|---------|---------------|--------|
+| EL-1 (env vars) | Phase 0 (Step 0.4) | 5 min |
+| EL-2 (signed URL endpoint) | Phase 0 (Step 0.6) | 15 min |
+| EL-4 (Firecrawl search endpoint) | Phase 0 (Step 0.7) | 20 min |
+| EL-schema (voiceSessions table + category field) | Phase 1 (Steps 1.EL-A, 1.EL-B) | 20 min |
+| EL-12 (credit cost row) | Phase 3 (Step 3.EL) | 5 min |
+| EL-7 (use-conversation hook) | Phase 4 (Step 4.3) | 30 min |
+| EL-6 scaffold (clientTools — stubbed) | Phase 4 (Step 4.4) | 30 min |
+| EL-9 (dashboard config — manual) | Phase 4 (Step 4.5) | 20 min |
+| EL-6 complete (decomposeIntent + confirmPlan wired) | Phase 6 (Step 6.5-EL) | 20 min |
+| EL-10 (VoiceArchitectButton component) | Phase 6 (Step 6.6) | 30 min |
+| EL-11 (wire into Architect page) | Phase 6 (Step 6.7) | 15 min |
+| EL-3 (TTS speak endpoint) | Phase 6.5 (Step 6.5.4) | 20 min |
+| EL-8 (useOperationAnnouncements hook) | Phase 6.5 (Step 6.5.5) | 30 min |
+| EL-5 (webhook handler) | Phase 6.5 (Step 6.5.6) | 30 min |
+
+**Total ElevenLabs work: ~6h, distributed across 4 phases — same hours, no artificial sequencing.**
 
 **Defer post-MVP:**
 
@@ -1271,9 +1782,15 @@ app/
   api/
     architect/
       chat/route.ts             PORT as-is + complexity router addition
+    elevenlabs/
+      signed-url/route.ts       BUILD — Phase 0 (EL-2) — Clerk-gated signed URL
+      speak/route.ts            BUILD — Phase 6.5 (EL-3) — TTS for status announcements
+    search/route.ts             BUILD — Phase 0 (EL-4) — Firecrawl wrapper for searchContext
+    webhooks/
+      elevenlabs/route.ts       BUILD — Phase 6.5 (EL-5) — conversation.completed → deduct credits
   (dashboard)/
     architect/
-      page.tsx                  BUILD — two-panel Architect admin UI
+      page.tsx                  BUILD — two-panel Architect admin UI + VoiceArchitectButton (Phase 6 + EL-11)
       _components/
         session-list.tsx        BUILD
         chat-interface.tsx      BUILD (json-render SpecStream rendering)
@@ -1281,7 +1798,17 @@ app/
     missions/
       page.tsx                  BUILD — mission list (Phase 6.5)
       [missionId]/
-        page.tsx                BUILD — mission detail + ops + checkpoint buttons (Phase 6.5)
+        page.tsx                BUILD — mission detail + ops + checkpoint buttons + voice announcements (Phase 6.5 + EL-8)
+
+components/
+  voice/
+    Orb.tsx                     BUILD — Phase 0 (dynamic import to avoid SSR crash)
+    VoiceArchitectButton.tsx    BUILD — Phase 6 (EL-10) — feature flag + credit gate
+    architect-client-tools.ts  BUILD — Phase 4 stub + Phase 6 complete (EL-6)
+
+hooks/
+  use-conversation.ts           BUILD — Phase 4 (EL-7) — useConversation wrapper + credit gate
+  use-operation-announcements.ts BUILD — Phase 6.5 (EL-8) — Convex useQuery → TTS on status change
 
 scripts/
   orchestrate.py                BUILD — CLI for human orchestration + integration testing
@@ -1292,16 +1819,17 @@ scripts/
 ## Phase Dependencies
 
 ```
-Phase 0 (json-render install + SpecStream verify)
+Phase 0 (json-render install + SpecStream verify + ElevenLabs scaffolding)
   → Phase 6 (Architect UI — needs json-render confirmed)
+  → EL-2, EL-4 unblock EL-6 (clientTools) and EL-7 (hook) in Phase 4
 
 Phase 0.5 (auth field mapping)
   → Phase 2 (all ported functions need adaptation applied)
 
-Phase 1 (schema)
+Phase 1 (schema — 9 tables + voiceSessions + credit category)
   → Phase 2 (port functions)
-  → Phase 3 (seed data)
-  → Phase 4 (agent auth + composer)
+  → Phase 3 (seed data + EL-12 credit row)
+  → Phase 4 (agent auth + composer + EL-6 scaffold + EL-7 hook)
     → Phase 8 (execution engine — HTTP endpoints) [MVP]
       → Phase 9 (checkpoints) [POST-MVP]
         → Phase 10 (HTTP router) [POST-MVP]
@@ -1310,8 +1838,20 @@ Phase 1 (schema)
   → Phase 5 (RAG activation) [POST-MVP]
     → Phase 6 (Architect — RAG injection, post-MVP upgrade)
 
-Phase 6 (Architect commitPlan)
+Phase 4 (EL-6 scaffold + EL-7 + EL-9)
+  → Phase 6 (EL-6 completion: decomposeIntent + confirmPlan wired)
+
+Phase 6 (Architect commitPlan + EL-10 + EL-11 wired)
   → Phase 6.5 (Mission Board — needs committed missions to display)
+  → Phase 6.5 inherits ElevenLabs: EL-3 + EL-8 + EL-5
+
+ElevenLabs (woven through phases — not a separate track)
+  Phase 0: EL-1, EL-2, EL-4 (env + endpoints — zero cost)
+  Phase 1: voiceSessions table + credit category field
+  Phase 3: EL-12 (credit row in seed)
+  Phase 4: EL-7 (hook), EL-6 scaffold, EL-9 (dashboard config)
+  Phase 6: EL-6 complete, EL-10 (VoiceArchitectButton), EL-11 (wire)
+  Phase 6.5: EL-3 (TTS), EL-8 (announcements), EL-5 (webhook)
 
 Phase 12 (Changelog Monitor) — FUTURE, non-blocking
   → Requires Phase 8 (execution engine)
@@ -1322,27 +1862,27 @@ Phase 12 (Changelog Monitor) — FUTURE, non-blocking
 
 ## Complexity Summary
 
-| Phase | What | Complexity | Type | Blocker | MVP? |
-|-------|------|------------|------|---------|------|
-| 0 | json-render install + SpecStream verify | S | Install + verify | None | YES |
-| 0.5 | Auth field mapping | S | Research + doc | None | YES |
-| 1 | Schema — 9 tables | M | Port | 0 | YES |
-| 2 | Port Convex functions | M | Port | 0.5, 1 | YES |
-| 3 | Seed data | S | Port + audit | 2 | YES |
-| 4 | Agent auth + composer | S | Build | 2 | YES |
-| 6 | Architect chat + json-render UI | L | Port + Build | 0, 2 | YES |
-| 6.5 | Mission Board (read-only + checkpoint buttons) | M | Build | 6 | YES |
-| 8 | Execution engine (HTTP + dep resolution) | M | Build | 4 | YES |
-| 5 | @convex-dev/rag + complexity router | S | Wire + Build | 2 | NO |
-| 7 | Agent CRUD (token mutations) | M | Port + Extend | 2, 4 | NO |
-| 9 | Checkpoints Convex mutations | S | Build | 1, 8 | NO |
-| 10 | HTTP router wiring | S | Build | 8, 9 | NO |
-| 11 | Python CLI | M | Build | 3, 7, 8, 10 | NO |
-| 12 | Changelog Monitor (FUTURE) | M | Build | 8 | NO |
+| Phase | What | Complexity | Type | Blocker | MVP? | Voice sub-tasks |
+|-------|------|------------|------|---------|------|-----------------|
+| 0 | json-render + SpecStream verify + EL scaffolding | M | Install + Build | None | YES | EL-1, EL-2, EL-4 |
+| 0.5 | Auth field mapping | S | Research + doc | None | YES | — |
+| 1 | Schema — 9 tables + voiceSessions | M | Port + Build | 0 | YES | voiceSessions, credit category |
+| 2 | Port Convex functions | M | Port | 0.5, 1 | YES | — |
+| 3 | Seed data + credit row | S | Port + audit | 2 | YES | EL-12 |
+| 4 | Agent auth + composer + voice scaffold | M | Build | 2 | YES | EL-7, EL-6 (stub), EL-9 |
+| 6 | Architect chat + json-render UI + voice wired | XL | Port + Build | 0, 2, 4 | YES | EL-6 (complete), EL-10, EL-11 |
+| 6.5 | Mission Board + TTS announcements + webhook | L | Build | 6 | YES | EL-3, EL-8, EL-5 |
+| 8 | Execution engine (HTTP + dep resolution) | M | Build | 4 | YES | — |
+| 5 | @convex-dev/rag + complexity router | S | Wire + Build | 2 | NO | — |
+| 7 | Agent CRUD (token mutations) | M | Port + Extend | 2, 4 | NO | — |
+| 9 | Checkpoints Convex mutations | S | Build | 1, 8 | NO | — |
+| 10 | HTTP router wiring | S | Build | 8, 9 | NO | — |
+| 11 | Python CLI | M | Build | 3, 7, 8, 10 | NO | — |
+| 12 | Changelog Monitor (FUTURE) | M | Build | 8 | NO | — |
 
-**Total: 1 L + 5 M + 6 S. Estimated build time: 10–14 focused hours (MVP with Phase 8: 8–10h, post-MVP phases: 2–4h additional).**
+**Total MVP: 1 XL + 4 M + 2 S (was 1 L + 5 M + 3 S before voice integration). Estimated build time: 14–18 focused hours. Voice adds ~6h distributed across phases — same as before, no artificial sequencing overhead.**
 
-S = <1h, M = 1–2h, L = 2–4h
+S = <1h, M = 1–2h, L = 2–4h, XL = 4–6h (Phase 6 absorbs EL-6 completion + EL-10 + EL-11)
 
 The 80% port ratio from vantage-studio holds. Greenfield work is limited to: execution engine (Phase 8), agent auth helpers (Phase 4), checkpoints.ts (Phase 9), Architect UI (Phase 6 frontend portion), Mission Board (Phase 6.5).
 
@@ -1410,7 +1950,10 @@ Convex DB is at-rest encrypted. Hashing would require bcrypt in an action on eve
 **10. V8-safe timing-safe comparison**
 `node:crypto`'s `timingSafeEqual` is not available in Convex's V8 runtime. Manual XOR over `Uint8Array` is the correct replacement. Simple `===` is not acceptable — it short-circuits and leaks timing info.
 
-**11. Rejection is a hard kill (MVP simplification)**
+**11. Voice is woven, not a separate phase**
+ElevenLabs tasks (EL-1 through EL-12) are distributed across 6 existing phases. This is the right structure: each EL task is a small addition to a phase that already has the right prerequisites. A standalone "Phase 13" would imply sequential execution after Phase 12, which is wrong — most EL work can run in parallel with core phases. The woven structure also forces buyers to see voice as integral, not optional.
+
+**12. Rejection is a hard kill (MVP simplification)**
 `rejectCheckpoint` sets `mission.status = "failed"` with no recovery. A revision flow (reset operations, allow re-execution) is explicitly flagged as post-MVP. The code should have a comment documenting this so the next engineer knows it's intentional.
 
 ---
@@ -1493,4 +2036,37 @@ No upgrade is executed automatically. The monitor informs — it does not act.
 
 ## Hackathon Context
 
-The ElevenLabs x Firecrawl hackathon ("Combine Firecrawl Search with ElevenAgents") runs until ~March 26. The hackathon app will be built ON VantageStarter, demonstrating the orchestration system in production. The app concept and the boilerplate development are AND, not OR — they happen in parallel.
+The ElevenLabs x Firecrawl hackathon ("Combine Firecrawl Search with ElevenAgents") runs until ~March 26. The hackathon submission IS VantageStarter — not a separate app. The same codebase serves both audiences: hackathon judges and boilerplate buyers.
+
+What the submission demonstrates: voice input (ElevenLabs) → `searchContext` clientTool → Firecrawl web research → structured mission plan generated → committed to Convex in real-time. A 30-second demo proves all required hackathon components.
+
+Voice is woven into the core build phases — not isolated as "Phase 13." Every required ElevenLabs component lands in the phase where it naturally belongs:
+- Infrastructure (env, endpoints) → Phase 0
+- Schema (voiceSessions, credit mapping) → Phase 1
+- Seed data (credit cost row) → Phase 3
+- clientTools bridge + hook → Phase 4
+- Voice UI wired into Architect → Phase 6
+- TTS announcements + webhook → Phase 6.5
+
+The hackathon submission is complete when Phase 6.5 ships. No separate track needed.
+
+### Hackathon submission demo script (30 seconds)
+
+```
+0:00 → Open VantageStarter dashboard, click Architect
+0:03 → Click VoiceButton. Orb activates.
+0:05 → Speak: "I need a competitive research mission for a SaaS product launch"
+0:10 → Orb shows agent processing
+0:12 → Agent calls searchContext("SaaS product launch competitive research")
+       → Firecrawl searches, returns top results
+0:15 → Agent reads back: "I found 3 research sources and designed a 4-operation mission:
+       web research, competitive analysis, positioning draft, and a review checkpoint.
+       Shall I create it?"
+0:22 → Speak "yes"
+0:23 → Agent calls confirmPlan → commitPlan fires
+0:25 → Mission Board updates in real-time. 4 operations visible.
+0:28 → "Mission created. Your agents are ready." spoken aloud.
+0:30 → End.
+```
+
+This demo proves: voice input, Firecrawl web research inside the session, structured plan generation, and real-time database update — all via the same codebase buyers purchase.

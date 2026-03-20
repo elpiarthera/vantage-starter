@@ -11,7 +11,9 @@
 
 These three libraries solve **different layers** of the same problem. They can be composed. The optimal stack for VantageStarter is:
 
-**tambo (orchestration) + json-render (rendering) — skip OpenGenerativeUI entirely.**
+**json-render (rendering) + Vercel AI SDK v6 — skip tambo and OpenGenerativeUI entirely.**
+
+> **Note on input modalities (added 2026-03-20):** VantageStarter supports three input modalities for the Architect: (1) text chat via the chat interface, (2) json-render visual rendering for structured plan output, and (3) voice via ElevenLabs Conversational AI (WebRTC). Voice is the primary input mechanism — it is not a layer managed by json-render or the generative UI libraries. ElevenLabs handles STT/TTS; json-render handles the structured visual output the voice agent produces.
 
 ---
 
@@ -262,3 +264,5 @@ Why this beats tambo for VantageStarter:
 - npm: @tambo-ai/react v1.2.3 — no Vercel AI SDK dependency confirmed
 - npm: @json-render/react — React 19 peer dep, no AI SDK dep confirmed
 - json-render LICENSE: Apache 2.0, Copyright 2025 Vercel Inc.
+- elevenlabs.io/docs/conversational-ai — WebRTC, clientTools bridge, voice agent config
+- docs/ELEVENLABS-INTEGRATION-PLAN.md — VantageStarter voice Architect integration spec

@@ -14,7 +14,8 @@ The Next.js boilerplate for the agentic era. AI renders components, not text. Re
 | Backend | Convex (real-time database + server functions) |
 | Auth | Clerk (SSO, MFA, organizations, RBAC) |
 | Billing | Polar.sh (subscriptions, one-time, webhooks) |
-| AI | Vercel AI SDK v6, tambo, json-render (Generative UI) |
+| AI | Vercel AI SDK v6, json-render (Generative UI) |
+| Voice | ElevenLabs (Conversational AI, WebRTC, TTS) |
 | Media | fal.ai (image/video generation) |
 | Scraping | Firecrawl |
 | i18n | next-intl (7 locales) |
@@ -22,9 +23,10 @@ The Next.js boilerplate for the agentic era. AI renders components, not text. Re
 
 ## What's included
 
-- **Generative UI** -- AI SDK v6 + tambo + json-render. Agents return React components, not markdown.
+- **Voice Architect** -- ElevenLabs Conversational AI. Speak your mission intent, the Architect decomposes it into a structured plan, reads it back, and commits on confirmation. Feature-flagged, zero cost when off.
+- **Generative UI** -- AI SDK v6 + json-render. Agents return React components, not markdown.
 - **Convex real-time** -- Reactive queries. Zero config. Data updates everywhere instantly.
-- **Credit system** -- Metered AI billing in the schema. Balance tracking, usage gates, transaction history.
+- **Credit system** -- Metered AI billing in the schema. Balance tracking, usage gates, transaction history. Voice sessions billed in credits.
 - **fal.ai integration** -- Image and video generation wired and ready.
 - **Firecrawl integration** -- Web scraping and search out of the box.
 - **Clerk auth** -- SSO, MFA, organizations, webhook sync to Convex.
@@ -57,6 +59,11 @@ NEXT_PUBLIC_CONVEX_URL=https://...convex.cloud
 FAL_KEY=...
 FIRECRAWL_API_KEY=...
 POLAR_ACCESS_TOKEN=...
+# ElevenLabs voice (optional — set NEXT_PUBLIC_ELEVENLABS_ENABLED=true to activate)
+ELEVENLABS_API_KEY=
+ELEVENLABS_ARCHITECT_AGENT_ID=
+ELEVENLABS_NARRATOR_VOICE_ID=
+NEXT_PUBLIC_ELEVENLABS_ENABLED=false
 ```
 
 ## Project structure

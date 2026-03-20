@@ -14,7 +14,7 @@ Status: APPROVED by Laurent, ready for implementation
 > The last word animates: cycles through "retrofitted", "refactored", "patched" with a strikethrough effect. 3s interval. CSS only, no Framer Motion.
 
 ### Subline
-Every SaaS starter kit bolted AI on later. VantageStarter was architected for agents from commit one — real-time backend, generative UI, credit billing, 36-agent plugin army included.
+Every SaaS starter kit bolted AI on later. VantageStarter was architected for agents from commit one — speak your intent, watch agents execute. Real-time backend, voice-powered Architect, generative UI, credit billing, 36-agent plugin army included.
 
 ### CTAs
 - **Primary:** Get VantageStarter
@@ -33,24 +33,27 @@ What the agentic era demands
 ### Section heading
 The stack that assumes AI is the product
 
-### 6 Features
+### 7 Features
 
-1. **AI that renders, not replies**
+1. **Voice-powered Architect**
+   Speak your intent. ElevenLabs processes it in real-time via WebRTC. The Architect decomposes your words into a structured mission plan — operations, dependencies, checkpoints — and reads it back. Say "confirm" and it commits. No typing required.
+
+2. **AI that renders, not replies**
    AI SDK v6 + Generative UI. Your agents return interactive React components — not walls of markdown the user has to parse.
 
-2. **Real-time without the plumbing**
+3. **Real-time without the plumbing**
    Convex reactive queries. Zero config. Your data updates everywhere, the moment it changes. No polling. No websocket boilerplate.
 
-3. **Credit billing from day one**
-   AI costs money. The credit system is in the schema, not an afterthought. Metered usage, balance tracking, and gate logic — already wired.
+4. **Credit billing from day one**
+   AI costs money. The credit system is in the schema, not an afterthought. Metered usage, balance tracking, and gate logic — already wired. Voice sessions billed in credits too.
 
-4. **Media generation out of the box**
+5. **Media generation out of the box**
    fal.ai for images and video. Firecrawl for web intelligence. Connected, typed, ready. Not a "coming soon" integration page.
 
-5. **36 agents. Not 36 templates.**
+6. **36 agents. Not 36 templates.**
    A Claude Code plugin army that writes, audits, deploys, scores, and ships. Vibe coders get a team, not a folder of components.
 
-6. **7 locales from commit one**
+7. **7 locales from commit one**
    i18n is infrastructure, not a feature request six months in. Seven languages. Every string. Day zero.
 
 ---
@@ -63,7 +66,7 @@ We are building on it. Right now.
 ### Copy
 No testimonials yet. We launched weeks ago — not years.
 
-Instead of fabricated quotes, here is what we can show you: we are building a hackathon app on VantageStarter this week for the ElevenLabs x Firecrawl hackathon. The tambo + json-render pipeline, the Convex real-time layer, the credit system, the agent orchestration — all running in production code we are writing today.
+Instead of fabricated quotes, here is what we can show you: we are building the hackathon submission for the ElevenLabs x Firecrawl hackathon on VantageStarter itself. The voice Architect (ElevenLabs), the json-render pipeline, the Convex real-time layer, the credit system, the agent orchestration — all running in production code we are writing today.
 
 You are not buying a product with 8,000 users and three years of accumulated debt. You are buying the architecture those 8,000 users will wish they had started with.
 
@@ -103,8 +106,9 @@ CTA: Clone the repo
 Everything. No upsells. No "team tier". No per-seat pricing. You are a solo founder or a vibe coder — this is your entire stack.
 
 - Everything in Starter, plus:
-- AI SDK v6 + Generative UI (tambo + json-render)
-- Credit system (metered billing, balance, gates)
+- AI SDK v6 + Generative UI (json-render SpecStream)
+- Voice Architect (ElevenLabs Conversational AI — speak your mission, agents execute)
+- Credit system (metered billing, balance, gates — voice sessions included)
 - Polar.sh subscription + one-time billing
 - fal.ai media generation integration
 - Firecrawl web scraping integration
@@ -129,13 +133,16 @@ Questions
 ### Q&A
 
 **What do I get exactly?**
-A complete Next.js 15 codebase with Convex backend (13 tables), Clerk auth (SSO, MFA, orgs), Polar.sh billing (subscriptions + one-time), AI SDK v6 with Generative UI, a credit system, fal.ai integration, Firecrawl integration, i18n in 7 languages, 7 OKLCH color presets, Chat UI with tool-call rendering, and a 36-agent Claude Code plugin that helps you build on the codebase. Plus docs, a Discord community, and lifetime updates.
+A complete Next.js 15 codebase with Convex backend (13 tables), Clerk auth (SSO, MFA, orgs), Polar.sh billing (subscriptions + one-time), AI SDK v6 with Generative UI, a credit system, ElevenLabs voice Architect (Conversational AI), fal.ai integration, Firecrawl integration, i18n in 7 languages, 7 OKLCH color presets, Chat UI with tool-call rendering, and a 36-agent Claude Code plugin that helps you build on the codebase. Plus docs, a Discord community, and lifetime updates.
 
 **What is Generative UI? Why does it matter?**
-Most boilerplates give you a chat box that returns text. Generative UI means your AI returns actual React components — charts, forms, cards, tables — rendered in real-time. The user interacts with UI, not markdown. This is how ChatGPT, v0, and Claude Artifacts work. VantageStarter gives you this pattern out of the box with tambo orchestration and json-render for structured output.
+Most boilerplates give you a chat box that returns text. Generative UI means your AI returns actual React components — charts, forms, cards, tables — rendered in real-time. The user interacts with UI, not markdown. This is how ChatGPT, v0, and Claude Artifacts work. VantageStarter gives you this pattern out of the box with json-render for schema-constrained structured output.
 
 **What is the credit system?**
-Every AI call costs money. The credit system tracks usage per user, enforces limits, and integrates with billing. It is built into the Convex schema — not a wrapper you add later. When a user runs an AI action, credits debit automatically. When they run out, gates block further usage until they upgrade. This is table-stakes for any AI product, and no other boilerplate ships it.
+Every AI call costs money. The credit system tracks usage per user, enforces limits, and integrates with billing. It is built into the Convex schema — not a wrapper you add later. When a user runs an AI action, credits debit automatically. When they run out, gates block further usage until they upgrade. Voice sessions (ElevenLabs) are also billed in credits. This is table-stakes for any AI product, and no other boilerplate ships it.
+
+**Does it support voice?**
+Yes — voice is the primary interface for the Architect feature. ElevenLabs Conversational AI handles speech-to-text, the agent processes your intent via `clientTools`, and the plan is read back aloud. The full flow: speak → Architect decomposes your intent → structured mission plan proposed → verbal confirmation → committed to database in real-time. Voice is feature-flagged (`NEXT_PUBLIC_ELEVENLABS_ENABLED`). When the flag is off, zero ElevenLabs API cost. When on, sessions are metered in credits. Bring your own ElevenLabs API key.
 
 **What is the 36-agent plugin army?**
 A Claude Code plugin with 36 specialized agents: frontend dev, Convex expert, Clerk expert, security auditor, SEO specialist, product manager, and more. When you work on VantageStarter, these agents understand the codebase, follow its conventions, and build features correctly. It is not AI-assisted coding — it is a dev team in your terminal.
@@ -145,7 +152,8 @@ A Claude Code plugin with 36 specialized agents: frontend dev, Convex expert, Cl
 - Backend: Convex (real-time database + server functions)
 - Auth: Clerk (SSO, MFA, organizations, webhooks)
 - Billing: Polar.sh (subscriptions, one-time, webhooks)
-- AI: Vercel AI SDK v6, tambo, json-render
+- AI: Vercel AI SDK v6, json-render
+- Voice: ElevenLabs (Conversational AI, WebRTC, TTS)
 - Media: fal.ai (image/video generation)
 - Scraping: Firecrawl
 - i18n: next-intl (7 locales)
@@ -203,6 +211,7 @@ ShipFast is the most popular Next.js boilerplate, built by Marc Lou in 2023. It 
 | **Auth** | Clerk (SSO, MFA, orgs, RBAC) | NextAuth (basic) |
 | **Billing** | Polar.sh (modern, dev-first) | Stripe or Lemon Squeezy |
 | **AI** | AI SDK v6 + Generative UI (renders components) | None (add your own) |
+| **Voice** | ElevenLabs (Conversational AI, voice Architect) | None |
 | **Credit system** | Built into schema | None |
 | **Media generation** | fal.ai out of the box | None |
 | **Web scraping** | Firecrawl out of the box | None |
@@ -240,6 +249,7 @@ MakerKit is the most complete Next.js SaaS starter kit, maintained full-time sin
 | **Auth** | Clerk | Supabase Auth or Better Auth |
 | **Billing** | Polar.sh | Stripe |
 | **AI** | AI SDK v6 + Generative UI | "AI Agents Rules" + MCP Server (DX tool, not product feature) |
+| **Voice** | ElevenLabs (Conversational AI, voice Architect) | None |
 | **Credit system** | Built into schema | None |
 | **Media generation** | fal.ai out of the box | None |
 | **Web scraping** | Firecrawl out of the box | None |
