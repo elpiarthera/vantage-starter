@@ -9,7 +9,7 @@
 
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireAuth, getAuthUserId } from "./lib/auth";
+import { getAuthUserId, requireAuth } from "./lib/auth";
 
 // ============================================================================
 // QUERIES
@@ -196,7 +196,8 @@ export const switchTo = mutation({
 
 		const workspace = await ctx.db.get(workspaceId);
 		if (!workspace) throw new Error("Workspace not found");
-		if (workspace.ownerId !== userId) throw new Error("No access to this workspace");
+		if (workspace.ownerId !== userId)
+			throw new Error("No access to this workspace");
 
 		await ctx.db.patch(workspaceId, { lastAccessedAt: Date.now() });
 
@@ -235,7 +236,8 @@ export const update = mutation({
 		const patch: Record<string, unknown> = { updatedAt: Date.now() };
 		if (updates.name !== undefined) patch.name = updates.name;
 		if (updates.slug !== undefined) patch.slug = updates.slug;
-		if (updates.description !== undefined) patch.description = updates.description;
+		if (updates.description !== undefined)
+			patch.description = updates.description;
 		if (updates.icon !== undefined) patch.icon = updates.icon;
 		if (updates.color !== undefined) patch.color = updates.color;
 		if (updates.settings !== undefined) {

@@ -12,9 +12,9 @@
  *   - Initial status: ops with deps → "blocked", ops without → "pending"
  */
 
-import { mutation, query } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { requireAuth, requireAuthWithWorkspace } from "./lib/auth";
 import {
 	missionProposalValidator,
@@ -45,7 +45,7 @@ export const list = query({
 			.order("desc")
 			.collect();
 
-		let missions = args.includeArchived
+		const missions = args.includeArchived
 			? allMissions
 			: allMissions.filter((m) => !m.isArchived);
 
@@ -627,5 +627,20 @@ export const addOperationsFromProposal = mutation({
 		await ctx.db.patch(args.missionId, { updatedAt: Date.now() });
 
 		return { operationsCreated: args.operations.length };
+	},
+});
+
+// =============================================================================
+// INTERNAL QUERIES (called from httpAction via ctx.runQuery)
+// =============================================================================
+
+/**
+ * Get a mission by ID — no auth (internal use only).
+ * Called from agent HTTP endpoints (ActionCtx — no ctx.db).
+ */
+export const getById = internalQuery({
+	args: { missionId: v.id("missions") },
+	handler: async (ctx, { missionId }) => {
+		return await ctx.db.get(missionId);
 	},
 });

@@ -14,10 +14,7 @@ export function TestimonialsSection() {
 	};
 
 	return (
-		<section
-			aria-labelledby="testimonials-heading"
-			className="py-24"
-		>
+		<section aria-labelledby="testimonials-heading" className="py-24">
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				<motion.div
 					className="mb-12 md:mb-16 max-w-xl"
@@ -94,9 +91,18 @@ function TestimonialPlaceholder({
 
 			{/* Quote placeholder lines */}
 			<div className="space-y-2 mb-5">
-				<div className="h-3 w-full rounded-full bg-primary/15" aria-hidden="true" />
-				<div className="h-3 w-5/6 rounded-full bg-primary/10" aria-hidden="true" />
-				<div className="h-3 w-3/4 rounded-full bg-primary/8" aria-hidden="true" />
+				<div
+					className="h-3 w-full rounded-full bg-primary/15"
+					aria-hidden="true"
+				/>
+				<div
+					className="h-3 w-5/6 rounded-full bg-primary/10"
+					aria-hidden="true"
+				/>
+				<div
+					className="h-3 w-3/4 rounded-full bg-primary/8"
+					aria-hidden="true"
+				/>
 			</div>
 
 			{/* Author placeholder */}
@@ -107,8 +113,14 @@ function TestimonialPlaceholder({
 					aria-hidden="true"
 				/>
 				<div className="space-y-1.5 flex-1">
-					<div className="h-2.5 w-24 rounded-full bg-primary/20" aria-hidden="true" />
-					<div className="h-2 w-32 rounded-full bg-primary/12" aria-hidden="true" />
+					<div
+						className="h-2.5 w-24 rounded-full bg-primary/20"
+						aria-hidden="true"
+					/>
+					<div
+						className="h-2 w-32 rounded-full bg-primary/12"
+						aria-hidden="true"
+					/>
 				</div>
 			</div>
 

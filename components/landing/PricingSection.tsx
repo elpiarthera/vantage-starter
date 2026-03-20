@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Tier = {
 	nameKey: string;
@@ -58,11 +58,7 @@ export function PricingSection() {
 	const t = useTranslations("landing.pricing");
 
 	return (
-		<section
-			id="pricing"
-			aria-labelledby="pricing-heading"
-			className="py-24"
-		>
+		<section id="pricing" aria-labelledby="pricing-heading" className="py-24">
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Header */}
 				<div className="mb-12 max-w-xl">
@@ -106,9 +102,7 @@ function PricingCard({
 			className={cn(
 				"rounded-none p-8 flex flex-col relative h-full",
 				"bg-card",
-				isHighlighted
-					? "border border-primary"
-					: "border border-border",
+				isHighlighted ? "border border-primary" : "border border-border",
 			)}
 		>
 			{/* Badge — only on Pro */}

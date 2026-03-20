@@ -200,13 +200,7 @@ export const seedOrchestration = internalMutation({
 				name: "Precise",
 				icon: "🎯",
 				description: "Minimal, exact, no fluff. Delivers only what was asked.",
-				traits: [
-					"concise",
-					"direct",
-					"literal",
-					"structured",
-					"no-padding",
-				],
+				traits: ["concise", "direct", "literal", "structured", "no-padding"],
 				communicationStyle:
 					"Bullet points and short sentences. Answers the exact question asked, nothing more. No preamble, no trailing summary.",
 				decisionMaking:
@@ -276,13 +270,7 @@ export const seedOrchestration = internalMutation({
 				icon: "🔎",
 				description:
 					"Critical, thorough, error-catching. Finds what others miss and flags it clearly.",
-				traits: [
-					"critical",
-					"systematic",
-					"thorough",
-					"skeptical",
-					"precise",
-				],
+				traits: ["critical", "systematic", "thorough", "skeptical", "precise"],
 				communicationStyle:
 					"Structured review format with severity levels. Clear separation of blockers, warnings, and suggestions. No flattery.",
 				decisionMaking:

@@ -13,8 +13,8 @@
 
 import { RateLimiter } from "@convex-dev/ratelimiter";
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation } from "./_generated/server";
 import { components } from "./_generated/api";
+import { internalMutation, mutation } from "./_generated/server";
 
 // ============================================
 // Rate limiter — named limits
@@ -86,7 +86,14 @@ export const deductCreditsRateLimited = mutation({
 			);
 		}
 
-		const { clerkUserId, organizationId, actionType, projectId, projectName, resourceId } = args;
+		const {
+			clerkUserId,
+			organizationId,
+			actionType,
+			projectId,
+			projectName,
+			resourceId,
+		} = args;
 		const now = Date.now();
 
 		// Get credit cost
@@ -95,7 +102,10 @@ export const deductCreditsRateLimited = mutation({
 			.withIndex("by_action_type", (q) => q.eq("actionType", actionType))
 			.first();
 		if (!creditCost || !creditCost.isActive) {
-			return { success: false as const, error: `Unknown or inactive action type: ${actionType}` };
+			return {
+				success: false as const,
+				error: `Unknown or inactive action type: ${actionType}`,
+			};
 		}
 		const cost = creditCost.credits;
 
@@ -169,7 +179,12 @@ export const deductCreditsRateLimited = mutation({
 			timestamp: now,
 		});
 
-		return { success: true as const, transactionId, creditsDeducted: cost, newBalance };
+		return {
+			success: true as const,
+			transactionId,
+			creditsDeducted: cost,
+			newBalance,
+		};
 	},
 });
 
@@ -195,10 +210,17 @@ export const addCreditsRateLimited = internalMutation({
 		metadata: v.optional(v.any()),
 	},
 	returns: v.union(
-		v.object({ success: v.literal(true), newBalance: v.number(), creditsAdded: v.number() }),
+		v.object({
+			success: v.literal(true),
+			newBalance: v.number(),
+			creditsAdded: v.number(),
+		}),
 		v.object({ success: v.literal(false), error: v.string() }),
 	),
-	handler: async (ctx, args): Promise<
+	handler: async (
+		ctx,
+		args,
+	): Promise<
 		| { success: true; newBalance: number; creditsAdded: number }
 		| { success: false; error: string }
 	> => {
@@ -211,7 +233,8 @@ export const addCreditsRateLimited = internalMutation({
 			);
 		}
 
-		const { clerkUserId, organizationId, amount, type, description, metadata } = args;
+		const { clerkUserId, organizationId, amount, type, description, metadata } =
+			args;
 		const now = Date.now();
 
 		let userCredits = await ctx.db
@@ -289,7 +312,10 @@ export const checkAiStreamingRateLimit = internalMutation({
 		ok: v.boolean(),
 		retryAfter: v.optional(v.number()),
 	}),
-	handler: async (ctx, { clerkUserId }): Promise<{ ok: boolean; retryAfter?: number }> => {
+	handler: async (
+		ctx,
+		{ clerkUserId },
+	): Promise<{ ok: boolean; retryAfter?: number }> => {
 		const { ok, retryAfter } = await rateLimiter.limit(ctx, "aiStreaming", {
 			key: clerkUserId,
 		});

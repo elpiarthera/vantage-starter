@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 interface DashboardSubheaderProps {
 	title: string;
 	description?: string;
+	// biome-ignore lint/suspicious/noExplicitAny: HugeIcons component type varies per icon
 	icon?: any;
 	iconClassName?: string;
 	iconBoxClassName?: string;

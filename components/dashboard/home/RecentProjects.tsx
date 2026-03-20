@@ -1,12 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function RecentProjects() {
 	const t = useTranslations("dashboard");
@@ -14,7 +9,9 @@ export function RecentProjects() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-base">{t("recent_projects.title")}</CardTitle>
+				<CardTitle className="text-base">
+					{t("recent_projects.title")}
+				</CardTitle>
 			</CardHeader>
 			<CardContent>
 				{/* TODO: Wire up to product-specific data */}

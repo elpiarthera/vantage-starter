@@ -30,11 +30,7 @@ export function FAQSection() {
 	const t = useTranslations("landing.faq");
 
 	return (
-		<section
-			id="faq"
-			aria-labelledby="faq-heading"
-			className="py-24"
-		>
+		<section id="faq" aria-labelledby="faq-heading" className="py-24">
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				<div className="max-w-3xl">
 					<h2

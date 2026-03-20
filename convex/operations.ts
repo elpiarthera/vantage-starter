@@ -10,9 +10,14 @@
  *   - validateWorkspaceAccess → requireAuthWithWorkspace() (vantage-starter pattern)
  */
 
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuthWithWorkspace, getWorkspaceContext } from "./lib/auth";
+import {
+	internalMutation,
+	internalQuery,
+	mutation,
+	query,
+} from "./_generated/server";
+import { getWorkspaceContext, requireAuthWithWorkspace } from "./lib/auth";
 
 // =============================================================================
 // QUERIES
@@ -182,9 +187,7 @@ export const listAll = query({
 			? await ctx.db
 					.query("operations")
 					.withIndex("by_workspace_status", (q) =>
-						q
-							.eq("workspaceId", args.workspaceId)
-							.eq("status", args.status!),
+						q.eq("workspaceId", args.workspaceId).eq("status", args.status!),
 					)
 					.collect()
 			: await ctx.db
@@ -399,10 +402,7 @@ export const update = mutation({
 		) {
 			(cleanUpdates as Record<string, unknown>).startedAt = Date.now();
 		}
-		if (
-			updates.status === "completed" &&
-			operation.status !== "completed"
-		) {
+		if (updates.status === "completed" && operation.status !== "completed") {
 			(cleanUpdates as Record<string, unknown>).completedAt = Date.now();
 		}
 
@@ -429,5 +429,213 @@ export const clearAgentAssignment = mutation({
 		});
 
 		return args.operationId;
+	},
+});
+
+// =============================================================================
+// INTERNAL QUERIES — called from httpAction (ActionCtx) via ctx.runQuery
+// No auth checks — callers (agentAuth) enforce identity before calling these.
+// =============================================================================
+
+/**
+ * Get a single operation by ID — no auth.
+ */
+export const getById = internalQuery({
+	args: { operationId: v.id("operations") },
+	handler: async (ctx, { operationId }) => {
+		return await ctx.db.get(operationId);
+	},
+});
+
+/**
+ * Get status of multiple operations by ID.
+ * Used by claim endpoint to verify all deps are completed before claiming.
+ */
+export const getDepStatuses = internalQuery({
+	args: { operationIds: v.array(v.id("operations")) },
+	handler: async (ctx, { operationIds }) => {
+		const results = await Promise.all(
+			operationIds.map(async (id) => {
+				const op = await ctx.db.get(id);
+				return { operationId: id, status: op?.status ?? "missing" };
+			}),
+		);
+		return results;
+	},
+});
+
+/**
+ * Get all pending operations assigned to a specific agent
+ * where all dependsOn operations are completed.
+ * Used by GET /agent/operations/pending polling endpoint.
+ */
+export const getPendingForAgent = internalQuery({
+	args: { agentId: v.id("agents") },
+	handler: async (ctx, { agentId }) => {
+		const pending = await ctx.db
+			.query("operations")
+			.withIndex("by_assigned_agent", (q) => q.eq("assignedAgentId", agentId))
+			.filter((q) => q.eq(q.field("status"), "pending"))
+			.collect();
+
+		// Filter: only return ops whose deps are all completed
+		const ready = await Promise.all(
+			pending.map(async (op) => {
+				if (!op.dependsOn || op.dependsOn.length === 0) return op;
+				const depDocs = await Promise.all(
+					op.dependsOn.map((depId) => ctx.db.get(depId)),
+				);
+				const allCompleted = depDocs.every(
+					(dep) => dep !== null && dep.status === "completed",
+				);
+				return allCompleted ? op : null;
+			}),
+		);
+
+		return ready.filter((op): op is NonNullable<typeof op> => op !== null);
+	},
+});
+
+/**
+ * Get sibling operation statuses for claim response context.
+ * Returns id, name, assignedAgentId, status — NO output (RBAC: agents cannot read sibling output).
+ */
+export const getSiblingStatuses = internalQuery({
+	args: {
+		missionId: v.id("missions"),
+		excludeOperationId: v.id("operations"),
+	},
+	handler: async (ctx, { missionId, excludeOperationId }) => {
+		const ops = await ctx.db
+			.query("operations")
+			.withIndex("by_mission", (q) => q.eq("missionId", missionId))
+			.collect();
+
+		return ops
+			.filter((op) => op._id !== excludeOperationId)
+			.map((op) => ({
+				id: op._id,
+				name: op.name,
+				assignedAgentId: op.assignedAgentId ?? null,
+				status: op.status,
+			}));
+	},
+});
+
+/**
+ * Verify an agent has at least one operation in a mission.
+ * Enforces RBAC: agents cannot read missions they have no stake in.
+ */
+export const agentHasMissionAccess = internalQuery({
+	args: {
+		agentId: v.id("agents"),
+		missionId: v.id("missions"),
+	},
+	handler: async (ctx, { agentId, missionId }) => {
+		const op = await ctx.db
+			.query("operations")
+			.withIndex("by_assigned_agent", (q) => q.eq("assignedAgentId", agentId))
+			.filter((q) => q.eq(q.field("missionId"), missionId))
+			.first();
+		return op !== null;
+	},
+});
+
+/**
+ * Get operation summaries for GET /agent/missions/context.
+ * Output capped at 500 chars — agents cannot read full sibling output.
+ */
+export const getMissionContextOps = internalQuery({
+	args: { missionId: v.id("missions") },
+	handler: async (ctx, { missionId }) => {
+		const ops = await ctx.db
+			.query("operations")
+			.withIndex("by_mission", (q) => q.eq("missionId", missionId))
+			.collect();
+
+		return ops.map((op) => ({
+			id: op._id,
+			name: op.name,
+			assignedAgentId: op.assignedAgentId ?? null,
+			status: op.status,
+			// Output capped at 500 chars per RBAC rules in ORCHESTRATION-PLAN.md
+			output: op.output ? op.output.slice(0, 500) : null,
+		}));
+	},
+});
+
+// =============================================================================
+// INTERNAL MUTATIONS — called from httpAction (ActionCtx) via ctx.runMutation
+// =============================================================================
+
+/**
+ * Transition operation to in_progress when an agent claims it.
+ */
+export const claimInternal = internalMutation({
+	args: {
+		operationId: v.id("operations"),
+		claimedAt: v.number(),
+		startedAt: v.number(),
+	},
+	handler: async (ctx, { operationId, claimedAt, startedAt }) => {
+		await ctx.db.patch(operationId, {
+			status: "in_progress",
+			claimedAt,
+			startedAt,
+			updatedAt: Date.now(),
+		});
+	},
+});
+
+/**
+ * Write operation output and set final status.
+ * Status is either "completed" or "awaiting_review" (when requiresReview = true).
+ */
+export const completeInternal = internalMutation({
+	args: {
+		operationId: v.id("operations"),
+		output: v.string(),
+		artifacts: v.optional(v.array(v.string())),
+		status: v.union(v.literal("completed"), v.literal("awaiting_review")),
+		completedAt: v.optional(v.number()),
+	},
+	handler: async (
+		ctx,
+		{ operationId, output, artifacts, status, completedAt },
+	) => {
+		await ctx.db.patch(operationId, {
+			status,
+			output,
+			artifacts,
+			completedAt,
+			updatedAt: Date.now(),
+		});
+	},
+});
+
+/**
+ * Mark operation failed and set mission to failed.
+ * Called from POST /agent/operations/fail.
+ */
+export const failInternal = internalMutation({
+	args: {
+		operationId: v.id("operations"),
+		error: v.string(),
+	},
+	handler: async (ctx, { operationId, error }) => {
+		const operation = await ctx.db.get(operationId);
+		if (!operation) return;
+
+		await ctx.db.patch(operationId, {
+			status: "failed",
+			error,
+			updatedAt: Date.now(),
+		});
+
+		// Fail the mission — a failed operation is terminal
+		await ctx.db.patch(operation.missionId, {
+			status: "failed",
+			updatedAt: Date.now(),
+		});
 	},
 });

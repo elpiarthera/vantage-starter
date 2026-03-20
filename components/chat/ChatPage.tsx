@@ -12,8 +12,7 @@ export function ChatPage() {
 	// transport defaults to DefaultChatTransport → /api/chat
 	const { messages, sendMessage, stop, status, error } = useChat();
 
-	const isStreaming =
-		status === "streaming" || status === "submitted";
+	const isStreaming = status === "streaming" || status === "submitted";
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -21,16 +20,15 @@ export function ChatPage() {
 	const [textareaHeight, setTextareaHeight] = useState(44);
 
 	// Auto-scroll to bottom on new messages
+	// biome-ignore lint/correctness/useExhaustiveDependencies: messages and isStreaming are intentional triggers; scrollRef is stable
 	useEffect(() => {
 		const el = scrollRef.current;
 		if (!el) return;
 		el.scrollTop = el.scrollHeight;
-	}, [messages, isStreaming]);
+	}, [messages.length, isStreaming]);
 
 	// Auto-resize textarea
-	const handleTextareaChange = (
-		e: React.ChangeEvent<HTMLTextAreaElement>,
-	) => {
+	const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		setInput(e.target.value);
 		const el = e.target;
 		el.style.height = "auto";
@@ -96,30 +94,28 @@ export function ChatPage() {
 
 					{/* Live indicator */}
 					{isStreaming && (
-						<div
+						<output
 							className="ml-auto flex items-center gap-1.5 text-xs text-primary"
 							aria-live="polite"
-							role="status"
 						>
 							<span
 								className="size-2 rounded-full bg-primary animate-pulse"
 								aria-hidden="true"
 							/>
 							Generating
-						</div>
+						</output>
 					)}
 				</div>
 			</div>
 
 			{/* Message area */}
-			<div
+			<section
 				ref={scrollRef}
 				className="flex-1 overflow-y-auto"
-				role="region"
 				aria-label="Chat conversation"
 			>
 				<MessageList messages={messages} isStreaming={isStreaming} />
-			</div>
+			</section>
 
 			{/* Error banner */}
 			{error && (

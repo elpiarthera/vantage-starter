@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 export function LandingNav() {
@@ -29,7 +29,7 @@ export function LandingNav() {
 					"fixed top-0 left-0 right-0 z-50 w-full transition-all duration-150",
 					scrolled
 						? "bg-background/80 backdrop-blur-md border-b border-border"
-						: "bg-transparent"
+						: "bg-transparent",
 				)}
 			>
 				<div className="max-w-6xl mx-auto px-6 lg:px-12 flex h-16 items-center justify-between">
@@ -138,6 +138,7 @@ export function LandingNav() {
 
 					{/* Nav links */}
 					<nav className="flex flex-col px-6 pt-6 gap-1 flex-1">
+						{/* biome-ignore lint/a11y/useValidAnchor: anchor navigates to a page section; onClick closes the mobile overlay */}
 						<a
 							href="#features"
 							onClick={() => setMobileOpen(false)}
@@ -145,6 +146,7 @@ export function LandingNav() {
 						>
 							{t("nav.features")}
 						</a>
+						{/* biome-ignore lint/a11y/useValidAnchor: anchor navigates to a page section; onClick closes the mobile overlay */}
 						<a
 							href="#pricing"
 							onClick={() => setMobileOpen(false)}
@@ -152,6 +154,7 @@ export function LandingNav() {
 						>
 							{t("nav.pricing")}
 						</a>
+						{/* biome-ignore lint/a11y/useValidAnchor: anchor navigates to a page section; onClick closes the mobile overlay */}
 						<a
 							href="#faq"
 							onClick={() => setMobileOpen(false)}
@@ -164,12 +167,19 @@ export function LandingNav() {
 					{/* CTA buttons */}
 					<div className="px-6 pb-8 flex flex-col gap-3">
 						<Link href="/sign-in" onClick={() => setMobileOpen(false)}>
-							<Button variant="ghost" size="lg" className="w-full text-muted-foreground hover:text-foreground">
+							<Button
+								variant="ghost"
+								size="lg"
+								className="w-full text-muted-foreground hover:text-foreground"
+							>
 								{t("nav.sign_in")}
 							</Button>
 						</Link>
 						<Link href="/sign-up" onClick={() => setMobileOpen(false)}>
-							<Button size="lg" className="w-full rounded-full bg-primary text-primary-foreground">
+							<Button
+								size="lg"
+								className="w-full rounded-full bg-primary text-primary-foreground"
+							>
 								{t("nav.get_started")}
 							</Button>
 						</Link>

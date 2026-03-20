@@ -12,8 +12,8 @@
  */
 
 import { v } from "convex/values";
-import { query, mutation, action, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { action, internalMutation, mutation, query } from "./_generated/server";
 import { requireAuthWithWorkspace, requireUser } from "./lib/auth";
 
 // ============================================================================
@@ -32,9 +32,7 @@ async function getUserWorkspace(
 
 	const user = await ctx.db
 		.query("users")
-		.withIndex("by_clerk_user_id", (q) =>
-			q.eq("clerkUserId", identity.subject),
-		)
+		.withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", identity.subject))
 		.unique();
 
 	if (!user) return null;
@@ -59,7 +57,12 @@ async function getUserWorkspace(
 
 	if (!workspace) return null;
 
-	return { user, workspace, workspaceId: workspace._id, userId: identity.subject };
+	return {
+		user,
+		workspace,
+		workspaceId: workspace._id,
+		userId: identity.subject,
+	};
 }
 
 // ============================================================================
@@ -78,9 +81,7 @@ export const list = query({
 
 		const workspaceSkills = await ctx.db
 			.query("skills")
-			.withIndex("by_workspace", (q) =>
-				q.eq("workspaceId", result.workspaceId),
-			)
+			.withIndex("by_workspace", (q) => q.eq("workspaceId", result.workspaceId))
 			.collect();
 
 		const systemSkills = await ctx.db

@@ -20,8 +20,8 @@
  *   5. Custom instructions  — agent-specific overrides (optional)
  */
 
-import { internalQuery } from "../_generated/server";
 import { v } from "convex/values";
+import { internalQuery } from "../_generated/server";
 
 export const composeAgentSystemPrompt = internalQuery({
 	args: { agentId: v.id("agents") },
@@ -55,9 +55,7 @@ export const composeAgentSystemPrompt = internalQuery({
 
 			if (activeSkills.length > 0) {
 				prompt += `\n\n## Capabilities\n`;
-				prompt += activeSkills
-					.map((s) => s.instructions)
-					.join("\n\n---\n\n");
+				prompt += activeSkills.map((s) => s.instructions).join("\n\n---\n\n");
 			}
 		}
 

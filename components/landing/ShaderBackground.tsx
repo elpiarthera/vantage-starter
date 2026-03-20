@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ShaderBackgroundProps {
 	/** Path to the shader HTML file served from /public. Default: fluid-amber. */

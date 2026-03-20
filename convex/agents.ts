@@ -15,7 +15,12 @@
  */
 
 import { v } from "convex/values";
-import { internalQuery, mutation, query } from "./_generated/server";
+import {
+	internalMutation,
+	internalQuery,
+	mutation,
+	query,
+} from "./_generated/server";
 import { requireAuthWithWorkspace } from "./lib/auth";
 
 // ============================================================================
@@ -32,9 +37,7 @@ async function getUserWorkspace(
 
 	const user = await ctx.db
 		.query("users")
-		.withIndex("by_clerk_user_id", (q) =>
-			q.eq("clerkUserId", identity.subject),
-		)
+		.withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", identity.subject))
 		.unique();
 
 	if (!user) return null;
@@ -82,9 +85,7 @@ export const list = query({
 
 		const workspaceAgents = await ctx.db
 			.query("agents")
-			.withIndex("by_workspace", (q) =>
-				q.eq("workspaceId", result.workspaceId),
-			)
+			.withIndex("by_workspace", (q) => q.eq("workspaceId", result.workspaceId))
 			.filter((q) => q.eq(q.field("isActive"), true))
 			.collect();
 
@@ -140,9 +141,7 @@ export const listForAssignment = query({
 
 		const workspaceAgents = await ctx.db
 			.query("agents")
-			.withIndex("by_workspace", (q) =>
-				q.eq("workspaceId", result.workspaceId),
-			)
+			.withIndex("by_workspace", (q) => q.eq("workspaceId", result.workspaceId))
 			.filter((q) => q.eq(q.field("isActive"), true))
 			.collect();
 
@@ -389,5 +388,25 @@ export const rotateToken = mutation({
 		});
 
 		return { token }; // Printed once — not retrievable again
+	},
+});
+
+// =============================================================================
+// INTERNAL MUTATIONS — called from httpAction (ActionCtx) via ctx.runMutation
+// =============================================================================
+
+/**
+ * Increment usageCount for an agent.
+ * Called from HTTP endpoints after operation completion — no Clerk auth available.
+ */
+export const incrementUsageInternal = internalMutation({
+	args: { agentId: v.id("agents") },
+	handler: async (ctx, { agentId }) => {
+		const agent = await ctx.db.get(agentId);
+		if (!agent) return;
+		await ctx.db.patch(agentId, {
+			usageCount: agent.usageCount + 1,
+			updatedAt: Date.now(),
+		});
 	},
 });

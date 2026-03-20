@@ -14,22 +14,21 @@
  * Registered in convex/http.ts
  */
 
-import { httpAction } from "../_generated/server";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { internal as internalGen, api } from "../_generated/api";
 import { gateway } from "@ai-sdk/gateway";
+import { RateLimiter } from "@convex-dev/ratelimiter";
 import {
-	ToolLoopAgent,
-	stepCountIs,
-	tool,
 	type ModelMessage,
+	stepCountIs,
+	ToolLoopAgent,
 	type ToolSet,
+	tool,
 } from "ai";
 import { z } from "zod";
-import { RateLimiter } from "@convex-dev/ratelimiter";
-import { components } from "../_generated/api";
-import { ragClient, getWorkspaceNamespace } from "../lib/rag";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { api, components, internal as internalGen } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { httpAction } from "../_generated/server";
+import { getWorkspaceNamespace, ragClient } from "../lib/rag";
 
 // Type-widen internal to allow memory module (generated after Convex codegen runs)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,7 +143,9 @@ export const agentChat = httpAction(async (ctx, request) => {
 			description:
 				"Search the workspace knowledge base for relevant information. Use when the user asks about documents, files, or stored context.",
 			inputSchema: z.object({
-				query: z.string().describe("Search query — be specific and descriptive"),
+				query: z
+					.string()
+					.describe("Search query — be specific and descriptive"),
 				limit: z
 					.number()
 					.optional()
@@ -162,7 +163,9 @@ export const agentChat = httpAction(async (ctx, request) => {
 				}
 				const topEntries = entries.slice(0, Math.min(limit ?? 5, 10));
 				return topEntries
-					.map((e: { text: string }, i: number) => `[Result ${i + 1}]\n${e.text}`)
+					.map(
+						(e: { text: string }, i: number) => `[Result ${i + 1}]\n${e.text}`,
+					)
 					.join("\n\n");
 			},
 		});
@@ -208,10 +211,10 @@ export const agentChat = httpAction(async (ctx, request) => {
 				return `Memory saved at ${input.path}`;
 			}
 			if (input.action === "search") {
-				const results = await ctx.runQuery(internal.memory.searchMemory, {
+				const results = (await ctx.runQuery(internal.memory.searchMemory, {
 					userId: identity.subject,
 					query: input.query,
-				}) as Array<{ path: string; content: string; memoryType: string }>;
+				})) as Array<{ path: string; content: string; memoryType: string }>;
 				if (results.length === 0) return "No memories found.";
 				return results
 					.map((r) => `[${r.path}]\n${r.content}`)
@@ -229,10 +232,10 @@ export const agentChat = httpAction(async (ctx, request) => {
 		tools: agentTools,
 		prepareCall: async () => {
 			// Inject fresh core memory before each generate call
-			const freshCore = await ctx.runQuery(internal.memory.getCoreMemory, {
+			const freshCore = (await ctx.runQuery(internal.memory.getCoreMemory, {
 				userId: identity.subject,
 				workspaceId: workspaceDocId,
-			}) as string;
+			})) as string;
 			const base = systemPrompt ?? "You are a helpful AI assistant.";
 			const memBlock = freshCore ? `\n\n## Your memory\n${freshCore}` : "";
 			// prepareCall must return model + optional overrides

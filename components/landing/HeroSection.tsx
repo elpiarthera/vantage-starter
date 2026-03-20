@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
 
 export function HeroSection() {
 	const t = useTranslations("landing.hero");
@@ -29,11 +29,8 @@ export function HeroSection() {
 					<span className="whitespace-nowrap">
 						{t("headline_not")}{" "}
 						{/* Animated words — stacked, only one visible at a time */}
-						<span
-							className="inline-grid"
-							aria-label={t("headline_animated_aria")}
-							aria-live="off"
-						>
+						<span className="sr-only">{t("headline_animated_aria")}</span>
+						<span className="inline-grid" aria-hidden="true">
 							<span
 								className="hero-animated-word hero-word-1"
 								style={{ gridArea: "1 / 1" }}
@@ -93,9 +90,7 @@ export function HeroSection() {
 				</div>
 
 				{/* Social proof line */}
-				<p
-					className="mt-8 text-xs tracking-[0.01em] text-muted-foreground/50 hero-enter-delay-3"
-				>
+				<p className="mt-8 text-xs tracking-[0.01em] text-muted-foreground/50 hero-enter-delay-3">
 					{t("social_proof_micro")}
 				</p>
 			</div>
@@ -105,7 +100,8 @@ export function HeroSection() {
 				className="pointer-events-none absolute bottom-0 left-0 right-0 h-[120px]"
 				aria-hidden="true"
 				style={{
-					background: "linear-gradient(to bottom, transparent, var(--background))",
+					background:
+						"linear-gradient(to bottom, transparent, var(--background))",
 				}}
 			/>
 		</section>

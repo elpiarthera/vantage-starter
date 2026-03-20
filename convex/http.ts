@@ -1,8 +1,8 @@
 import { httpRouter } from "convex/server";
 import { internal } from "./_generated/api";
-import { polar } from "./polar";
-import { chat as aiChat } from "./http/ai";
 import { agentChat } from "./http/agent";
+import { chat as aiChat } from "./http/ai";
+import { polar } from "./polar";
 
 const http = httpRouter();
 

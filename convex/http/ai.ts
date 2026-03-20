@@ -16,11 +16,11 @@
  * Usage: logged via api.usageTracking.logAIUsage after completion
  */
 
-import { httpAction } from "../_generated/server";
-import { internal, api } from "../_generated/api";
 import { gateway } from "@ai-sdk/gateway";
-import { streamText, type ModelMessage } from "ai";
+import { type ModelMessage, streamText } from "ai";
 import { DEFAULT_CHAT_MODEL } from "../../lib/ai/models";
+import { api, internal } from "../_generated/api";
+import { httpAction } from "../_generated/server";
 
 const CREDIT_COST_ACTION_TYPE = "chat";
 
@@ -74,10 +74,13 @@ export const chat = httpAction(async (ctx, request) => {
 
 	const { messages, model: modelId, systemPrompt } = body;
 	if (!messages || !Array.isArray(messages) || messages.length === 0) {
-		return new Response(JSON.stringify({ error: "messages array is required" }), {
-			status: 400,
-			headers: { "Content-Type": "application/json" },
-		});
+		return new Response(
+			JSON.stringify({ error: "messages array is required" }),
+			{
+				status: 400,
+				headers: { "Content-Type": "application/json" },
+			},
+		);
 	}
 
 	const resolvedModelId = modelId ?? DEFAULT_CHAT_MODEL;

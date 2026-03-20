@@ -8,9 +8,9 @@
  * RAG constructor uses `textEmbeddingModel` field name.
  */
 
-import { components } from "../_generated/api";
-import { RAG } from "@convex-dev/rag";
 import { openai } from "@ai-sdk/openai";
+import { RAG } from "@convex-dev/rag";
+import { components } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 
 // ============================================================================

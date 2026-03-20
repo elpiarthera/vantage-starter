@@ -1,11 +1,6 @@
 "use client";
 
-import {
-	type UIMessage,
-	isTextUIPart,
-	isToolUIPart,
-	getToolName,
-} from "ai";
+import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 import { cn } from "@/lib/utils";
 import { ToolCallIndicator } from "./ToolCallIndicator";
 
@@ -24,6 +19,7 @@ function AgentAvatar() {
 				className="size-3.5 text-primary-foreground"
 				viewBox="0 0 16 16"
 				fill="none"
+				aria-hidden="true"
 			>
 				<path
 					d="M8 2L10 6H14L11 9L12 13L8 11L4 13L5 9L2 6H6L8 2Z"
@@ -68,7 +64,11 @@ interface MessageBubbleProps {
 	isStreaming: boolean;
 }
 
-function MessageBubble({ message, isLastMessage, isStreaming }: MessageBubbleProps) {
+function MessageBubble({
+	message,
+	isLastMessage,
+	isStreaming,
+}: MessageBubbleProps) {
 	const isUser = message.role === "user";
 	const isAssistant = message.role === "assistant";
 
@@ -83,16 +83,10 @@ function MessageBubble({ message, isLastMessage, isStreaming }: MessageBubblePro
 	// Collect tool parts using v6 API
 	const toolParts = parts.filter(isToolUIPart);
 
-	const showCursor =
-		isAssistant && isLastMessage && isStreaming && textContent;
+	const showCursor = isAssistant && isLastMessage && isStreaming && textContent;
 
 	return (
-		<div
-			className={cn(
-				"flex gap-3 w-full",
-				isUser && "flex-row-reverse",
-			)}
-		>
+		<div className={cn("flex gap-3 w-full", isUser && "flex-row-reverse")}>
 			{/* Avatar — agent only */}
 			{isAssistant && <AgentAvatar />}
 
@@ -129,8 +123,7 @@ function MessageBubble({ message, isLastMessage, isStreaming }: MessageBubblePro
 					<div
 						className={cn(
 							"rounded-2xl px-4 py-3 text-sm leading-relaxed",
-							isUser &&
-								"bg-primary text-primary-foreground rounded-tr-sm",
+							isUser && "bg-primary text-primary-foreground rounded-tr-sm",
 							isAssistant &&
 								"bg-card border border-border text-card-foreground rounded-tl-sm",
 						)}

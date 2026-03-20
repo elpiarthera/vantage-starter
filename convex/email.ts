@@ -11,8 +11,8 @@
 
 import { Resend } from "@convex-dev/resend";
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
 import { components } from "./_generated/api";
+import { internalMutation } from "./_generated/server";
 
 const FROM = "noreply@vantagestarter.com";
 
@@ -105,7 +105,10 @@ export const sendBillingConfirmationEmail = internalMutation({
 		emailId: v.optional(v.string()),
 		error: v.optional(v.string()),
 	}),
-	handler: async (ctx, { toEmail, firstName, credits, amountUsd, planName, type }) => {
+	handler: async (
+		ctx,
+		{ toEmail, firstName, credits, amountUsd, planName, type },
+	) => {
 		const name = firstName ?? "there";
 		const isSubscription = type === "subscription";
 		const subject = isSubscription

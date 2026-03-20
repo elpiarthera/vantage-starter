@@ -1,9 +1,9 @@
 "use client";
 
+import { Bot, Coins, Globe, Image, Sparkles, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import { useEffect, useRef } from "react";
-import { Sparkles, Zap, Coins, Image, Bot, Globe } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type FeatureItem = {
@@ -71,7 +71,8 @@ function useRevealOnScroll(ref: React.RefObject<HTMLElement | null>) {
 		const observer = new IntersectionObserver(
 			([entry]) => {
 				if (entry.isIntersecting) {
-					el.style.transition = "opacity 0.35s ease-out, transform 0.35s ease-out";
+					el.style.transition =
+						"opacity 0.35s ease-out, transform 0.35s ease-out";
 					el.style.opacity = "1";
 					el.style.transform = "translateY(0)";
 					observer.disconnect();
@@ -94,11 +95,7 @@ export function FeaturesSection() {
 	useRevealOnScroll(gridRef as React.RefObject<HTMLElement | null>);
 
 	return (
-		<section
-			id="features"
-			aria-labelledby="features-heading"
-			className="py-24"
-		>
+		<section id="features" aria-labelledby="features-heading" className="py-24">
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Section header */}
 				<div ref={headerRef} className="mb-12 md:mb-16 max-w-2xl">

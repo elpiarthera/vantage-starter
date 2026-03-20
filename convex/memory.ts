@@ -17,13 +17,13 @@
  */
 
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import {
 	internalMutation,
 	internalQuery,
 	mutation,
 	query,
 } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
 
 // ============================================================================
 // QUERIES
@@ -249,7 +249,11 @@ export const searchMemory = internalQuery({
 		const lowerQuery = query.toLowerCase();
 		return memories
 			.filter((m) => m.content.toLowerCase().includes(lowerQuery))
-			.map((m) => ({ path: m.path, content: m.content, memoryType: m.memoryType }));
+			.map((m) => ({
+				path: m.path,
+				content: m.content,
+				memoryType: m.memoryType,
+			}));
 	},
 });
 
