@@ -180,21 +180,12 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 		<>
 			<header className="sticky top-0 z-50 w-full border-b border-border bg-background">
 				<div className="container flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
-					{/* Left: Hamburger (mobile only) + Organization Switcher Placeholder */}
+					{/* Left: Hamburger (mobile only) */}
 					<div className="flex items-center gap-1">
 						{/* SidebarTrigger: shown on mobile; sidebar handles its own md:hidden logic */}
 						{sidebarTrigger && (
 							<div className="md:hidden">{sidebarTrigger}</div>
 						)}
-						<Button
-							variant="ghost"
-							className={`gap-2 px-2 md:px-3 text-sm md:text-base min-h-[44px] min-w-[44px] ${
-								isMobile ? "active:scale-95" : "hover:bg-accent"
-							}`}
-						>
-							<span className="font-semibold">VantageStarter</span>
-							<ChevronDown className="h-4 w-4 opacity-50" />
-						</Button>
 					</div>
 
 					{/* Right: Language Switcher + Credits + Notifications + User Menu */}

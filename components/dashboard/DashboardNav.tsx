@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDashboardBreadcrumb } from "@/contexts/DashboardBreadcrumbContext";
@@ -18,14 +18,15 @@ export function DashboardNav() {
 
 	const paths = pathname.split("/").filter(Boolean);
 
-	// Generate breadcrumbs from pathname
+	// Generate breadcrumbs from pathname.
+	// "Home" and root "Dashboard" are omitted — only shown on nested pages.
 	const generateBreadcrumbs = (): Breadcrumb[] => {
-		const breadcrumbs: Breadcrumb[] = [
-			{ label: "Home", href: "/" },
-			{ label: "Dashboard", href: "/dashboard" },
-		];
+		const breadcrumbs: Breadcrumb[] = [];
 
 		if (paths.length > 1) {
+			// Add "Dashboard" as first crumb when on a nested page
+			breadcrumbs.push({ label: "Dashboard", href: "/dashboard" });
+
 			for (let i = 1; i < paths.length; i++) {
 				const path = paths[i];
 				const href = `/${paths.slice(0, i + 1).join("/")}`;
@@ -50,6 +51,10 @@ export function DashboardNav() {
 	};
 
 	const breadcrumbs = generateBreadcrumbs();
+
+	// On root dashboard, breadcrumbs is empty — render nothing
+	if (breadcrumbs.length === 0) return null;
+
 	const visibleBreadcrumbs =
 		isMobile && breadcrumbs.length > 2 ? breadcrumbs.slice(-2) : breadcrumbs;
 
@@ -60,7 +65,6 @@ export function DashboardNav() {
 		>
 			{visibleBreadcrumbs.map((breadcrumb, index) => (
 				<div key={breadcrumb.href} className="flex items-center gap-2">
-					{index === 0 && !isMobile && <Home className="h-4 w-4" />}
 					{index > 0 && <ChevronRight className="h-4 w-4" />}
 					{index === visibleBreadcrumbs.length - 1 ? (
 						<span className="font-medium text-foreground">
