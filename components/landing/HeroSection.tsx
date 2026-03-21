@@ -12,6 +12,25 @@ export function HeroSection() {
 			aria-label={t("aria_label")}
 			className="relative min-h-[100vh] flex items-center justify-center overflow-hidden bg-background"
 		>
+			{/* Grid pattern background */}
+			<div
+				className="pointer-events-none absolute inset-0 grid-pattern"
+				aria-hidden="true"
+			/>
+
+			{/* Radial gradient overlay — top-center brighten */}
+			<div
+				className="pointer-events-none absolute inset-0 hero-gradient"
+				aria-hidden="true"
+			/>
+
+			{/* Colored blob — behind headline, neutral-blue tinted */}
+			<div
+				className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[640px] rounded-full blur-3xl opacity-20"
+				style={{ background: "var(--primary)" }}
+				aria-hidden="true"
+			/>
+
 			{/* Content */}
 			<div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-12 py-24 w-full flex flex-col items-center text-center">
 				{/* H1 — two lines: "Born agentic." then "Not [animated word]." */}
@@ -73,7 +92,7 @@ export function HeroSection() {
 					<Link href="/sign-up">
 						<Button
 							size="lg"
-							className="h-12 px-8 rounded-full border-0 bg-primary text-primary-foreground hover:opacity-90 transition-opacity duration-150"
+							className="h-12 px-8 rounded-full border-0 bg-primary text-primary-foreground hover:opacity-90 btn-shadow active-scale transition-all duration-150 ease-out-expo"
 						>
 							{t("cta_primary")}
 						</Button>
@@ -82,7 +101,7 @@ export function HeroSection() {
 						<Button
 							variant="ghost"
 							size="lg"
-							className="h-12 px-8 rounded-full bg-transparent border border-border text-foreground hover:bg-transparent hover:opacity-80 transition-opacity duration-150"
+							className="h-12 px-8 rounded-full bg-transparent border border-border text-foreground hover:bg-transparent hover:border-border-hover hover:opacity-80 active-scale transition-all duration-150 ease-out-expo"
 						>
 							{t("cta_secondary")}
 						</Button>
@@ -95,14 +114,10 @@ export function HeroSection() {
 				</p>
 			</div>
 
-			{/* Bottom fade — blends into next section */}
+			{/* Bottom fade — blends into FeaturesSection */}
 			<div
-				className="pointer-events-none absolute bottom-0 left-0 right-0 h-[120px]"
+				className="pointer-events-none absolute bottom-0 left-0 right-0 h-[180px] bottom-fade"
 				aria-hidden="true"
-				style={{
-					background:
-						"linear-gradient(to bottom, transparent, var(--background))",
-				}}
 			/>
 		</section>
 	);

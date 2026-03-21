@@ -1,0 +1,82 @@
+/**
+ * Tailwind CSS v4 Configuration for lit-ui Components
+ *
+ * This file defines design tokens and theme customizations.
+ * Add your own customizations below the @import.
+ */
+@import "tailwindcss";
+
+@theme {
+  /* ==========================================================================
+   * SEMANTIC COLOR TOKENS
+   * These are used by lit-ui components. Customize to match your brand.
+   * ========================================================================== */
+
+  /* Primary - Main brand color for buttons, links, focus states */
+  --color-primary: var(--color-blue-500);
+  --color-primary-foreground: white;
+
+  /* Secondary - Subtle backgrounds and secondary actions */
+  --color-secondary: var(--color-gray-100);
+  --color-secondary-foreground: var(--color-gray-900);
+
+  /* Destructive - Errors, delete actions, warnings */
+  --color-destructive: var(--color-red-500);
+  --color-destructive-foreground: white;
+
+  /* Muted - Disabled states, subtle text */
+  --color-muted: var(--color-gray-100);
+  --color-muted-foreground: var(--color-gray-500);
+
+  /* Accent - Hover states, highlights */
+  --color-accent: var(--color-gray-100);
+  --color-accent-foreground: var(--color-gray-900);
+
+  /* Background and foreground - Page-level colors */
+  --color-background: white;
+  --color-foreground: var(--color-gray-950);
+
+  /* Borders, inputs, focus ring */
+  --color-border: var(--color-gray-200);
+  --color-input: var(--color-gray-100);
+  --color-ring: var(--color-blue-400);
+}
+
+/* ==========================================================================
+ * DARK MODE (optional)
+ * CSS custom properties cascade into Shadow DOM from ancestor elements.
+ * Add .dark class to html or body to enable dark mode.
+ * ========================================================================== */
+.dark {
+  --color-primary: var(--color-blue-400);
+  --color-primary-foreground: var(--color-gray-950);
+
+  --color-secondary: var(--color-gray-800);
+  --color-secondary-foreground: var(--color-gray-100);
+
+  --color-destructive: var(--color-red-400);
+  --color-destructive-foreground: var(--color-gray-950);
+
+  --color-muted: var(--color-gray-800);
+  --color-muted-foreground: var(--color-gray-400);
+
+  --color-accent: var(--color-gray-800);
+  --color-accent-foreground: var(--color-gray-100);
+
+  --color-background: var(--color-gray-950);
+  --color-foreground: var(--color-gray-50);
+
+  --color-border: var(--color-gray-800);
+  --color-input: var(--color-gray-800);
+  --color-ring: var(--color-blue-600);
+}
+
+/* Prevent layout shift when scrollbar appears/disappears */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Dialog scroll lock */
+body:has(dialog[open]) {
+  overflow: hidden;
+}

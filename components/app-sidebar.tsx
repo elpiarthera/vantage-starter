@@ -39,10 +39,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const navItemClass = cn(
-	"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground transition-colors duration-150",
-	"hover:bg-transparent hover:text-foreground",
-	"data-[active=true]:bg-transparent data-[active=true]:text-foreground data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
+	"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground",
+	"transition-colors hover:bg-transparent hover:text-foreground",
+	// Active: 2px left border, text shifts right to compensate, no bg fill
+	"data-[active=true]:bg-transparent data-[active=true]:text-foreground",
+	"data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
 );
+
+// Duration matches the easing token defined in globals.css
+const navTransition = "150ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function AppSidebar() {
 	const pathname = usePathname();
@@ -70,7 +75,7 @@ export function AppSidebar() {
 									onClick={handleNavClick}
 									aria-label="VantageStarter home"
 								>
-									<span className="font-heading font-bold tracking-[-0.02em] text-foreground">
+									<span className="font-heading font-bold tracking-[-0.03em] text-foreground">
 										VantageStarter
 									</span>
 								</Link>
@@ -97,6 +102,7 @@ export function AppSidebar() {
 											pathname.endsWith("/dashboard")
 										}
 										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard" onClick={handleNavClick}>
 											<LayoutGrid
@@ -114,6 +120,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/chat")}
 										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/chat" onClick={handleNavClick}>
 											<MessageSquare
@@ -131,6 +138,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/missions")}
 										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/missions" onClick={handleNavClick}>
 											<LayoutList
@@ -148,6 +156,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.includes("/dashboard/architect")}
 										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/architect" onClick={handleNavClick}>
 											<Sparkles
@@ -185,6 +194,7 @@ export function AppSidebar() {
 										asChild
 										isActive={pathname.startsWith("/dashboard/settings")}
 										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/account" onClick={handleNavClick}>
 											<Settings

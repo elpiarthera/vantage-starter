@@ -35,7 +35,7 @@ export function FAQSection() {
 				<div className="max-w-3xl">
 					<h2
 						id="faq-heading"
-						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.02em] mb-10"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.03em] mb-10"
 					>
 						{t("heading")}
 					</h2>
@@ -47,10 +47,26 @@ export function FAQSection() {
 								value={key}
 								className="border-b border-border"
 							>
-								<AccordionTrigger className="text-left font-medium text-foreground text-sm py-5 hover:no-underline hover:text-foreground [&[data-state=open]]:text-foreground transition-colors duration-150 ease-out">
+								<AccordionTrigger
+									className={[
+										"text-left font-medium text-foreground text-sm py-5",
+										"hover:no-underline hover:text-foreground",
+										"[&[data-state=open]]:text-foreground",
+										// ease-out-expo for the chevron rotation
+										"[&>svg]:transition-transform [&>svg]:duration-300 [&>svg]:[transition-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+										"transition-colors duration-200 ease-out-expo",
+									].join(" ")}
+								>
 									{t(`${key}_q`)}
 								</AccordionTrigger>
-								<AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
+								<AccordionContent
+									className={[
+										"text-sm text-muted-foreground leading-relaxed pb-5",
+										// Content reveal uses the Radix accordion animation;
+										// accordion-down/up keyframes are registered in tailwind.config
+										"data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up",
+									].join(" ")}
+								>
 									{t(`${key}_a`)}
 								</AccordionContent>
 							</AccordionItem>

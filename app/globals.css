@@ -17,6 +17,9 @@
   :root {
     /* Tokens not covered by presets — stable across all presets */
 
+    /* Easing functions — LitUI tokens */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
     /* Secondary — tinted to active hue */
     --secondary: oklch(0.96 0.01 232);
     --secondary-foreground: oklch(0.20 0 0);
@@ -133,7 +136,7 @@
   h2 {
     font-size: clamp(1.75rem, 3.5vw, 2.75rem);
     font-weight: 700;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
     line-height: 1.15;
   }
 
@@ -372,6 +375,78 @@ body::before {
 }
 
 /* ============================================================================
+   UTILITY CLASSES — Extracted from LitUI patterns
+   ============================================================================ */
+
+/* Card with shadow depth and hover lift — use when content is truly distinct and actionable */
+.card-elevated {
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.05),
+    0 10px 15px -3px oklch(0 0 0 / 0.08),
+    0 20px 25px -5px oklch(0 0 0 / 0.06);
+  transition: box-shadow 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo);
+}
+
+.card-elevated:hover {
+  box-shadow:
+    0 6px 12px -1px oklch(0 0 0 / 0.07),
+    0 16px 24px -3px oklch(0 0 0 / 0.10),
+    0 28px 32px -5px oklch(0 0 0 / 0.08);
+  transform: translateY(-2px);
+}
+
+.dark .card-elevated {
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.20),
+    0 10px 15px -3px oklch(0 0 0 / 0.30),
+    0 20px 25px -5px oklch(0 0 0 / 0.30);
+}
+
+.dark .card-elevated:hover {
+  box-shadow:
+    0 6px 12px -1px oklch(0 0 0 / 0.25),
+    0 16px 24px -3px oklch(0 0 0 / 0.35),
+    0 28px 32px -5px oklch(0 0 0 / 0.35);
+}
+
+/* Button shadow — subtle depth for primary CTAs */
+.btn-shadow {
+  box-shadow:
+    0 1px 2px 0 oklch(0 0 0 / 0.05),
+    inset 0 1px 0 oklch(1 0 0 / 0.1);
+}
+
+.btn-shadow:hover {
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.1),
+    0 2px 4px -2px oklch(0 0 0 / 0.1),
+    inset 0 1px 0 oklch(1 0 0 / 0.1);
+}
+
+/* CTA press feedback — add active:scale-[0.96] via Tailwind or use this class */
+.active-scale:active {
+  transform: scale(0.96);
+  transition: transform 100ms var(--ease-out-expo);
+}
+
+/* Icon container — feature grid icons, size-10, no large icon above heading */
+.icon-container {
+  @apply size-10 rounded-lg bg-muted/50 flex items-center justify-center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-elevated,
+  .card-elevated:hover,
+  .btn-shadow,
+  .btn-shadow:hover,
+  .active-scale:active {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ============================================================================
    TOUCH-FRIENDLY HELPERS
    ============================================================================ */
 
@@ -381,5 +456,102 @@ body::before {
 
 .h-input {
   height: 48px;
+}
+
+/* ============================================================================
+   LANDING PAGE — BACKGROUND PATTERNS (from LitUI reference)
+   ============================================================================ */
+
+/* Subtle grid background */
+.grid-pattern {
+  background-image:
+    linear-gradient(to right, oklch(0.93 0.01 240 / 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.93 0.01 240 / 0.5) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.dark .grid-pattern {
+  background-image:
+    linear-gradient(to right, oklch(0.18 0.01 240 / 0.6) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.18 0.01 240 / 0.6) 1px, transparent 1px);
+}
+
+/* Radial gradient overlay for hero (neutral tinted, not blue glow) */
+.hero-gradient {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    oklch(0.16 0.01 240 / 0.8) 0%,
+    transparent 70%
+  );
+}
+
+/* Bottom fade — bleeds section into the next */
+.bottom-fade {
+  background: linear-gradient(to bottom, transparent 0%, var(--background) 100%);
+}
+
+/* Section-level fades for seamless transitions */
+.section-fade-top {
+  background: linear-gradient(to bottom, var(--background) 0%, transparent 100%);
+}
+
+.section-fade-bottom {
+  background: linear-gradient(to top, var(--background) 0%, transparent 100%);
+}
+
+/* ============================================================================
+   SCROLL REVEAL — IntersectionObserver driven
+   ============================================================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for sequential reveal */
+.reveal-delay-1 { transition-delay: 0.06s; }
+.reveal-delay-2 { transition-delay: 0.12s; }
+.reveal-delay-3 { transition-delay: 0.18s; }
+.reveal-delay-4 { transition-delay: 0.24s; }
+.reveal-delay-5 { transition-delay: 0.35s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal.revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   MOBILE MENU ENTRANCE
+   ============================================================================ */
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu-enter {
+  animation: slide-down 0.25s var(--ease-out-expo) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu-enter {
+    animation: none;
+  }
 }
 

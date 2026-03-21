@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/convex/_generated/api";
@@ -37,12 +38,27 @@ function StatusDot({ status }: { status: string }) {
 			className={cn(
 				"shrink-0 w-1.5 h-1.5 rounded-full mt-1.5",
 				status === "active" && "bg-[oklch(0.62_0.18_240)]",
-				status === "completed" && "bg-[oklch(0.65_0.01_240)]",
-				status === "abandoned" && "bg-[oklch(0.65_0.2_25)]",
+				status === "completed" && "bg-muted-foreground/50",
+				status === "abandoned" && "bg-[oklch(0.65_0.2_25)]/70",
 			)}
 			title={status}
 			aria-hidden="true"
 		/>
+	);
+}
+
+function SessionsEmptyState() {
+	return (
+		<div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+			<div className="icon-container" aria-hidden="true">
+				<Layers className="size-4 text-muted-foreground" />
+			</div>
+			<p className="text-xs text-muted-foreground leading-relaxed">
+				No sessions yet.
+				<br />
+				Start one above.
+			</p>
+		</div>
 	);
 }
 
@@ -59,15 +75,13 @@ export function SessionList({
 	return (
 		<div className="flex flex-col h-full">
 			{/* Header */}
-			<div className="px-4 py-4 border-b border-border">
-				<div className="flex items-center justify-between mb-1">
-					<h2 className="font-space-grotesk text-xs font-semibold text-[oklch(0.65_0.01_240)] uppercase tracking-wider">
-						Sessions
-					</h2>
-				</div>
+			<div className="px-4 py-4 border-b border-border space-y-3">
+				<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+					Sessions
+				</p>
 				<Button
 					onClick={onNewSession}
-					className="w-full rounded-full text-sm h-9 font-medium"
+					className="btn-shadow active-scale w-full rounded-full text-sm h-9 font-medium"
 					size="sm"
 					aria-label="Start a new Architect session"
 				>
@@ -83,19 +97,13 @@ export function SessionList({
 							{["sk-1", "sk-2", "sk-3", "sk-4"].map((skKey) => (
 								<div
 									key={skKey}
-									className="h-14 bg-[oklch(0.17_0.01_240)] animate-pulse"
+									className="h-14 bg-muted/40 animate-pulse rounded-sm"
 									aria-hidden="true"
 								/>
 							))}
 						</div>
 					) : sessions.length === 0 ? (
-						<div className="px-4 py-8 text-center">
-							<p className="text-xs text-[oklch(0.65_0.01_240)] leading-relaxed">
-								No sessions yet.
-								<br />
-								Start one above.
-							</p>
-						</div>
+						<SessionsEmptyState />
 					) : (
 						<ul className="px-2 space-y-0.5">
 							{sessions.map((session) => {
@@ -112,13 +120,16 @@ export function SessionList({
 											type="button"
 											onClick={() => onSessionSelect(session._id)}
 											className={cn(
-												"w-full text-left px-3 py-2.5 flex items-start gap-2",
-												"transition-colors duration-100",
-												"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.62_0.18_240)]",
+												"w-full text-left px-3 py-2.5 flex items-start gap-2 rounded-sm",
+												"transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 												isActive
-													? "bg-[oklch(0.17_0.01_240)] border-l-2 border-[oklch(0.62_0.18_240)]"
-													: "hover:bg-[oklch(0.17_0.01_240)] border-l-2 border-transparent",
+													? "bg-muted/60 border-l-2 border-[oklch(0.62_0.18_240)]"
+													: "hover:bg-muted/40 border-l-2 border-transparent",
 											)}
+											style={{
+												transitionDuration: "150ms",
+												transitionTimingFunction: "var(--ease-out-expo)",
+											}}
 											aria-current={isActive ? "true" : undefined}
 										>
 											<StatusDot status={session.status} />
@@ -127,13 +138,13 @@ export function SessionList({
 													className={cn(
 														"text-xs font-medium truncate leading-snug",
 														isActive
-															? "text-[oklch(0.93_0.01_240)]"
-															: "text-[oklch(0.65_0.01_240)]",
+															? "text-foreground"
+															: "text-muted-foreground",
 													)}
 												>
 													{title}
 												</p>
-												<p className="text-xs text-[oklch(0.65_0.01_240)]/60 tabular-nums mt-0.5">
+												<p className="text-xs text-muted-foreground/60 tabular-nums mt-0.5">
 													{formatRelativeTime(session.createdAt)}
 												</p>
 											</div>

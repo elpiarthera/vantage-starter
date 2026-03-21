@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,8 @@ function WorkspaceLoading() {
 	return (
 		<div className="flex items-center justify-center h-full">
 			<div className="space-y-2 w-48">
-				<div className="h-3 bg-[oklch(0.17_0.01_240)] animate-pulse" />
-				<div className="h-3 bg-[oklch(0.17_0.01_240)] animate-pulse w-3/4" />
+				<div className="h-2.5 bg-muted animate-pulse rounded-sm" />
+				<div className="h-2.5 bg-muted animate-pulse w-3/4 rounded-sm" />
 			</div>
 		</div>
 	);
@@ -28,13 +29,18 @@ function WorkspaceLoading() {
 function NoWorkspace() {
 	return (
 		<div className="flex items-center justify-center h-full px-4">
-			<div className="text-center max-w-sm">
-				<p className="text-sm font-medium text-[oklch(0.93_0.01_240)] mb-1">
-					No workspace found
-				</p>
-				<p className="text-xs text-[oklch(0.65_0.01_240)] leading-relaxed">
-					Create a workspace to use the Architect.
-				</p>
+			<div className="flex flex-col items-center gap-4 text-center max-w-xs">
+				<div className="icon-container" aria-hidden="true">
+					<Layers className="size-4 text-muted-foreground" />
+				</div>
+				<div className="space-y-1">
+					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
+						No workspace found
+					</p>
+					<p className="text-xs text-muted-foreground leading-relaxed">
+						Create a workspace to use the Architect.
+					</p>
+				</div>
 			</div>
 		</div>
 	);
@@ -42,15 +48,12 @@ function NoWorkspace() {
 
 function NoSessionSelected({ onNew }: { onNew: () => void }) {
 	return (
-		<div className="flex flex-col items-center justify-center h-full px-6 text-center">
-			<div className="max-w-sm">
-				<div
-					className="w-12 h-12 border border-border flex items-center justify-center mx-auto mb-6"
-					aria-hidden="true"
-				>
+		<div className="flex flex-col items-center justify-center h-full px-6 text-center gap-6">
+			<div className="flex flex-col items-center gap-4 max-w-xs">
+				<div className="icon-container" aria-hidden="true">
 					<svg
-						width="20"
-						height="20"
+						width="16"
+						height="16"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"
@@ -63,23 +66,23 @@ function NoSessionSelected({ onNew }: { onNew: () => void }) {
 						<path d="M2 12l10 5 10-5" />
 					</svg>
 				</div>
-
-				<h2 className="font-space-grotesk text-base font-semibold text-[oklch(0.93_0.01_240)] mb-2">
-					Architect
-				</h2>
-				<p className="text-sm text-[oklch(0.65_0.01_240)] leading-relaxed mb-6">
-					Describe what you want to accomplish. I'll design an agent workforce
-					and execution plan.
-				</p>
-
-				<Button
-					onClick={onNew}
-					className="rounded-full px-8 font-medium"
-					aria-label="Start a new planning session"
-				>
-					Start planning
-				</Button>
+				<div className="space-y-1">
+					<h2 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
+						Architect
+					</h2>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						Describe what you want to accomplish. I&apos;ll design an agent
+						workforce and execution plan.
+					</p>
+				</div>
 			</div>
+			<Button
+				onClick={onNew}
+				className="btn-shadow active-scale rounded-full px-8 font-medium"
+				aria-label="Start a new planning session"
+			>
+				Start planning
+			</Button>
 		</div>
 	);
 }
@@ -93,7 +96,6 @@ export default function ArchitectPage() {
 	const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
-	// Resolve workspace
 	const workspaces = useQuery(api.workspaces.list);
 	const workspaceId = workspaces?.[0]?._id;
 
@@ -104,18 +106,16 @@ export default function ArchitectPage() {
 		try {
 			const sessionId = await createSession({ workspaceId });
 			setActiveSessionId(sessionId);
-			setSidebarOpen(false); // Close sidebar on mobile after starting session
+			setSidebarOpen(false);
 		} catch (err) {
 			console.error("[architect] Failed to create session:", err);
 		}
 	};
 
 	const handlePlanConfirmed = (missionId: Id<"missions">) => {
-		// Navigate to mission board after confirmation
 		router.push(`/dashboard/missions/${missionId}`);
 	};
 
-	// Loading state
 	if (workspaces === undefined) {
 		return (
 			<div className="h-full">
@@ -141,10 +141,10 @@ export default function ArchitectPage() {
 			    ================================================================ */}
 			<aside
 				className={cn(
-					"shrink-0 border-r border-border bg-[oklch(0.13_0.01_240)]",
-					// Desktop: static sidebar
+					"shrink-0 border-r border-border",
 					"hidden md:flex md:flex-col md:w-64",
 				)}
+				style={{ backgroundColor: "oklch(0.115 0.01 240)" }}
 				aria-label="Session history"
 			>
 				<SessionList
@@ -168,23 +168,27 @@ export default function ArchitectPage() {
 
 			<aside
 				className={cn(
-					"fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-[oklch(0.13_0.01_240)]",
+					"fixed inset-y-0 left-0 z-50 w-72 border-r border-border",
 					"flex flex-col md:hidden",
-					"transition-transform duration-200 ease-out",
+					"transition-transform duration-300",
 					sidebarOpen ? "translate-x-0" : "-translate-x-full",
 				)}
+				style={{
+					backgroundColor: "oklch(0.115 0.01 240)",
+					transitionTimingFunction: "var(--ease-out-expo)",
+				}}
 				aria-label="Session history"
 				aria-hidden={!sidebarOpen}
 			>
 				{/* Mobile close button */}
 				<div className="flex items-center justify-between px-4 py-3 border-b border-border">
-					<span className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider">
+					<span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
 						Sessions
 					</span>
 					<button
 						type="button"
 						onClick={() => setSidebarOpen(false)}
-						className="text-[oklch(0.65_0.01_240)] hover:text-[oklch(0.93_0.01_240)] transition-colors p-1"
+						className="text-muted-foreground hover:text-foreground transition-colors duration-150 p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						aria-label="Close session list"
 					>
 						<svg
@@ -223,7 +227,7 @@ export default function ArchitectPage() {
 					<button
 						type="button"
 						onClick={() => setSidebarOpen(true)}
-						className="text-[oklch(0.65_0.01_240)] hover:text-[oklch(0.93_0.01_240)] transition-colors"
+						className="text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
 						aria-label="Open session list"
 					>
 						<svg
@@ -238,14 +242,14 @@ export default function ArchitectPage() {
 							<path d="M3 6h18M3 12h18M3 18h18" />
 						</svg>
 					</button>
-					<h1 className="font-space-grotesk text-sm font-semibold text-[oklch(0.93_0.01_240)]">
+					<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
 						Architect
 					</h1>
 				</div>
 
 				{/* Desktop page header */}
 				<div className="hidden md:flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-					<h1 className="font-space-grotesk text-sm font-semibold text-[oklch(0.93_0.01_240)]">
+					<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
 						Architect
 					</h1>
 					{activeSessionId && (

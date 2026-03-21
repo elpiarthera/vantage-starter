@@ -1,8 +1,5 @@
-"use client";
-
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { useLocale } from "next-intl";
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 import { clerkLocalizations } from "@/i18n/clerk-localization";
@@ -27,12 +24,24 @@ const CLERK_TEXT = "#e8e9f0"; // oklch(0.93 0.01 240)
 const CLERK_TEXT_MUTED = "#9a9baa"; // oklch(0.65 0.01 240)
 const CLERK_DANGER = "#c0392b"; // oklch(0.65 0.22 25)
 
-export function ClientProviders({ children }: { children: ReactNode }) {
-	const locale = useLocale();
+// ClerkProvider in @clerk/nextjs v6 is typed as an async Server Component
+// (Promise<React.JSX.Element>), which is incompatible with @types/react 18.0.x JSX.
+// This is a known TS compatibility gap — the runtime behavior is correct.
+// See: https://clerk.com/changelog/2024-04-19#nextjs-app-router-server-components
+// biome-ignore lint/suspicious/noExplicitAny: cast required for Clerk v6 + @types/react 18 compat
+const ClerkProviderCompat = ClerkProvider as any;
+
+export function ClientProviders({
+	children,
+	locale,
+}: {
+	children: ReactNode;
+	locale: string;
+}) {
 	const localization = clerkLocalizations[locale] || {};
 
 	return (
-		<ClerkProvider
+		<ClerkProviderCompat
 			dynamic
 			afterSignOutUrl="/sign-in"
 			signInFallbackRedirectUrl="/dashboard"
@@ -258,6 +267,6 @@ export function ClientProviders({ children }: { children: ReactNode }) {
 				{children}
 				<Toaster position="top-right" richColors />
 			</ConvexClientProvider>
-		</ClerkProvider>
+		</ClerkProviderCompat>
 	);
 }

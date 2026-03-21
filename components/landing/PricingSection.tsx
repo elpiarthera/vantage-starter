@@ -67,7 +67,7 @@ export function PricingSection() {
 					</p>
 					<h2
 						id="pricing-heading"
-						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.02em] mb-4"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.03em] mb-4"
 					>
 						{t("heading")}
 					</h2>
@@ -102,7 +102,9 @@ function PricingCard({
 			className={cn(
 				"rounded-none p-8 flex flex-col relative h-full",
 				"bg-card",
-				isHighlighted ? "border border-primary" : "border border-border",
+				isHighlighted
+					? "border border-primary card-elevated"
+					: "border border-border",
 			)}
 		>
 			{/* Badge — only on Pro */}
@@ -163,10 +165,11 @@ function PricingCard({
 			<Button
 				asChild
 				className={cn(
-					"w-full h-12 rounded-full font-medium transition-opacity duration-150 ease-out hover:opacity-90",
+					"w-full h-12 rounded-full font-medium active-scale",
+					"transition-all duration-150 ease-out-expo",
 					isHighlighted
-						? "bg-primary text-primary-foreground border-0"
-						: "bg-transparent border border-border text-foreground hover:bg-transparent",
+						? "bg-primary text-primary-foreground border-0 btn-shadow hover:opacity-90"
+						: "bg-transparent border border-border text-foreground hover:bg-transparent hover:border-[var(--border-hover)] hover:opacity-80",
 				)}
 			>
 				<a href={tier.ctaHref}>{t(tier.ctaKey)}</a>

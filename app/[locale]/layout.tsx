@@ -87,7 +87,11 @@ export default async function LocaleLayout({ children, params }: Props) {
 					}}
 				/>
 				{/* Prefetch all 7 color presets — eliminates flash on runtime preset switch */}
-				<link rel="prefetch" as="style" href="/styles/presets/dark-electric-blue.css" />
+				<link
+					rel="prefetch"
+					as="style"
+					href="/styles/presets/dark-electric-blue.css"
+				/>
 				<link rel="prefetch" as="style" href="/styles/presets/amber.css" />
 				<link rel="prefetch" as="style" href="/styles/presets/mono.css" />
 				<link rel="prefetch" as="style" href="/styles/presets/blue.css" />
@@ -105,7 +109,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				>
 					<RouteAnnouncer />
 					<NextIntlClientProvider messages={messages}>
-						<ClientProviders>
+						<ClientProviders locale={locale}>
 							<UserSyncProvider>{children}</UserSyncProvider>
 						</ClientProviders>
 					</NextIntlClientProvider>

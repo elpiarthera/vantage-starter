@@ -1,0 +1,83 @@
+/**
+ * Shadow DOM Host Defaults for Tailwind v4 @property Workaround
+ *
+ * Tailwind v4 uses CSS @property declarations that only work at document level.
+ * This file provides default values for all @property-dependent variables.
+ */
+
+:host {
+  /* Shadow/Ring defaults */
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-color: initial;
+  --tw-inset-shadow: 0 0 #0000;
+  --tw-inset-shadow-color: initial;
+  --tw-ring-color: initial;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-inset: ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-offset-shadow: 0 0 #0000;
+
+  /* Transform defaults */
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-translate-z: 0;
+  --tw-rotate-x: 0;
+  --tw-rotate-y: 0;
+  --tw-rotate-z: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-scale-z: 1;
+
+  /* Border defaults */
+  --tw-border-style: solid;
+
+  /* Typography defaults */
+  --tw-font-weight: initial;
+  --tw-tracking: initial;
+  --tw-leading: initial;
+
+  /* Backdrop filter defaults */
+  --tw-backdrop-blur: initial;
+  --tw-backdrop-brightness: initial;
+  --tw-backdrop-contrast: initial;
+  --tw-backdrop-grayscale: initial;
+  --tw-backdrop-hue-rotate: initial;
+  --tw-backdrop-invert: initial;
+  --tw-backdrop-opacity: initial;
+  --tw-backdrop-saturate: initial;
+  --tw-backdrop-sepia: initial;
+
+  /* Filter defaults */
+  --tw-blur: initial;
+  --tw-brightness: initial;
+  --tw-contrast: initial;
+  --tw-grayscale: initial;
+  --tw-hue-rotate: initial;
+  --tw-invert: initial;
+  --tw-saturate: initial;
+  --tw-sepia: initial;
+  --tw-drop-shadow: initial;
+
+  /* Gradient defaults */
+  --tw-gradient-from: transparent;
+  --tw-gradient-to: transparent;
+  --tw-gradient-via: transparent;
+  --tw-gradient-stops: initial;
+  --tw-gradient-from-position: 0%;
+  --tw-gradient-via-position: 50%;
+  --tw-gradient-to-position: 100%;
+
+  /* Divide defaults */
+  --tw-divide-x-reverse: 0;
+  --tw-divide-y-reverse: 0;
+
+  /* Space defaults */
+  --tw-space-x-reverse: 0;
+  --tw-space-y-reverse: 0;
+
+  /* Outline defaults */
+  --tw-outline-style: solid;
+}

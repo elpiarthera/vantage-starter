@@ -2,10 +2,11 @@
 
 import { useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
-import { Target } from "lucide-react";
+import { Layers, Target } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
@@ -50,7 +51,7 @@ const STATUS_CONFIG: Record<
 function MissionStatusBadge({ status }: { status: MissionStatus }) {
 	const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
 	return (
-		<Badge className={cn("text-xs font-medium", config.className)}>
+		<Badge className={cn("text-xs font-medium rounded-full", config.className)}>
 			{config.label}
 		</Badge>
 	);
@@ -77,14 +78,14 @@ function MissionCard({ mission, operationCount, locale }: MissionCardProps) {
 	return (
 		<Link
 			href={`/${locale}/dashboard/missions/${mission._id}`}
-			className="group block border border-border bg-card hover:bg-muted/40 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			className="group card-elevated block border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 			aria-label={`View mission: ${mission.name}`}
 		>
 			<div className="p-6 space-y-4">
 				{/* Header row */}
 				<div className="flex items-start justify-between gap-3">
 					<div className="min-w-0">
-						<h2 className="font-semibold text-foreground truncate text-base leading-snug font-heading group-hover:text-primary transition-colors duration-150">
+						<h2 className="font-heading font-semibold text-foreground truncate text-base tracking-[-0.03em] leading-snug group-hover:text-primary transition-colors duration-150">
 							{mission.name}
 						</h2>
 						{mission.description && (
@@ -98,7 +99,7 @@ function MissionCard({ mission, operationCount, locale }: MissionCardProps) {
 
 				{/* Progress bar */}
 				<div className="space-y-1.5">
-					<div className="flex items-center justify-between text-xs text-muted-foreground">
+					<div className="flex items-center justify-between text-xs text-muted-foreground tabular-nums">
 						<span>{operationCount} operations</span>
 						<span>{progress}%</span>
 					</div>
@@ -145,24 +146,37 @@ function MissionCardSkeleton() {
 
 function EmptyState() {
 	return (
-		<div className="flex flex-col items-center justify-center py-24 px-6 text-center">
-			<div className="w-12 h-12 border border-border flex items-center justify-center mb-6">
-				<Target className="size-5 text-muted-foreground" aria-hidden="true" />
+		<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-6 border border-dashed border-border">
+			<div className="flex flex-col items-center gap-4">
+				<div className="icon-container" aria-hidden="true">
+					<Target className="size-4 text-muted-foreground" />
+				</div>
+				<div className="space-y-1">
+					<h2 className="text-sm font-semibold text-foreground font-heading tracking-[-0.03em]">
+						No missions yet
+					</h2>
+					<p className="text-sm text-muted-foreground max-w-xs">
+						Use the Architect to plan and commit your first mission.
+					</p>
+				</div>
 			</div>
-			<h2 className="text-base font-semibold text-foreground mb-2 font-heading">
-				No missions yet
-			</h2>
-			<p className="text-sm text-muted-foreground max-w-xs">
-				Use the Architect to create your first plan.
-			</p>
+			<Link href="/dashboard/architect">
+				<Button
+					size="sm"
+					className="btn-shadow active-scale rounded-full gap-2 font-medium"
+					aria-label="Go to Architect to create a mission"
+				>
+					<Layers className="size-3.5" aria-hidden="true" />
+					Open Architect
+				</Button>
+			</Link>
 		</div>
 	);
 }
 
-// ── Missions list (client component with workspace resolution) ────────────────
+// ── Missions list ─────────────────────────────────────────────────────────────
 
 function MissionsList({ locale }: { locale: string }) {
-	// Resolve workspace: take the first (default) workspace for this user
 	const workspaces = useQuery(api.workspaces.list);
 	const workspaceId = workspaces?.[0]?._id;
 
@@ -171,7 +185,6 @@ function MissionsList({ locale }: { locale: string }) {
 		workspaceId ? { workspaceId } : "skip",
 	);
 
-	// Load operation counts for all missions
 	const operationCounts = useQuery(
 		api.operations.listAll,
 		workspaceId ? { workspaceId } : "skip",
@@ -194,8 +207,13 @@ function MissionsList({ locale }: { locale: string }) {
 
 	if (!workspaceId) {
 		return (
-			<div className="text-center py-12 text-sm text-muted-foreground">
-				No workspace found. Create a workspace first.
+			<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-4 border border-dashed border-border">
+				<div className="icon-container" aria-hidden="true">
+					<Target className="size-4 text-muted-foreground" />
+				</div>
+				<p className="text-sm text-muted-foreground">
+					No workspace found. Create a workspace first.
+				</p>
 			</div>
 		);
 	}
@@ -204,7 +222,6 @@ function MissionsList({ locale }: { locale: string }) {
 		return <EmptyState />;
 	}
 
-	// Build operation count map: missionId → count
 	const countMap = new Map<string, number>();
 	for (const op of operationCounts) {
 		const count = countMap.get(op.missionId) ?? 0;
@@ -233,9 +250,8 @@ export default function MissionsPage() {
 
 	return (
 		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10">
-			{/* Page header */}
 			<header className="mb-8">
-				<h1 className="text-2xl font-bold tracking-tight text-foreground font-heading">
+				<h1 className="font-heading text-2xl font-bold tracking-[-0.03em] text-foreground">
 					Missions
 				</h1>
 				<p className="text-sm text-muted-foreground mt-1">

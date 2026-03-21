@@ -40,18 +40,43 @@ interface ProposalCheckpoint {
 }
 
 // ============================================================================
-// MESSAGE BUBBLE
+// MESSAGE BUBBLES
 // ============================================================================
 
 function UserBubble({ text }: { text: string }) {
 	return (
 		<div className="flex justify-end">
-			<div className="max-w-[80%] bg-[oklch(0.62_0.18_240)]/15 border border-[oklch(0.62_0.18_240)]/30 px-4 py-3">
-				<p className="text-sm text-[oklch(0.93_0.01_240)] leading-relaxed whitespace-pre-wrap">
+			<div
+				className="max-w-[80%] px-4 py-3 border"
+				style={{
+					backgroundColor: "oklch(0.62 0.18 240 / 0.12)",
+					borderColor: "oklch(0.62 0.18 240 / 0.25)",
+				}}
+			>
+				<p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
 					{text}
 				</p>
 			</div>
 		</div>
+	);
+}
+
+function StreamingDots() {
+	return (
+		<span className="flex gap-1 motion-reduce:hidden" aria-hidden="true">
+			<span
+				className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+				style={{ animationDelay: "0ms" }}
+			/>
+			<span
+				className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+				style={{ animationDelay: "150ms" }}
+			/>
+			<span
+				className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+				style={{ animationDelay: "300ms" }}
+			/>
+		</span>
 	);
 }
 
@@ -69,11 +94,12 @@ function AssistantBubble({
 			<div className="max-w-[95%] w-full space-y-3">
 				{/* Text portion */}
 				{text && (
-					<p className="text-sm text-[oklch(0.65_0.01_240)] leading-relaxed whitespace-pre-wrap">
+					<p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
 						{text}
 						{isStreaming && (
 							<span
-								className="inline-block w-1.5 h-3.5 bg-[oklch(0.62_0.18_240)] ml-0.5 animate-pulse"
+								className="inline-block w-1.5 h-3.5 ml-0.5 animate-pulse align-middle"
+								style={{ backgroundColor: "oklch(0.62 0.18 240)" }}
 								aria-hidden="true"
 							/>
 						)}
@@ -89,16 +115,9 @@ function AssistantBubble({
 				)}
 				{/* Streaming indicator when no text yet */}
 				{!text && !spec && isStreaming && (
-					<div className="flex items-center gap-2 text-xs text-[oklch(0.65_0.01_240)]">
+					<div className="flex items-center gap-2 text-xs text-muted-foreground">
 						<output className="sr-only">Thinking</output>
-						<span
-							className="flex gap-1 motion-reduce:hidden"
-							aria-hidden="true"
-						>
-							<span className="w-1 h-1 rounded-full bg-[oklch(0.65_0.01_240)] animate-bounce [animation-delay:0ms]" />
-							<span className="w-1 h-1 rounded-full bg-[oklch(0.65_0.01_240)] animate-bounce [animation-delay:150ms]" />
-							<span className="w-1 h-1 rounded-full bg-[oklch(0.65_0.01_240)] animate-bounce [animation-delay:300ms]" />
-						</span>
+						<StreamingDots />
 					</div>
 				)}
 			</div>
@@ -107,7 +126,7 @@ function AssistantBubble({
 }
 
 // ============================================================================
-// CONFIRM PLAN BUTTON
+// CONFIRM PLAN BAR
 // ============================================================================
 
 function ConfirmPlanBar({
@@ -124,7 +143,6 @@ function ConfirmPlanBar({
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	// Extract mission proposal data from spec
 	const extractProposal = useCallback(() => {
 		if (!spec?.elements) return null;
 
@@ -141,7 +159,6 @@ function ConfirmPlanBar({
 			const child = spec.elements[childId as string];
 			if (!child) continue;
 
-			// Cast child.props from `unknown` — safe, AI always outputs per system prompt format
 			const cp = child.props as Record<string, unknown>;
 
 			if (child.type === "OperationItem") {
@@ -179,7 +196,6 @@ function ConfirmPlanBar({
 			}
 		}
 
-		// Cast root props from `unknown` — safe, same guarantee
 		const p = root.props as Record<string, unknown>;
 		return {
 			name: String(p.name ?? ""),
@@ -210,16 +226,11 @@ function ConfirmPlanBar({
 		setError(null);
 
 		try {
-			const missionId = await createMission({
-				workspaceId,
-				proposal,
-			});
-
+			const missionId = await createMission({ workspaceId, proposal });
 			await completeSession({
 				sessionId,
 				missionId: missionId as Id<"missions">,
 			});
-
 			onConfirmed(missionId as Id<"missions">);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to create mission");
@@ -229,29 +240,46 @@ function ConfirmPlanBar({
 	};
 
 	return (
-		<div className="border-t border-border bg-[oklch(0.17_0.01_240)] px-4 py-3">
+		<div className="border-t border-border px-4 py-3 bg-muted/30">
 			<div className="flex items-center justify-between gap-4">
 				<div>
-					<p className="text-sm font-medium text-[oklch(0.93_0.01_240)]">
+					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
 						Plan ready
 					</p>
-					<p className="text-xs text-[oklch(0.65_0.01_240)]">
+					<p className="text-xs text-muted-foreground mt-0.5">
 						Confirm to create mission and operations in your workspace.
 					</p>
 					{error && (
-						<p className="text-xs text-[oklch(0.65_0.2_25)] mt-1">{error}</p>
+						<p className="text-xs mt-1" style={{ color: "oklch(0.65 0.2 25)" }}>
+							{error}
+						</p>
 					)}
 				</div>
 				<Button
 					onClick={handleConfirm}
 					disabled={isConfirming}
-					className="rounded-full shrink-0 font-medium"
+					className="btn-shadow active-scale rounded-full shrink-0 font-medium"
 					size="sm"
 					aria-label="Confirm and create mission"
 				>
 					{isConfirming ? "Creating..." : "Confirm plan"}
 				</Button>
 			</div>
+		</div>
+	);
+}
+
+// ============================================================================
+// CHAT EMPTY STATE
+// ============================================================================
+
+function ChatEmptyHint() {
+	return (
+		<div className="py-16 flex flex-col items-center justify-center text-center gap-3">
+			<p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+				Describe what you want to accomplish. I&apos;ll design an agent
+				workforce and execution plan.
+			</p>
 		</div>
 	);
 }
@@ -271,30 +299,26 @@ export function ChatInterface({
 
 	const addMessage = useMutation(api.architectSessions.addMessage);
 
-	// Build API URL with session + workspace context
 	const apiUrl = `/api/architect/chat?sessionId=${sessionId}&workspaceId=${workspaceId}`;
 
 	const { messages, isStreaming, error, send } = useChatUI({
 		api: apiUrl,
 		onComplete: async (msg) => {
-			// Save assistant message to Convex after stream completes
 			if (msg.role === "assistant") {
 				await addMessage({
 					sessionId,
 					role: "assistant",
 					content: msg.text || "[plan]",
-				}).catch(() => {}); // Non-blocking — Convex history is secondary
+				}).catch(() => {});
 			}
 		},
 	});
 
-	// Last assistant message's spec (for confirm bar)
 	const lastAssistantMessage = [...messages]
 		.reverse()
 		.find((m) => m.role === "assistant");
 	const activePlan = lastAssistantMessage?.spec ?? null;
 
-	// Auto-scroll to bottom — sentinel approach avoids ScrollArea ref issues
 	// biome-ignore lint/correctness/useExhaustiveDependencies: messages.length and isStreaming are intentional triggers; sentinelRef is stable
 	useEffect(() => {
 		sentinelRef.current?.scrollIntoView({ behavior: "auto" });
@@ -324,14 +348,7 @@ export function ChatInterface({
 			{/* Messages */}
 			<ScrollArea className="flex-1">
 				<div className="px-4 md:px-6 py-6 space-y-6 max-w-3xl mx-auto">
-					{messages.length === 0 && !isStreaming && (
-						<div className="py-16 text-center">
-							<p className="text-[oklch(0.65_0.01_240)] text-sm leading-relaxed max-w-sm mx-auto">
-								Describe what you want to accomplish. I'll design an agent
-								workforce and execution plan.
-							</p>
-						</div>
-					)}
+					{messages.length === 0 && !isStreaming && <ChatEmptyHint />}
 
 					{messages.map((msg) => (
 						<div key={msg.id}>
@@ -349,12 +366,10 @@ export function ChatInterface({
 						</div>
 					))}
 
-					{/* Streaming indicator for first response */}
 					{isStreaming && messages.length === 0 && (
 						<AssistantBubble text="" spec={null} isStreaming />
 					)}
 
-					{/* Scroll sentinel */}
 					<div ref={sentinelRef} aria-hidden="true" />
 				</div>
 			</ScrollArea>
@@ -362,11 +377,13 @@ export function ChatInterface({
 			{/* Error display */}
 			{error && (
 				<div className="px-4 py-2 border-t border-border bg-[oklch(0.65_0.2_25)]/10">
-					<p className="text-xs text-[oklch(0.65_0.2_25)]">{error.message}</p>
+					<p className="text-xs" style={{ color: "oklch(0.65 0.2 25)" }}>
+						{error.message}
+					</p>
 				</div>
 			)}
 
-			{/* Confirm plan bar — shows when last message contains a plan */}
+			{/* Confirm plan bar */}
 			{activePlan && !isStreaming && (
 				<ConfirmPlanBar
 					spec={activePlan}
@@ -400,16 +417,20 @@ export function ChatInterface({
 						rows={1}
 						className={cn(
 							"flex-1 resize-none min-h-[44px] max-h-[160px]",
-							"bg-[oklch(0.17_0.01_240)] border-border rounded-[6px]",
-							"text-sm text-[oklch(0.93_0.01_240)] placeholder:text-[oklch(0.65_0.01_240)]",
-							"focus-visible:ring-[oklch(0.62_0.18_240)]",
+							"bg-muted/50 border-border rounded-[6px]",
+							"text-sm text-foreground placeholder:text-muted-foreground",
+							"focus-visible:ring-primary/50 transition-colors duration-150",
 						)}
 						aria-label="Message to Architect"
 					/>
 					<Button
 						type="submit"
 						disabled={!input.trim() || isStreaming}
-						className="rounded-full shrink-0 h-11 px-5 font-medium"
+						className={cn(
+							"btn-shadow active-scale rounded-full shrink-0 h-11 px-5 font-medium",
+							"transition-[box-shadow,transform,opacity] duration-150",
+						)}
+						style={{ transitionTimingFunction: "var(--ease-out-expo)" }}
 						aria-label="Send message"
 					>
 						{isStreaming ? "Thinking..." : "Send"}

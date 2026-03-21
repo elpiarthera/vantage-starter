@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type React from "react";
+import { useEffect, useRef } from "react";
 
 type TechItem = {
 	name: string;
@@ -182,8 +183,38 @@ const TECH_STACK: TechItem[] = [
 	},
 ];
 
+function useReveal(ref: React.RefObject<HTMLElement | null>) {
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			el.classList.add("revealed");
+			return;
+		}
+
+		el.classList.add("reveal");
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					el.classList.add("revealed");
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.1 },
+		);
+
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, [ref]);
+}
+
 export function TechStackSection() {
 	const t = useTranslations("landing.techstack");
+	const rowRef = useRef<HTMLUListElement>(null);
+
+	useReveal(rowRef as React.RefObject<HTMLElement | null>);
 
 	return (
 		<section
@@ -199,26 +230,40 @@ export function TechStackSection() {
 					{t("heading")}
 				</h2>
 
-				<div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-					{TECH_STACK.map(({ name, icon }) => (
-						<div
-							key={name}
-							className="flex flex-col items-center gap-2 group"
-							title={name}
-						>
+				{/* Logo row with separator lines between items */}
+				<ul
+					ref={rowRef}
+					className="flex flex-wrap justify-center items-center list-none m-0 p-0"
+				>
+					{TECH_STACK.map(({ name, icon }, i) => (
+						<li key={name} className="flex items-center">
+							{/* Logo item */}
 							<div
-								className="w-10 h-10 opacity-50 grayscale transition-all duration-150 ease-out group-hover:opacity-100 group-hover:grayscale-0 dark:opacity-40"
-								role="img"
-								aria-label={name}
+								className="flex flex-col items-center gap-2 group px-6 md:px-8 py-4"
+								title={name}
 							>
-								{icon}
+								<div
+									className="w-10 h-10 opacity-40 grayscale transition-all duration-300 ease-out-expo group-hover:opacity-100 group-hover:grayscale-0 dark:opacity-30 dark:group-hover:opacity-100"
+									role="img"
+									aria-label={name}
+								>
+									{icon}
+								</div>
+								<span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out-expo whitespace-nowrap">
+									{name}
+								</span>
 							</div>
-							<span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out whitespace-nowrap">
-								{name}
-							</span>
-						</div>
+
+							{/* Separator — not after the last item */}
+							{i < TECH_STACK.length - 1 && (
+								<div
+									className="h-8 w-px bg-border shrink-0 hidden sm:block"
+									aria-hidden="true"
+								/>
+							)}
+						</li>
 					))}
-				</div>
+				</ul>
 			</div>
 		</section>
 	);

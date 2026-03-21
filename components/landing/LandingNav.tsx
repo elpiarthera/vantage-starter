@@ -26,20 +26,25 @@ export function LandingNav() {
 		<>
 			<header
 				className={cn(
-					"fixed top-0 left-0 right-0 z-50 w-full transition-all duration-150",
+					"fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-out-expo",
 					scrolled
 						? "bg-background/80 backdrop-blur-md border-b border-border"
 						: "bg-transparent",
 				)}
 			>
 				<div className="max-w-6xl mx-auto px-6 lg:px-12 flex h-16 items-center justify-between">
-					{/* Logo — text only, no icon box */}
+					{/* Logo — text with subtle glow halo */}
 					<Link
 						href="/"
-						className="font-heading font-bold text-foreground tracking-[-0.02em]"
+						className="relative font-heading font-bold text-foreground tracking-[-0.02em]"
 						aria-label="VantageStarter home"
 					>
-						VantageStarter
+						{/* Logo glow layer */}
+						<span
+							className="pointer-events-none absolute inset-0 rounded-2xl bg-foreground/5 blur-2xl"
+							aria-hidden="true"
+						/>
+						<span className="relative">VantageStarter</span>
 					</Link>
 
 					{/* Desktop nav links */}
@@ -49,19 +54,19 @@ export function LandingNav() {
 					>
 						<a
 							href="#features"
-							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out"
+							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out-expo"
 						>
 							{t("nav.features")}
 						</a>
 						<a
 							href="#pricing"
-							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out"
+							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out-expo"
 						>
 							{t("nav.pricing")}
 						</a>
 						<a
 							href="#faq"
-							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out"
+							className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out-expo"
 						>
 							{t("nav.faq")}
 						</a>
@@ -75,7 +80,7 @@ export function LandingNav() {
 							<Button
 								variant="ghost"
 								size="sm"
-								className="text-sm text-muted-foreground hover:text-foreground"
+								className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out-expo"
 							>
 								{t("nav.sign_in")}
 							</Button>
@@ -83,7 +88,7 @@ export function LandingNav() {
 						<Link href="/sign-up" className="hidden sm:block">
 							<Button
 								size="sm"
-								className="h-8 px-4 text-sm rounded-full bg-primary text-primary-foreground"
+								className="h-8 px-4 text-sm rounded-full bg-primary text-primary-foreground btn-shadow active-scale transition-all duration-150 ease-out-expo"
 							>
 								{t("nav.get_started")}
 							</Button>
@@ -115,7 +120,7 @@ export function LandingNav() {
 					role="dialog"
 					aria-modal="true"
 					aria-label={t("nav.aria_label")}
-					className="fixed inset-0 bg-background z-50 md:hidden flex flex-col"
+					className="fixed inset-0 bg-background z-50 md:hidden flex flex-col mobile-menu-enter"
 				>
 					{/* Header row */}
 					<div className="flex h-16 items-center justify-between px-6 lg:px-12 border-b border-border">
@@ -178,7 +183,7 @@ export function LandingNav() {
 						<Link href="/sign-up" onClick={() => setMobileOpen(false)}>
 							<Button
 								size="lg"
-								className="w-full rounded-full bg-primary text-primary-foreground"
+								className="w-full rounded-full bg-primary text-primary-foreground btn-shadow active-scale"
 							>
 								{t("nav.get_started")}
 							</Button>

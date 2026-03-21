@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { CreditCard, Sparkles } from "lucide-react";
+import { CreditCard, Layers, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ErrorState } from "@/components/dashboard/shared/ErrorState";
 import { useUserSync } from "@/components/UserSyncProvider";
@@ -10,6 +10,183 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { useCredits } from "@/hooks/business-logic/useCredits";
+import { cn } from "@/lib/utils";
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+
+function SessionStatusBadge({ status }: { status: string }) {
+	return (
+		<span
+			className={cn(
+				"text-xs px-2 py-0.5 border shrink-0 font-medium",
+				status === "active"
+					? "border-[oklch(0.62_0.18_240)]/40 text-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)]/8"
+					: "border-border text-muted-foreground bg-transparent",
+			)}
+		>
+			{status}
+		</span>
+	);
+}
+
+// ── Credit metric card ────────────────────────────────────────────────────────
+
+function CreditCard_({
+	balance,
+	isLoading,
+}: {
+	balance: number;
+	isLoading: boolean;
+}) {
+	return (
+		<div className="card-elevated border border-border p-6 flex items-center justify-between gap-6">
+			<div className="flex items-center gap-4">
+				<div className="icon-container shrink-0" aria-hidden="true">
+					<CreditCard className="size-4 text-muted-foreground" />
+				</div>
+				<div>
+					<p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.06em]">
+						Credit balance
+					</p>
+					<p className="text-xs text-muted-foreground/70 mt-0.5">
+						Architect sessions &amp; AI ops
+					</p>
+				</div>
+			</div>
+			{isLoading ? (
+				<Skeleton className="h-8 w-16" />
+			) : (
+				<span className="font-heading font-bold text-3xl text-foreground tabular-nums tracking-[-0.03em]">
+					{balance}
+				</span>
+			)}
+		</div>
+	);
+}
+
+// ── Architect CTA card ────────────────────────────────────────────────────────
+
+function ArchitectCTA() {
+	return (
+		<div className="card-elevated border border-border p-6 flex items-start justify-between gap-6">
+			<div className="flex items-start gap-4">
+				<div className="icon-container shrink-0 mt-0.5" aria-hidden="true">
+					<Sparkles className="size-4 text-[oklch(0.62_0.18_240)]" />
+				</div>
+				<div className="space-y-1">
+					<h2 className="font-heading font-semibold text-foreground tracking-[-0.03em]">
+						Start with the Architect
+					</h2>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						Describe what you want to build. The Architect decomposes it into
+						missions and orchestrates your agent team.
+					</p>
+				</div>
+			</div>
+			<Link href="/dashboard/architect" className="shrink-0">
+				<Button
+					size="sm"
+					className="btn-shadow active-scale rounded-full gap-2 font-medium transition-[box-shadow,transform] duration-150"
+					style={{ transitionTimingFunction: "var(--ease-out-expo)" }}
+				>
+					<Sparkles className="size-3.5" aria-hidden="true" />
+					Open Architect
+				</Button>
+			</Link>
+		</div>
+	);
+}
+
+// ── Recent sessions ───────────────────────────────────────────────────────────
+
+interface Session {
+	_id: string;
+	_creationTime: number;
+	title?: string | null;
+	status: string;
+}
+
+function SessionRow({ session }: { session: Session }) {
+	return (
+		<Link
+			href={`/dashboard/architect?session=${session._id}`}
+			className="group flex items-center justify-between px-6 py-4 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			style={{
+				transitionDuration: "150ms",
+				transitionTimingFunction: "var(--ease-out-expo)",
+			}}
+		>
+			<div className="min-w-0 flex-1">
+				<p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors duration-150">
+					{session.title ?? "Untitled session"}
+				</p>
+				<p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+					{new Date(session._creationTime).toLocaleDateString("en-GB", {
+						day: "numeric",
+						month: "short",
+						year: "numeric",
+					})}
+				</p>
+			</div>
+			<SessionStatusBadge status={session.status} />
+		</Link>
+	);
+}
+
+function SessionsEmptyState() {
+	return (
+		<div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
+			<div className="icon-container" aria-hidden="true">
+				<Layers className="size-4 text-muted-foreground" />
+			</div>
+			<div className="space-y-1">
+				<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
+					No sessions yet
+				</p>
+				<p className="text-xs text-muted-foreground">
+					Your Architect sessions will appear here.
+				</p>
+			</div>
+			<Link
+				href="/dashboard/architect"
+				className="text-xs text-primary hover:underline underline-offset-4 transition-colors duration-150"
+			>
+				Start your first session
+			</Link>
+		</div>
+	);
+}
+
+function RecentSessions({ sessions }: { sessions: Session[] }) {
+	return (
+		<div className="border border-border">
+			<div className="px-6 py-4 border-b border-border flex items-center justify-between">
+				<h2 className="font-heading font-semibold text-sm text-foreground tracking-[-0.015em]">
+					Recent sessions
+				</h2>
+				{sessions.length > 0 && (
+					<Link
+						href="/dashboard/architect"
+						className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-150"
+					>
+						View all
+					</Link>
+				)}
+			</div>
+			<div className="divide-y divide-border">
+				{sessions.length === 0 ? (
+					<SessionsEmptyState />
+				) : (
+					sessions.map((session) => (
+						<SessionRow key={session._id} session={session} />
+					))
+				)}
+			</div>
+		</div>
+	);
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
 	const { isUserSynced, isSyncing } = useUserSync();
@@ -51,10 +228,10 @@ export default function DashboardPage() {
 
 	if (isLoading) {
 		return (
-			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 space-y-6 animate-in fade-in duration-300">
-				<Skeleton className="h-28" />
-				<Skeleton className="h-40" />
-				<Skeleton className="h-48" />
+			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 space-y-4 animate-in fade-in duration-300">
+				<Skeleton className="h-24" />
+				<Skeleton className="h-24" />
+				<Skeleton className="h-56" />
 			</div>
 		);
 	}
@@ -75,105 +252,10 @@ export default function DashboardPage() {
 	const sessions = recentSessions?.sessions ?? [];
 
 	return (
-		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 space-y-6 animate-in fade-in duration-300">
-			{/* Credit balance */}
-			<div className="border border-border p-6 flex items-center justify-between gap-4">
-				<div className="flex items-center gap-3">
-					<CreditCard
-						className="size-5 text-muted-foreground shrink-0"
-						aria-hidden="true"
-					/>
-					<div>
-						<p className="text-sm font-medium text-foreground">
-							Credit balance
-						</p>
-						<p className="text-xs text-muted-foreground mt-0.5">
-							Used for Architect sessions and AI operations
-						</p>
-					</div>
-				</div>
-				<span className="font-heading font-bold text-2xl text-foreground tabular-nums">
-					{creditsRemaining}
-				</span>
-			</div>
-
-			{/* Architect CTA */}
-			<div className="border border-border p-6 space-y-4">
-				<div className="flex items-start justify-between gap-4">
-					<div className="space-y-1">
-						<h2 className="font-heading font-semibold text-base text-foreground">
-							Start with the Architect
-						</h2>
-						<p className="text-sm text-muted-foreground">
-							Describe what you want to build. The Architect decomposes it into
-							missions and orchestrates your agent team.
-						</p>
-					</div>
-					<Link href="/dashboard/architect" className="shrink-0">
-						<Button size="sm" className="rounded-full gap-2">
-							<Sparkles className="size-4" aria-hidden="true" />
-							Open Architect
-						</Button>
-					</Link>
-				</div>
-			</div>
-
-			{/* Recent Architect sessions */}
-			<div className="border border-border">
-				<div className="px-6 py-4 border-b border-border">
-					<h2 className="font-heading font-semibold text-base text-foreground">
-						Recent sessions
-					</h2>
-				</div>
-				<div className="divide-y divide-border">
-					{sessions.length === 0 ? (
-						<div className="px-6 py-8 text-center">
-							<p className="text-sm text-muted-foreground">
-								No sessions yet.{" "}
-								<Link
-									href="/dashboard/architect"
-									className="text-primary hover:underline underline-offset-4"
-								>
-									Start your first session
-								</Link>
-							</p>
-						</div>
-					) : (
-						sessions.map((session) => (
-							<Link
-								key={session._id}
-								href={`/dashboard/architect?session=${session._id}`}
-								className="flex items-center justify-between px-6 py-4 hover:bg-accent/40 transition-colors duration-150 group"
-							>
-								<div className="min-w-0 flex-1">
-									<p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors duration-150">
-										{session.title ?? "Untitled session"}
-									</p>
-									<p className="text-xs text-muted-foreground mt-0.5">
-										{new Date(session._creationTime).toLocaleDateString(
-											"en-GB",
-											{
-												day: "numeric",
-												month: "short",
-												year: "numeric",
-											},
-										)}
-									</p>
-								</div>
-								<span
-									className={`text-xs px-2 py-0.5 border shrink-0 ml-4 ${
-										session.status === "active"
-											? "border-primary text-primary"
-											: "border-border text-muted-foreground"
-									}`}
-								>
-									{session.status}
-								</span>
-							</Link>
-						))
-					)}
-				</div>
-			</div>
+		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 space-y-4 animate-in fade-in duration-300">
+			<CreditCard_ balance={creditsRemaining} isLoading={creditsLoading} />
+			<ArchitectCTA />
+			<RecentSessions sessions={sessions} />
 		</div>
 	);
 }

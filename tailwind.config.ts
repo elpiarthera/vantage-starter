@@ -121,6 +121,9 @@ const config: Config = {
     			'accordion-down': 'accordion-down 0.2s ease-out',
     			'accordion-up': 'accordion-up 0.2s ease-out'
     		},
+    		transitionTimingFunction: {
+    			'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+    		},
     		boxShadow: {
     			'xs':            '0 1px 2px oklch(0 0 0 / 5%)',
     			'sm':            '0 1px 3px oklch(0 0 0 / 8%), 0 1px 2px oklch(0 0 0 / 5%)',
