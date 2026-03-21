@@ -1,12 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const FAQ_KEYS = [
 	"q1",
@@ -40,38 +34,21 @@ export function FAQSection() {
 						{t("heading")}
 					</h2>
 
-					<Accordion type="single" collapsible className="w-full">
+					<lui-accordion collapsible class="w-full border-t border-border">
 						{FAQ_KEYS.map((key) => (
-							<AccordionItem
-								key={key}
-								value={key}
-								className="border-b border-border"
-							>
-								<AccordionTrigger
-									className={[
-										"text-left font-medium text-foreground text-sm py-5",
-										"hover:no-underline hover:text-foreground",
-										"[&[data-state=open]]:text-foreground",
-										// ease-out-expo for the chevron rotation
-										"[&>svg]:transition-transform [&>svg]:duration-300 [&>svg]:[transition-timing-function:cubic-bezier(0.16,1,0.3,1)]",
-										"transition-colors duration-200 ease-out-expo",
-									].join(" ")}
+							<lui-accordion-item key={key} class="border-b border-border">
+								<span
+									slot="trigger"
+									className="font-medium text-foreground text-sm"
 								>
 									{t(`${key}_q`)}
-								</AccordionTrigger>
-								<AccordionContent
-									className={[
-										"text-sm text-muted-foreground leading-relaxed pb-5",
-										// Content reveal uses the Radix accordion animation;
-										// accordion-down/up keyframes are registered in tailwind.config
-										"data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up",
-									].join(" ")}
-								>
+								</span>
+								<p className="text-sm text-muted-foreground leading-relaxed pb-5">
 									{t(`${key}_a`)}
-								</AccordionContent>
-							</AccordionItem>
+								</p>
+							</lui-accordion-item>
 						))}
-					</Accordion>
+					</lui-accordion>
 				</div>
 			</div>
 		</section>

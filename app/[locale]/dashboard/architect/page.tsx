@@ -1,10 +1,8 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -31,7 +29,20 @@ function NoWorkspace() {
 		<div className="flex items-center justify-center h-full px-4">
 			<div className="flex flex-col items-center gap-4 text-center max-w-xs">
 				<div className="icon-container" aria-hidden="true">
-					<Layers className="size-4 text-muted-foreground" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="text-muted-foreground"
+						aria-hidden="true"
+					>
+						<path d="M12 2L2 7l10 5 10-5-10-5z" />
+						<path d="M2 17l10 5 10-5" />
+						<path d="M2 12l10 5 10-5" />
+					</svg>
 				</div>
 				<div className="space-y-1">
 					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
@@ -76,13 +87,14 @@ function NoSessionSelected({ onNew }: { onNew: () => void }) {
 					</p>
 				</div>
 			</div>
-			<Button
+			<button
+				type="button"
 				onClick={onNew}
-				className="btn-shadow active-scale rounded-full px-8 font-medium"
+				className="btn-shadow active-scale rounded-full px-8 py-2 font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				aria-label="Start a new planning session"
 			>
 				Start planning
-			</Button>
+			</button>
 		</div>
 	);
 }
@@ -253,14 +265,13 @@ export default function ArchitectPage() {
 						Architect
 					</h1>
 					{activeSessionId && (
-						<Button
+						<button
+							type="button"
 							onClick={handleNewSession}
-							variant="outline"
-							size="sm"
-							className="rounded-full text-xs h-7"
+							className="rounded-full text-xs h-7 px-3 border border-border bg-transparent text-foreground hover:bg-muted transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						>
 							New session
-						</Button>
+						</button>
 					)}
 				</div>
 

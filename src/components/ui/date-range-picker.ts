@@ -17,16 +17,42 @@
  * @fires change - Dispatched when a range is selected or cleared, with { startDate, endDate, isoInterval }
  */
 
-import { html, css, nothing, isServer, svg, type PropertyValues, type CSSResultGroup } from 'lit';
-import { property, state, query } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles, dispatchCustomEvent } from '@lit-ui/core';
-import { addMonths, subMonths, getYear, format, isBefore as isBeforeDate, isAfter as isAfterDate } from '@lit-ui/calendar';
-import type { DayCellState } from '@lit-ui/calendar';
-import { normalizeRange, validateRangeDuration, formatISOInterval, isDateInRange, isDateInPreview, computeRangeDuration } from './range-utils.js';
-import type { DateRangePreset } from './range-preset-types.js';
-import { DEFAULT_RANGE_PRESETS } from './range-preset-types.js';
-import { computePosition, flip, shift, offset } from '@floating-ui/dom';
-import { parseISO } from 'date-fns';
+import { computePosition, flip, offset, shift } from "@floating-ui/dom";
+import type { DayCellState } from "@lit-ui/calendar";
+import {
+	addMonths,
+	format,
+	getYear,
+	isAfter as isAfterDate,
+	isBefore as isBeforeDate,
+	subMonths,
+} from "@lit-ui/calendar";
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { parseISO } from "date-fns";
+import {
+	type CSSResultGroup,
+	css,
+	html,
+	isServer,
+	nothing,
+	type PropertyValues,
+	svg,
+} from "lit";
+import { property, query, state } from "lit/decorators.js";
+import type { DateRangePreset } from "./range-preset-types.js";
+import { DEFAULT_RANGE_PRESETS } from "./range-preset-types.js";
+import {
+	computeRangeDuration,
+	formatISOInterval,
+	isDateInPreview,
+	isDateInRange,
+	normalizeRange,
+	validateRangeDuration,
+} from "./range-utils.js";
 
 /**
  * The three states of the range selection state machine.
@@ -34,7 +60,7 @@ import { parseISO } from 'date-fns';
  * - 'start-selected': First date clicked, awaiting second click
  * - 'complete': Both dates selected, range is complete
  */
-type RangeState = 'idle' | 'start-selected' | 'complete';
+type RangeState = "idle" | "start-selected" | "complete";
 
 /**
  * Date range picker component with two-click selection state machine.
@@ -46,231 +72,232 @@ type RangeState = 'idle' | 'start-selected' | 'complete';
  * ```
  */
 export class DateRangePicker extends TailwindElement {
-  /**
-   * Enable form association for this custom element.
-   */
-  static formAssociated = true;
+	/**
+	 * Enable form association for this custom element.
+	 */
+	static formAssociated = true;
 
-  /**
-   * ElementInternals for form participation.
-   * Null during SSR since attachInternals() is not available.
-   */
-  private internals: ElementInternals | null = null;
+	/**
+	 * ElementInternals for form participation.
+	 * Null during SSR since attachInternals() is not available.
+	 */
+	private internals: ElementInternals | null = null;
 
-  /**
-   * Unique ID for the input element, used for label association.
-   */
-  private inputId = `lui-date-range-picker-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for the input element, used for label association.
+	 */
+	private inputId =
+		`lui-date-range-picker-${Math.random().toString(36).substr(2, 9)}`;
 
-  /**
-   * Reference to the trigger element for focus restoration after popup close.
-   */
-  private triggerElement: HTMLElement | null = null;
+	/**
+	 * Reference to the trigger element for focus restoration after popup close.
+	 */
+	private triggerElement: HTMLElement | null = null;
 
-  // ---------------------------------------------------------------------------
-  // Query refs
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Query refs
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Reference to the input container element (for popup positioning).
-   */
-  @query('.input-container')
-  inputContainerEl!: HTMLElement;
+	/**
+	 * Reference to the input container element (for popup positioning).
+	 */
+	@query(".input-container")
+	inputContainerEl!: HTMLElement;
 
-  /**
-   * Reference to the popup element (for Floating UI positioning).
-   */
-  @query('.popup')
-  popupEl!: HTMLElement;
+	/**
+	 * Reference to the popup element (for Floating UI positioning).
+	 */
+	@query(".popup")
+	popupEl!: HTMLElement;
 
-  /**
-   * Reference to the native input element.
-   */
-  @query('input')
-  inputEl!: HTMLInputElement;
+	/**
+	 * Reference to the native input element.
+	 */
+	@query("input")
+	inputEl!: HTMLInputElement;
 
-  // ---------------------------------------------------------------------------
-  // Properties (reflected attributes)
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Properties (reflected attributes)
+	// ---------------------------------------------------------------------------
 
-  /**
-   * The selected start date as ISO 8601 string (YYYY-MM-DD).
-   */
-  @property({ type: String, reflect: true, attribute: 'start-date' })
-  startDate = '';
+	/**
+	 * The selected start date as ISO 8601 string (YYYY-MM-DD).
+	 */
+	@property({ type: String, reflect: true, attribute: "start-date" })
+	startDate = "";
 
-  /**
-   * The selected end date as ISO 8601 string (YYYY-MM-DD).
-   */
-  @property({ type: String, reflect: true, attribute: 'end-date' })
-  endDate = '';
+	/**
+	 * The selected end date as ISO 8601 string (YYYY-MM-DD).
+	 */
+	@property({ type: String, reflect: true, attribute: "end-date" })
+	endDate = "";
 
-  /**
-   * Form field name for form submission.
-   */
-  @property({ type: String })
-  name = '';
+	/**
+	 * Form field name for form submission.
+	 */
+	@property({ type: String })
+	name = "";
 
-  /**
-   * BCP 47 locale tag for localization (e.g., 'en-US', 'de-DE').
-   * Defaults to navigator.language on client, 'en-US' on server.
-   */
-  @property({ type: String })
-  locale = '';
+	/**
+	 * BCP 47 locale tag for localization (e.g., 'en-US', 'de-DE').
+	 * Defaults to navigator.language on client, 'en-US' on server.
+	 */
+	@property({ type: String })
+	locale = "";
 
-  /**
-   * Custom placeholder text for the input.
-   */
-  @property({ type: String })
-  placeholder = '';
+	/**
+	 * Custom placeholder text for the input.
+	 */
+	@property({ type: String })
+	placeholder = "";
 
-  /**
-   * Accessible label for the date range picker.
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Accessible label for the date range picker.
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * Helper text displayed below the input.
-   */
-  @property({ type: String, attribute: 'helper-text' })
-  helperText = '';
+	/**
+	 * Helper text displayed below the input.
+	 */
+	@property({ type: String, attribute: "helper-text" })
+	helperText = "";
 
-  /**
-   * Minimum selectable date as ISO string (YYYY-MM-DD).
-   */
-  @property({ type: String, attribute: 'min-date' })
-  minDate = '';
+	/**
+	 * Minimum selectable date as ISO string (YYYY-MM-DD).
+	 */
+	@property({ type: String, attribute: "min-date" })
+	minDate = "";
 
-  /**
-   * Maximum selectable date as ISO string (YYYY-MM-DD).
-   */
-  @property({ type: String, attribute: 'max-date' })
-  maxDate = '';
+	/**
+	 * Maximum selectable date as ISO string (YYYY-MM-DD).
+	 */
+	@property({ type: String, attribute: "max-date" })
+	maxDate = "";
 
-  /**
-   * Minimum range duration in days (inclusive). 0 = no minimum.
-   */
-  @property({ type: Number, attribute: 'min-days' })
-  minDays = 0;
+	/**
+	 * Minimum range duration in days (inclusive). 0 = no minimum.
+	 */
+	@property({ type: Number, attribute: "min-days" })
+	minDays = 0;
 
-  /**
-   * Maximum range duration in days (inclusive). 0 = unlimited.
-   */
-  @property({ type: Number, attribute: 'max-days' })
-  maxDays = 0;
+	/**
+	 * Maximum range duration in days (inclusive). 0 = unlimited.
+	 */
+	@property({ type: Number, attribute: "max-days" })
+	maxDays = 0;
 
-  /**
-   * Whether a range selection is required for form submission.
-   */
-  @property({ type: Boolean, reflect: true })
-  required = false;
+	/**
+	 * Whether a range selection is required for form submission.
+	 */
+	@property({ type: Boolean, reflect: true })
+	required = false;
 
-  /**
-   * Whether the date range picker is disabled.
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether the date range picker is disabled.
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * External error message. When set, overrides internal validation errors.
-   */
-  @property({ type: String })
-  error = '';
+	/**
+	 * External error message. When set, overrides internal validation errors.
+	 */
+	@property({ type: String })
+	error = "";
 
-  /**
-   * Enable comparison mode for selecting two independent date ranges.
-   * When true, toggle buttons appear to switch between primary and comparison ranges.
-   */
-  @property({ type: Boolean, reflect: true })
-  comparison = false;
+	/**
+	 * Enable comparison mode for selecting two independent date ranges.
+	 * When true, toggle buttons appear to switch between primary and comparison ranges.
+	 */
+	@property({ type: Boolean, reflect: true })
+	comparison = false;
 
-  /**
-   * The comparison range start date as ISO 8601 string (YYYY-MM-DD).
-   */
-  @property({ type: String, reflect: true, attribute: 'compare-start-date' })
-  compareStartDate = '';
+	/**
+	 * The comparison range start date as ISO 8601 string (YYYY-MM-DD).
+	 */
+	@property({ type: String, reflect: true, attribute: "compare-start-date" })
+	compareStartDate = "";
 
-  /**
-   * The comparison range end date as ISO 8601 string (YYYY-MM-DD).
-   */
-  @property({ type: String, reflect: true, attribute: 'compare-end-date' })
-  compareEndDate = '';
+	/**
+	 * The comparison range end date as ISO 8601 string (YYYY-MM-DD).
+	 */
+	@property({ type: String, reflect: true, attribute: "compare-end-date" })
+	compareEndDate = "";
 
-  /**
-   * Preset range buttons for quick one-click selection.
-   * - false: no presets (default)
-   * - true: use DEFAULT_RANGE_PRESETS (Last 7 Days, Last 30 Days, This Month)
-   * - DateRangePreset[]: custom presets array
-   */
-  @property({
-    converter: {
-      fromAttribute: () => true,
-    },
-  })
-  presets: DateRangePreset[] | boolean = false;
+	/**
+	 * Preset range buttons for quick one-click selection.
+	 * - false: no presets (default)
+	 * - true: use DEFAULT_RANGE_PRESETS (Last 7 Days, Last 30 Days, This Month)
+	 * - DateRangePreset[]: custom presets array
+	 */
+	@property({
+		converter: {
+			fromAttribute: () => true,
+		},
+	})
+	presets: DateRangePreset[] | boolean = false;
 
-  // ---------------------------------------------------------------------------
-  // State (internal reactive)
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// State (internal reactive)
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Current state of the range selection state machine.
-   */
-  @state()
-  private rangeState: RangeState = 'idle';
+	/**
+	 * Current state of the range selection state machine.
+	 */
+	@state()
+	private rangeState: RangeState = "idle";
 
-  /**
-   * ISO string of the currently hovered date for preview highlighting.
-   */
-  @state()
-  private hoveredDate = '';
+	/**
+	 * ISO string of the currently hovered date for preview highlighting.
+	 */
+	@state()
+	private hoveredDate = "";
 
-  /**
-   * Whether the popup is open.
-   */
-  @state()
-  private isOpen = false;
+	/**
+	 * Whether the popup is open.
+	 */
+	@state()
+	private isOpen = false;
 
-  /**
-   * The first calendar's displayed month.
-   */
-  @state()
-  private currentMonth: Date = new Date();
+	/**
+	 * The first calendar's displayed month.
+	 */
+	@state()
+	private currentMonth: Date = new Date();
 
-  /**
-   * Internal validation error message.
-   */
-  @state()
-  private internalError = '';
+	/**
+	 * Internal validation error message.
+	 */
+	@state()
+	private internalError = "";
 
-  /**
-   * Whether a pointer drag selection is in progress.
-   * True from pointerdown on a day cell until pointerup.
-   */
-  @state()
-  private isDragging = false;
+	/**
+	 * Whether a pointer drag selection is in progress.
+	 * True from pointerdown on a day cell until pointerup.
+	 */
+	@state()
+	private isDragging = false;
 
-  /**
-   * Which range is currently being selected: primary or comparison.
-   * Only relevant when comparison mode is enabled.
-   */
-  @state()
-  private selectionTarget: 'primary' | 'comparison' = 'primary';
+	/**
+	 * Which range is currently being selected: primary or comparison.
+	 * Only relevant when comparison mode is enabled.
+	 */
+	@state()
+	private selectionTarget: "primary" | "comparison" = "primary";
 
-  /**
-   * Current state of the comparison range selection state machine.
-   */
-  @state()
-  private compareRangeState: RangeState = 'idle';
+	/**
+	 * Current state of the comparison range selection state machine.
+	 */
+	@state()
+	private compareRangeState: RangeState = "idle";
 
-  // ---------------------------------------------------------------------------
-  // Styles
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Styles
+	// ---------------------------------------------------------------------------
 
-  static override styles: CSSResultGroup = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles: CSSResultGroup = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
         width: 100%;
@@ -598,138 +625,165 @@ export class DateRangePicker extends TailwindElement {
         }
       }
     `,
-  ];
+	];
 
-  // ---------------------------------------------------------------------------
-  // Constructor
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Constructor
+	// ---------------------------------------------------------------------------
 
-  constructor() {
-    super();
-    if (!isServer) {
-      this.internals = this.attachInternals();
-    }
-  }
+	constructor() {
+		super();
+		if (!isServer) {
+			this.internals = this.attachInternals();
+		}
+	}
 
-  // ---------------------------------------------------------------------------
-  // Computed getters
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Computed getters
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Resolved locale, falling back to navigator.language or 'en-US'.
-   */
-  get effectiveLocale(): string {
-    return this.locale || (isServer ? 'en-US' : navigator.language);
-  }
+	/**
+	 * Resolved locale, falling back to navigator.language or 'en-US'.
+	 */
+	get effectiveLocale(): string {
+		return this.locale || (isServer ? "en-US" : navigator.language);
+	}
 
-  /**
-   * Whether the component is in an error state.
-   */
-  get hasError(): boolean {
-    return !!(this.error || this.internalError);
-  }
+	/**
+	 * Whether the component is in an error state.
+	 */
+	get hasError(): boolean {
+		return !!(this.error || this.internalError);
+	}
 
-  /**
-   * The current error message to display.
-   */
-  get displayError(): string {
-    return this.error || this.internalError;
-  }
+	/**
+	 * The current error message to display.
+	 */
+	get displayError(): string {
+		return this.error || this.internalError;
+	}
 
-  /**
-   * Formatted display value for the input field.
-   * - Both dates: "Jan 15 – Jan 22, 2026"
-   * - Only start: "Jan 15, 2026 – ..."
-   * - None: empty (shows placeholder)
-   */
-  get displayValue(): string {
-    if (!this.startDate) return '';
+	/**
+	 * Formatted display value for the input field.
+	 * - Both dates: "Jan 15 – Jan 22, 2026"
+	 * - Only start: "Jan 15, 2026 – ..."
+	 * - None: empty (shows placeholder)
+	 */
+	get displayValue(): string {
+		if (!this.startDate) return "";
 
-    const startDate = parseISO(this.startDate);
-    const locale = this.effectiveLocale;
+		const startDate = parseISO(this.startDate);
+		const locale = this.effectiveLocale;
 
-    if (this.startDate && this.endDate) {
-      const endDate = parseISO(this.endDate);
-      const sameYear = startDate.getFullYear() === endDate.getFullYear();
+		if (this.startDate && this.endDate) {
+			const endDate = parseISO(this.endDate);
+			const sameYear = startDate.getFullYear() === endDate.getFullYear();
 
-      if (sameYear) {
-        // "Jan 15 – Jan 22, 2026"
-        const startFmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' });
-        const endFmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-        return `${startFmt.format(startDate)} \u2013 ${endFmt.format(endDate)}`;
-      }
+			if (sameYear) {
+				// "Jan 15 – Jan 22, 2026"
+				const startFmt = new Intl.DateTimeFormat(locale, {
+					month: "short",
+					day: "numeric",
+				});
+				const endFmt = new Intl.DateTimeFormat(locale, {
+					month: "short",
+					day: "numeric",
+					year: "numeric",
+				});
+				return `${startFmt.format(startDate)} \u2013 ${endFmt.format(endDate)}`;
+			}
 
-      // Cross-year: "Dec 28, 2025 – Jan 5, 2026"
-      const fullFmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-      return `${fullFmt.format(startDate)} \u2013 ${fullFmt.format(endDate)}`;
-    }
+			// Cross-year: "Dec 28, 2025 – Jan 5, 2026"
+			const fullFmt = new Intl.DateTimeFormat(locale, {
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			});
+			return `${fullFmt.format(startDate)} \u2013 ${fullFmt.format(endDate)}`;
+		}
 
-    // Only start date: "Jan 15, 2026 – ..."
-    const startFmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' });
-    return `${startFmt.format(startDate)} \u2013 ...`;
-  }
+		// Only start date: "Jan 15, 2026 – ..."
+		const startFmt = new Intl.DateTimeFormat(locale, {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		});
+		return `${startFmt.format(startDate)} \u2013 ...`;
+	}
 
-  /**
-   * Effective placeholder text for the input.
-   */
-  get effectivePlaceholder(): string {
-    return this.placeholder || 'Select date range';
-  }
+	/**
+	 * Effective placeholder text for the input.
+	 */
+	get effectivePlaceholder(): string {
+		return this.placeholder || "Select date range";
+	}
 
-  /**
-   * Status message for the popup footer based on current selection state.
-   */
-  get selectionStatus(): string {
-    if (this.comparison && this.selectionTarget === 'comparison') {
-      if (this.compareRangeState === 'idle') return 'Click a date to start comparison range';
-      if (this.compareRangeState === 'start-selected') return 'Click another date to complete comparison';
-      if (this.compareRangeState === 'complete') return this.displayValue;
-      return '';
-    }
-    if (this.rangeState === 'idle') return 'Click a date to start selecting';
-    if (this.rangeState === 'start-selected') return 'Click another date to complete range';
-    if (this.rangeState === 'complete') return this.displayValue;
-    return '';
-  }
+	/**
+	 * Status message for the popup footer based on current selection state.
+	 */
+	get selectionStatus(): string {
+		if (this.comparison && this.selectionTarget === "comparison") {
+			if (this.compareRangeState === "idle")
+				return "Click a date to start comparison range";
+			if (this.compareRangeState === "start-selected")
+				return "Click another date to complete comparison";
+			if (this.compareRangeState === "complete") return this.displayValue;
+			return "";
+		}
+		if (this.rangeState === "idle") return "Click a date to start selecting";
+		if (this.rangeState === "start-selected")
+			return "Click another date to complete range";
+		if (this.rangeState === "complete") return this.displayValue;
+		return "";
+	}
 
-  /**
-   * Resolved presets array based on the presets property.
-   * - true: returns DEFAULT_RANGE_PRESETS
-   * - array: returns the array as-is
-   * - false: returns empty array (no presets)
-   */
-  private get effectivePresets(): DateRangePreset[] {
-    if (this.presets === true) return DEFAULT_RANGE_PRESETS;
-    if (Array.isArray(this.presets)) return this.presets;
-    return [];
-  }
+	/**
+	 * Resolved presets array based on the presets property.
+	 * - true: returns DEFAULT_RANGE_PRESETS
+	 * - array: returns the array as-is
+	 * - false: returns empty array (no presets)
+	 */
+	private get effectivePresets(): DateRangePreset[] {
+		if (this.presets === true) return DEFAULT_RANGE_PRESETS;
+		if (Array.isArray(this.presets)) return this.presets;
+		return [];
+	}
 
-  /**
-   * Duration text for the popup footer when a range is complete.
-   * Shows inclusive day count (e.g., "7 days selected").
-   */
-  get durationText(): string {
-    if (this.comparison && this.selectionTarget === 'comparison') {
-      if (this.compareRangeState !== 'complete' || !this.compareStartDate || !this.compareEndDate) return '';
-      const days = computeRangeDuration(this.compareStartDate, this.compareEndDate);
-      return `${days} day${days === 1 ? '' : 's'} selected (comparison)`;
-    }
-    if (this.rangeState !== 'complete' || !this.startDate || !this.endDate) return '';
-    const days = computeRangeDuration(this.startDate, this.endDate);
-    return `${days} day${days === 1 ? '' : 's'} selected`;
-  }
+	/**
+	 * Duration text for the popup footer when a range is complete.
+	 * Shows inclusive day count (e.g., "7 days selected").
+	 */
+	get durationText(): string {
+		if (this.comparison && this.selectionTarget === "comparison") {
+			if (
+				this.compareRangeState !== "complete" ||
+				!this.compareStartDate ||
+				!this.compareEndDate
+			)
+				return "";
+			const days = computeRangeDuration(
+				this.compareStartDate,
+				this.compareEndDate,
+			);
+			return `${days} day${days === 1 ? "" : "s"} selected (comparison)`;
+		}
+		if (this.rangeState !== "complete" || !this.startDate || !this.endDate)
+			return "";
+		const days = computeRangeDuration(this.startDate, this.endDate);
+		return `${days} day${days === 1 ? "" : "s"} selected`;
+	}
 
-  // ---------------------------------------------------------------------------
-  // SVG Icons
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// SVG Icons
+	// ---------------------------------------------------------------------------
 
-  private calendarIcon = svg`
+	private calendarIcon = svg`
     <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
           stroke="currentColor" stroke-width="2" fill="none"
           stroke-linecap="round" stroke-linejoin="round"/>
   `;
 
-  private clearIcon = svg`
+	private clearIcon = svg`
     <circle cx="12" cy="12" r="10"
             stroke="currentColor" stroke-width="2" fill="none"/>
     <line x1="15" y1="9" x2="9" y2="15"
@@ -740,724 +794,793 @@ export class DateRangePicker extends TailwindElement {
           stroke-linecap="round" stroke-linejoin="round"/>
   `;
 
-  // ---------------------------------------------------------------------------
-  // State machine methods
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// State machine methods
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Handle a date click in the calendar.
-   * Implements the two-click state machine:
-   * - idle/complete -> start-selected (first click sets start)
-   * - start-selected -> complete (second click sets end with auto-swap)
-   *
-   * @param isoString - ISO 8601 date string of the clicked date
-   */
-  handleDateClick(isoString: string): void {
-    if (this.disabled) return;
+	/**
+	 * Handle a date click in the calendar.
+	 * Implements the two-click state machine:
+	 * - idle/complete -> start-selected (first click sets start)
+	 * - start-selected -> complete (second click sets end with auto-swap)
+	 *
+	 * @param isoString - ISO 8601 date string of the clicked date
+	 */
+	handleDateClick(isoString: string): void {
+		if (this.disabled) return;
 
-    // Route to comparison range handler when in comparison mode targeting comparison
-    if (this.comparison && this.selectionTarget === 'comparison') {
-      this.handleComparisonDateClick(isoString);
-      return;
-    }
+		// Route to comparison range handler when in comparison mode targeting comparison
+		if (this.comparison && this.selectionTarget === "comparison") {
+			this.handleComparisonDateClick(isoString);
+			return;
+		}
 
-    if (this.rangeState === 'idle' || this.rangeState === 'complete') {
-      // First click: set start date, reset end, enter start-selected state
-      this.startDate = isoString;
-      this.endDate = '';
-      this.internalError = '';
-      this.rangeState = 'start-selected';
-    } else if (this.rangeState === 'start-selected') {
-      // Second click: normalize order (auto-swap DRP-09), set both dates
-      const [normalizedStart, normalizedEnd] = normalizeRange(this.startDate, isoString);
-      this.startDate = normalizedStart;
-      this.endDate = normalizedEnd;
-      this.hoveredDate = '';
-      this.rangeState = 'complete';
-      this.validateAndEmit();
-    }
-  }
+		if (this.rangeState === "idle" || this.rangeState === "complete") {
+			// First click: set start date, reset end, enter start-selected state
+			this.startDate = isoString;
+			this.endDate = "";
+			this.internalError = "";
+			this.rangeState = "start-selected";
+		} else if (this.rangeState === "start-selected") {
+			// Second click: normalize order (auto-swap DRP-09), set both dates
+			const [normalizedStart, normalizedEnd] = normalizeRange(
+				this.startDate,
+				isoString,
+			);
+			this.startDate = normalizedStart;
+			this.endDate = normalizedEnd;
+			this.hoveredDate = "";
+			this.rangeState = "complete";
+			this.validateAndEmit();
+		}
+	}
 
-  /**
-   * Handle a date click for the comparison range.
-   * Same two-click state machine as primary but targeting comparison dates.
-   *
-   * @param isoString - ISO 8601 date string of the clicked date
-   */
-  private handleComparisonDateClick(isoString: string): void {
-    if (this.compareRangeState === 'idle' || this.compareRangeState === 'complete') {
-      this.compareStartDate = isoString;
-      this.compareEndDate = '';
-      this.compareRangeState = 'start-selected';
-    } else if (this.compareRangeState === 'start-selected') {
-      const [normalizedStart, normalizedEnd] = normalizeRange(this.compareStartDate, isoString);
-      this.compareStartDate = normalizedStart;
-      this.compareEndDate = normalizedEnd;
-      this.hoveredDate = '';
-      this.compareRangeState = 'complete';
-      this.validateAndEmit();
-    }
-  }
+	/**
+	 * Handle a date click for the comparison range.
+	 * Same two-click state machine as primary but targeting comparison dates.
+	 *
+	 * @param isoString - ISO 8601 date string of the clicked date
+	 */
+	private handleComparisonDateClick(isoString: string): void {
+		if (
+			this.compareRangeState === "idle" ||
+			this.compareRangeState === "complete"
+		) {
+			this.compareStartDate = isoString;
+			this.compareEndDate = "";
+			this.compareRangeState = "start-selected";
+		} else if (this.compareRangeState === "start-selected") {
+			const [normalizedStart, normalizedEnd] = normalizeRange(
+				this.compareStartDate,
+				isoString,
+			);
+			this.compareStartDate = normalizedStart;
+			this.compareEndDate = normalizedEnd;
+			this.hoveredDate = "";
+			this.compareRangeState = "complete";
+			this.validateAndEmit();
+		}
+	}
 
-  /**
-   * Validate the current range and emit change event.
-   * Validation runs AFTER auto-swap via normalizeRange() (Pitfall 4).
-   * Updates internal error state, form value, and ElementInternals validity.
-   * Closes the popup on valid complete range.
-   */
-  validateAndEmit(): void {
-    // Update form value first
-    this.updateFormValue();
+	/**
+	 * Validate the current range and emit change event.
+	 * Validation runs AFTER auto-swap via normalizeRange() (Pitfall 4).
+	 * Updates internal error state, form value, and ElementInternals validity.
+	 * Closes the popup on valid complete range.
+	 */
+	validateAndEmit(): void {
+		// Update form value first
+		this.updateFormValue();
 
-    // Validate (sets ElementInternals validity + internalError)
-    const isValid = this.validate();
+		// Validate (sets ElementInternals validity + internalError)
+		const isValid = this.validate();
 
-    // Build ISO interval for event payload
-    const isoInterval = formatISOInterval(this.startDate, this.endDate);
+		// Build ISO interval for event payload
+		const isoInterval = formatISOInterval(this.startDate, this.endDate);
 
-    // Dispatch change event (include comparison fields when comparison mode is active)
-    dispatchCustomEvent(this, 'change', {
-      startDate: this.startDate,
-      endDate: this.endDate,
-      isoInterval,
-      ...(this.comparison ? {
-        compareStartDate: this.compareStartDate,
-        compareEndDate: this.compareEndDate,
-        compareIsoInterval: formatISOInterval(this.compareStartDate, this.compareEndDate),
-      } : {}),
-    });
+		// Dispatch change event (include comparison fields when comparison mode is active)
+		dispatchCustomEvent(this, "change", {
+			startDate: this.startDate,
+			endDate: this.endDate,
+			isoInterval,
+			...(this.comparison
+				? {
+						compareStartDate: this.compareStartDate,
+						compareEndDate: this.compareEndDate,
+						compareIsoInterval: formatISOInterval(
+							this.compareStartDate,
+							this.compareEndDate,
+						),
+					}
+				: {}),
+		});
 
-    // Close popup on valid complete range
-    if (isValid && this.rangeState === 'complete') {
-      this.closePopup();
-    }
-  }
+		// Close popup on valid complete range
+		if (isValid && this.rangeState === "complete") {
+			this.closePopup();
+		}
+	}
 
-  /**
-   * Handle hover over a day cell for preview highlighting.
-   * Only active during start-selected state.
-   *
-   * @param dateStr - ISO 8601 date string of the hovered date
-   */
-  handleDayHover(dateStr: string): void {
-    const activeState = this.comparison && this.selectionTarget === 'comparison'
-      ? this.compareRangeState
-      : this.rangeState;
-    if (activeState === 'start-selected') {
-      this.hoveredDate = dateStr;
-    }
-  }
+	/**
+	 * Handle hover over a day cell for preview highlighting.
+	 * Only active during start-selected state.
+	 *
+	 * @param dateStr - ISO 8601 date string of the hovered date
+	 */
+	handleDayHover(dateStr: string): void {
+		const activeState =
+			this.comparison && this.selectionTarget === "comparison"
+				? this.compareRangeState
+				: this.rangeState;
+		if (activeState === "start-selected") {
+			this.hoveredDate = dateStr;
+		}
+	}
 
-  /**
-   * Clear the hover preview state.
-   */
-  clearHoverPreview(): void {
-    this.hoveredDate = '';
-  }
+	/**
+	 * Clear the hover preview state.
+	 */
+	clearHoverPreview(): void {
+		this.hoveredDate = "";
+	}
 
-  // ---------------------------------------------------------------------------
-  // Preset selection
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Preset selection
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Handle a preset button click.
-   * Resolves the preset dates, sets both start and end, and emits change.
-   *
-   * @param preset - The preset to apply
-   */
-  private handlePresetSelect(preset: DateRangePreset): void {
-    const { start, end } = preset.resolve();
-    const startISO = format(start, 'yyyy-MM-dd');
-    const endISO = format(end, 'yyyy-MM-dd');
+	/**
+	 * Handle a preset button click.
+	 * Resolves the preset dates, sets both start and end, and emits change.
+	 *
+	 * @param preset - The preset to apply
+	 */
+	private handlePresetSelect(preset: DateRangePreset): void {
+		const { start, end } = preset.resolve();
+		const startISO = format(start, "yyyy-MM-dd");
+		const endISO = format(end, "yyyy-MM-dd");
 
-    if (this.comparison && this.selectionTarget === 'comparison') {
-      this.compareStartDate = startISO;
-      this.compareEndDate = endISO;
-      this.compareRangeState = 'complete';
-    } else {
-      this.startDate = startISO;
-      this.endDate = endISO;
-      this.rangeState = 'complete';
-    }
-    this.validateAndEmit();
-  }
+		if (this.comparison && this.selectionTarget === "comparison") {
+			this.compareStartDate = startISO;
+			this.compareEndDate = endISO;
+			this.compareRangeState = "complete";
+		} else {
+			this.startDate = startISO;
+			this.endDate = endISO;
+			this.rangeState = "complete";
+		}
+		this.validateAndEmit();
+	}
 
-  /**
-   * Check if a preset's resolved range falls outside min/max constraints.
-   *
-   * @param preset - The preset to check
-   * @returns true if the preset should be disabled
-   */
-  private isPresetDisabled(preset: DateRangePreset): boolean {
-    const { start, end } = preset.resolve();
-    if (this.minDate) {
-      const min = parseISO(this.minDate);
-      if (isBeforeDate(start, min)) return true;
-    }
-    if (this.maxDate) {
-      const max = parseISO(this.maxDate);
-      if (isAfterDate(end, max)) return true;
-    }
-    return false;
-  }
+	/**
+	 * Check if a preset's resolved range falls outside min/max constraints.
+	 *
+	 * @param preset - The preset to check
+	 * @returns true if the preset should be disabled
+	 */
+	private isPresetDisabled(preset: DateRangePreset): boolean {
+		const { start, end } = preset.resolve();
+		if (this.minDate) {
+			const min = parseISO(this.minDate);
+			if (isBeforeDate(start, min)) return true;
+		}
+		if (this.maxDate) {
+			const max = parseISO(this.maxDate);
+			if (isAfterDate(end, max)) return true;
+		}
+		return false;
+	}
 
-  // ---------------------------------------------------------------------------
-  // Drag selection (pointer events)
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Drag selection (pointer events)
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Start a drag selection on pointerdown.
-   * Enters start-selected state (same as first click in two-click flow).
-   *
-   * @param isoString - ISO 8601 date string of the pressed day cell
-   */
-  private handleDragStart(isoString: string): void {
-    if (this.disabled) return;
-    this.isDragging = true;
+	/**
+	 * Start a drag selection on pointerdown.
+	 * Enters start-selected state (same as first click in two-click flow).
+	 *
+	 * @param isoString - ISO 8601 date string of the pressed day cell
+	 */
+	private handleDragStart(isoString: string): void {
+		if (this.disabled) return;
+		this.isDragging = true;
 
-    if (this.comparison && this.selectionTarget === 'comparison') {
-      this.compareStartDate = isoString;
-      this.compareEndDate = '';
-      this.compareRangeState = 'start-selected';
-    } else {
-      // Enter start-selected state (same transition as first click)
-      this.startDate = isoString;
-      this.endDate = '';
-      this.internalError = '';
-      this.rangeState = 'start-selected';
-    }
-  }
+		if (this.comparison && this.selectionTarget === "comparison") {
+			this.compareStartDate = isoString;
+			this.compareEndDate = "";
+			this.compareRangeState = "start-selected";
+		} else {
+			// Enter start-selected state (same transition as first click)
+			this.startDate = isoString;
+			this.endDate = "";
+			this.internalError = "";
+			this.rangeState = "start-selected";
+		}
+	}
 
-  /**
-   * Complete a drag selection on pointerup over a day cell.
-   * If released on a different cell than start, completes the range.
-   * If released on the same cell, stays in start-selected for click-to-complete.
-   *
-   * @param isoString - ISO 8601 date string of the released day cell
-   */
-  private handleDragEnd(isoString: string): void {
-    if (!this.isDragging) return;
-    this.isDragging = false;
+	/**
+	 * Complete a drag selection on pointerup over a day cell.
+	 * If released on a different cell than start, completes the range.
+	 * If released on the same cell, stays in start-selected for click-to-complete.
+	 *
+	 * @param isoString - ISO 8601 date string of the released day cell
+	 */
+	private handleDragEnd(isoString: string): void {
+		if (!this.isDragging) return;
+		this.isDragging = false;
 
-    if (this.comparison && this.selectionTarget === 'comparison') {
-      if (this.compareRangeState === 'start-selected' && isoString !== this.compareStartDate) {
-        const [normalizedStart, normalizedEnd] = normalizeRange(this.compareStartDate, isoString);
-        this.compareStartDate = normalizedStart;
-        this.compareEndDate = normalizedEnd;
-        this.hoveredDate = '';
-        this.compareRangeState = 'complete';
-        this.validateAndEmit();
-      }
-    } else {
-      if (this.rangeState === 'start-selected' && isoString !== this.startDate) {
-        // Complete range (same transition as second click)
-        const [normalizedStart, normalizedEnd] = normalizeRange(this.startDate, isoString);
-        this.startDate = normalizedStart;
-        this.endDate = normalizedEnd;
-        this.hoveredDate = '';
-        this.rangeState = 'complete';
-        this.validateAndEmit();
-      }
-    }
-    // If released on same cell as start, stay in start-selected for click-to-complete
-  }
+		if (this.comparison && this.selectionTarget === "comparison") {
+			if (
+				this.compareRangeState === "start-selected" &&
+				isoString !== this.compareStartDate
+			) {
+				const [normalizedStart, normalizedEnd] = normalizeRange(
+					this.compareStartDate,
+					isoString,
+				);
+				this.compareStartDate = normalizedStart;
+				this.compareEndDate = normalizedEnd;
+				this.hoveredDate = "";
+				this.compareRangeState = "complete";
+				this.validateAndEmit();
+			}
+		} else {
+			if (
+				this.rangeState === "start-selected" &&
+				isoString !== this.startDate
+			) {
+				// Complete range (same transition as second click)
+				const [normalizedStart, normalizedEnd] = normalizeRange(
+					this.startDate,
+					isoString,
+				);
+				this.startDate = normalizedStart;
+				this.endDate = normalizedEnd;
+				this.hoveredDate = "";
+				this.rangeState = "complete";
+				this.validateAndEmit();
+			}
+		}
+		// If released on same cell as start, stay in start-selected for click-to-complete
+	}
 
-  /**
-   * Cancel a drag when pointer is released outside day cells.
-   * Keeps start-selected state so user can still click to complete.
-   */
-  private handleDragCancel(): void {
-    if (this.isDragging) {
-      this.isDragging = false;
-      // Stay in start-selected state — user can still click to complete
-    }
-  }
+	/**
+	 * Cancel a drag when pointer is released outside day cells.
+	 * Keeps start-selected state so user can still click to complete.
+	 */
+	private handleDragCancel(): void {
+		if (this.isDragging) {
+			this.isDragging = false;
+			// Stay in start-selected state — user can still click to complete
+		}
+	}
 
-  /**
-   * Reset the range picker to idle state.
-   * Clears all selection, updates form value, validates, and dispatches change.
-   */
-  handleClear(e?: Event): void {
-    e?.stopPropagation();
-    this.startDate = '';
-    this.endDate = '';
-    this.hoveredDate = '';
-    this.internalError = '';
-    this.rangeState = 'idle';
+	/**
+	 * Reset the range picker to idle state.
+	 * Clears all selection, updates form value, validates, and dispatches change.
+	 */
+	handleClear(e?: Event): void {
+		e?.stopPropagation();
+		this.startDate = "";
+		this.endDate = "";
+		this.hoveredDate = "";
+		this.internalError = "";
+		this.rangeState = "idle";
 
-    // Also clear comparison state when comparison mode is active
-    if (this.comparison) {
-      this.compareStartDate = '';
-      this.compareEndDate = '';
-      this.compareRangeState = 'idle';
-      this.selectionTarget = 'primary';
-    }
+		// Also clear comparison state when comparison mode is active
+		if (this.comparison) {
+			this.compareStartDate = "";
+			this.compareEndDate = "";
+			this.compareRangeState = "idle";
+			this.selectionTarget = "primary";
+		}
 
-    this.updateFormValue();
-    this.validate();
+		this.updateFormValue();
+		this.validate();
 
-    dispatchCustomEvent(this, 'change', {
-      startDate: '',
-      endDate: '',
-      isoInterval: '',
-      ...(this.comparison ? {
-        compareStartDate: '',
-        compareEndDate: '',
-        compareIsoInterval: '',
-      } : {}),
-    });
+		dispatchCustomEvent(this, "change", {
+			startDate: "",
+			endDate: "",
+			isoInterval: "",
+			...(this.comparison
+				? {
+						compareStartDate: "",
+						compareEndDate: "",
+						compareIsoInterval: "",
+					}
+				: {}),
+		});
 
-    // Focus input after clear for keyboard continuity
-    this.inputEl?.focus();
-  }
+		// Focus input after clear for keyboard continuity
+		this.inputEl?.focus();
+	}
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Lifecycle
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Sync range state and form value when properties change externally.
-   */
-  protected override updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
+	/**
+	 * Sync range state and form value when properties change externally.
+	 */
+	protected override updated(changedProps: PropertyValues): void {
+		super.updated(changedProps);
 
-    // Sync form value and validity when dates change
-    if (changedProps.has('startDate') || changedProps.has('endDate')) {
-      // If both dates are set externally, ensure state is 'complete'
-      if (this.startDate && this.endDate && this.rangeState !== 'complete') {
-        this.rangeState = 'complete';
-      }
-      this.updateFormValue();
-      this.validate();
-    }
+		// Sync form value and validity when dates change
+		if (changedProps.has("startDate") || changedProps.has("endDate")) {
+			// If both dates are set externally, ensure state is 'complete'
+			if (this.startDate && this.endDate && this.rangeState !== "complete") {
+				this.rangeState = "complete";
+			}
+			this.updateFormValue();
+			this.validate();
+		}
 
-    // Sync comparison range state when comparison dates change externally
-    if (changedProps.has('compareStartDate') || changedProps.has('compareEndDate')) {
-      if (this.compareStartDate && this.compareEndDate && this.compareRangeState !== 'complete') {
-        this.compareRangeState = 'complete';
-      }
-      this.updateFormValue();
-    }
-  }
+		// Sync comparison range state when comparison dates change externally
+		if (
+			changedProps.has("compareStartDate") ||
+			changedProps.has("compareEndDate")
+		) {
+			if (
+				this.compareStartDate &&
+				this.compareEndDate &&
+				this.compareRangeState !== "complete"
+			) {
+				this.compareRangeState = "complete";
+			}
+			this.updateFormValue();
+		}
+	}
 
-  // ---------------------------------------------------------------------------
-  // Form integration
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Form integration
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Sync the current range value to the form via ElementInternals.
-   * Sets form value as ISO 8601 interval (YYYY-MM-DD/YYYY-MM-DD) or null.
-   */
-  private updateFormValue(): void {
-    const primaryInterval = formatISOInterval(this.startDate, this.endDate);
-    if (this.comparison && this.compareStartDate && this.compareEndDate) {
-      const compareInterval = formatISOInterval(this.compareStartDate, this.compareEndDate);
-      this.internals?.setFormValue(primaryInterval ? `${primaryInterval}|${compareInterval}` : null);
-    } else {
-      this.internals?.setFormValue(primaryInterval || null);
-    }
-  }
+	/**
+	 * Sync the current range value to the form via ElementInternals.
+	 * Sets form value as ISO 8601 interval (YYYY-MM-DD/YYYY-MM-DD) or null.
+	 */
+	private updateFormValue(): void {
+		const primaryInterval = formatISOInterval(this.startDate, this.endDate);
+		if (this.comparison && this.compareStartDate && this.compareEndDate) {
+			const compareInterval = formatISOInterval(
+				this.compareStartDate,
+				this.compareEndDate,
+			);
+			this.internals?.setFormValue(
+				primaryInterval ? `${primaryInterval}|${compareInterval}` : null,
+			);
+		} else {
+			this.internals?.setFormValue(primaryInterval || null);
+		}
+	}
 
-  /**
-   * Validate the current state and set validity on ElementInternals.
-   * Checks required (valueMissing) first, then duration constraints (customError).
-   * Clears validity if all checks pass.
-   *
-   * @returns true if valid, false if invalid
-   */
-  private validate(): boolean {
-    if (!this.internals) return true;
+	/**
+	 * Validate the current state and set validity on ElementInternals.
+	 * Checks required (valueMissing) first, then duration constraints (customError).
+	 * Clears validity if all checks pass.
+	 *
+	 * @returns true if valid, false if invalid
+	 */
+	private validate(): boolean {
+		if (!this.internals) return true;
 
-    const anchor = this.inputEl ?? undefined;
+		const anchor = this.inputEl ?? undefined;
 
-    // Check required: both start and end must be set
-    if (this.required && (!this.startDate || !this.endDate)) {
-      const msg = 'Please select a date range';
-      this.internalError = msg;
-      this.internals.setValidity({ valueMissing: true }, msg, anchor);
-      return false;
-    }
+		// Check required: both start and end must be set
+		if (this.required && (!this.startDate || !this.endDate)) {
+			const msg = "Please select a date range";
+			this.internalError = msg;
+			this.internals.setValidity({ valueMissing: true }, msg, anchor);
+			return false;
+		}
 
-    // Check duration constraints (only when we have a complete range)
-    if (this.startDate && this.endDate) {
-      const validation = validateRangeDuration(
-        this.startDate,
-        this.endDate,
-        this.minDays || undefined,
-        this.maxDays || undefined,
-      );
+		// Check duration constraints (only when we have a complete range)
+		if (this.startDate && this.endDate) {
+			const validation = validateRangeDuration(
+				this.startDate,
+				this.endDate,
+				this.minDays || undefined,
+				this.maxDays || undefined,
+			);
 
-      if (!validation.valid) {
-        this.internalError = validation.error;
-        this.internals.setValidity({ customError: true }, validation.error, anchor);
-        return false;
-      }
-    }
+			if (!validation.valid) {
+				this.internalError = validation.error;
+				this.internals.setValidity(
+					{ customError: true },
+					validation.error,
+					anchor,
+				);
+				return false;
+			}
+		}
 
-    // All checks passed
-    this.internalError = '';
-    this.internals.setValidity({});
-    return true;
-  }
+		// All checks passed
+		this.internalError = "";
+		this.internals.setValidity({});
+		return true;
+	}
 
-  /**
-   * Form lifecycle callback: reset the date range picker to initial state.
-   */
-  formResetCallback(): void {
-    this.startDate = '';
-    this.endDate = '';
-    this.hoveredDate = '';
-    this.internalError = '';
-    this.rangeState = 'idle';
-    this.isOpen = false;
-    this.compareStartDate = '';
-    this.compareEndDate = '';
-    this.compareRangeState = 'idle';
-    this.selectionTarget = 'primary';
-    this.internals?.setFormValue(null);
-    this.internals?.setValidity({});
-  }
+	/**
+	 * Form lifecycle callback: reset the date range picker to initial state.
+	 */
+	formResetCallback(): void {
+		this.startDate = "";
+		this.endDate = "";
+		this.hoveredDate = "";
+		this.internalError = "";
+		this.rangeState = "idle";
+		this.isOpen = false;
+		this.compareStartDate = "";
+		this.compareEndDate = "";
+		this.compareRangeState = "idle";
+		this.selectionTarget = "primary";
+		this.internals?.setFormValue(null);
+		this.internals?.setValidity({});
+	}
 
-  /**
-   * Form lifecycle callback: restore state from ISO interval string.
-   * Parses "YYYY-MM-DD/YYYY-MM-DD" back into start and end dates.
-   */
-  formStateRestoreCallback(state: string): void {
-    if (!state || typeof state !== 'string') return;
+	/**
+	 * Form lifecycle callback: restore state from ISO interval string.
+	 * Parses "YYYY-MM-DD/YYYY-MM-DD" back into start and end dates.
+	 */
+	formStateRestoreCallback(state: string): void {
+		if (!state || typeof state !== "string") return;
 
-    const parts = state.split('/');
-    if (parts.length === 2) {
-      this.startDate = parts[0];
-      this.endDate = parts[1];
-      this.rangeState = 'complete';
-      this.updateFormValue();
-      this.validate();
-    }
-  }
+		const parts = state.split("/");
+		if (parts.length === 2) {
+			this.startDate = parts[0];
+			this.endDate = parts[1];
+			this.rangeState = "complete";
+			this.updateFormValue();
+			this.validate();
+		}
+	}
 
-  /**
-   * Form lifecycle callback: handle disabled state from form.
-   */
-  formDisabledCallback(disabled: boolean): void {
-    this.disabled = disabled;
-  }
+	/**
+	 * Form lifecycle callback: handle disabled state from form.
+	 */
+	formDisabledCallback(disabled: boolean): void {
+		this.disabled = disabled;
+	}
 
-  // ---------------------------------------------------------------------------
-  // Range day rendering (inline styles for Shadow DOM compatibility)
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Range day rendering (inline styles for Shadow DOM compatibility)
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Render callback for calendar day cells with range highlighting.
-   * Uses inline styles because CSS classes defined here cannot reach
-   * inside the calendar's Shadow DOM (Pitfall 1).
-   *
-   * Arrow function to preserve `this` binding when passed to lui-calendar.
-   */
-  renderRangeDay = (state: DayCellState): unknown => {
-    const dateStr = state.formattedDate;
+	/**
+	 * Render callback for calendar day cells with range highlighting.
+	 * Uses inline styles because CSS classes defined here cannot reach
+	 * inside the calendar's Shadow DOM (Pitfall 1).
+	 *
+	 * Arrow function to preserve `this` binding when passed to lui-calendar.
+	 */
+	renderRangeDay = (state: DayCellState): unknown => {
+		const dateStr = state.formattedDate;
 
-    // Primary range checks
-    const isStart = dateStr === this.startDate;
-    const isEnd = dateStr === this.endDate;
-    const inRange = isDateInRange(dateStr, this.startDate, this.endDate);
-    const inPreview = this.rangeState === 'start-selected' && !(this.comparison && this.selectionTarget === 'comparison')
-      ? isDateInPreview(dateStr, this.startDate, this.hoveredDate)
-      : false;
+		// Primary range checks
+		const isStart = dateStr === this.startDate;
+		const isEnd = dateStr === this.endDate;
+		const inRange = isDateInRange(dateStr, this.startDate, this.endDate);
+		const inPreview =
+			this.rangeState === "start-selected" &&
+			!(this.comparison && this.selectionTarget === "comparison")
+				? isDateInPreview(dateStr, this.startDate, this.hoveredDate)
+				: false;
 
-    // Comparison range checks
-    const isCompareStart = this.comparison && dateStr === this.compareStartDate;
-    const isCompareEnd = this.comparison && dateStr === this.compareEndDate;
-    const inCompareRange = this.comparison && isDateInRange(dateStr, this.compareStartDate, this.compareEndDate);
-    const inComparePreview = this.comparison && this.selectionTarget === 'comparison' && this.compareRangeState === 'start-selected'
-      ? isDateInPreview(dateStr, this.compareStartDate, this.hoveredDate)
-      : false;
+		// Comparison range checks
+		const isCompareStart = this.comparison && dateStr === this.compareStartDate;
+		const isCompareEnd = this.comparison && dateStr === this.compareEndDate;
+		const inCompareRange =
+			this.comparison &&
+			isDateInRange(dateStr, this.compareStartDate, this.compareEndDate);
+		const inComparePreview =
+			this.comparison &&
+			this.selectionTarget === "comparison" &&
+			this.compareRangeState === "start-selected"
+				? isDateInPreview(dateStr, this.compareStartDate, this.hoveredDate)
+				: false;
 
-    // Build inline styles array — inline because CSS classes cannot
-    // penetrate the calendar's Shadow DOM (Pitfall 1).
-    // CSS custom properties DO cascade through Shadow DOM for theming.
-    const styles: string[] = [
-      'display: flex',
-      'align-items: center',
-      'justify-content: center',
-      'width: 100%',
-      'height: 100%',
-      'border-radius: 0',
-      'transition: background-color 150ms',
-    ];
+		// Build inline styles array — inline because CSS classes cannot
+		// penetrate the calendar's Shadow DOM (Pitfall 1).
+		// CSS custom properties DO cascade through Shadow DOM for theming.
+		const styles: string[] = [
+			"display: flex",
+			"align-items: center",
+			"justify-content: center",
+			"width: 100%",
+			"height: 100%",
+			"border-radius: 0",
+			"transition: background-color 150ms",
+		];
 
-    const isSingleDay = isStart && isEnd;
+		const isSingleDay = isStart && isEnd;
 
-    // Primary range styles take precedence over comparison styles
-    if (isSingleDay) {
-      // Single-day range: full circle
-      styles.push(
-        'background-color: var(--ui-range-selected-bg, var(--color-primary))',
-        'color: var(--ui-range-selected-text)',
-        'border-radius: 9999px',
-      );
-    } else if (isStart) {
-      // Start date: rounded left
-      styles.push(
-        'background-color: var(--ui-range-selected-bg, var(--color-primary))',
-        'color: var(--ui-range-selected-text)',
-        'border-radius: 9999px 0 0 9999px',
-      );
-    } else if (isEnd) {
-      // End date: rounded right
-      styles.push(
-        'background-color: var(--ui-range-selected-bg, var(--color-primary))',
-        'color: var(--ui-range-selected-text)',
-        'border-radius: 0 9999px 9999px 0',
-      );
-    } else if (inRange) {
-      // In-range: highlight background, no rounding
-      styles.push(
-        'background-color: var(--ui-range-highlight-bg, color-mix(in oklch, var(--color-primary, var(--ui-color-primary)) 12%, var(--color-background)))',
-        'color: var(--ui-range-highlight-text)',
-      );
-    } else if (inPreview) {
-      // Preview: lighter highlight background, no rounding
-      styles.push(
-        'background-color: var(--ui-range-preview-bg, color-mix(in oklch, var(--color-primary, var(--ui-color-primary)) 6%, var(--color-background)))',
-      );
-    } else if (isCompareStart && isCompareEnd) {
-      // Comparison single-day: full circle in amber
-      styles.push(
-        'background-color: var(--ui-date-range-compare-bg)',
-        'color: var(--ui-date-range-compare-text)',
-        'border-radius: 9999px',
-      );
-    } else if (isCompareStart) {
-      // Comparison start: rounded left in amber
-      styles.push(
-        'background-color: var(--ui-date-range-compare-bg)',
-        'color: var(--ui-date-range-compare-text)',
-        'border-radius: 9999px 0 0 9999px',
-      );
-    } else if (isCompareEnd) {
-      // Comparison end: rounded right in amber
-      styles.push(
-        'background-color: var(--ui-date-range-compare-bg)',
-        'color: var(--ui-date-range-compare-text)',
-        'border-radius: 0 9999px 9999px 0',
-      );
-    } else if (inCompareRange) {
-      // In comparison range: amber highlight
-      styles.push(
-        'background-color: var(--ui-date-range-compare-highlight-bg)',
-        'color: inherit',
-      );
-    } else if (inComparePreview) {
-      // Comparison preview: lighter amber highlight
-      styles.push(
-        'background-color: var(--ui-date-range-compare-preview-bg)',
-      );
-    }
+		// Primary range styles take precedence over comparison styles
+		if (isSingleDay) {
+			// Single-day range: full circle
+			styles.push(
+				"background-color: var(--ui-range-selected-bg, var(--color-primary))",
+				"color: var(--ui-range-selected-text)",
+				"border-radius: 9999px",
+			);
+		} else if (isStart) {
+			// Start date: rounded left
+			styles.push(
+				"background-color: var(--ui-range-selected-bg, var(--color-primary))",
+				"color: var(--ui-range-selected-text)",
+				"border-radius: 9999px 0 0 9999px",
+			);
+		} else if (isEnd) {
+			// End date: rounded right
+			styles.push(
+				"background-color: var(--ui-range-selected-bg, var(--color-primary))",
+				"color: var(--ui-range-selected-text)",
+				"border-radius: 0 9999px 9999px 0",
+			);
+		} else if (inRange) {
+			// In-range: highlight background, no rounding
+			styles.push(
+				"background-color: var(--ui-range-highlight-bg, color-mix(in oklch, var(--color-primary, var(--ui-color-primary)) 12%, var(--color-background)))",
+				"color: var(--ui-range-highlight-text)",
+			);
+		} else if (inPreview) {
+			// Preview: lighter highlight background, no rounding
+			styles.push(
+				"background-color: var(--ui-range-preview-bg, color-mix(in oklch, var(--color-primary, var(--ui-color-primary)) 6%, var(--color-background)))",
+			);
+		} else if (isCompareStart && isCompareEnd) {
+			// Comparison single-day: full circle in amber
+			styles.push(
+				"background-color: var(--ui-date-range-compare-bg)",
+				"color: var(--ui-date-range-compare-text)",
+				"border-radius: 9999px",
+			);
+		} else if (isCompareStart) {
+			// Comparison start: rounded left in amber
+			styles.push(
+				"background-color: var(--ui-date-range-compare-bg)",
+				"color: var(--ui-date-range-compare-text)",
+				"border-radius: 9999px 0 0 9999px",
+			);
+		} else if (isCompareEnd) {
+			// Comparison end: rounded right in amber
+			styles.push(
+				"background-color: var(--ui-date-range-compare-bg)",
+				"color: var(--ui-date-range-compare-text)",
+				"border-radius: 0 9999px 9999px 0",
+			);
+		} else if (inCompareRange) {
+			// In comparison range: amber highlight
+			styles.push(
+				"background-color: var(--ui-date-range-compare-highlight-bg)",
+				"color: inherit",
+			);
+		} else if (inComparePreview) {
+			// Comparison preview: lighter amber highlight
+			styles.push("background-color: var(--ui-date-range-compare-preview-bg)");
+		}
 
-    return html`
+		return html`
       <span
-        style="${styles.join('; ')}"
+        style="${styles.join("; ")}"
         @mouseenter="${() => this.handleDayHover(dateStr)}"
-        @pointerdown="${(e: PointerEvent) => { e.preventDefault(); this.handleDragStart(dateStr); }}"
+        @pointerdown="${(e: PointerEvent) => {
+					e.preventDefault();
+					this.handleDragStart(dateStr);
+				}}"
         @pointerup="${() => this.handleDragEnd(dateStr)}"
       >
         ${state.date.getDate()}
       </span>
     `;
-  };
+	};
 
-  // ---------------------------------------------------------------------------
-  // Navigation
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Navigation
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Navigate to the previous month.
-   */
-  private navigatePrev(): void {
-    this.currentMonth = subMonths(this.currentMonth, 1);
-  }
+	/**
+	 * Navigate to the previous month.
+	 */
+	private navigatePrev(): void {
+		this.currentMonth = subMonths(this.currentMonth, 1);
+	}
 
-  /**
-   * Navigate to the next month.
-   */
-  private navigateNext(): void {
-    this.currentMonth = addMonths(this.currentMonth, 1);
-  }
+	/**
+	 * Navigate to the next month.
+	 */
+	private navigateNext(): void {
+		this.currentMonth = addMonths(this.currentMonth, 1);
+	}
 
-  /**
-   * Compute the range heading showing the two visible months with en-dash.
-   * Examples: "January \u2013 February 2026" or "December 2025 \u2013 January 2026"
-   */
-  private get rangeHeading(): string {
-    const firstMonth = this.currentMonth;
-    const secondMonth = addMonths(this.currentMonth, 1);
+	/**
+	 * Compute the range heading showing the two visible months with en-dash.
+	 * Examples: "January \u2013 February 2026" or "December 2025 \u2013 January 2026"
+	 */
+	private get rangeHeading(): string {
+		const firstMonth = this.currentMonth;
+		const secondMonth = addMonths(this.currentMonth, 1);
 
-    const firstYear = getYear(firstMonth);
-    const secondYear = getYear(secondMonth);
+		const firstYear = getYear(firstMonth);
+		const secondYear = getYear(secondMonth);
 
-    const monthFormatter = new Intl.DateTimeFormat(this.effectiveLocale, { month: 'long' });
-    const firstName = monthFormatter.format(firstMonth);
-    const secondName = monthFormatter.format(secondMonth);
+		const monthFormatter = new Intl.DateTimeFormat(this.effectiveLocale, {
+			month: "long",
+		});
+		const firstName = monthFormatter.format(firstMonth);
+		const secondName = monthFormatter.format(secondMonth);
 
-    if (firstYear === secondYear) {
-      return `${firstName} \u2013 ${secondName} ${secondYear}`;
-    }
-    return `${firstName} ${firstYear} \u2013 ${secondName} ${secondYear}`;
-  }
+		if (firstYear === secondYear) {
+			return `${firstName} \u2013 ${secondName} ${secondYear}`;
+		}
+		return `${firstName} ${firstYear} \u2013 ${secondName} ${secondYear}`;
+	}
 
-  /**
-   * Handle date selection from a child calendar's change event.
-   * Extracts the ISO string and delegates to the state machine.
-   */
-  private handleCalendarSelect(e: Event): void {
-    const detail = (e as CustomEvent).detail;
-    if (!detail?.isoString) return;
-    this.handleDateClick(detail.isoString);
-  }
+	/**
+	 * Handle date selection from a child calendar's change event.
+	 * Extracts the ISO string and delegates to the state machine.
+	 */
+	private handleCalendarSelect(e: Event): void {
+		const detail = (e as CustomEvent).detail;
+		if (!detail?.isoString) return;
+		this.handleDateClick(detail.isoString);
+	}
 
-  // ---------------------------------------------------------------------------
-  // Popup management
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Popup management
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Open the calendar popup and position it via Floating UI.
-   * Focuses the first calendar after positioning for keyboard accessibility.
-   */
-  async openPopup(): Promise<void> {
-    if (this.disabled) return;
-    this.isOpen = true;
-    this.triggerElement = (this.shadowRoot?.activeElement as HTMLElement) || this.inputEl;
+	/**
+	 * Open the calendar popup and position it via Floating UI.
+	 * Focuses the first calendar after positioning for keyboard accessibility.
+	 */
+	async openPopup(): Promise<void> {
+		if (this.disabled) return;
+		this.isOpen = true;
+		this.triggerElement =
+			(this.shadowRoot?.activeElement as HTMLElement) || this.inputEl;
 
-    // Wait for popup to render, then promote to top layer, position, and focus
-    await this.updateComplete;
-    this.popupEl?.showPopover();
-    this.positionPopup();
-    requestAnimationFrame(() => {
-      this.focusCalendar();
-    });
-  }
+		// Wait for popup to render, then promote to top layer, position, and focus
+		await this.updateComplete;
+		this.popupEl?.showPopover();
+		this.positionPopup();
+		requestAnimationFrame(() => {
+			this.focusCalendar();
+		});
+	}
 
-  /**
-   * Close the calendar popup and restore focus to the trigger element.
-   * Clears hover preview state for clean reopen.
-   */
-  closePopup(): void {
-    try { this.popupEl?.hidePopover(); } catch { /* already hidden or removed */ }
-    this.isOpen = false;
-    this.hoveredDate = '';
-    requestAnimationFrame(() => {
-      this.triggerElement?.focus();
-      this.triggerElement = null;
-    });
-  }
+	/**
+	 * Close the calendar popup and restore focus to the trigger element.
+	 * Clears hover preview state for clean reopen.
+	 */
+	closePopup(): void {
+		try {
+			this.popupEl?.hidePopover();
+		} catch {
+			/* already hidden or removed */
+		}
+		this.isOpen = false;
+		this.hoveredDate = "";
+		requestAnimationFrame(() => {
+			this.triggerElement?.focus();
+			this.triggerElement = null;
+		});
+	}
 
-  /**
-   * Toggle the calendar popup open/close.
-   */
-  private togglePopup(): void {
-    if (this.isOpen) {
-      this.closePopup();
-    } else {
-      this.openPopup();
-    }
-  }
+	/**
+	 * Toggle the calendar popup open/close.
+	 */
+	private togglePopup(): void {
+		if (this.isOpen) {
+			this.closePopup();
+		} else {
+			this.openPopup();
+		}
+	}
 
-  /**
-   * Focus the first lui-calendar element inside the popup.
-   * The calendar manages its own internal keyboard navigation.
-   */
-  private focusCalendar(): void {
-    const calendar = this.shadowRoot?.querySelector('.popup lui-calendar') as HTMLElement | null;
-    calendar?.focus();
-  }
+	/**
+	 * Focus the first lui-calendar element inside the popup.
+	 * The calendar manages its own internal keyboard navigation.
+	 */
+	private focusCalendar(): void {
+		const calendar = this.shadowRoot?.querySelector(
+			".popup lui-calendar",
+		) as HTMLElement | null;
+		calendar?.focus();
+	}
 
-  /**
-   * Position the popup using Floating UI with flip/shift middleware.
-   * Uses fixed strategy to avoid clipping in scrollable containers.
-   */
-  private async positionPopup(): Promise<void> {
-    if (isServer) return;
-    if (!this.inputContainerEl || !this.popupEl) return;
+	/**
+	 * Position the popup using Floating UI with flip/shift middleware.
+	 * Uses fixed strategy to avoid clipping in scrollable containers.
+	 */
+	private async positionPopup(): Promise<void> {
+		if (isServer) return;
+		if (!this.inputContainerEl || !this.popupEl) return;
 
-    const { x, y } = await computePosition(this.inputContainerEl, this.popupEl, {
-      placement: 'bottom-start',
-      strategy: 'fixed',
-      middleware: [
-        offset(4),
-        flip({ fallbackPlacements: ['top-start'] }),
-        shift({ padding: 8 }),
-      ],
-    });
+		const { x, y } = await computePosition(
+			this.inputContainerEl,
+			this.popupEl,
+			{
+				placement: "bottom-start",
+				strategy: "fixed",
+				middleware: [
+					offset(4),
+					flip({ fallbackPlacements: ["top-start"] }),
+					shift({ padding: 8 }),
+				],
+			},
+		);
 
-    Object.assign(this.popupEl.style, {
-      left: `${x}px`,
-      top: `${y}px`,
-    });
-  }
+		Object.assign(this.popupEl.style, {
+			left: `${x}px`,
+			top: `${y}px`,
+		});
+	}
 
-  // ---------------------------------------------------------------------------
-  // Click-outside detection
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Click-outside detection
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Handle document clicks for closing popup when clicking outside.
-   * Uses composedPath() to work correctly with Shadow DOM boundaries.
-   */
-  private handleDocumentClick = (e: MouseEvent): void => {
-    if (this.isOpen && !e.composedPath().includes(this)) {
-      this.closePopup();
-    }
-  };
+	/**
+	 * Handle document clicks for closing popup when clicking outside.
+	 * Uses composedPath() to work correctly with Shadow DOM boundaries.
+	 */
+	private handleDocumentClick = (e: MouseEvent): void => {
+		if (this.isOpen && !e.composedPath().includes(this)) {
+			this.closePopup();
+		}
+	};
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    if (!isServer) {
-      document.addEventListener('click', this.handleDocumentClick);
-    }
-  }
+	override connectedCallback(): void {
+		super.connectedCallback();
+		if (!isServer) {
+			document.addEventListener("click", this.handleDocumentClick);
+		}
+	}
 
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (!isServer) {
-      document.removeEventListener('click', this.handleDocumentClick);
-    }
-  }
+	override disconnectedCallback(): void {
+		super.disconnectedCallback();
+		if (!isServer) {
+			document.removeEventListener("click", this.handleDocumentClick);
+		}
+	}
 
-  // ---------------------------------------------------------------------------
-  // Keyboard handling
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Keyboard handling
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Handle keyboard events on the popup.
-   * Traps Tab/Shift+Tab within the popup and handles Escape to close.
-   * Respects calendar's defaultPrevented for Escape key (view drilling).
-   */
-  private handlePopupKeydown(e: KeyboardEvent): void {
-    if (e.key === 'Tab') {
-      // Trap focus within the popup — keep focus on the calendar
-      e.preventDefault();
-      this.focusCalendar();
-    } else if (e.key === 'Escape') {
-      // If the calendar already handled Escape (e.g., drilling from year to month view),
-      // don't close the popup
-      if (!e.defaultPrevented) {
-        this.closePopup();
-      }
-    }
-  }
+	/**
+	 * Handle keyboard events on the popup.
+	 * Traps Tab/Shift+Tab within the popup and handles Escape to close.
+	 * Respects calendar's defaultPrevented for Escape key (view drilling).
+	 */
+	private handlePopupKeydown(e: KeyboardEvent): void {
+		if (e.key === "Tab") {
+			// Trap focus within the popup — keep focus on the calendar
+			e.preventDefault();
+			this.focusCalendar();
+		} else if (e.key === "Escape") {
+			// If the calendar already handled Escape (e.g., drilling from year to month view),
+			// don't close the popup
+			if (!e.defaultPrevented) {
+				this.closePopup();
+			}
+		}
+	}
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Render
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Render the dual-calendar popup content (header + calendars).
-   */
-  private renderCalendarContent() {
-    const leftDisplayMonth = format(this.currentMonth, 'yyyy-MM-dd');
-    const rightDisplayMonth = format(addMonths(this.currentMonth, 1), 'yyyy-MM-dd');
+	/**
+	 * Render the dual-calendar popup content (header + calendars).
+	 */
+	private renderCalendarContent() {
+		const leftDisplayMonth = format(this.currentMonth, "yyyy-MM-dd");
+		const rightDisplayMonth = format(
+			addMonths(this.currentMonth, 1),
+			"yyyy-MM-dd",
+		);
 
-    return html`
+		return html`
       <div class="range-header">
         <button
           class="nav-button"
@@ -1479,36 +1602,49 @@ export class DateRangePicker extends TailwindElement {
           </svg>
         </button>
       </div>
-      ${this.comparison ? html`
+      ${
+				this.comparison
+					? html`
         <div class="comparison-toggle">
           <button
             type="button"
-            class="toggle-button ${this.selectionTarget === 'primary' ? 'toggle-active toggle-primary' : ''}"
-            @click="${() => { this.selectionTarget = 'primary'; }}"
+            class="toggle-button ${this.selectionTarget === "primary" ? "toggle-active toggle-primary" : ""}"
+            @click="${() => {
+							this.selectionTarget = "primary";
+						}}"
           >Primary Range</button>
           <button
             type="button"
-            class="toggle-button ${this.selectionTarget === 'comparison' ? 'toggle-active toggle-comparison' : ''}"
-            @click="${() => { this.selectionTarget = 'comparison'; }}"
+            class="toggle-button ${this.selectionTarget === "comparison" ? "toggle-active toggle-comparison" : ""}"
+            @click="${() => {
+							this.selectionTarget = "comparison";
+						}}"
           >Comparison Range</button>
         </div>
-      ` : nothing}
+      `
+					: nothing
+			}
       <div class="popup-body">
-        ${this.effectivePresets.length > 0
-          ? html`
+        ${
+					this.effectivePresets.length > 0
+						? html`
             <div class="preset-sidebar">
-              ${this.effectivePresets.map(preset => html`
+              ${this.effectivePresets.map(
+								(preset) => html`
                 <button
                   type="button"
                   class="preset-button"
                   ?disabled="${this.isPresetDisabled(preset)}"
                   @click="${() => this.handlePresetSelect(preset)}"
                 >${preset.label}</button>
-              `)}
+              `,
+							)}
             </div>
-          ` : nothing}
+          `
+						: nothing
+				}
         <div
-          class="calendars-wrapper ${this.isDragging ? 'dragging' : ''}"
+          class="calendars-wrapper ${this.isDragging ? "dragging" : ""}"
           @mouseleave="${this.clearHoverPreview}"
         >
           <lui-calendar
@@ -1533,38 +1669,45 @@ export class DateRangePicker extends TailwindElement {
       </div>
       <div class="popup-footer">
         <span class="footer-status">${this.durationText || this.selectionStatus}</span>
-        ${this.rangeState === 'complete' || (this.comparison && this.compareRangeState === 'complete')
-          ? html`
+        ${
+					this.rangeState === "complete" ||
+					(this.comparison && this.compareRangeState === "complete")
+						? html`
               <button
                 type="button"
                 class="footer-clear-button"
                 @click=${this.handleClear}
               >Clear</button>
             `
-          : nothing}
+						: nothing
+				}
       </div>
     `;
-  }
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div class="date-range-wrapper">
-        ${this.label
-          ? html`
+        ${
+					this.label
+						? html`
               <label
                 for=${this.inputId}
                 class="date-range-label"
               >
                 ${this.label}
-                ${this.required
-                  ? html`<span class="required-indicator">*</span>`
-                  : nothing}
+                ${
+									this.required
+										? html`<span class="required-indicator">*</span>`
+										: nothing
+								}
               </label>
             `
-          : nothing}
+						: nothing
+				}
 
         <div
-          class="input-container ${this.hasError ? 'container-error' : ''} ${this.disabled ? 'container-disabled' : ''}"
+          class="input-container ${this.hasError ? "container-error" : ""} ${this.disabled ? "container-disabled" : ""}"
           @click="${this.openPopup}"
         >
           <input
@@ -1574,19 +1717,22 @@ export class DateRangePicker extends TailwindElement {
             placeholder=${this.effectivePlaceholder}
             readonly
             ?disabled=${this.disabled}
-            aria-invalid=${this.hasError ? 'true' : nothing}
+            aria-invalid=${this.hasError ? "true" : nothing}
             aria-errormessage=${this.hasError ? `${this.inputId}-error` : nothing}
-            aria-describedby=${this.hasError
-              ? `${this.inputId}-error`
-              : this.helperText
-                ? `${this.inputId}-helper`
-                : nothing}
-            aria-label=${!this.label ? 'Date range' : nothing}
-            aria-disabled=${this.disabled ? 'true' : nothing}
+            aria-describedby=${
+							this.hasError
+								? `${this.inputId}-error`
+								: this.helperText
+									? `${this.inputId}-helper`
+									: nothing
+						}
+            aria-label=${!this.label ? "Date range" : nothing}
+            aria-disabled=${this.disabled ? "true" : nothing}
           />
 
-          ${this.startDate && !this.disabled
-            ? html`
+          ${
+						this.startDate && !this.disabled
+							? html`
                 <button
                   type="button"
                   class="action-button"
@@ -1598,14 +1744,18 @@ export class DateRangePicker extends TailwindElement {
                   </svg>
                 </button>
               `
-            : nothing}
+							: nothing
+					}
 
           <button
             type="button"
             class="action-button"
             aria-label="Open calendar"
             ?disabled=${this.disabled}
-            @click=${(e: Event) => { e.stopPropagation(); this.togglePopup(); }}
+            @click=${(e: Event) => {
+							e.stopPropagation();
+							this.togglePopup();
+						}}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" class="action-icon">
               ${this.calendarIcon}
@@ -1613,27 +1763,32 @@ export class DateRangePicker extends TailwindElement {
           </button>
         </div>
 
-        ${this.helperText && !this.hasError
-          ? html`
+        ${
+					this.helperText && !this.hasError
+						? html`
               <span
                 id="${this.inputId}-helper"
                 class="helper-text"
               >${this.helperText}</span>
             `
-          : nothing}
+						: nothing
+				}
 
-        ${this.hasError && this.displayError
-          ? html`
+        ${
+					this.hasError && this.displayError
+						? html`
               <span
                 id="${this.inputId}-error"
                 class="error-text"
                 role="alert"
               >${this.displayError}</span>
             `
-          : nothing}
+						: nothing
+				}
 
-        ${this.isOpen
-          ? html`
+        ${
+					this.isOpen
+						? html`
               <div
                 class="popup"
                 popover="manual"
@@ -1646,15 +1801,20 @@ export class DateRangePicker extends TailwindElement {
                 ${this.renderCalendarContent()}
               </div>
             `
-          : nothing}
+						: nothing
+				}
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-date-range-picker")) {
+	customElements.define("lui-date-range-picker", DateRangePicker);
 }
 
 // TypeScript global interface declaration for HTMLElementTagNameMap
 declare global {
-  interface HTMLElementTagNameMap {
-    'lui-date-range-picker': DateRangePicker;
-  }
+	interface HTMLElementTagNameMap {
+		"lui-date-range-picker": DateRangePicker;
+	}
 }

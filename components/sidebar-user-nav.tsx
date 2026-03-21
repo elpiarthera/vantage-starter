@@ -1,7 +1,6 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
-import { ChevronUp } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import {
@@ -16,7 +15,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export function SidebarUserNav() {
 	const { user, isLoaded } = useUser();
@@ -29,8 +27,8 @@ export function SidebarUserNav() {
 				<SidebarMenuItem>
 					<SidebarMenuButton className="h-10 min-h-[44px] justify-between">
 						<div className="flex flex-row gap-2 items-center">
-							<Skeleton className="size-6 rounded-full" />
-							<Skeleton className="h-4 w-24" />
+							<div className="animate-pulse bg-muted rounded-full size-6" />
+							<div className="animate-pulse bg-muted rounded h-4 w-24" />
 						</div>
 					</SidebarMenuButton>
 				</SidebarMenuItem>
@@ -63,7 +61,18 @@ export function SidebarUserNav() {
 								className="rounded-full"
 							/>
 							<span className="truncate text-sm">{displayName}</span>
-							<ChevronUp className="ml-auto size-4" aria-hidden="true" />
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								className="ml-auto shrink-0"
+								aria-hidden="true"
+							>
+								<path d="M18 15l-6-6-6 6" />
+							</svg>
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent

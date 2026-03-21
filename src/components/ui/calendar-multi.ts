@@ -6,11 +6,21 @@
  * Heading shows month range with en-dash (e.g., "January - March 2026").
  */
 
-import { html, css, nothing, isServer, type CSSResultGroup } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles, dispatchCustomEvent } from '@lit-ui/core';
-import { addMonths, subMonths, getYear, getMonth, format } from './date-utils.js';
-import './calendar.js';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { type CSSResultGroup, css, html, isServer } from "lit";
+import { property, state } from "lit/decorators.js";
+import {
+	addMonths,
+	format,
+	getMonth,
+	getYear,
+	subMonths,
+} from "./date-utils.js";
+import "./calendar.js";
 
 /**
  * Multi-month calendar display component.
@@ -27,9 +37,9 @@ import './calendar.js';
  * @fires month-change - Dispatched when navigation changes the displayed months
  */
 export class CalendarMulti extends TailwindElement {
-  static override styles: CSSResultGroup = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles: CSSResultGroup = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
         container-type: inline-size;
@@ -100,153 +110,155 @@ export class CalendarMulti extends TailwindElement {
         }
       }
     `,
-  ];
+	];
 
-  /**
-   * Number of months to display (clamped to 2-3).
-   */
-  @property({ type: Number })
-  months = 2;
+	/**
+	 * Number of months to display (clamped to 2-3).
+	 */
+	@property({ type: Number })
+	months = 2;
 
-  /**
-   * Selected date as ISO string (YYYY-MM-DD). Forwarded to child calendars.
-   */
-  @property({ type: String })
-  value = '';
+	/**
+	 * Selected date as ISO string (YYYY-MM-DD). Forwarded to child calendars.
+	 */
+	@property({ type: String })
+	value = "";
 
-  /**
-   * BCP 47 locale tag for localization. Forwarded to child calendars.
-   */
-  @property({ type: String })
-  locale = '';
+	/**
+	 * BCP 47 locale tag for localization. Forwarded to child calendars.
+	 */
+	@property({ type: String })
+	locale = "";
 
-  /**
-   * Minimum selectable date as ISO string (YYYY-MM-DD). Forwarded to child calendars.
-   */
-  @property({ type: String, attribute: 'min-date' })
-  minDate = '';
+	/**
+	 * Minimum selectable date as ISO string (YYYY-MM-DD). Forwarded to child calendars.
+	 */
+	@property({ type: String, attribute: "min-date" })
+	minDate = "";
 
-  /**
-   * Maximum selectable date as ISO string (YYYY-MM-DD). Forwarded to child calendars.
-   */
-  @property({ type: String, attribute: 'max-date' })
-  maxDate = '';
+	/**
+	 * Maximum selectable date as ISO string (YYYY-MM-DD). Forwarded to child calendars.
+	 */
+	@property({ type: String, attribute: "max-date" })
+	maxDate = "";
 
-  /**
-   * Array of specific disabled dates as ISO strings. Forwarded to child calendars.
-   */
-  @property({ type: Array, attribute: false })
-  disabledDates: string[] = [];
+	/**
+	 * Array of specific disabled dates as ISO strings. Forwarded to child calendars.
+	 */
+	@property({ type: Array, attribute: false })
+	disabledDates: string[] = [];
 
-  /**
-   * Override the first day of week. Forwarded to child calendars.
-   */
-  @property({ type: String, attribute: 'first-day-of-week' })
-  firstDayOfWeekOverride = '';
+	/**
+	 * Override the first day of week. Forwarded to child calendars.
+	 */
+	@property({ type: String, attribute: "first-day-of-week" })
+	firstDayOfWeekOverride = "";
 
-  /**
-   * Whether to show ISO week numbers. Forwarded to child calendars.
-   */
-  @property({ type: Boolean, attribute: 'show-week-numbers' })
-  showWeekNumbers = false;
+	/**
+	 * Whether to show ISO week numbers. Forwarded to child calendars.
+	 */
+	@property({ type: Boolean, attribute: "show-week-numbers" })
+	showWeekNumbers = false;
 
-  /**
-   * The base month for the multi-month display.
-   * The first calendar shows this month; subsequent calendars show consecutive months.
-   */
-  @state()
-  private currentMonth = new Date();
+	/**
+	 * The base month for the multi-month display.
+	 * The first calendar shows this month; subsequent calendars show consecutive months.
+	 */
+	@state()
+	private currentMonth = new Date();
 
-  /**
-   * Clamped month count (2-3).
-   */
-  private get monthCount(): number {
-    return Math.max(2, Math.min(3, this.months));
-  }
+	/**
+	 * Clamped month count (2-3).
+	 */
+	private get monthCount(): number {
+		return Math.max(2, Math.min(3, this.months));
+	}
 
-  /**
-   * Navigate to the previous month.
-   */
-  private navigatePrev(): void {
-    this.currentMonth = subMonths(this.currentMonth, 1);
-    dispatchCustomEvent(this, 'month-change', {
-      year: getYear(this.currentMonth),
-      month: getMonth(this.currentMonth),
-    });
-  }
+	/**
+	 * Navigate to the previous month.
+	 */
+	private navigatePrev(): void {
+		this.currentMonth = subMonths(this.currentMonth, 1);
+		dispatchCustomEvent(this, "month-change", {
+			year: getYear(this.currentMonth),
+			month: getMonth(this.currentMonth),
+		});
+	}
 
-  /**
-   * Navigate to the next month.
-   */
-  private navigateNext(): void {
-    this.currentMonth = addMonths(this.currentMonth, 1);
-    dispatchCustomEvent(this, 'month-change', {
-      year: getYear(this.currentMonth),
-      month: getMonth(this.currentMonth),
-    });
-  }
+	/**
+	 * Navigate to the next month.
+	 */
+	private navigateNext(): void {
+		this.currentMonth = addMonths(this.currentMonth, 1);
+		dispatchCustomEvent(this, "month-change", {
+			year: getYear(this.currentMonth),
+			month: getMonth(this.currentMonth),
+		});
+	}
 
-  /**
-   * Resolved locale, falling back to navigator.language or 'en-US'.
-   */
-  private get effectiveLocale(): string {
-    return this.locale || (isServer ? 'en-US' : navigator.language);
-  }
+	/**
+	 * Resolved locale, falling back to navigator.language or 'en-US'.
+	 */
+	private get effectiveLocale(): string {
+		return this.locale || (isServer ? "en-US" : navigator.language);
+	}
 
-  /**
-   * Compute the range heading showing first and last month with en-dash.
-   * Examples: "January - February 2026" or "January - March 2026"
-   * If months span years: "December 2025 - February 2026"
-   */
-  private get rangeHeading(): string {
-    const firstMonth = this.currentMonth;
-    const lastMonth = addMonths(this.currentMonth, this.monthCount - 1);
+	/**
+	 * Compute the range heading showing first and last month with en-dash.
+	 * Examples: "January - February 2026" or "January - March 2026"
+	 * If months span years: "December 2025 - February 2026"
+	 */
+	private get rangeHeading(): string {
+		const firstMonth = this.currentMonth;
+		const lastMonth = addMonths(this.currentMonth, this.monthCount - 1);
 
-    const firstYear = getYear(firstMonth);
-    const lastYear = getYear(lastMonth);
+		const firstYear = getYear(firstMonth);
+		const lastYear = getYear(lastMonth);
 
-    const monthFormatter = new Intl.DateTimeFormat(this.effectiveLocale, { month: 'long' });
-    const firstName = monthFormatter.format(firstMonth);
-    const lastName = monthFormatter.format(lastMonth);
+		const monthFormatter = new Intl.DateTimeFormat(this.effectiveLocale, {
+			month: "long",
+		});
+		const firstName = monthFormatter.format(firstMonth);
+		const lastName = monthFormatter.format(lastMonth);
 
-    if (firstYear === lastYear) {
-      return `${firstName} \u2013 ${lastName} ${lastYear}`;
-    }
-    return `${firstName} ${firstYear} \u2013 ${lastName} ${lastYear}`;
-  }
+		if (firstYear === lastYear) {
+			return `${firstName} \u2013 ${lastName} ${lastYear}`;
+		}
+		return `${firstName} ${firstYear} \u2013 ${lastName} ${lastYear}`;
+	}
 
-  /**
-   * Handle date selection events from child calendars.
-   * Re-dispatches the event from this component.
-   */
-  private handleDateSelect(e: Event): void {
-    const detail = (e as CustomEvent).detail;
-    // Update value to reflect selection
-    this.value = detail?.isoString ?? '';
-    dispatchCustomEvent(this, 'change', detail);
-  }
+	/**
+	 * Handle date selection events from child calendars.
+	 * Re-dispatches the event from this component.
+	 */
+	private handleDateSelect(e: Event): void {
+		const detail = (e as CustomEvent).detail;
+		// Update value to reflect selection
+		this.value = detail?.isoString ?? "";
+		dispatchCustomEvent(this, "change", detail);
+	}
 
-  /**
-   * Handle week selection events from child calendars.
-   * Re-dispatches the event from this component.
-   */
-  private handleWeekSelect(e: Event): void {
-    const detail = (e as CustomEvent).detail;
-    dispatchCustomEvent(this, 'week-select', detail);
-  }
+	/**
+	 * Handle week selection events from child calendars.
+	 * Re-dispatches the event from this component.
+	 */
+	private handleWeekSelect(e: Event): void {
+		const detail = (e as CustomEvent).detail;
+		dispatchCustomEvent(this, "week-select", detail);
+	}
 
-  /**
-   * Generate the display-month ISO string for a given month offset.
-   */
-  private getDisplayMonth(offset: number): string {
-    const month = addMonths(this.currentMonth, offset);
-    return format(month, 'yyyy-MM-dd');
-  }
+	/**
+	 * Generate the display-month ISO string for a given month offset.
+	 */
+	private getDisplayMonth(offset: number): string {
+		const month = addMonths(this.currentMonth, offset);
+		return format(month, "yyyy-MM-dd");
+	}
 
-  protected override render() {
-    const months = Array.from({ length: this.monthCount }, (_, i) => i);
+	protected override render() {
+		const months = Array.from({ length: this.monthCount }, (_, i) => i);
 
-    return html`
+		return html`
       <div>
         <div class="multi-header">
           <button
@@ -271,7 +283,7 @@ export class CalendarMulti extends TailwindElement {
         </div>
         <div class="multi-wrapper">
           ${months.map(
-            (offset) => html`
+						(offset) => html`
               <lui-calendar
                 display-month="${this.getDisplayMonth(offset)}"
                 hide-navigation
@@ -285,10 +297,20 @@ export class CalendarMulti extends TailwindElement {
                 @ui-change="${this.handleDateSelect}"
                 @ui-week-select="${this.handleWeekSelect}"
               ></lui-calendar>
-            `
-          )}
+            `,
+					)}
         </div>
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-calendar-multi")) {
+	customElements.define("lui-calendar-multi", CalendarMulti);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-calendar-multi": CalendarMulti;
+	}
 }

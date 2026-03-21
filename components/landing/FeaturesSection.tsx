@@ -1,6 +1,5 @@
 "use client";
 
-import { Bot, Coins, Globe, Image, Sparkles, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type React from "react";
 import { useEffect, useRef } from "react";
@@ -16,37 +15,143 @@ type FeatureItem = {
 
 const FEATURES: FeatureItem[] = [
 	{
-		icon: <Sparkles className="size-5" aria-hidden="true" />,
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+				<path d="M5 3v4" />
+				<path d="M19 17v4" />
+				<path d="M3 5h4" />
+				<path d="M17 19h4" />
+			</svg>
+		),
 		titleKey: "ai_renders_title",
 		descKey: "ai_renders_desc",
 		size: "large",
 	},
 	{
-		icon: <Zap className="size-5" aria-hidden="true" />,
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+			</svg>
+		),
 		titleKey: "realtime_title",
 		descKey: "realtime_desc",
 		size: "standard",
 	},
 	{
-		icon: <Coins className="size-5" aria-hidden="true" />,
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<circle cx="8" cy="8" r="6" />
+				<path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
+				<path d="M7 6h1v4" />
+				<path d="m16.71 13.88.7.71-2.82 2.82" />
+			</svg>
+		),
 		titleKey: "credits_title",
 		descKey: "credits_desc",
 		size: "standard",
 	},
 	{
-		icon: <Image className="size-5" aria-hidden="true" />,
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+				<circle cx="9" cy="9" r="2" />
+				<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+			</svg>
+		),
 		titleKey: "media_title",
 		descKey: "media_desc",
 		size: "large",
 	},
 	{
-		icon: <Bot className="size-5" aria-hidden="true" />,
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M12 8V4H8" />
+				<rect width="16" height="12" x="4" y="8" rx="2" />
+				<path d="M2 14h2" />
+				<path d="M20 14h2" />
+				<path d="M15 13v2" />
+				<path d="M9 13v2" />
+			</svg>
+		),
 		titleKey: "agents_title",
 		descKey: "agents_desc",
 		size: "standard",
 	},
 	{
-		icon: <Globe className="size-5" aria-hidden="true" />,
+		icon: (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<circle cx="12" cy="12" r="10" />
+				<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+				<path d="M2 12h20" />
+			</svg>
+		),
 		titleKey: "i18n_title",
 		descKey: "i18n_desc",
 		size: "standard",

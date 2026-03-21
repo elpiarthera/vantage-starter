@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import type React from "react";
+import { LitUILoader } from "@/components/LitUILoader";
 import { RouteAnnouncer } from "@/components/shared/RouteAnnouncer";
 import { SkipLink } from "@/components/shared/SkipLink";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -100,6 +101,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				<link rel="prefetch" as="style" href="/styles/presets/arctic.css" />
 			</head>
 			<body>
+				<LitUILoader />
 				<SkipLink />
 				<ThemeProvider
 					attribute="class"

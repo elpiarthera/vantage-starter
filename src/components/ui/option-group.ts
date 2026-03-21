@@ -13,30 +13,32 @@
  *   </lui-option-group>
  * </lui-select>
  */
-import { html, css, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
+
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, nothing } from "lit";
+import { property } from "lit/decorators.js";
 
 /**
  * Groups options under a labeled header with proper ARIA structure.
  */
 export class OptionGroup extends TailwindElement {
-  /**
-   * Label text displayed as the group header.
-   * Screen readers will announce this when entering the group.
-   * @default ''
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Label text displayed as the group header.
+	 * Screen readers will announce this when entering the group.
+	 * @default ''
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * Unique ID for aria-labelledby reference.
-   */
-  private groupId = `lui-option-group-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for aria-labelledby reference.
+	 */
+	private groupId =
+		`lui-option-group-${Math.random().toString(36).substr(2, 9)}`;
 
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
       }
@@ -65,13 +67,14 @@ export class OptionGroup extends TailwindElement {
         display: block;
       }
     `,
-  ];
+	];
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div role="group" aria-labelledby=${this.label ? this.groupId : nothing}>
-        ${this.label
-          ? html`
+        ${
+					this.label
+						? html`
               <div
                 id=${this.groupId}
                 class="group-label"
@@ -81,11 +84,22 @@ export class OptionGroup extends TailwindElement {
                 ${this.label}
               </div>
             `
-          : nothing}
+						: nothing
+				}
         <div class="group-content">
           <slot></slot>
         </div>
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-option-group")) {
+	customElements.define("lui-option-group", OptionGroup);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-option-group": OptionGroup;
+	}
 }

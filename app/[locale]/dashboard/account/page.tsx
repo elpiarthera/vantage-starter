@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { Suspense } from "react";
 import { AccountTabs } from "@/components/dashboard/account/AccountTabs";
 import { ErrorState } from "@/components/dashboard/shared/ErrorState";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AccountPage() {
 	const { user, isLoaded } = useUser();
@@ -18,16 +17,16 @@ export default function AccountPage() {
 				<div className="border-b border-border bg-card">
 					<div className="container mx-auto px-4 py-6 md:px-6 md:py-8">
 						<div className="max-w-6xl mx-auto space-y-2">
-							<Skeleton className="h-8 w-48" />
-							<Skeleton className="h-4 w-64" />
+							<div className="animate-pulse bg-muted rounded h-8 w-48" />
+							<div className="animate-pulse bg-muted rounded h-4 w-64" />
 						</div>
 					</div>
 				</div>
 
 				{/* Tabs Skeleton */}
 				<div className="container mx-auto px-4 py-6 md:px-6 md:py-8 space-y-6">
-					<Skeleton className="h-12 w-full" />
-					<Skeleton className="h-64 w-full" />
+					<div className="animate-pulse bg-muted rounded h-12 w-full" />
+					<div className="animate-pulse bg-muted rounded h-64 w-full" />
 				</div>
 			</div>
 		);

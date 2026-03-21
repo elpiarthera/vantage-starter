@@ -1,11 +1,9 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +34,7 @@ export function LandingNav() {
 					{/* Logo — text with subtle glow halo */}
 					<Link
 						href="/"
-						className="relative font-heading font-bold text-foreground tracking-[-0.02em]"
+						className="relative font-heading font-bold text-foreground tracking-[-0.02em] no-underline"
 						aria-label="VantageStarter home"
 					>
 						{/* Logo glow layer */}
@@ -76,22 +74,21 @@ export function LandingNav() {
 					<div className="flex items-center gap-2">
 						<LanguageSwitcher />
 						<ThemeToggle />
-						<Link href="/sign-in" className="hidden sm:block">
-							<Button
-								variant="ghost"
-								size="sm"
-								className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out-expo"
-							>
+						<Link
+							href="/sign-in"
+							className="hidden sm:inline-flex no-underline"
+						>
+							<ui-button variant="ghost" size="sm">
 								{t("nav.sign_in")}
-							</Button>
+							</ui-button>
 						</Link>
-						<Link href="/sign-up" className="hidden sm:block">
-							<Button
-								size="sm"
-								className="h-8 px-4 text-sm rounded-full bg-primary text-primary-foreground btn-shadow active-scale transition-all duration-150 ease-out-expo"
-							>
+						<Link
+							href="/sign-up"
+							className="hidden sm:inline-flex no-underline"
+						>
+							<ui-button variant="primary" size="sm">
 								{t("nav.get_started")}
-							</Button>
+							</ui-button>
 						</Link>
 
 						{/* Mobile hamburger */}
@@ -104,9 +101,38 @@ export function LandingNav() {
 							onClick={() => setMobileOpen((v) => !v)}
 						>
 							{mobileOpen ? (
-								<X className="size-5" aria-hidden="true" />
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M18 6 6 18" />
+									<path d="m6 6 12 12" />
+								</svg>
 							) : (
-								<Menu className="size-5" aria-hidden="true" />
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									aria-hidden="true"
+								>
+									<line x1="4" x2="20" y1="12" y2="12" />
+									<line x1="4" x2="20" y1="6" y2="6" />
+									<line x1="4" x2="20" y1="18" y2="18" />
+								</svg>
 							)}
 						</button>
 					</div>
@@ -126,7 +152,7 @@ export function LandingNav() {
 					<div className="flex h-16 items-center justify-between px-6 lg:px-12 border-b border-border">
 						<Link
 							href="/"
-							className="font-heading font-bold text-foreground tracking-[-0.02em]"
+							className="font-heading font-bold text-foreground tracking-[-0.02em] no-underline"
 							onClick={() => setMobileOpen(false)}
 						>
 							VantageStarter
@@ -137,7 +163,21 @@ export function LandingNav() {
 							className="flex items-center justify-center size-9 text-muted-foreground hover:text-foreground transition-colors duration-150"
 							onClick={() => setMobileOpen(false)}
 						>
-							<X className="size-5" aria-hidden="true" />
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M18 6 6 18" />
+								<path d="m6 6 12 12" />
+							</svg>
 						</button>
 					</div>
 
@@ -171,22 +211,23 @@ export function LandingNav() {
 
 					{/* CTA buttons */}
 					<div className="px-6 pb-8 flex flex-col gap-3">
-						<Link href="/sign-in" onClick={() => setMobileOpen(false)}>
-							<Button
-								variant="ghost"
-								size="lg"
-								className="w-full text-muted-foreground hover:text-foreground"
-							>
+						<Link
+							href="/sign-in"
+							onClick={() => setMobileOpen(false)}
+							className="w-full no-underline"
+						>
+							<ui-button variant="ghost" size="lg" class="w-full">
 								{t("nav.sign_in")}
-							</Button>
+							</ui-button>
 						</Link>
-						<Link href="/sign-up" onClick={() => setMobileOpen(false)}>
-							<Button
-								size="lg"
-								className="w-full rounded-full bg-primary text-primary-foreground btn-shadow active-scale"
-							>
+						<Link
+							href="/sign-up"
+							onClick={() => setMobileOpen(false)}
+							className="w-full no-underline"
+						>
+							<ui-button variant="primary" size="lg" class="w-full">
 								{t("nav.get_started")}
-							</Button>
+							</ui-button>
 						</Link>
 					</div>
 				</div>

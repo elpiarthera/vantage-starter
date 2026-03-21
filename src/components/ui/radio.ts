@@ -22,15 +22,18 @@
  * @slot default - Custom label content (alternative to label property)
  */
 
-import { html, css, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
-import { dispatchCustomEvent } from '@lit-ui/core';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { css, html, nothing } from "lit";
+import { property } from "lit/decorators.js";
 
 /**
  * Radio size types for circle dimensions and label typography.
  */
-export type RadioSize = 'sm' | 'md' | 'lg';
+export type RadioSize = "sm" | "md" | "lg";
 
 /**
  * An accessible radio button component with animated dot transition.
@@ -39,57 +42,57 @@ export type RadioSize = 'sm' | 'md' | 'lg';
  * @slot default - Custom label content (alternative to label property)
  */
 export class Radio extends TailwindElement {
-  // NOT form-associated -- RadioGroup owns form participation
-  // NO internals / attachInternals()
+	// NOT form-associated -- RadioGroup owns form participation
+	// NO internals / attachInternals()
 
-  /**
-   * Unique ID for label association.
-   */
-  private radioId = `lui-radio-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for label association.
+	 */
+	private radioId = `lui-radio-${Math.random().toString(36).substr(2, 9)}`;
 
-  /**
-   * The value this radio represents.
-   * @default ''
-   */
-  @property({ type: String })
-  value = '';
+	/**
+	 * The value this radio represents.
+	 * @default ''
+	 */
+	@property({ type: String })
+	value = "";
 
-  /**
-   * Whether the radio is in the checked state.
-   * Set by RadioGroup, not by the radio itself.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  checked = false;
+	/**
+	 * Whether the radio is in the checked state.
+	 * Set by RadioGroup, not by the radio itself.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	checked = false;
 
-  /**
-   * Whether the radio is disabled.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether the radio is disabled.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Label text displayed next to the radio.
-   * @default ''
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Label text displayed next to the radio.
+	 * @default ''
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * The size of the radio affecting circle dimensions and label typography.
-   * @default 'md'
-   */
-  @property({ type: String })
-  size: RadioSize = 'md';
+	/**
+	 * The size of the radio affecting circle dimensions and label typography.
+	 * @default 'md'
+	 */
+	@property({ type: String })
+	size: RadioSize = "md";
 
-  /**
-   * Static styles for the radio component.
-   * Uses CSS custom properties from the radio token block.
-   */
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	/**
+	 * Static styles for the radio component.
+	 * Uses CSS custom properties from the radio token block.
+	 */
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: inline-block;
       }
@@ -210,41 +213,41 @@ export class Radio extends TailwindElement {
         }
       }
     `,
-  ];
+	];
 
-  /**
-   * Handle click events on the radio wrapper.
-   * Click handler is on the wrapper so clicking the label also triggers selection.
-   * Radio does NOT toggle its own checked state -- it dispatches ui-radio-change
-   * and the RadioGroup handles mutual exclusion.
-   */
-  private handleClick(): void {
-    if (this.disabled) return;
-    dispatchCustomEvent(this, 'ui-radio-change', {
-      value: this.value,
-    });
-  }
+	/**
+	 * Handle click events on the radio wrapper.
+	 * Click handler is on the wrapper so clicking the label also triggers selection.
+	 * Radio does NOT toggle its own checked state -- it dispatches ui-radio-change
+	 * and the RadioGroup handles mutual exclusion.
+	 */
+	private handleClick(): void {
+		if (this.disabled) return;
+		dispatchCustomEvent(this, "ui-radio-change", {
+			value: this.value,
+		});
+	}
 
-  /**
-   * Handle keyboard events for Space key only.
-   * Per W3C APG radio spec, Space checks the focused radio.
-   * Arrow keys are handled by the RadioGroup, not individual radios.
-   * preventDefault stops page scroll on Space.
-   */
-  private handleKeyDown(e: KeyboardEvent): void {
-    if (e.key === ' ') {
-      e.preventDefault();
-      this.handleClick();
-    }
-  }
+	/**
+	 * Handle keyboard events for Space key only.
+	 * Per W3C APG radio spec, Space checks the focused radio.
+	 * Arrow keys are handled by the RadioGroup, not individual radios.
+	 * preventDefault stops page scroll on Space.
+	 */
+	private handleKeyDown(e: KeyboardEvent): void {
+		if (e.key === " ") {
+			e.preventDefault();
+			this.handleClick();
+		}
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div class="radio-wrapper" @click=${this.handleClick}>
         <div
           role="radio"
-          aria-checked=${this.checked ? 'true' : 'false'}
-          aria-disabled=${this.disabled ? 'true' : nothing}
+          aria-checked=${this.checked ? "true" : "false"}
+          aria-disabled=${this.disabled ? "true" : nothing}
           aria-labelledby="${this.radioId}-label"
           tabindex="-1"
           class="radio-circle circle-${this.size}"
@@ -252,18 +255,30 @@ export class Radio extends TailwindElement {
         >
           <span class="radio-dot dot-${this.size}"></span>
         </div>
-        ${this.label
-          ? html`<label
+        ${
+					this.label
+						? html`<label
               id="${this.radioId}-label"
               class="radio-label label-${this.size}"
               >${this.label}</label
             >`
-          : html`<label
+						: html`<label
               id="${this.radioId}-label"
               class="radio-label label-${this.size}"
               ><slot></slot
-            ></label>`}
+            ></label>`
+				}
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-radio")) {
+	customElements.define("lui-radio", Radio);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-radio": Radio;
+	}
 }

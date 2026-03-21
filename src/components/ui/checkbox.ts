@@ -22,15 +22,18 @@
  * ```
  */
 
-import { html, css, nothing, isServer, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
-import { dispatchCustomEvent } from '@lit-ui/core';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { css, html, isServer, nothing, type PropertyValues } from "lit";
+import { property, state } from "lit/decorators.js";
 
 /**
  * Checkbox size types for box dimensions and label typography.
  */
-export type CheckboxSize = 'sm' | 'md' | 'lg';
+export type CheckboxSize = "sm" | "md" | "lg";
 
 /**
  * An accessible checkbox component with animated SVG checkmark,
@@ -40,133 +43,133 @@ export type CheckboxSize = 'sm' | 'md' | 'lg';
  * @slot default - Custom label content (alternative to label property)
  */
 export class Checkbox extends TailwindElement {
-  /**
-   * Enable form association for this custom element.
-   * This allows the checkbox to participate in form submission.
-   */
-  static formAssociated = true;
+	/**
+	 * Enable form association for this custom element.
+	 * This allows the checkbox to participate in form submission.
+	 */
+	static formAssociated = true;
 
-  /**
-   * ElementInternals for form participation.
-   * Null during SSR since attachInternals() is not available.
-   */
-  private internals: ElementInternals | null = null;
+	/**
+	 * ElementInternals for form participation.
+	 * Null during SSR since attachInternals() is not available.
+	 */
+	private internals: ElementInternals | null = null;
 
-  /**
-   * Unique ID for label association.
-   */
-  private checkboxId = `lui-cb-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for label association.
+	 */
+	private checkboxId = `lui-cb-${Math.random().toString(36).substr(2, 9)}`;
 
-  /**
-   * Stores the initial checked state for formResetCallback.
-   */
-  private defaultChecked = false;
+	/**
+	 * Stores the initial checked state for formResetCallback.
+	 */
+	private defaultChecked = false;
 
-  /**
-   * Whether the checkbox is in the checked state.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  checked = false;
+	/**
+	 * Whether the checkbox is in the checked state.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	checked = false;
 
-  /**
-   * Whether the checkbox is disabled.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether the checkbox is disabled.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Whether the checkbox is required for form submission.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  required = false;
+	/**
+	 * Whether the checkbox is required for form submission.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	required = false;
 
-  /**
-   * Whether the checkbox is in an indeterminate state.
-   * JS-only property, not reflected (matches native convention).
-   * @default false
-   */
-  @property({ type: Boolean })
-  indeterminate = false;
+	/**
+	 * Whether the checkbox is in an indeterminate state.
+	 * JS-only property, not reflected (matches native convention).
+	 * @default false
+	 */
+	@property({ type: Boolean })
+	indeterminate = false;
 
-  /**
-   * The name of the checkbox for form submission.
-   * @default ''
-   */
-  @property({ type: String })
-  name = '';
+	/**
+	 * The name of the checkbox for form submission.
+	 * @default ''
+	 */
+	@property({ type: String })
+	name = "";
 
-  /**
-   * The value submitted when checked.
-   * @default 'on'
-   */
-  @property({ type: String })
-  value = 'on';
+	/**
+	 * The value submitted when checked.
+	 * @default 'on'
+	 */
+	@property({ type: String })
+	value = "on";
 
-  /**
-   * Label text displayed next to the checkbox.
-   * @default ''
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Label text displayed next to the checkbox.
+	 * @default ''
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * The size of the checkbox affecting box dimensions and label typography.
-   * @default 'md'
-   */
-  @property({ type: String })
-  size: CheckboxSize = 'md';
+	/**
+	 * The size of the checkbox affecting box dimensions and label typography.
+	 * @default 'md'
+	 */
+	@property({ type: String })
+	size: CheckboxSize = "md";
 
-  /**
-   * Whether the checkbox has been interacted with.
-   * Used for validation display timing.
-   */
-  @state()
-  private touched = false;
+	/**
+	 * Whether the checkbox has been interacted with.
+	 * Used for validation display timing.
+	 */
+	@state()
+	private touched = false;
 
-  /**
-   * Whether to show error state.
-   * True when checkbox is invalid and has been touched.
-   */
-  @state()
-  private showError = false;
+	/**
+	 * Whether to show error state.
+	 * True when checkbox is invalid and has been touched.
+	 */
+	@state()
+	private showError = false;
 
-  constructor() {
-    super();
-    // Only attach internals on client (not during SSR)
-    if (!isServer) {
-      this.internals = this.attachInternals();
-    }
-  }
+	constructor() {
+		super();
+		// Only attach internals on client (not during SSR)
+		if (!isServer) {
+			this.internals = this.attachInternals();
+		}
+	}
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this.defaultChecked = this.checked;
-    this.updateFormValue();
-  }
+	override connectedCallback(): void {
+		super.connectedCallback();
+		this.defaultChecked = this.checked;
+		this.updateFormValue();
+	}
 
-  /**
-   * Keep form state in sync when checked or indeterminate property changes externally.
-   */
-  protected override updated(changedProperties: PropertyValues): void {
-    if (
-      changedProperties.has('checked') ||
-      changedProperties.has('indeterminate')
-    ) {
-      this.updateFormValue();
-      this.validate();
-    }
-  }
+	/**
+	 * Keep form state in sync when checked or indeterminate property changes externally.
+	 */
+	protected override updated(changedProperties: PropertyValues): void {
+		if (
+			changedProperties.has("checked") ||
+			changedProperties.has("indeterminate")
+		) {
+			this.updateFormValue();
+			this.validate();
+		}
+	}
 
-  /**
-   * Static styles for the checkbox component.
-   * Uses CSS custom properties from the checkbox token block.
-   */
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	/**
+	 * Static styles for the checkbox component.
+	 * Uses CSS custom properties from the checkbox token block.
+	 */
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: inline-block;
       }
@@ -310,114 +313,112 @@ export class Checkbox extends TailwindElement {
         }
       }
     `,
-  ];
+	];
 
-  /**
-   * Toggle the checkbox state.
-   * Always clears indeterminate on user interaction.
-   * Dispatches ui-change event with checked state and value.
-   */
-  private toggle(): void {
-    if (this.disabled) return;
-    this.indeterminate = false;
-    this.checked = !this.checked;
-    this.touched = true;
-    this.updateFormValue();
-    this.validate();
-    dispatchCustomEvent(this, 'ui-change', {
-      checked: this.checked,
-      value: this.checked ? this.value : null,
-    });
-  }
+	/**
+	 * Toggle the checkbox state.
+	 * Always clears indeterminate on user interaction.
+	 * Dispatches ui-change event with checked state and value.
+	 */
+	private toggle(): void {
+		if (this.disabled) return;
+		this.indeterminate = false;
+		this.checked = !this.checked;
+		this.touched = true;
+		this.updateFormValue();
+		this.validate();
+		dispatchCustomEvent(this, "ui-change", {
+			checked: this.checked,
+			value: this.checked ? this.value : null,
+		});
+	}
 
-  /**
-   * Handle click events on the checkbox wrapper.
-   * Click handler is on the wrapper so clicking the label also toggles.
-   */
-  private handleClick(): void {
-    this.toggle();
-  }
+	/**
+	 * Handle click events on the checkbox wrapper.
+	 * Click handler is on the wrapper so clicking the label also toggles.
+	 */
+	private handleClick(): void {
+		this.toggle();
+	}
 
-  /**
-   * Handle keyboard events for Space key only.
-   * Per W3C APG checkbox spec, Space toggles the checkbox.
-   * Enter is NOT specified for checkbox (unlike switch).
-   * preventDefault stops page scroll on Space.
-   */
-  private handleKeyDown(e: KeyboardEvent): void {
-    if (e.key === ' ') {
-      e.preventDefault();
-      this.toggle();
-    }
-  }
+	/**
+	 * Handle keyboard events for Space key only.
+	 * Per W3C APG checkbox spec, Space toggles the checkbox.
+	 * Enter is NOT specified for checkbox (unlike switch).
+	 * preventDefault stops page scroll on Space.
+	 */
+	private handleKeyDown(e: KeyboardEvent): void {
+		if (e.key === " ") {
+			e.preventDefault();
+			this.toggle();
+		}
+	}
 
-  /**
-   * Sync the checked state to the form via ElementInternals.
-   * Submits value when checked, null when unchecked.
-   * Indeterminate does NOT affect form value.
-   */
-  private updateFormValue(): void {
-    this.internals?.setFormValue(this.checked ? this.value : null);
-  }
+	/**
+	 * Sync the checked state to the form via ElementInternals.
+	 * Submits value when checked, null when unchecked.
+	 * Indeterminate does NOT affect form value.
+	 */
+	private updateFormValue(): void {
+		this.internals?.setFormValue(this.checked ? this.value : null);
+	}
 
-  /**
-   * Validate the checkbox and sync validity state to ElementInternals.
-   * @returns true if valid, false if invalid
-   */
-  private validate(): boolean {
-    if (!this.internals) return true;
+	/**
+	 * Validate the checkbox and sync validity state to ElementInternals.
+	 * @returns true if valid, false if invalid
+	 */
+	private validate(): boolean {
+		if (!this.internals) return true;
 
-    if (this.required && !this.checked) {
-      this.internals.setValidity(
-        { valueMissing: true },
-        'Please check this box.',
-        this.shadowRoot?.querySelector('.checkbox-box') as HTMLElement
-      );
-      this.showError = this.touched;
-      return false;
-    }
+		if (this.required && !this.checked) {
+			this.internals.setValidity(
+				{ valueMissing: true },
+				"Please check this box.",
+				this.shadowRoot?.querySelector(".checkbox-box") as HTMLElement,
+			);
+			this.showError = this.touched;
+			return false;
+		}
 
-    this.internals.setValidity({});
-    this.showError = false;
-    return true;
-  }
+		this.internals.setValidity({});
+		this.showError = false;
+		return true;
+	}
 
-  /**
-   * Form lifecycle callback: reset the checkbox to initial state.
-   */
-  formResetCallback(): void {
-    this.checked = this.defaultChecked;
-    this.indeterminate = false;
-    this.touched = false;
-    this.showError = false;
-    this.updateFormValue();
-    this.internals?.setValidity({});
-  }
+	/**
+	 * Form lifecycle callback: reset the checkbox to initial state.
+	 */
+	formResetCallback(): void {
+		this.checked = this.defaultChecked;
+		this.indeterminate = false;
+		this.touched = false;
+		this.showError = false;
+		this.updateFormValue();
+		this.internals?.setValidity({});
+	}
 
-  /**
-   * Form lifecycle callback: handle disabled state from form.
-   */
-  formDisabledCallback(disabled: boolean): void {
-    this.disabled = disabled;
-  }
+	/**
+	 * Form lifecycle callback: handle disabled state from form.
+	 */
+	formDisabledCallback(disabled: boolean): void {
+		this.disabled = disabled;
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div class="checkbox-wrapper" @click=${this.handleClick}>
         <div
           role="checkbox"
-          aria-checked=${this.indeterminate
-            ? 'mixed'
-            : this.checked
-              ? 'true'
-              : 'false'}
-          aria-disabled=${this.disabled ? 'true' : nothing}
-          aria-required=${this.required ? 'true' : nothing}
+          aria-checked=${
+						this.indeterminate ? "mixed" : this.checked ? "true" : "false"
+					}
+          aria-disabled=${this.disabled ? "true" : nothing}
+          aria-required=${this.required ? "true" : nothing}
           aria-labelledby="${this.checkboxId}-label"
-          tabindex=${this.disabled ? '-1' : '0'}
-          class="checkbox-box box-${this.size} ${this.showError
-            ? 'has-error'
-            : ''}"
+          tabindex=${this.disabled ? "-1" : "0"}
+          class="checkbox-box box-${this.size} ${
+						this.showError ? "has-error" : ""
+					}"
           @keydown=${this.handleKeyDown}
         >
           <svg
@@ -443,23 +444,37 @@ export class Checkbox extends TailwindElement {
             />
           </svg>
         </div>
-        ${this.label
-          ? html`<label
+        ${
+					this.label
+						? html`<label
               id="${this.checkboxId}-label"
               class="checkbox-label label-${this.size}"
               >${this.label}</label
             >`
-          : html`<label
+						: html`<label
               id="${this.checkboxId}-label"
               class="checkbox-label label-${this.size}"
               ><slot></slot
-            ></label>`}
+            ></label>`
+				}
       </div>
-      ${this.showError
-        ? html`<div class="error-text" role="alert">
+      ${
+				this.showError
+					? html`<div class="error-text" role="alert">
             Please check this box.
           </div>`
-        : nothing}
+					: nothing
+			}
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-checkbox")) {
+	customElements.define("lui-checkbox", Checkbox);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-checkbox": Checkbox;
+	}
 }

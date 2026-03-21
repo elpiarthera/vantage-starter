@@ -10,9 +10,10 @@
  * - slot="description": Description text below the label
  * - default slot: Custom label content (alternative to label property)
  */
-import { html, css, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
+
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, nothing } from "lit";
+import { property } from "lit/decorators.js";
 
 /**
  * An option element for use within lui-select.
@@ -20,50 +21,50 @@ import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
  * Supports named slots for custom content (icons, descriptions).
  */
 export class Option extends TailwindElement {
-  /**
-   * The value submitted when this option is selected.
-   * @default ''
-   */
-  @property({ type: String })
-  value = '';
+	/**
+	 * The value submitted when this option is selected.
+	 * @default ''
+	 */
+	@property({ type: String })
+	value = "";
 
-  /**
-   * Display label for the option. Falls back to textContent or value if not provided.
-   * @default ''
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Display label for the option. Falls back to textContent or value if not provided.
+	 * @default ''
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * Whether this option is disabled and cannot be selected.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether this option is disabled and cannot be selected.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Whether this option is currently selected.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  selected = false;
+	/**
+	 * Whether this option is currently selected.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	selected = false;
 
-  /**
-   * Whether this option is inside a multi-select.
-   * When true, displays checkbox indicator instead of checkmark.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  multiselect = false;
+	/**
+	 * Whether this option is inside a multi-select.
+	 * When true, displays checkbox indicator instead of checkmark.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	multiselect = false;
 
-  /**
-   * Unique ID for aria-activedescendant reference.
-   */
-  private optionId = `lui-option-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for aria-activedescendant reference.
+	 */
+	private optionId = `lui-option-${Math.random().toString(36).substr(2, 9)}`;
 
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
       }
@@ -183,33 +184,34 @@ export class Option extends TailwindElement {
         white-space: nowrap;
       }
     `,
-  ];
+	];
 
-  /**
-   * Get the unique ID for this option (for aria-activedescendant).
-   */
-  getId(): string {
-    return this.optionId;
-  }
+	/**
+	 * Get the unique ID for this option (for aria-activedescendant).
+	 */
+	getId(): string {
+		return this.optionId;
+	}
 
-  /**
-   * Get the display label for this option.
-   * Priority: label property > textContent > value
-   */
-  getLabel(): string {
-    return this.label || this.textContent?.trim() || this.value;
-  }
+	/**
+	 * Get the display label for this option.
+	 * Priority: label property > textContent > value
+	 */
+	getLabel(): string {
+		return this.label || this.textContent?.trim() || this.value;
+	}
 
-  /**
-   * Render the selection indicator based on multiselect mode.
-   * Shows checkbox in multi-select, checkmark in single-select.
-   */
-  private renderSelectionIndicator() {
-    if (this.multiselect) {
-      return html`
-        <span class="checkbox-indicator ${this.selected ? 'checked' : ''}">
-          ${this.selected
-            ? html`
+	/**
+	 * Render the selection indicator based on multiselect mode.
+	 * Shows checkbox in multi-select, checkmark in single-select.
+	 */
+	private renderSelectionIndicator() {
+		if (this.multiselect) {
+			return html`
+        <span class="checkbox-indicator ${this.selected ? "checked" : ""}">
+          ${
+						this.selected
+							? html`
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path
                     d="M3 8l4 4 6-7"
@@ -221,12 +223,13 @@ export class Option extends TailwindElement {
                   />
                 </svg>
               `
-            : nothing}
+							: nothing
+					}
         </span>
       `;
-    }
-    // Single-select checkmark
-    return html`
+		}
+		// Single-select checkmark
+		return html`
       <svg
         class="check-icon"
         viewBox="0 0 16 16"
@@ -242,20 +245,20 @@ export class Option extends TailwindElement {
         />
       </svg>
     `;
-  }
+	}
 
-  override render() {
-    const classes = ['option'];
-    if (this.disabled) classes.push('option-disabled');
-    if (this.selected) classes.push('option-selected');
+	override render() {
+		const classes = ["option"];
+		if (this.disabled) classes.push("option-disabled");
+		if (this.selected) classes.push("option-selected");
 
-    return html`
+		return html`
       <div
         id=${this.optionId}
         role="option"
-        aria-selected=${this.selected ? 'true' : 'false'}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        class=${classes.join(' ')}
+        aria-selected=${this.selected ? "true" : "false"}
+        aria-disabled=${this.disabled ? "true" : "false"}
+        class=${classes.join(" ")}
       >
         ${this.renderSelectionIndicator()}
         <span class="slot-start"><slot name="start"></slot></span>
@@ -266,7 +269,17 @@ export class Option extends TailwindElement {
         <span class="slot-end"><slot name="end"></slot></span>
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-option")) {
+	customElements.define("lui-option", Option);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-option": Option;
+	}
 }
 
 /**

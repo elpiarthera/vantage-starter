@@ -20,15 +20,18 @@
  * ```
  */
 
-import { html, css, nothing, isServer, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
-import { dispatchCustomEvent } from '@lit-ui/core';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { css, html, isServer, nothing, type PropertyValues } from "lit";
+import { property, state } from "lit/decorators.js";
 
 /**
  * Switch size types for track and thumb dimensions.
  */
-export type SwitchSize = 'sm' | 'md' | 'lg';
+export type SwitchSize = "sm" | "md" | "lg";
 
 /**
  * An accessible toggle switch component with form participation.
@@ -38,122 +41,122 @@ export type SwitchSize = 'sm' | 'md' | 'lg';
  * @slot default - Custom label content (alternative to label property)
  */
 export class Switch extends TailwindElement {
-  /**
-   * Enable form association for this custom element.
-   * This allows the switch to participate in form submission.
-   */
-  static formAssociated = true;
+	/**
+	 * Enable form association for this custom element.
+	 * This allows the switch to participate in form submission.
+	 */
+	static formAssociated = true;
 
-  /**
-   * ElementInternals for form participation.
-   * Null during SSR since attachInternals() is not available.
-   */
-  private internals: ElementInternals | null = null;
+	/**
+	 * ElementInternals for form participation.
+	 * Null during SSR since attachInternals() is not available.
+	 */
+	private internals: ElementInternals | null = null;
 
-  /**
-   * Unique ID for label association.
-   */
-  private switchId = `lui-switch-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for label association.
+	 */
+	private switchId = `lui-switch-${Math.random().toString(36).substr(2, 9)}`;
 
-  /**
-   * Stores the initial checked state for formResetCallback.
-   */
-  private defaultChecked = false;
+	/**
+	 * Stores the initial checked state for formResetCallback.
+	 */
+	private defaultChecked = false;
 
-  /**
-   * Whether the switch is in the on state.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  checked = false;
+	/**
+	 * Whether the switch is in the on state.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	checked = false;
 
-  /**
-   * Whether the switch is disabled.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether the switch is disabled.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Whether the switch is required for form submission.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  required = false;
+	/**
+	 * Whether the switch is required for form submission.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	required = false;
 
-  /**
-   * The name of the switch for form submission.
-   * @default ''
-   */
-  @property({ type: String })
-  name = '';
+	/**
+	 * The name of the switch for form submission.
+	 * @default ''
+	 */
+	@property({ type: String })
+	name = "";
 
-  /**
-   * The value submitted when checked.
-   * @default 'on'
-   */
-  @property({ type: String })
-  value = 'on';
+	/**
+	 * The value submitted when checked.
+	 * @default 'on'
+	 */
+	@property({ type: String })
+	value = "on";
 
-  /**
-   * Label text displayed next to the switch.
-   * @default ''
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Label text displayed next to the switch.
+	 * @default ''
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * The size of the switch affecting track and thumb dimensions.
-   * @default 'md'
-   */
-  @property({ type: String })
-  size: SwitchSize = 'md';
+	/**
+	 * The size of the switch affecting track and thumb dimensions.
+	 * @default 'md'
+	 */
+	@property({ type: String })
+	size: SwitchSize = "md";
 
-  /**
-   * Whether the switch has been interacted with.
-   * Used for validation display timing.
-   */
-  @state()
-  private touched = false;
+	/**
+	 * Whether the switch has been interacted with.
+	 * Used for validation display timing.
+	 */
+	@state()
+	private touched = false;
 
-  /**
-   * Whether to show error state.
-   * True when switch is invalid and has been touched.
-   */
-  @state()
-  private showError = false;
+	/**
+	 * Whether to show error state.
+	 * True when switch is invalid and has been touched.
+	 */
+	@state()
+	private showError = false;
 
-  constructor() {
-    super();
-    // Only attach internals on client (not during SSR)
-    if (!isServer) {
-      this.internals = this.attachInternals();
-    }
-  }
+	constructor() {
+		super();
+		// Only attach internals on client (not during SSR)
+		if (!isServer) {
+			this.internals = this.attachInternals();
+		}
+	}
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this.defaultChecked = this.checked;
-    this.updateFormValue();
-  }
+	override connectedCallback(): void {
+		super.connectedCallback();
+		this.defaultChecked = this.checked;
+		this.updateFormValue();
+	}
 
-  /**
-   * Keep form state in sync when checked property changes externally.
-   */
-  protected override updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has('checked')) {
-      this.updateFormValue();
-      this.validate();
-    }
-  }
+	/**
+	 * Keep form state in sync when checked property changes externally.
+	 */
+	protected override updated(changedProperties: PropertyValues): void {
+		if (changedProperties.has("checked")) {
+			this.updateFormValue();
+			this.validate();
+		}
+	}
 
-  /**
-   * Static styles for the switch component.
-   * Uses CSS custom properties from the switch token block.
-   */
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	/**
+	 * Static styles for the switch component.
+	 * Uses CSS custom properties from the switch token block.
+	 */
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: inline-block;
       }
@@ -311,125 +314,139 @@ export class Switch extends TailwindElement {
         }
       }
     `,
-  ];
+	];
 
-  /**
-   * Toggle the switch state.
-   * Dispatches ui-change event with checked state and value.
-   */
-  private toggle(): void {
-    if (this.disabled) return;
-    this.checked = !this.checked;
-    this.touched = true;
-    this.updateFormValue();
-    this.validate();
-    dispatchCustomEvent(this, 'ui-change', {
-      checked: this.checked,
-      value: this.checked ? this.value : null,
-    });
-  }
+	/**
+	 * Toggle the switch state.
+	 * Dispatches ui-change event with checked state and value.
+	 */
+	private toggle(): void {
+		if (this.disabled) return;
+		this.checked = !this.checked;
+		this.touched = true;
+		this.updateFormValue();
+		this.validate();
+		dispatchCustomEvent(this, "ui-change", {
+			checked: this.checked,
+			value: this.checked ? this.value : null,
+		});
+	}
 
-  /**
-   * Handle click events on the switch track.
-   */
-  private handleClick(): void {
-    this.toggle();
-  }
+	/**
+	 * Handle click events on the switch track.
+	 */
+	private handleClick(): void {
+		this.toggle();
+	}
 
-  /**
-   * Handle keyboard events for Space and Enter keys.
-   * Prevents default to avoid page scroll on Space.
-   */
-  private handleKeyDown(e: KeyboardEvent): void {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      this.toggle();
-    }
-  }
+	/**
+	 * Handle keyboard events for Space and Enter keys.
+	 * Prevents default to avoid page scroll on Space.
+	 */
+	private handleKeyDown(e: KeyboardEvent): void {
+		if (e.key === " " || e.key === "Enter") {
+			e.preventDefault();
+			this.toggle();
+		}
+	}
 
-  /**
-   * Sync the checked state to the form via ElementInternals.
-   * Submits value when checked, null when unchecked (matches native checkbox).
-   */
-  private updateFormValue(): void {
-    this.internals?.setFormValue(this.checked ? this.value : null);
-  }
+	/**
+	 * Sync the checked state to the form via ElementInternals.
+	 * Submits value when checked, null when unchecked (matches native checkbox).
+	 */
+	private updateFormValue(): void {
+		this.internals?.setFormValue(this.checked ? this.value : null);
+	}
 
-  /**
-   * Validate the switch and sync validity state to ElementInternals.
-   * @returns true if valid, false if invalid
-   */
-  private validate(): boolean {
-    if (!this.internals) return true;
+	/**
+	 * Validate the switch and sync validity state to ElementInternals.
+	 * @returns true if valid, false if invalid
+	 */
+	private validate(): boolean {
+		if (!this.internals) return true;
 
-    if (this.required && !this.checked) {
-      this.internals.setValidity(
-        { valueMissing: true },
-        'Please toggle this switch.',
-        this.shadowRoot?.querySelector('.switch-track') as HTMLElement
-      );
-      this.showError = this.touched;
-      return false;
-    }
+		if (this.required && !this.checked) {
+			this.internals.setValidity(
+				{ valueMissing: true },
+				"Please toggle this switch.",
+				this.shadowRoot?.querySelector(".switch-track") as HTMLElement,
+			);
+			this.showError = this.touched;
+			return false;
+		}
 
-    this.internals.setValidity({});
-    this.showError = false;
-    return true;
-  }
+		this.internals.setValidity({});
+		this.showError = false;
+		return true;
+	}
 
-  /**
-   * Form lifecycle callback: reset the switch to initial state.
-   */
-  formResetCallback(): void {
-    this.checked = this.defaultChecked;
-    this.touched = false;
-    this.showError = false;
-    this.updateFormValue();
-    this.internals?.setValidity({});
-  }
+	/**
+	 * Form lifecycle callback: reset the switch to initial state.
+	 */
+	formResetCallback(): void {
+		this.checked = this.defaultChecked;
+		this.touched = false;
+		this.showError = false;
+		this.updateFormValue();
+		this.internals?.setValidity({});
+	}
 
-  /**
-   * Form lifecycle callback: handle disabled state from form.
-   */
-  formDisabledCallback(disabled: boolean): void {
-    this.disabled = disabled;
-  }
+	/**
+	 * Form lifecycle callback: handle disabled state from form.
+	 */
+	formDisabledCallback(disabled: boolean): void {
+		this.disabled = disabled;
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div class="switch-wrapper">
-        ${this.label
-          ? html`<label
+        ${
+					this.label
+						? html`<label
               id="${this.switchId}-label"
               class="switch-label label-${this.size}"
               >${this.label}</label
             >`
-          : html`<label
+						: html`<label
               id="${this.switchId}-label"
               class="switch-label label-${this.size}"
               ><slot></slot
-            ></label>`}
+            ></label>`
+				}
         <div
           role="switch"
-          aria-checked=${this.checked ? 'true' : 'false'}
-          aria-disabled=${this.disabled ? 'true' : nothing}
-          aria-required=${this.required ? 'true' : nothing}
+          aria-checked=${this.checked ? "true" : "false"}
+          aria-disabled=${this.disabled ? "true" : nothing}
+          aria-required=${this.required ? "true" : nothing}
           aria-labelledby="${this.switchId}-label"
-          tabindex=${this.disabled ? '-1' : '0'}
-          class="switch-track track-${this.size} ${this.showError
-            ? 'has-error'
-            : ''}"
+          tabindex=${this.disabled ? "-1" : "0"}
+          class="switch-track track-${this.size} ${
+						this.showError ? "has-error" : ""
+					}"
           @click=${this.handleClick}
           @keydown=${this.handleKeyDown}
         >
           <span class="switch-thumb"></span>
         </div>
       </div>
-      ${this.showError
-        ? html`<div class="error-text" role="alert">
+      ${
+				this.showError
+					? html`<div class="error-text" role="alert">
             Please toggle this switch.
           </div>`
-        : nothing}
+					: nothing
+			}
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-switch")) {
+	customElements.define("lui-switch", Switch);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-switch": Switch;
+	}
 }

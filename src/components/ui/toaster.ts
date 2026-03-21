@@ -11,58 +11,52 @@
  * - SSR safe with isServer guard (TOAST-18)
  */
 
-import { html, css, nothing } from 'lit';
-import { isServer } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { repeat } from 'lit/directives/repeat.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
-import { toastState } from './state.js';
-import type { ToastData, ToastPosition } from './types.js';
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, isServer } from "lit";
+import { property, state } from "lit/decorators.js";
+import { repeat } from "lit/directives/repeat.js";
+import { toastState } from "./state.js";
+import type { ToastData, ToastPosition } from "./types.js";
 
 export class Toaster extends TailwindElement {
-  // ---------------------------------------------------------------------------
-  // Public properties
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Public properties
+	// ---------------------------------------------------------------------------
 
-  @property({ type: String, reflect: true })
-  position: ToastPosition = 'bottom-right';
+	@property({ type: String, reflect: true })
+	position: ToastPosition = "bottom-right";
 
-  @property({ type: Number, attribute: 'max-visible' })
-  maxVisible = 3;
+	@property({ type: Number, attribute: "max-visible" })
+	maxVisible = 3;
 
-  @property({ type: Number })
-  gap = 12;
+	@property({ type: Number })
+	gap = 12;
 
-  // ---------------------------------------------------------------------------
-  // Internal state
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Internal state
+	// ---------------------------------------------------------------------------
 
-  @state()
-  private _toasts: ToastData[] = [];
+	@state()
+	private _toasts: ToastData[] = [];
 
-  private _unsubscribe: (() => void) | null = null;
-  private _exitingIds = new Set<string>();
-  private _popoverEl: HTMLElement | null = null;
+	private _unsubscribe: (() => void) | null = null;
+	private _popoverEl: HTMLElement | null = null;
 
-  // ---------------------------------------------------------------------------
-  // Derived
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Derived
+	// ---------------------------------------------------------------------------
 
-  private get _visibleToasts(): ToastData[] {
-    return this._toasts.slice(0, this.maxVisible);
-  }
+	private get _visibleToasts(): ToastData[] {
+		return this._toasts.slice(0, this.maxVisible);
+	}
 
-  private get _isTopPosition(): boolean {
-    return this.position.startsWith('top');
-  }
+	// ---------------------------------------------------------------------------
+	// Styles
+	// ---------------------------------------------------------------------------
 
-  // ---------------------------------------------------------------------------
-  // Styles
-  // ---------------------------------------------------------------------------
-
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: contents;
       }
@@ -148,75 +142,84 @@ export class Toaster extends TailwindElement {
         border-width: 0;
       }
     `,
-  ];
+	];
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Lifecycle
+	// ---------------------------------------------------------------------------
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    if (isServer) return;
+	override connectedCallback(): void {
+		super.connectedCallback();
+		if (isServer) return;
 
-    this._unsubscribe = toastState.subscribe(() => {
-      this._toasts = [...toastState.toasts];
-      // Show popover if we have toasts
-      if (this._toasts.length > 0) {
-        this.updateComplete.then(() => this._showPopover());
-      }
-    });
-  }
+		this._unsubscribe = toastState.subscribe(() => {
+			this._toasts = [...toastState.toasts];
+			// Show popover if we have toasts
+			if (this._toasts.length > 0) {
+				this.updateComplete.then(() => this._showPopover());
+			}
+		});
+	}
 
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._unsubscribe?.();
-    this._unsubscribe = null;
-  }
+	override disconnectedCallback(): void {
+		super.disconnectedCallback();
+		this._unsubscribe?.();
+		this._unsubscribe = null;
+	}
 
-  // ---------------------------------------------------------------------------
-  // Popover management (TOAST-17)
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Popover management (TOAST-17)
+	// ---------------------------------------------------------------------------
 
-  private _showPopover(): void {
-    if (!this._popoverEl) {
-      this._popoverEl = this.renderRoot.querySelector<HTMLElement>('.toaster-wrapper');
-    }
-    if (this._popoverEl && !this._popoverEl.matches(':popover-open')) {
-      try {
-        this._popoverEl.showPopover();
-      } catch {
-        // Already showing or not supported
-      }
-    }
-  }
+	private _showPopover(): void {
+		if (!this._popoverEl) {
+			this._popoverEl =
+				this.renderRoot.querySelector<HTMLElement>(".toaster-wrapper");
+		}
+		if (this._popoverEl && !this._popoverEl.matches(":popover-open")) {
+			try {
+				this._popoverEl.showPopover();
+			} catch {
+				// Already showing or not supported
+			}
+		}
+	}
 
-  // ---------------------------------------------------------------------------
-  // Event handlers
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Event handlers
+	// ---------------------------------------------------------------------------
 
-  private _handleToastClose(e: CustomEvent<{ id: string; reason: string }>): void {
-    const { id } = e.detail;
-    toastState.dismiss(id);
-  }
+	private _handleToastClose(
+		e: CustomEvent<{ id: string; reason: string }>,
+	): void {
+		const { id } = e.detail;
+		toastState.dismiss(id);
+	}
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Render
+	// ---------------------------------------------------------------------------
 
-  override render() {
-    const visible = this._visibleToasts;
+	override render() {
+		const visible = this._visibleToasts;
 
-    return html`
+		return html`
       <!-- Pre-registered live regions for accessibility (TOAST-08) -->
       <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
         ${visible
-          .filter(t => t.variant !== 'error')
-          .map(t => html`<div>${t.title ?? ''}${t.description ? ` ${t.description}` : ''}</div>`)}
+					.filter((t) => t.variant !== "error")
+					.map(
+						(t) =>
+							html`<div>${t.title ?? ""}${t.description ? ` ${t.description}` : ""}</div>`,
+					)}
       </div>
       <div role="alert" aria-atomic="true" class="sr-only">
         ${visible
-          .filter(t => t.variant === 'error')
-          .map(t => html`<div>${t.title ?? ''}${t.description ? ` ${t.description}` : ''}</div>`)}
+					.filter((t) => t.variant === "error")
+					.map(
+						(t) =>
+							html`<div>${t.title ?? ""}${t.description ? ` ${t.description}` : ""}</div>`,
+					)}
       </div>
 
       <div
@@ -225,14 +228,14 @@ export class Toaster extends TailwindElement {
         part="container"
       >
         ${repeat(
-          visible,
-          (t) => t.id,
-          (t) => html`
+					visible,
+					(t) => t.id,
+					(t) => html`
             <lui-toast
               toast-id=${t.id}
               variant=${t.variant}
-              toast-title=${t.title ?? ''}
-              description=${t.description ?? ''}
+              toast-title=${t.title ?? ""}
+              description=${t.description ?? ""}
               .duration=${t.duration}
               .dismissible=${t.dismissible}
               .action=${t.action}
@@ -243,8 +246,18 @@ export class Toaster extends TailwindElement {
             >
             </lui-toast>
           `,
-        )}
+				)}
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-toaster")) {
+	customElements.define("lui-toaster", Toaster);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-toaster": Toaster;
+	}
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 
 export function HeroSection() {
@@ -90,21 +89,14 @@ export function HeroSection() {
 				{/* CTAs */}
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-4 hero-enter-delay-2">
 					<Link href="/sign-up">
-						<Button
-							size="lg"
-							className="h-12 px-8 rounded-full border-0 bg-primary text-primary-foreground hover:opacity-90 btn-shadow active-scale transition-all duration-150 ease-out-expo"
-						>
+						<ui-button variant="primary" size="lg">
 							{t("cta_primary")}
-						</Button>
+						</ui-button>
 					</Link>
 					<a href="#features">
-						<Button
-							variant="ghost"
-							size="lg"
-							className="h-12 px-8 rounded-full bg-transparent border border-border text-foreground hover:bg-transparent hover:border-border-hover hover:opacity-80 active-scale transition-all duration-150 ease-out-expo"
-						>
+						<ui-button variant="outline" size="lg">
 							{t("cta_secondary")}
-						</Button>
+						</ui-button>
 					</a>
 				</div>
 

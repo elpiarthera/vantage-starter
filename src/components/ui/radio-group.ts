@@ -38,11 +38,14 @@
  * @slot default - Child lui-radio elements
  */
 
-import { html, css, nothing, isServer, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
-import { dispatchCustomEvent } from '@lit-ui/core';
-import type { Radio } from './radio.js';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { css, html, isServer, nothing, type PropertyValues } from "lit";
+import { property, state } from "lit/decorators.js";
+import type { Radio } from "./radio.js";
 
 /**
  * An accessible radio group container with mutual exclusion, roving tabindex,
@@ -51,94 +54,94 @@ import type { Radio } from './radio.js';
  * @slot default - Child lui-radio elements
  */
 export class RadioGroup extends TailwindElement {
-  /**
-   * Enable form association for this custom element.
-   * RadioGroup owns form participation (individual radios do not).
-   */
-  static formAssociated = true;
+	/**
+	 * Enable form association for this custom element.
+	 * RadioGroup owns form participation (individual radios do not).
+	 */
+	static formAssociated = true;
 
-  /**
-   * ElementInternals for form participation.
-   * Null during SSR since attachInternals() is not available.
-   */
-  private internals: ElementInternals | null = null;
+	/**
+	 * ElementInternals for form participation.
+	 * Null during SSR since attachInternals() is not available.
+	 */
+	private internals: ElementInternals | null = null;
 
-  /**
-   * Unique ID for label association.
-   */
-  private groupId = `lui-rg-${Math.random().toString(36).substr(2, 9)}`;
+	/**
+	 * Unique ID for label association.
+	 */
+	private groupId = `lui-rg-${Math.random().toString(36).substr(2, 9)}`;
 
-  /**
-   * Discovered child radio elements.
-   */
-  private radios: Radio[] = [];
+	/**
+	 * Discovered child radio elements.
+	 */
+	private radios: Radio[] = [];
 
-  /**
-   * Stores the initial value for formResetCallback.
-   */
-  private defaultValue = '';
+	/**
+	 * Stores the initial value for formResetCallback.
+	 */
+	private defaultValue = "";
 
-  /**
-   * The name of the radio group for form submission.
-   * @default ''
-   */
-  @property({ type: String })
-  name = '';
+	/**
+	 * The name of the radio group for form submission.
+	 * @default ''
+	 */
+	@property({ type: String })
+	name = "";
 
-  /**
-   * The currently selected radio's value.
-   * @default ''
-   */
-  @property({ type: String })
-  value = '';
+	/**
+	 * The currently selected radio's value.
+	 * @default ''
+	 */
+	@property({ type: String })
+	value = "";
 
-  /**
-   * Whether a selection is required for form validity.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  required = false;
+	/**
+	 * Whether a selection is required for form validity.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	required = false;
 
-  /**
-   * Whether all child radios should be disabled.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether all child radios should be disabled.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Label text displayed above the group.
-   * @default ''
-   */
-  @property({ type: String })
-  label = '';
+	/**
+	 * Label text displayed above the group.
+	 * @default ''
+	 */
+	@property({ type: String })
+	label = "";
 
-  /**
-   * Custom error message for required validation.
-   * @default ''
-   */
-  @property({ type: String })
-  error = '';
+	/**
+	 * Custom error message for required validation.
+	 * @default ''
+	 */
+	@property({ type: String })
+	error = "";
 
-  /**
-   * Whether the user has interacted with the group.
-   * Used for validation display timing.
-   */
-  @state()
-  private touched = false;
+	/**
+	 * Whether the user has interacted with the group.
+	 * Used for validation display timing.
+	 */
+	@state()
+	private touched = false;
 
-  /**
-   * Whether to show the validation error message.
-   */
-  @state()
-  private showError = false;
+	/**
+	 * Whether to show the validation error message.
+	 */
+	@state()
+	private showError = false;
 
-  /**
-   * Static styles for the radio group component.
-   */
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	/**
+	 * Static styles for the radio group component.
+	 */
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
       }
@@ -171,220 +174,236 @@ export class RadioGroup extends TailwindElement {
         margin-top: 0.25rem;
       }
     `,
-  ];
+	];
 
-  constructor() {
-    super();
-    // Only attach internals on client (not during SSR)
-    if (!isServer) {
-      this.internals = this.attachInternals();
-    }
-  }
+	constructor() {
+		super();
+		// Only attach internals on client (not during SSR)
+		if (!isServer) {
+			this.internals = this.attachInternals();
+		}
+	}
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this.defaultValue = this.value;
-    this.updateFormValue();
-  }
+	override connectedCallback(): void {
+		super.connectedCallback();
+		this.defaultValue = this.value;
+		this.updateFormValue();
+	}
 
-  /**
-   * Sync child states and form value when properties change.
-   * Uses PropertyValues type (not Map) to avoid api-extractor DTS rollup crash.
-   */
-  protected override updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has('value')) {
-      this.syncChildStates();
-      this.updateRovingTabindex();
-      this.updateFormValue();
-      this.validate();
-    }
+	/**
+	 * Sync child states and form value when properties change.
+	 * Uses PropertyValues type (not Map) to avoid api-extractor DTS rollup crash.
+	 */
+	protected override updated(changedProperties: PropertyValues): void {
+		if (changedProperties.has("value")) {
+			this.syncChildStates();
+			this.updateRovingTabindex();
+			this.updateFormValue();
+			this.validate();
+		}
 
-    if (changedProperties.has('disabled')) {
-      this.syncDisabledState();
-      this.updateRovingTabindex();
-    }
-  }
+		if (changedProperties.has("disabled")) {
+			this.syncDisabledState();
+			this.updateRovingTabindex();
+		}
+	}
 
-  /**
-   * Handle slot changes to discover child radio elements.
-   * Filters for LUI-RADIO elements and syncs state.
-   */
-  private handleSlotChange(e: Event): void {
-    const slot = e.target as HTMLSlotElement;
-    const assigned = slot.assignedElements({ flatten: true });
-    this.radios = assigned.filter(
-      (el) => el.tagName === 'LUI-RADIO'
-    ) as Radio[];
-    this.syncChildStates();
-    this.syncDisabledState();
-    this.updateRovingTabindex();
-  }
+	/**
+	 * Handle slot changes to discover child radio elements.
+	 * Filters for LUI-RADIO elements and syncs state.
+	 */
+	private handleSlotChange(e: Event): void {
+		const slot = e.target as HTMLSlotElement;
+		const assigned = slot.assignedElements({ flatten: true });
+		this.radios = assigned.filter(
+			(el) => el.tagName === "LUI-RADIO",
+		) as Radio[];
+		this.syncChildStates();
+		this.syncDisabledState();
+		this.updateRovingTabindex();
+	}
 
-  /**
-   * Enforce mutual exclusion: only the radio matching group value is checked.
-   */
-  private syncChildStates(): void {
-    for (const radio of this.radios) {
-      radio.checked = radio.value === this.value;
-    }
-  }
+	/**
+	 * Enforce mutual exclusion: only the radio matching group value is checked.
+	 */
+	private syncChildStates(): void {
+		for (const radio of this.radios) {
+			radio.checked = radio.value === this.value;
+		}
+	}
 
-  /**
-   * Propagate disabled state to all child radios.
-   * Called when disabled property changes or children are discovered.
-   */
-  private syncDisabledState(): void {
-    if (this.disabled) {
-      this.radios.forEach((r) => (r.disabled = true));
-    }
-  }
+	/**
+	 * Propagate disabled state to all child radios.
+	 * Called when disabled property changes or children are discovered.
+	 */
+	private syncDisabledState(): void {
+		if (this.disabled) {
+			this.radios.forEach((r) => {
+				r.disabled = true;
+			});
+		}
+	}
 
-  /**
-   * Manage roving tabindex: only the checked (or first enabled) radio gets tabindex 0.
-   * All other radios get tabindex -1. This creates a single tab stop for the group.
-   */
-  private updateRovingTabindex(): void {
-    const enabledRadios = this.radios.filter((r) => !r.disabled);
-    if (enabledRadios.length === 0) return;
+	/**
+	 * Manage roving tabindex: only the checked (or first enabled) radio gets tabindex 0.
+	 * All other radios get tabindex -1. This creates a single tab stop for the group.
+	 */
+	private updateRovingTabindex(): void {
+		const enabledRadios = this.radios.filter((r) => !r.disabled);
+		if (enabledRadios.length === 0) return;
 
-    const checkedRadio = enabledRadios.find((r) => r.checked);
-    const focusTarget = checkedRadio || enabledRadios[0];
+		const checkedRadio = enabledRadios.find((r) => r.checked);
+		const focusTarget = checkedRadio || enabledRadios[0];
 
-    for (const radio of this.radios) {
-      // Set tabIndex on the HOST element (lui-radio), not inner shadow DOM
-      radio.tabIndex = radio === focusTarget && !radio.disabled ? 0 : -1;
-    }
-  }
+		for (const radio of this.radios) {
+			// Set tabIndex on the HOST element (lui-radio), not inner shadow DOM
+			radio.tabIndex = radio === focusTarget && !radio.disabled ? 0 : -1;
+		}
+	}
 
-  /**
-   * Handle arrow key navigation within the group.
-   * Arrow keys move focus AND selection simultaneously with wrapping.
-   */
-  private handleKeyDown(e: KeyboardEvent): void {
-    const arrowKeys = ['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'];
-    if (!arrowKeys.includes(e.key)) return;
-    e.preventDefault();
+	/**
+	 * Handle arrow key navigation within the group.
+	 * Arrow keys move focus AND selection simultaneously with wrapping.
+	 */
+	private handleKeyDown(e: KeyboardEvent): void {
+		const arrowKeys = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"];
+		if (!arrowKeys.includes(e.key)) return;
+		e.preventDefault();
 
-    const enabledRadios = this.radios.filter((r) => !r.disabled);
-    if (enabledRadios.length === 0) return;
+		const enabledRadios = this.radios.filter((r) => !r.disabled);
+		if (enabledRadios.length === 0) return;
 
-    const currentIndex = enabledRadios.findIndex((r) => r.tabIndex === 0);
-    const forward = e.key === 'ArrowDown' || e.key === 'ArrowRight';
-    const nextIndex = forward
-      ? (currentIndex + 1) % enabledRadios.length
-      : (currentIndex - 1 + enabledRadios.length) % enabledRadios.length;
+		const currentIndex = enabledRadios.findIndex((r) => r.tabIndex === 0);
+		const forward = e.key === "ArrowDown" || e.key === "ArrowRight";
+		const nextIndex = forward
+			? (currentIndex + 1) % enabledRadios.length
+			: (currentIndex - 1 + enabledRadios.length) % enabledRadios.length;
 
-    // Arrow keys MOVE FOCUS AND SELECT simultaneously
-    const nextRadio = enabledRadios[nextIndex];
-    this.value = nextRadio.value;
-    this.touched = true;
-    this.syncChildStates();
-    this.updateRovingTabindex();
-    this.updateFormValue();
-    this.validate();
-    nextRadio.focus();
+		// Arrow keys MOVE FOCUS AND SELECT simultaneously
+		const nextRadio = enabledRadios[nextIndex];
+		this.value = nextRadio.value;
+		this.touched = true;
+		this.syncChildStates();
+		this.updateRovingTabindex();
+		this.updateFormValue();
+		this.validate();
+		nextRadio.focus();
 
-    dispatchCustomEvent(this, 'ui-change', {
-      value: this.value,
-    });
-  }
+		dispatchCustomEvent(this, "ui-change", {
+			value: this.value,
+		});
+	}
 
-  /**
-   * Handle internal ui-radio-change events from child radios.
-   * Stops propagation (internal event) and dispatches consumer-facing ui-change.
-   */
-  private handleRadioChange(e: CustomEvent): void {
-    e.stopPropagation(); // Internal event, don't leak to consumer
-    this.value = e.detail.value;
-    this.touched = true;
-    this.syncChildStates();
-    this.updateRovingTabindex();
-    this.updateFormValue();
-    this.validate();
+	/**
+	 * Handle internal ui-radio-change events from child radios.
+	 * Stops propagation (internal event) and dispatches consumer-facing ui-change.
+	 */
+	private handleRadioChange(e: CustomEvent): void {
+		e.stopPropagation(); // Internal event, don't leak to consumer
+		this.value = e.detail.value;
+		this.touched = true;
+		this.syncChildStates();
+		this.updateRovingTabindex();
+		this.updateFormValue();
+		this.validate();
 
-    // Dispatch consumer-facing event
-    dispatchCustomEvent(this, 'ui-change', {
-      value: this.value,
-    });
-  }
+		// Dispatch consumer-facing event
+		dispatchCustomEvent(this, "ui-change", {
+			value: this.value,
+		});
+	}
 
-  /**
-   * Sync the selected value to the form via ElementInternals.
-   * Submits value when selected, null when nothing selected.
-   */
-  private updateFormValue(): void {
-    this.internals?.setFormValue(this.value || null);
-  }
+	/**
+	 * Sync the selected value to the form via ElementInternals.
+	 * Submits value when selected, null when nothing selected.
+	 */
+	private updateFormValue(): void {
+		this.internals?.setFormValue(this.value || null);
+	}
 
-  /**
-   * Validate required constraint and sync validity to ElementInternals.
-   * @returns true if valid, false if invalid
-   */
-  private validate(): boolean {
-    if (!this.internals) return true;
+	/**
+	 * Validate required constraint and sync validity to ElementInternals.
+	 * @returns true if valid, false if invalid
+	 */
+	private validate(): boolean {
+		if (!this.internals) return true;
 
-    if (this.required && !this.value) {
-      this.internals.setValidity(
-        { valueMissing: true },
-        this.error || 'Please select an option.',
-        this.radios[0] ||
-          (this.shadowRoot?.querySelector('.group-items') as HTMLElement)
-      );
-      this.showError = this.touched;
-      return false;
-    }
+		if (this.required && !this.value) {
+			this.internals.setValidity(
+				{ valueMissing: true },
+				this.error || "Please select an option.",
+				this.radios[0] ||
+					(this.shadowRoot?.querySelector(".group-items") as HTMLElement),
+			);
+			this.showError = this.touched;
+			return false;
+		}
 
-    this.internals.setValidity({});
-    this.showError = false;
-    return true;
-  }
+		this.internals.setValidity({});
+		this.showError = false;
+		return true;
+	}
 
-  /**
-   * Form lifecycle callback: reset the group to initial value.
-   */
-  formResetCallback(): void {
-    this.value = this.defaultValue;
-    this.syncChildStates();
-    this.updateRovingTabindex();
-    this.updateFormValue();
-    this.touched = false;
-    this.showError = false;
-    this.internals?.setValidity({});
-  }
+	/**
+	 * Form lifecycle callback: reset the group to initial value.
+	 */
+	formResetCallback(): void {
+		this.value = this.defaultValue;
+		this.syncChildStates();
+		this.updateRovingTabindex();
+		this.updateFormValue();
+		this.touched = false;
+		this.showError = false;
+		this.internals?.setValidity({});
+	}
 
-  /**
-   * Form lifecycle callback: handle disabled state from fieldset or form.
-   */
-  formDisabledCallback(disabled: boolean): void {
-    this.disabled = disabled;
-    this.syncDisabledState();
-    this.updateRovingTabindex();
-  }
+	/**
+	 * Form lifecycle callback: handle disabled state from fieldset or form.
+	 */
+	formDisabledCallback(disabled: boolean): void {
+		this.disabled = disabled;
+		this.syncDisabledState();
+		this.updateRovingTabindex();
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div
         class="group-wrapper"
         role="radiogroup"
         aria-labelledby="${this.groupId}-label"
-        aria-required=${this.required ? 'true' : nothing}
+        aria-required=${this.required ? "true" : nothing}
         @ui-radio-change=${this.handleRadioChange}
         @keydown=${this.handleKeyDown}
       >
-        ${this.label
-          ? html`<span id="${this.groupId}-label" class="group-label"
+        ${
+					this.label
+						? html`<span id="${this.groupId}-label" class="group-label"
               >${this.label}</span
             >`
-          : nothing}
+						: nothing
+				}
         <div class="group-items">
           <slot @slotchange=${this.handleSlotChange}></slot>
         </div>
-        ${this.showError
-          ? html`<div class="error-text" role="alert">
-              ${this.error || 'Please select an option.'}
+        ${
+					this.showError
+						? html`<div class="error-text" role="alert">
+              ${this.error || "Please select an option."}
             </div>`
-          : nothing}
+						: nothing
+				}
       </div>
     `;
-  }
+	}
+}
+
+if (!customElements.get("lui-radio-group")) {
+	customElements.define("lui-radio-group", RadioGroup);
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		"lui-radio-group": RadioGroup;
+	}
 }

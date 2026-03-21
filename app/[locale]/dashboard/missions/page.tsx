@@ -2,13 +2,9 @@
 
 import { useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
-import { Layers, Target } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -28,32 +24,37 @@ const STATUS_CONFIG: Record<
 > = {
 	pending: {
 		label: "Pending",
-		className: "border-transparent bg-muted text-muted-foreground",
+		className: "bg-muted text-muted-foreground",
 	},
 	executing: {
 		label: "Executing",
-		className: "border-transparent bg-blue-500/15 text-blue-400",
+		className: "bg-blue-500/15 text-blue-400",
 	},
 	awaiting_checkpoint: {
 		label: "Awaiting checkpoint",
-		className: "border-transparent bg-amber-500/15 text-amber-400",
+		className: "bg-amber-500/15 text-amber-400",
 	},
 	completed: {
 		label: "Completed",
-		className: "border-transparent bg-green-500/15 text-green-400",
+		className: "bg-green-500/15 text-green-400",
 	},
 	failed: {
 		label: "Failed",
-		className: "border-transparent bg-red-500/15 text-red-400",
+		className: "bg-red-500/15 text-red-400",
 	},
 };
 
 function MissionStatusBadge({ status }: { status: MissionStatus }) {
 	const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
 	return (
-		<Badge className={cn("text-xs font-medium rounded-full", config.className)}>
+		<span
+			className={cn(
+				"inline-flex items-center text-xs font-medium rounded-full px-2.5 py-0.5",
+				config.className,
+			)}
+		>
 			{config.label}
-		</Badge>
+		</span>
 	);
 }
 
@@ -125,19 +126,19 @@ function MissionCardSkeleton() {
 		<div className="border border-border bg-card p-6 space-y-4">
 			<div className="flex items-start justify-between gap-3">
 				<div className="space-y-2 flex-1 min-w-0">
-					<Skeleton className="h-5 w-3/4" />
-					<Skeleton className="h-4 w-1/2" />
+					<div className="animate-pulse bg-muted rounded h-5 w-3/4" />
+					<div className="animate-pulse bg-muted rounded h-4 w-1/2" />
 				</div>
-				<Skeleton className="h-5 w-20 rounded-full shrink-0" />
+				<div className="animate-pulse bg-muted rounded-full h-5 w-20 shrink-0" />
 			</div>
 			<div className="space-y-1.5">
 				<div className="flex justify-between">
-					<Skeleton className="h-3 w-24" />
-					<Skeleton className="h-3 w-8" />
+					<div className="animate-pulse bg-muted rounded h-3 w-24" />
+					<div className="animate-pulse bg-muted rounded h-3 w-8" />
 				</div>
-				<Skeleton className="h-1 w-full" />
+				<div className="animate-pulse bg-muted rounded h-1 w-full" />
 			</div>
-			<Skeleton className="h-3 w-32" />
+			<div className="animate-pulse bg-muted rounded h-3 w-32" />
 		</div>
 	);
 }
@@ -149,7 +150,20 @@ function EmptyState() {
 		<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-6 border border-dashed border-border">
 			<div className="flex flex-col items-center gap-4">
 				<div className="icon-container" aria-hidden="true">
-					<Target className="size-4 text-muted-foreground" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="text-muted-foreground"
+						aria-hidden="true"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<line x1="12" y1="8" x2="12" y2="12" />
+						<line x1="12" y1="16" x2="12.01" y2="16" />
+					</svg>
 				</div>
 				<div className="space-y-1">
 					<h2 className="text-sm font-semibold text-foreground font-heading tracking-[-0.03em]">
@@ -160,15 +174,25 @@ function EmptyState() {
 					</p>
 				</div>
 			</div>
-			<Link href="/dashboard/architect">
-				<Button
-					size="sm"
-					className="btn-shadow active-scale rounded-full gap-2 font-medium"
-					aria-label="Go to Architect to create a mission"
+			<Link
+				href="/dashboard/architect"
+				className="inline-flex items-center gap-2 btn-shadow active-scale rounded-full px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				aria-label="Go to Architect to create a mission"
+			>
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1.5"
+					aria-hidden="true"
 				>
-					<Layers className="size-3.5" aria-hidden="true" />
-					Open Architect
-				</Button>
+					<path d="M12 2L2 7l10 5 10-5-10-5z" />
+					<path d="M2 17l10 5 10-5" />
+					<path d="M2 12l10 5 10-5" />
+				</svg>
+				Open Architect
 			</Link>
 		</div>
 	);
@@ -209,7 +233,20 @@ function MissionsList({ locale }: { locale: string }) {
 		return (
 			<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-4 border border-dashed border-border">
 				<div className="icon-container" aria-hidden="true">
-					<Target className="size-4 text-muted-foreground" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="text-muted-foreground"
+						aria-hidden="true"
+					>
+						<circle cx="12" cy="12" r="10" />
+						<line x1="12" y1="8" x2="12" y2="12" />
+						<line x1="12" y1="16" x2="12.01" y2="16" />
+					</svg>
 				</div>
 				<p className="text-sm text-muted-foreground">
 					No workspace found. Create a workspace first.

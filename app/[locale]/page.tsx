@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HeroSection } from "@/components/landing/HeroSection";
@@ -8,6 +7,7 @@ import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { TechStackSection } from "@/components/landing/TechStackSection";
+import { WebComponentsLoader } from "@/components/landing/WebComponentsLoader";
 
 type Props = {
 	params: Promise<{ locale: string }>;
@@ -37,7 +37,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 			description: t("og_description"),
 			url: "/",
 			type: "website",
-			images: [{ url: "/og-image.png", width: 1200, height: 630, alt: t("og_image_alt") }],
+			images: [
+				{
+					url: "/og-image.png",
+					width: 1200,
+					height: 630,
+					alt: t("og_image_alt"),
+				},
+			],
 		},
 		twitter: {
 			card: "summary_large_image",
@@ -54,6 +61,7 @@ export default async function LandingPage({ params }: Props) {
 
 	return (
 		<div className="min-h-screen bg-background">
+			<WebComponentsLoader />
 			<LandingNav />
 			<main id="main-content">
 				<HeroSection />

@@ -1,6 +1,4 @@
-import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type Tier = {
@@ -149,31 +147,40 @@ function PricingCard({
 						key={fk}
 						className="flex items-start gap-2.5 text-sm text-foreground"
 					>
-						<Check
+						{/* Check icon — inline SVG */}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
 							className={cn(
 								"size-4 shrink-0 mt-0.5",
 								isHighlighted ? "text-primary" : "text-muted-foreground",
 							)}
 							aria-hidden="true"
-						/>
+						>
+							<path d="M20 6 9 17l-5-5" />
+						</svg>
 						{t(fk)}
 					</li>
 				))}
 			</ul>
 
 			{/* CTA */}
-			<Button
-				asChild
-				className={cn(
-					"w-full h-12 rounded-full font-medium active-scale",
-					"transition-all duration-150 ease-out-expo",
-					isHighlighted
-						? "bg-primary text-primary-foreground border-0 btn-shadow hover:opacity-90"
-						: "bg-transparent border border-border text-foreground hover:bg-transparent hover:border-[var(--border-hover)] hover:opacity-80",
-				)}
-			>
-				<a href={tier.ctaHref}>{t(tier.ctaKey)}</a>
-			</Button>
+			<a href={tier.ctaHref} className="no-underline">
+				<ui-button
+					variant={isHighlighted ? "primary" : "outline"}
+					size="lg"
+					class="w-full"
+				>
+					{t(tier.ctaKey)}
+				</ui-button>
+			</a>
 		</article>
 	);
 }

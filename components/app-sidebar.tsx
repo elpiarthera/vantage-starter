@@ -13,13 +13,6 @@
  * Active state: 2px left border only, no background fill.
  */
 
-import {
-	LayoutGrid,
-	LayoutList,
-	MessageSquare,
-	Settings,
-	Sparkles,
-} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -105,10 +98,21 @@ export function AppSidebar() {
 										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard" onClick={handleNavClick}>
-											<LayoutGrid
-												className="size-[18px] shrink-0"
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
 												aria-hidden="true"
-											/>
+											>
+												<rect x="3" y="3" width="7" height="7" rx="1" />
+												<rect x="14" y="3" width="7" height="7" rx="1" />
+												<rect x="3" y="14" width="7" height="7" rx="1" />
+												<rect x="14" y="14" width="7" height="7" rx="1" />
+											</svg>
 											<span>Dashboard</span>
 										</Link>
 									</SidebarMenuButton>
@@ -123,10 +127,18 @@ export function AppSidebar() {
 										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/chat" onClick={handleNavClick}>
-											<MessageSquare
-												className="size-[18px] shrink-0"
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
 												aria-hidden="true"
-											/>
+											>
+												<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+											</svg>
 											<span>Chat</span>
 										</Link>
 									</SidebarMenuButton>
@@ -141,10 +153,23 @@ export function AppSidebar() {
 										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/missions" onClick={handleNavClick}>
-											<LayoutList
-												className="size-[18px] shrink-0"
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
 												aria-hidden="true"
-											/>
+											>
+												<line x1="8" y1="6" x2="21" y2="6" />
+												<line x1="8" y1="12" x2="21" y2="12" />
+												<line x1="8" y1="18" x2="21" y2="18" />
+												<line x1="3" y1="6" x2="3.01" y2="6" />
+												<line x1="3" y1="12" x2="3.01" y2="12" />
+												<line x1="3" y1="18" x2="3.01" y2="18" />
+											</svg>
 											<span>Missions</span>
 										</Link>
 									</SidebarMenuButton>
@@ -159,10 +184,20 @@ export function AppSidebar() {
 										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/architect" onClick={handleNavClick}>
-											<Sparkles
-												className="size-[18px] shrink-0"
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
 												aria-hidden="true"
-											/>
+											>
+												<path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+												<path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15z" />
+												<path d="M5 3l.5 1.5L7 5l-1.5.5L5 7l-.5-1.5L3 5l1.5-.5L5 3z" />
+											</svg>
 											<span>Architect</span>
 										</Link>
 									</SidebarMenuButton>
@@ -197,10 +232,19 @@ export function AppSidebar() {
 										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link href="/dashboard/account" onClick={handleNavClick}>
-											<Settings
-												className="size-[18px] shrink-0"
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
 												aria-hidden="true"
-											/>
+											>
+												<circle cx="12" cy="12" r="3" />
+												<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+											</svg>
 											<span>Settings</span>
 										</Link>
 									</SidebarMenuButton>

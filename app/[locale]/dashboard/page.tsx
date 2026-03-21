@@ -2,12 +2,9 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { CreditCard, Layers, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ErrorState } from "@/components/dashboard/shared/ErrorState";
 import { useUserSync } from "@/components/UserSyncProvider";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { useCredits } from "@/hooks/business-logic/useCredits";
 import { cn } from "@/lib/utils";
@@ -42,7 +39,19 @@ function CreditCard_({
 		<div className="card-elevated border border-border p-6 flex items-center justify-between gap-6">
 			<div className="flex items-center gap-4">
 				<div className="icon-container shrink-0" aria-hidden="true">
-					<CreditCard className="size-4 text-muted-foreground" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="text-muted-foreground"
+						aria-hidden="true"
+					>
+						<rect x="2" y="5" width="20" height="14" rx="2" />
+						<path d="M2 10h20" />
+					</svg>
 				</div>
 				<div>
 					<p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.06em]">
@@ -54,7 +63,7 @@ function CreditCard_({
 				</div>
 			</div>
 			{isLoading ? (
-				<Skeleton className="h-8 w-16" />
+				<div className="animate-pulse bg-muted rounded h-8 w-16" />
 			) : (
 				<span className="font-heading font-bold text-3xl text-foreground tabular-nums tracking-[-0.03em]">
 					{balance}
@@ -71,7 +80,20 @@ function ArchitectCTA() {
 		<div className="card-elevated border border-border p-6 flex items-start justify-between gap-6">
 			<div className="flex items-start gap-4">
 				<div className="icon-container shrink-0 mt-0.5" aria-hidden="true">
-					<Sparkles className="size-4 text-[oklch(0.62_0.18_240)]" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="text-[oklch(0.62_0.18_240)]"
+						aria-hidden="true"
+					>
+						<path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+						<path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15z" />
+						<path d="M5 3l.5 1.5L7 5l-1.5.5L5 7l-.5-1.5L3 5l1.5-.5L5 3z" />
+					</svg>
 				</div>
 				<div className="space-y-1">
 					<h2 className="font-heading font-semibold text-foreground tracking-[-0.03em]">
@@ -84,14 +106,13 @@ function ArchitectCTA() {
 				</div>
 			</div>
 			<Link href="/dashboard/architect" className="shrink-0">
-				<Button
+				<ui-button
+					variant="primary"
 					size="sm"
-					className="btn-shadow active-scale rounded-full gap-2 font-medium transition-[box-shadow,transform] duration-150"
-					style={{ transitionTimingFunction: "var(--ease-out-expo)" }}
+					class="btn-shadow active-scale rounded-full font-medium"
 				>
-					<Sparkles className="size-3.5" aria-hidden="true" />
 					Open Architect
-				</Button>
+				</ui-button>
 			</Link>
 		</div>
 	);
@@ -137,7 +158,20 @@ function SessionsEmptyState() {
 	return (
 		<div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
 			<div className="icon-container" aria-hidden="true">
-				<Layers className="size-4 text-muted-foreground" />
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1.5"
+					className="text-muted-foreground"
+					aria-hidden="true"
+				>
+					<path d="M12 2L2 7l10 5 10-5-10-5z" />
+					<path d="M2 17l10 5 10-5" />
+					<path d="M2 12l10 5 10-5" />
+				</svg>
 			</div>
 			<div className="space-y-1">
 				<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
@@ -229,9 +263,9 @@ export default function DashboardPage() {
 	if (isLoading) {
 		return (
 			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 space-y-4 animate-in fade-in duration-300">
-				<Skeleton className="h-24" />
-				<Skeleton className="h-24" />
-				<Skeleton className="h-56" />
+				<div className="animate-pulse bg-muted rounded h-24" />
+				<div className="animate-pulse bg-muted rounded h-24" />
+				<div className="animate-pulse bg-muted rounded h-56" />
 			</div>
 		);
 	}

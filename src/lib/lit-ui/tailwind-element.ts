@@ -17,12 +17,11 @@
  * }
  */
 
-import { LitElement, type CSSResultGroup } from 'lit';
-
-// Import your compiled Tailwind CSS (adjust path as needed)
-import tailwindStyles from '../styles/tailwind.css?inline';
+import { type CSSResultGroup, LitElement } from "lit";
 // Import host defaults for Shadow DOM @property workaround
-import hostDefaults from './host-defaults.css?inline';
+import hostDefaults from "./host-defaults.css?inline";
+// Import your compiled Tailwind CSS (adjust path as needed)
+import tailwindStyles from "./tailwind.css?inline";
 
 // =============================================================================
 // SHARED STYLESHEETS (parse once, share across all component instances)
@@ -46,10 +45,10 @@ hostDefaultsSheet.replaceSync(hostDefaults);
 const propertyRulePattern = /@property\s+[^{]+\{[^}]+\}/g;
 const propertyRules = tailwindStyles.match(propertyRulePattern) || [];
 
-if (propertyRules.length > 0 && typeof document !== 'undefined') {
-  const propertySheet = new CSSStyleSheet();
-  propertySheet.replaceSync(propertyRules.join('\n'));
-  document.adoptedStyleSheets = [...document.adoptedStyleSheets, propertySheet];
+if (propertyRules.length > 0 && typeof document !== "undefined") {
+	const propertySheet = new CSSStyleSheet();
+	propertySheet.replaceSync(propertyRules.join("\n"));
+	document.adoptedStyleSheets = [...document.adoptedStyleSheets, propertySheet];
 }
 
 // =============================================================================
@@ -60,21 +59,21 @@ if (propertyRules.length > 0 && typeof document !== 'undefined') {
  * Base class for Tailwind-enabled web components.
  */
 export class TailwindElement extends LitElement {
-  static styles: CSSResultGroup = [];
+	static styles: CSSResultGroup = [];
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this._adoptTailwindStyles();
-  }
+	override connectedCallback(): void {
+		super.connectedCallback();
+		this._adoptTailwindStyles();
+	}
 
-  private _adoptTailwindStyles(): void {
-    if (this.shadowRoot) {
-      const existingSheets = this.shadowRoot.adoptedStyleSheets;
-      this.shadowRoot.adoptedStyleSheets = [
-        tailwindSheet,
-        hostDefaultsSheet,
-        ...existingSheets,
-      ];
-    }
-  }
+	private _adoptTailwindStyles(): void {
+		if (this.shadowRoot) {
+			const existingSheets = this.shadowRoot.adoptedStyleSheets;
+			this.shadowRoot.adoptedStyleSheets = [
+				tailwindSheet,
+				hostDefaultsSheet,
+				...existingSheets,
+			];
+		}
+	}
 }
