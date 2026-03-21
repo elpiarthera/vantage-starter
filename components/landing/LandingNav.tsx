@@ -120,7 +120,7 @@ export function LandingNav() {
 						: "bg-transparent",
 				)}
 			>
-				<div className="max-w-6xl mx-auto px-6 lg:px-12 flex h-16 items-center justify-between">
+				<div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 					{/* Logo */}
 					<Link
 						href="/"
@@ -168,24 +168,20 @@ export function LandingNav() {
 					</nav>
 
 					{/* Actions */}
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-3">
 						<LanguageSwitcher />
 						<ThemeToggle />
 						<Link
 							href="/sign-in"
-							className="hidden sm:inline-flex no-underline"
+							className="hidden sm:inline-flex rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring no-underline"
 						>
-							<ui-button variant="ghost" size="sm">
-								{t("nav.sign_in")}
-							</ui-button>
+							{t("nav.sign_in")}
 						</Link>
 						<Link
 							href="/sign-up"
-							className="hidden sm:inline-flex no-underline btn-shadow rounded-lg"
+							className="hidden sm:inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 btn-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring no-underline"
 						>
-							<ui-button variant="primary" size="sm">
-								{t("nav.get_started")}
-							</ui-button>
+							{t("nav.get_started")}
 						</Link>
 
 						{/* Mobile hamburger — animated icon swap */}
