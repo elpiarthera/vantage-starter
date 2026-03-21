@@ -120,11 +120,11 @@ export function LandingNav() {
 						: "bg-transparent",
 				)}
 			>
-				<div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+				<div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
 					{/* Logo */}
 					<Link
 						href="/"
-						className="group flex items-center gap-2.5 no-underline"
+						className="group flex items-center gap-2.5 no-underline justify-self-start"
 						aria-label="VantageStarter home"
 					>
 						<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-2deg]">
@@ -138,7 +138,7 @@ export function LandingNav() {
 					{/* Desktop nav links — active underline indicator */}
 					<nav
 						aria-label={t("nav.aria_label")}
-						className="hidden md:flex items-center gap-1"
+						className="hidden md:flex items-center gap-1 justify-self-center"
 					>
 						{NAV_LINKS.map((link) => (
 							<a
@@ -168,7 +168,7 @@ export function LandingNav() {
 					</nav>
 
 					{/* Actions */}
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-3 justify-self-end">
 						<LanguageSwitcher />
 						<ThemeToggle />
 						<Link
