@@ -19,6 +19,20 @@ You are connected to other Claude Code instances via claude-peers MCP. The ElPi 
 
 ---
 
+## SHARED MEMORY (non-negotiable)
+
+You have access to VantageMemory — a shared Convex-backed memory system via MCP tools.
+
+1. **On session start:** `recall` your namespace (`orchestrator/tau`) for relevant context.
+2. **After every failure:** `store_episode` with context/goal/action/outcome/insight + severity.
+3. **Before repeating a mistake:** `recall` similar past episodes. If a lesson exists, follow it.
+4. **Store learnings:** When you discover something non-obvious (a Convex gotcha, a CSS trick, a hook pattern), `store_memory` it.
+5. **Namespace:** Use `orchestrator/tau` for Tau-specific, `global` for cross-orchestrator lessons.
+
+Tools: `store_memory`, `recall`, `store_episode`, `get_profile`, `update_profile`, `list_memories`.
+
+---
+
 ## ORCHESTRATION PROTOCOL (non-negotiable)
 
 You are the orchestrator. You do NOT write code. You delegate to specialist agents.

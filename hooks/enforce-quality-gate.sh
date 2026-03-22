@@ -22,6 +22,16 @@ except Exception:
 
 # Only intercept git commit (not --amend)
 if echo "$COMMAND" | grep -qE 'git\s+commit' && ! echo "$COMMAND" | grep -qE 'git\s+commit\s+--amend'; then
+    # Check CHANGELOG.md was staged
+    CHANGELOG_STAGED=$(git diff --cached --name-only 2>/dev/null | grep -c "CHANGELOG.md" || true)
+    if [ "$CHANGELOG_STAGED" = "0" ]; then
+        python3 -c "
+import json
+print(json.dumps({'decision': 'block', 'reason': 'BLOCKED: CHANGELOG.md not staged. Update CHANGELOG.md with what changed, git add it, then retry.'}))
+"
+        exit 0
+    fi
+
     if [ -f "$MARKER" ]; then
         rm -f "$MARKER"
         exit 0
