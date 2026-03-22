@@ -38,7 +38,7 @@ export function FAQSection() {
 						{FAQ_KEYS.map((key) => (
 							<lui-accordion-item key={key} class="border-b border-border">
 								<span
-									slot="trigger"
+									slot="header"
 									className="font-medium text-foreground text-sm"
 								>
 									{t(`${key}_q`)}

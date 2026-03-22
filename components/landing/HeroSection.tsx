@@ -187,11 +187,9 @@ export function HeroSection() {
 					<Link href="/sign-up">
 						<ui-button variant="primary" size="lg">
 							{t("cta_primary")}
-							<span slot="icon-end">
+							<span slot="icon-end" className="flex items-center">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
-									width="16"
-									height="16"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -199,6 +197,7 @@ export function HeroSection() {
 									strokeLinecap="round"
 									strokeLinejoin="round"
 									aria-hidden="true"
+									className="w-4 h-4"
 								>
 									<path d="M5 12h14" />
 									<path d="m12 5 7 7-7 7" />

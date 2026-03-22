@@ -1,0 +1,23 @@
+# Changelog
+
+All notable changes to VantageStarter are documented in this file.
+
+## [Unreleased]
+
+### Added
+- **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
+- **Design system**: Monochrome grayscale preset (zero chroma OKLCH) adopting litui.dev's color system
+- **Hero section**: Ported litui.dev Hero design — glassmorphic badge with ping dot, dual side blobs with pulse, responsive headline with `text-gradient`, `code-block` terminal with `terminal-glow`, removed tech logos strip
+- **CSS utilities**: Added `.code-block`, `.terminal-glow`, `.text-gradient` classes to globals.css
+- **Orchestrator v1**: 8 specialist agents, AGENTS.md, lit-ui skills, background enforcement hooks
+
+### Changed
+- Replaced Dark Electric Blue preset (hue 232) with pure monochrome grayscale across all tokens
+- Stripped all hue/chroma from globals.css (secondary, input, sidebar, chart, grid pattern, hero gradient)
+- Hero layout from full-viewport centered to litui.dev's padding-based approach (`pt-32 pb-20`)
+- LandingNav ported to litui.dev Header design with CSS grid layout
+
+### Fixed
+- Hero cycling words invisible — `.text-gradient` was overriding `-webkit-text-fill-color` on animated words
+- FAQ questions empty — accordion items used `slot="trigger"` instead of `slot="header"`
+- Hero CTA arrow icon wrapping to second line — added flex layout to icon-end slot span
