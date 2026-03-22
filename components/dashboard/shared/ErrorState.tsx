@@ -27,7 +27,7 @@ export function ErrorState({
 	const translatedActionLabel = actionLabel ?? t("try_again_button");
 
 	return (
-		<Card className="bg-[#182634] border-[#223649]">
+		<Card className="bg-card border-border">
 			<div className="flex flex-col items-center justify-center py-12 md:py-16 px-4 md:px-6 text-center">
 				<div className="mb-4 md:mb-6">
 					<AlertCircle className="h-12 w-12 md:h-16 md:w-16 text-red-500" />
@@ -37,7 +37,7 @@ export function ErrorState({
 					{translatedTitle}
 				</h3>
 
-				<p className="text-sm md:text-base text-gray-400 mb-6 md:mb-8 max-w-md">
+				<p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8 max-w-md">
 					{translatedDescription}
 				</p>
 

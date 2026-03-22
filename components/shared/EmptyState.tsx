@@ -21,10 +21,10 @@ export function EmptyState({
 	return (
 		<div className="flex flex-col items-center justify-center py-12 px-4 text-center">
 			{icon && <div className="mb-4 text-muted-foreground">{icon}</div>}
-			<h3 className="text-lg md:text-xl font-semibold text-white mb-2">
+			<h3 className="text-lg md:text-xl font-semibold text-primary-foreground mb-2">
 				{title}
 			</h3>
-			<p className="text-sm md:text-base text-gray-400 mb-6 max-w-md">
+			<p className="text-sm md:text-base text-muted-foreground mb-6 max-w-md">
 				{description}
 			</p>
 			{actionLabel && onAction && (

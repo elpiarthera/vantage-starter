@@ -29,3 +29,9 @@ All notable changes to VantageStarter are documented in this file.
 - `.text-gradient` now uses `var(--foreground)`/`var(--muted-foreground)` tokens instead of hardcoded OKLCH
 - Section padding consistency: Pricing + FAQ now use `md:py-32`, CTA added `lg:px-12`
 - Pricing cards `rounded-none` → `rounded-2xl` for consistency with other card styles
+- **App UI OKLCH port**: Converted 5 dashboard/shared components from hardcoded hex/gray to OKLCH tokens:
+  - `step-header.tsx`: 13 violations — all inline `style={{}}` removed, hex (#182634, #314d68, #0d7ff2) → bg-card, bg-muted, bg-primary
+  - `ProfileTab.tsx`: hex + gray + red classes → bg-card, border-border, text-foreground, bg-destructive
+  - `ErrorState.tsx`: hex → bg-card, border-border, text-muted-foreground
+  - `EmptyState.tsx`: text-white → text-primary-foreground, gray-400 → text-muted-foreground
+  - `TabNavigation.tsx`: slate-800/700 → bg-card/border-border, blue-600 → bg-primary

@@ -32,15 +32,12 @@ export function StepHeader({
 	const progressValue = (currentStep / 6) * 100;
 
 	return (
-		<div
-			className="shadow-md p-3 md:p-4 fixed top-0 w-full z-50"
-			style={{ backgroundColor: "#182634", borderBottom: "1px solid #223649" }}
-		>
+		<div className="shadow-md p-3 md:p-4 fixed top-0 w-full z-50 bg-card border-b border-border">
 			<div className="max-w-6xl mx-auto flex items-center justify-between">
 				<Link href={backHref}>
 					<Button
 						variant="ghost"
-						className="text-white hover:bg-[#223649] p-2 md:px-4"
+						className="text-foreground hover:bg-muted p-2 md:px-4"
 						aria-label={t("back_button")}
 					>
 						<ArrowLeft className="h-4 w-4 md:mr-2" />
@@ -49,21 +46,16 @@ export function StepHeader({
 				</Link>
 
 				<div className="flex-1 max-w-md mx-4 md:mx-8">
-					<Progress
-						value={progressValue}
-						className="h-2 mb-2"
-						style={{ backgroundColor: "#314d68" }}
-					/>
-					<div className="flex justify-between text-xs text-gray-400">
+					<Progress value={progressValue} className="h-2 mb-2 bg-muted" />
+					<div className="flex justify-between text-xs text-muted-foreground">
 						{[1, 2, 3, 4, 5, 6].map((num) => (
 							<span key={num} className="flex items-center gap-1">
 								<div
 									className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-xs ${
-										num <= currentStep ? "text-white" : "text-gray-400"
+										num <= currentStep
+											? "bg-primary text-primary-foreground"
+											: "bg-muted text-muted-foreground"
 									}`}
-									style={{
-										backgroundColor: num <= currentStep ? "#0d7ff2" : "#314d68",
-									}}
 								>
 									{num}
 								</div>
@@ -84,15 +76,15 @@ export function StepHeader({
 
 				<div className="flex items-center gap-2">
 					{totalDuration && (
-						<span className="text-sm text-gray-400 hidden md:inline">
+						<span className="text-sm text-muted-foreground hidden md:inline">
 							{t("total_duration")}:{" "}
-							<span className="text-white">{totalDuration}</span>
+							<span className="text-foreground">{totalDuration}</span>
 						</span>
 					)}
 					<Link href="/">
 						<Button
 							variant="ghost"
-							className="text-white hover:bg-[#223649] p-2 md:px-4"
+							className="text-foreground hover:bg-muted p-2 md:px-4"
 							aria-label={t("home_button")}
 						>
 							<Home className="h-4 w-4 md:mr-2" />
@@ -104,7 +96,7 @@ export function StepHeader({
 						<DropdownMenuTrigger asChild>
 							<Button
 								variant="ghost"
-								className="text-white hover:bg-[#223649] p-2 md:px-4"
+								className="text-foreground hover:bg-muted p-2 md:px-4"
 								aria-label={t("profile_button")}
 							>
 								<User className="h-4 w-4 md:mr-2" />
@@ -113,11 +105,11 @@ export function StepHeader({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
 							align="end"
-							className="w-48 bg-[#182634] border-[#223649] text-white"
+							className="w-48 bg-card border-border text-foreground"
 						>
 							<DropdownMenuItem
 								asChild
-								className="hover:bg-[#223649] focus:bg-[#223649]"
+								className="hover:bg-muted focus:bg-muted"
 							>
 								<Link
 									href="/dashboard"
@@ -131,7 +123,7 @@ export function StepHeader({
 								<SignOutButton redirectUrl="/sign-in">
 									<button
 										type="button"
-										className="flex w-full items-center hover:bg-[#223649] focus:bg-[#223649] cursor-pointer px-2 py-1.5 text-sm"
+										className="flex w-full items-center hover:bg-muted focus:bg-muted cursor-pointer px-2 py-1.5 text-sm"
 									>
 										<LogOut className="h-4 w-4 mr-2" />
 										{t("sign_out_button")}
@@ -145,12 +137,11 @@ export function StepHeader({
 
 			{title && (
 				<div className="text-center mt-4">
-					<h1 className="text-2xl md:text-3xl font-bold text-white">{title}</h1>
+					<h1 className="text-2xl md:text-3xl font-bold text-foreground">
+						{title}
+					</h1>
 					{subtitle && (
-						<p
-							className="text-lg md:text-xl italic mt-2"
-							style={{ color: "#0d7ff2" }}
-						>
+						<p className="text-lg md:text-xl italic mt-2 text-primary">
 							{subtitle}
 						</p>
 					)}

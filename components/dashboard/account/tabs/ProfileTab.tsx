@@ -477,15 +477,17 @@ export function ProfileTab({ user }: ProfileTabProps) {
 				open={isDeleteDialogOpen}
 				onOpenChange={setIsDeleteDialogOpen}
 			>
-				<AlertDialogContent className="bg-[#182634] border-[#314d68]">
+				<AlertDialogContent className="bg-card border-border">
 					<AlertDialogHeader>
-						<AlertDialogTitle className="flex items-center gap-2 text-white">
+						<AlertDialogTitle className="flex items-center gap-2 text-foreground">
 							<AlertTriangle className="h-5 w-5 text-destructive" />
 							{t("delete_confirm_title")}
 						</AlertDialogTitle>
 						<AlertDialogDescription asChild>
 							<div className="space-y-3">
-								<p className="text-gray-400">{t("delete_confirm_desc")}</p>
+								<p className="text-muted-foreground">
+									{t("delete_confirm_desc")}
+								</p>
 								{subscription?.status === "active" && (
 									<div className="flex items-start gap-2 rounded-md border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-sm text-orange-300">
 										<AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -511,7 +513,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel className="min-h-[44px] border-[#314d68] text-gray-300 hover:bg-[#223649]">
+						<AlertDialogCancel className="min-h-[44px] border-border text-muted-foreground hover:bg-muted">
 							{t("delete_confirm_cancel")}
 						</AlertDialogCancel>
 						<AlertDialogAction

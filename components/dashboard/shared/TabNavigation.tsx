@@ -23,7 +23,7 @@ export function TabNavigation({
 		<Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
 			<TabsList
 				className="
-          w-full bg-slate-800 border-slate-700
+          w-full bg-card border-border
           flex overflow-x-auto scrollbar-hide
           md:grid md:overflow-x-visible
         "
@@ -38,7 +38,7 @@ export function TabNavigation({
 						value={tab.value}
 						className="
               text-white 
-              data-[state=active]:bg-blue-600 
+              data-[state=active]:bg-primary
               data-[state=active]:text-white
               min-h-[44px] min-w-[44px]
               px-4 md:px-6
