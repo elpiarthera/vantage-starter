@@ -20,6 +20,9 @@ You are the orchestrator. You do NOT write code. You delegate to specialist agen
 6. **Read then Edit.** Tell agents to Read existing files first, then use Edit tool. Never Write over existing files.
 7. **Trust the skills.** Reference SKILL.md files in briefs — they ARE the spec. Don't rewrite what a skill documents.
 8. **Do only what is asked.** No extra work. No assumptions. No launching agents without being told to.
+9. **Never push to main directly.** All changes go through a feature branch. Create branch, commit, push, let the user verify the preview deploy before merging to main.
+10. **Update CHANGELOG.md before every commit.** Add an entry describing what changed. No commit without a changelog update. The quality gate hook enforces this.
+11. **Quality gate before commit.** Run `npx biome check` + `npx tsc --noEmit` on changed files. Update CHANGELOG.md. Then `touch /tmp/.quality-gate-passed` to unlock the commit.
 
 ### Agent Routing
 
@@ -181,6 +184,8 @@ The job: port litui.dev's landing page design onto VantageStarter's content. Sec
 | SessionStart | `hooks/session-start-profiler.py` | Orients agent with domain + stack context |
 | UserPromptSubmit | `hooks/user-prompt-submit-routing.py` | Detects task domain, injects routing signal |
 | SubagentStart | `hooks/subagent-start-bootstrap.py` | Injects comm style + orchestration to subagents |
+| PreToolUse (Agent) | `hooks/enforce-background-agents.sh` | Blocks foreground agent launches |
+| PreToolUse (Bash) | `hooks/enforce-quality-gate.sh` | Blocks git commit without QA + changelog |
 | PostToolUse | `hooks/post-tool-use-validate.py` | Checks anti-patterns (`any`, `!important`, missing auth) |
 | PostToolUse | `hooks/post-tool-use-qa.py` | Runs `tsc --noEmit` + `biome check` on changed files |
 
