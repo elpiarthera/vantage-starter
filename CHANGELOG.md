@@ -15,6 +15,10 @@ All notable changes to VantageStarter are documented in this file.
 - Stagger delays updated to match litui.dev timing (0.1s increments instead of 0.05s)
 - Added missing `@keyframes float` — CTA decorative circles had no animation
 - Added missing `.reveal-scale` + `.reveal-scale.revealed` — TechStack logos weren't animating
+- **Visual alignment pass** (screenshot comparison vs litui.dev):
+  - Removed gray gradient bands: FeaturesSection bg overlay + TechStack section fades
+  - Hero cycling words brighter (`oklch(0.90)` up from `0.80`)
+  - Pricing cards: `bg-card/border-border` → `bg-white dark:bg-gray-900 / border-gray-200 dark:border-gray-800`
 - Fixed `hero-gradient` light mode: was dark overlay (`oklch(0.16)`), now light bloom (`oklch(0.92)`) matching litui.dev
 - Added dark mode variant for `hero-gradient`
 - FeaturesSection: added missing subtitle paragraph under h2 (litui.dev parity)

@@ -245,12 +245,6 @@ export function FeaturesSection() {
 			aria-labelledby="features-heading"
 			className="relative py-24 md:py-32"
 		>
-			{/* Subtle background */}
-			<div
-				className="pointer-events-none absolute inset-0 bg-gradient-to-b from-gray-50/50 dark:from-gray-900/50 to-transparent"
-				aria-hidden="true"
-			/>
-
 			<div className="relative mx-auto max-w-6xl px-6">
 				<div
 					ref={headingRef}

@@ -222,16 +222,6 @@ export function TechStackSection() {
 			aria-labelledby="techstack-heading"
 			className="relative py-20 md:py-24"
 		>
-			{/* Section fades for seamless transitions */}
-			<div
-				className="pointer-events-none absolute inset-x-0 top-0 h-16 section-fade-top"
-				aria-hidden="true"
-			/>
-			<div
-				className="pointer-events-none absolute inset-x-0 bottom-0 h-16 section-fade-bottom"
-				aria-hidden="true"
-			/>
-
 			<div className="relative max-w-6xl mx-auto px-6 lg:px-12 py-14">
 				<p
 					id="techstack-heading"

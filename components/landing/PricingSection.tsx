@@ -103,10 +103,9 @@ function PricingCard({
 		<article
 			className={cn(
 				"rounded-2xl p-8 flex flex-col relative h-full",
-				"bg-card",
 				isHighlighted
-					? "border border-primary card-elevated"
-					: "border border-border",
+					? "bg-white dark:bg-gray-900 border border-primary card-elevated"
+					: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800",
 			)}
 		>
 			{/* Badge — only on Pro */}
