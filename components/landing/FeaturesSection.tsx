@@ -265,6 +265,9 @@ export function FeaturesSection() {
 					>
 						{t("heading")}
 					</h2>
+					<p className="mx-auto max-w-2xl text-lg text-gray-500 dark:text-gray-400 leading-relaxed">
+						{t("subheading")}
+					</p>
 				</div>
 
 				<div ref={gridRef} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

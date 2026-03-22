@@ -2616,6 +2616,7 @@
     "features": {
       "eyebrow": "What the agentic era demands",
       "heading": "The stack that assumes AI is the product",
+      "subheading": "Everything you need to ship your SaaS fast — auth, billing, real-time backend, and AI, all pre-wired.",
       "ai_renders_title": "AI that renders, not replies",
       "ai_renders_desc": "AI SDK v6 + Generative UI. Your agents return interactive React components — not walls of markdown the user has to parse.",
       "realtime_title": "Real-time without the plumbing",

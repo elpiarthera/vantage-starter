@@ -218,6 +218,22 @@
 .stagger-5 { animation-delay: 0.5s; }
 .stagger-6 { animation-delay: 0.6s; }
 
+/* Floating animation for decorative elements (litui.dev) */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
+}
+
 /* Subtle pulse for loading states */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 1; }
@@ -499,13 +515,13 @@ body::before {
     linear-gradient(to bottom, oklch(0.18 0 0 / 0.6) 1px, transparent 1px);
 }
 
-/* Radial gradient overlay for hero (neutral tinted, not blue glow) */
+/* Radial gradient overlay for hero (litui.dev: light bloom in light mode, dark glow in dark) */
 .hero-gradient {
-  background: radial-gradient(
-    ellipse 80% 50% at 50% -10%,
-    oklch(0.16 0 0 / 0.8) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.92 0 0) 0%, transparent 70%);
+}
+
+.dark .hero-gradient {
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.18 0 0) 0%, transparent 70%);
 }
 
 /* Bottom fade — bleeds section into the next */
@@ -578,6 +594,32 @@ body::before {
 .reveal.revealed {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Scale pulse for framework logos on reveal (litui.dev) */
+@keyframes scale-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
+}
+
+.reveal-scale.revealed {
+  animation: scale-pulse 0.6s var(--ease-out-expo) forwards;
 }
 
 /* Stagger delays for sequential reveal */

@@ -2616,6 +2616,7 @@
     "features": {
       "eyebrow": "Ce que l'ère agentique exige",
       "heading": "La stack qui part du principe que l'IA est le produit",
+      "subheading": "Tout ce qu'il faut pour lancer votre SaaS rapidement — auth, facturation, backend temps réel et IA, tout précâblé.",
       "ai_renders_title": "Une IA qui affiche, pas qui répond",
       "ai_renders_desc": "AI SDK v6 + Generative UI. Vos agents retournent des composants React interactifs — pas des murs de markdown que l'utilisateur doit déchiffrer.",
       "realtime_title": "Temps réel sans la plomberie",

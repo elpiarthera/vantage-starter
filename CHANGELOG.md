@@ -13,6 +13,11 @@ All notable changes to VantageStarter are documented in this file.
 ### Fixed
 - **Blank page**: Added missing `animate-fade-in-up` keyframe to globals.css — hero elements had `opacity-0` but animation class was undefined, making all content invisible
 - Stagger delays updated to match litui.dev timing (0.1s increments instead of 0.05s)
+- Added missing `@keyframes float` — CTA decorative circles had no animation
+- Added missing `.reveal-scale` + `.reveal-scale.revealed` — TechStack logos weren't animating
+- Fixed `hero-gradient` light mode: was dark overlay (`oklch(0.16)`), now light bloom (`oklch(0.92)`) matching litui.dev
+- Added dark mode variant for `hero-gradient`
+- FeaturesSection: added missing subtitle paragraph under h2 (litui.dev parity)
 
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
