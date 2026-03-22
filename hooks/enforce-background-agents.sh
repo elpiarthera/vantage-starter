@@ -7,7 +7,7 @@
 INPUT=$(cat)
 
 # Check if run_in_background is set to true
-if echo "$INPUT" | grep -q '"run_in_background":\s*true'; then
+if echo "$INPUT" | grep -qE '"run_in_background":[[:space:]]*true'; then
   echo '{"decision":"allow"}'
   exit 0
 fi
