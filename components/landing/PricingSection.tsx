@@ -102,7 +102,7 @@ function PricingCard({
 	return (
 		<article
 			className={cn(
-				"rounded-none p-8 flex flex-col relative h-full",
+				"rounded-2xl p-8 flex flex-col relative h-full",
 				"bg-card",
 				isHighlighted
 					? "border border-primary card-elevated"

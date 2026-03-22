@@ -28,3 +28,4 @@ All notable changes to VantageStarter are documented in this file.
 - `hover:bg-white/5` → `hover:bg-foreground/5` in HeroSection (non-OKLCH literal)
 - `.text-gradient` now uses `var(--foreground)`/`var(--muted-foreground)` tokens instead of hardcoded OKLCH
 - Section padding consistency: Pricing + FAQ now use `md:py-32`, CTA added `lg:px-12`
+- Pricing cards `rounded-none` → `rounded-2xl` for consistency with other card styles
