@@ -36,7 +36,11 @@ export function FAQSection() {
 
 					<lui-accordion collapsible class="w-full border-t border-border">
 						{FAQ_KEYS.map((key) => (
-							<lui-accordion-item key={key} class="border-b border-border">
+							<lui-accordion-item
+								key={key}
+								value={key}
+								class="border-b border-border"
+							>
 								<span
 									slot="header"
 									className="font-medium text-foreground text-sm"

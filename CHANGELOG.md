@@ -30,6 +30,8 @@ All notable changes to VantageStarter are documented in this file.
 - **CSS fades**: `.bottom-fade`, `.section-fade-top/bottom` now use explicit oklch + `.dark` variants instead of `var(--background)`
 - **ThemeToggle**: Replaced shadcn Button + lucide-react with litui.dev's exact plain button + inline SVG sun/moon
 - **Gray palette**: Overrode Tailwind's blue-tinted default grays with pure achromatic `oklch(X 0 0)` values matching litui.dev — eliminates blue cast on all `gray-*` classes
+- **FAQ accordion**: Added missing `value` prop to `<lui-accordion-item>` — clicks were non-functional without it
+- **Pricing buttons**: Replaced `<ui-button>` with native `<a>` elements styled per litui.dev (rounded-xl, px-6 py-3, font-semibold)
 
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)

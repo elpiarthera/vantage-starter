@@ -175,14 +175,15 @@ function PricingCard({
 			</ul>
 
 			{/* CTA */}
-			<a href={tier.ctaHref} className="no-underline">
-				<ui-button
-					variant={isHighlighted ? "primary" : "outline"}
-					size="lg"
-					class="w-full"
-				>
-					{t(tier.ctaKey)}
-				</ui-button>
+			<a
+				href={tier.ctaHref}
+				className={
+					isHighlighted
+						? "block w-full rounded-xl bg-gray-900 dark:bg-gray-100 px-6 py-3 text-center text-base font-semibold text-white dark:text-gray-900 transition-all hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg active:scale-[0.98] btn-shadow focus-ring no-underline"
+						: "block w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-3 text-center text-base font-semibold text-gray-900 dark:text-gray-100 transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md active:scale-[0.98] shadow-sm focus-ring no-underline"
+				}
+			>
+				{t(tier.ctaKey)}
 			</a>
 		</article>
 	);
