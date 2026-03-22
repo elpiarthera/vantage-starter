@@ -61,7 +61,7 @@ export default async function LandingPage({ params }: Props) {
 	setRequestLocale(locale);
 
 	return (
-		<div className="min-h-screen bg-background">
+		<div className="min-h-screen bg-white dark:bg-gray-950">
 			<WebComponentsLoader />
 			<LandingNav />
 			<main id="main-content">

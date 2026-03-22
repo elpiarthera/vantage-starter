@@ -26,6 +26,9 @@ All notable changes to VantageStarter are documented in this file.
 - Fixed `hero-gradient` light mode: was dark overlay (`oklch(0.16)`), now light bloom (`oklch(0.92)`) matching litui.dev
 - Added dark mode variant for `hero-gradient`
 - FeaturesSection: added missing subtitle paragraph under h2 (litui.dev parity)
+- **Page bg**: `bg-background` → `bg-white dark:bg-gray-950` matching litui.dev exactly
+- **CSS fades**: `.bottom-fade`, `.section-fade-top/bottom` now use explicit oklch + `.dark` variants instead of `var(--background)`
+- **ThemeToggle**: Replaced shadcn Button + lucide-react with litui.dev's exact plain button + inline SVG sun/moon
 
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
