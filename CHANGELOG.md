@@ -35,3 +35,9 @@ All notable changes to VantageStarter are documented in this file.
   - `ErrorState.tsx`: hex → bg-card, border-border, text-muted-foreground
   - `EmptyState.tsx`: text-white → text-primary-foreground, gray-400 → text-muted-foreground
   - `TabNavigation.tsx`: slate-800/700 → bg-card/border-border, blue-600 → bg-primary
+- **Hero visual alignment** (litui.dev parity):
+  - Cycling words brighter — `oklch(0.80 0 0)` instead of faded muted-foreground
+  - Badge glassmorphic — `bg-foreground/5 border-foreground/10` with backdrop-blur
+  - Terminal chrome — dots grouped in `flex gap-1.5`, label with `ml-2 font-medium`, `p-5` padding
+  - CTA buttons — native anchors with `bg-foreground text-background`, `px-7 py-3.5`, `font-bold`, `rounded-xl`
+  - H1 spacing — `mb-8` for more breathing room
