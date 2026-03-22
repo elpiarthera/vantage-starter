@@ -33,6 +33,7 @@ All notable changes to VantageStarter are documented in this file.
 - **FAQ accordion**: Added missing `value` prop to `<lui-accordion-item>` — clicks were non-functional without it
 - **Pricing buttons**: Replaced `<ui-button>` with native `<a>` elements styled per litui.dev (rounded-xl, px-6 py-3, font-semibold)
 - **Auth pages**: Clerk appearance ported to monochrome grayscale — all blue-tinted hex replaced with pure achromatic grays, rounded-2xl cards, white CTA button. Sign-in/sign-up pages use `bg-gray-950`
+- Removed reference screenshots (litui-reference.png, vantage-starter-current.png) from repo
 
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
