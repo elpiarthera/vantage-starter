@@ -1,48 +1,48 @@
 /*
-  Preset: Dark Electric Blue (DEFAULT)
-  Hue: 232° — deep navy + electric blue
-  Character: code editor aesthetic, VS Code dark palette feel
-  WCAG: muted-foreground L=0.70 minimum in dark mode (verified)
+  Preset: Monochrome Grayscale
+  Hue: none — pure achromatic
+  Character: clean, neutral, zero chroma
+  WCAG: muted-foreground L=0.65 minimum in dark mode (verified)
 */
 
 :root {
-  --primary: oklch(0.50 0.22 232);
+  --primary: oklch(0.22 0 0);
   --primary-foreground: oklch(0.99 0 0);
-  --accent: oklch(0.92 0.06 232);
+  --accent: oklch(0.96 0 0);
   --accent-foreground: oklch(0.20 0 0);
-  --accent-warm: oklch(0.45 0.14 65);
-  --muted: oklch(0.96 0.00 0);
-  --muted-foreground: oklch(0.52 0 0);
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.10 0.01 232);
-  --card: oklch(0.97 0.01 232);
-  --card-foreground: oklch(0.10 0.01 232);
-  --popover: oklch(0.97 0.01 232);
-  --popover-foreground: oklch(0.10 0.01 232);
-  --border: oklch(0.88 0.02 232);
-  --ring: oklch(0.50 0.22 232);
+  --accent-warm: oklch(0.45 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.50 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --border: oklch(0.90 0 0);
+  --ring: oklch(0.22 0 0);
   /* Hover state tokens — light mode */
-  --card-hover: oklch(0.94 0.02 232);
-  --border-hover: oklch(0.80 0.04 232);
+  --card-hover: oklch(0.96 0 0);
+  --border-hover: oklch(0.82 0 0);
 }
 
 .dark {
-  --primary: oklch(0.62 0.18 240);
-  --primary-foreground: oklch(0.08 0.01 240);
-  --accent: oklch(0.25 0.08 232);
-  --accent-foreground: oklch(0.94 0.01 232);
-  --accent-warm: oklch(0.75 0.14 65);
-  --muted: oklch(0.14 0.01 240);
-  --muted-foreground: oklch(0.65 0.01 240);
-  --background: oklch(0.10 0.01 240);
-  --foreground: oklch(0.93 0.01 240);
-  --card: oklch(0.12 0.01 240);
-  --card-foreground: oklch(0.93 0.01 240);
-  --popover: oklch(0.12 0.01 240);
-  --popover-foreground: oklch(0.93 0.01 240);
-  --border: oklch(0.20 0.01 240);
-  --ring: oklch(0.62 0.18 240);
+  --primary: oklch(0.90 0 0);
+  --primary-foreground: oklch(0.10 0 0);
+  --accent: oklch(0.20 0 0);
+  --accent-foreground: oklch(0.95 0 0);
+  --accent-warm: oklch(0.70 0 0);
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --background: oklch(0.10 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --border: oklch(0.25 0 0);
+  --ring: oklch(0.90 0 0);
   /* Hover state tokens — dark mode */
-  --card-hover: oklch(0.14 0.01 240);
-  --border-hover: oklch(0.28 0.01 240);
+  --card-hover: oklch(0.16 0 0);
+  --border-hover: oklch(0.30 0 0);
 }
