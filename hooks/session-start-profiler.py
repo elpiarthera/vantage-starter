@@ -74,6 +74,12 @@ def main():
         "8 agents: onboarding, frontend-dev, convex-expert, clerk-expert, seo-dev, sentinel, accessibility-audit, senior-dev."
     )
 
+    # Peer messaging reminder
+    brief_parts.append(
+        "PEER CHECK: Call check_messages now to see if the ElPi Corp orchestrator sent you a mission. "
+        "Also call set_summary with what you are working on."
+    )
+
     session_brief = " | ".join(brief_parts)
 
     output = {

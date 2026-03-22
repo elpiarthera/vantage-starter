@@ -155,6 +155,7 @@ def main():
     context_parts = [
         f"[Routing signal] Task matches agent: `{agent}` — {AGENT_DESCRIPTIONS.get(agent, '')}",
         f"Delegate to `{agent}` with a short brief (3-5 sentences). Do not do this work yourself.",
+        "[Peers] Call check_messages to see if the ElPi Corp orchestrator has new instructions.",
     ]
 
     # Show alternatives if close match
