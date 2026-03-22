@@ -10,6 +10,10 @@ All notable changes to VantageStarter are documented in this file.
 - **LandingFooter**: Copied litui.dev Footer.tsx — link underline animation, social icon hover lift, gray-*/dark: classes
 - **HeroSection**: Copied litui.dev Hero.tsx — exact badge, terminal chrome, CTA button styles
 
+### Fixed
+- **Blank page**: Added missing `animate-fade-in-up` keyframe to globals.css — hero elements had `opacity-0` but animation class was undefined, making all content invisible
+- Stagger delays updated to match litui.dev timing (0.1s increments instead of 0.05s)
+
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
 - **Design system**: Monochrome grayscale preset (zero chroma OKLCH) adopting litui.dev's color system
