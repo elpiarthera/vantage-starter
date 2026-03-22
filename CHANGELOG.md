@@ -15,7 +15,9 @@ All notable changes to VantageStarter are documented in this file.
 - Replaced Dark Electric Blue preset (hue 232) with pure monochrome grayscale across all tokens
 - Stripped all hue/chroma from globals.css (secondary, input, sidebar, chart, grid pattern, hero gradient)
 - Hero layout from full-viewport centered to litui.dev's padding-based approach (`pt-32 pb-20`)
-- LandingNav ported to litui.dev Header design with CSS grid layout
+- LandingNav: converted all `gray-*` + `dark:` classes to OKLCH token classes (text-foreground, bg-muted, etc.)
+- Pricing: replaced non-existent `var(--accent-warm)` with grayscale tokens, fixed eyebrow typography
+- **CTA section**: New `CTASection.tsx` — ported litui.dev Cta.tsx with reveal animations, floating blobs, terminal block, i18n keys (en/fr)
 
 ### Fixed
 - Hero cycling words invisible — `.text-gradient` was overriding `-webkit-text-fill-color` on animated words

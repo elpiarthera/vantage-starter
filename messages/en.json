@@ -2692,6 +2692,14 @@
     "techstack": {
       "heading": "Built on the modern stack"
     },
+    "cta": {
+      "eyebrow": "Start Building",
+      "heading": "Your AI-native SaaS. Ready in minutes.",
+      "subline": "Stop rebuilding the plumbing. VantageStarter gives you the full stack — real-time backend, auth, billing, generative UI, and 36 agents — so you can ship what matters.",
+      "cta_primary": "Get VantageStarter",
+      "cta_secondary": "View on GitHub",
+      "quick_label": "Or start right now:"
+    },
     "footer": {
       "legal_nav_aria": "Legal navigation",
       "legal": "Legal",

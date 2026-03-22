@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { CTASection } from "@/components/landing/CTASection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HeroSection } from "@/components/landing/HeroSection";
@@ -69,6 +70,7 @@ export default async function LandingPage({ params }: Props) {
 				<TechStackSection />
 				<PricingSection />
 				<FAQSection />
+				<CTASection />
 			</main>
 			<LandingFooter />
 		</div>

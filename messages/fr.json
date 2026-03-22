@@ -2656,6 +2656,14 @@
       "pro_f9": "Mises à jour prioritaires + accès Discord",
       "pro_f10": "Licence à vie, projets illimités"
     },
+    "cta": {
+      "eyebrow": "Commencer à construire",
+      "heading": "Votre SaaS natif IA. Prêt en quelques minutes.",
+      "subline": "Arrêtez de reconstruire la plomberie. VantageStarter vous donne la pile complète — backend temps réel, authentification, facturation, UI générative et 36 agents — pour que vous puissiez livrer ce qui compte.",
+      "cta_primary": "Obtenir VantageStarter",
+      "cta_secondary": "Voir sur GitHub",
+      "quick_label": "Ou commencez maintenant :"
+    },
     "footer": {
       "legal_nav_aria": "Navigation légale",
       "legal": "Mentions légales",

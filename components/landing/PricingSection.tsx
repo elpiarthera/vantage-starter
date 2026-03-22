@@ -60,7 +60,7 @@ export function PricingSection() {
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Header */}
 				<div className="mb-12 max-w-xl">
-					<p className="text-xs font-medium tracking-[0.05em] uppercase text-[var(--accent-warm)] mb-3">
+					<p className="text-sm font-semibold tracking-[0.15em] uppercase text-muted-foreground mb-3">
 						{t("eyebrow")}
 					</p>
 					<h2
@@ -107,7 +107,7 @@ function PricingCard({
 		>
 			{/* Badge — only on Pro */}
 			{isHighlighted && tier.badgeKey && (
-				<span className="inline-flex items-center rounded-full bg-[var(--accent-warm)] text-black px-3 py-1 text-xs font-medium mb-4 self-start">
+				<span className="inline-flex items-center rounded-full bg-foreground text-background px-3 py-1 text-xs font-medium mb-4 self-start">
 					{t(tier.badgeKey)}
 				</span>
 			)}

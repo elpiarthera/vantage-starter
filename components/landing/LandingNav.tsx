@@ -124,7 +124,7 @@ export function LandingNav() {
 			className={cn(
 				"fixed top-0 left-0 right-0 z-50 transition-all duration-500",
 				isScrolled
-					? "border-b border-gray-200/80 bg-white/90 backdrop-blur-md shadow-[0_1px_3px_oklch(0_0_0/0.04)] dark:border-gray-800/80 dark:bg-gray-950/90"
+					? "border-b border-border/80 bg-background/90 backdrop-blur-md shadow-[0_1px_3px_oklch(0_0_0/0.04)]"
 					: "bg-transparent",
 			)}
 		>
@@ -138,10 +138,10 @@ export function LandingNav() {
 					className="group flex items-center gap-2.5 no-underline"
 					aria-label="VantageStarter home"
 				>
-					<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 text-white text-xs font-bold shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-2deg] dark:bg-gray-100 dark:text-gray-900">
+					<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background text-xs font-bold shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-2deg]">
 						VS
 					</span>
-					<span className="text-xl font-bold text-gray-900 dark:text-gray-100 transition-all duration-300 group-hover:tracking-wide">
+					<span className="text-xl font-bold text-foreground transition-all duration-300 group-hover:tracking-wide">
 						VantageStarter
 					</span>
 				</Link>
@@ -156,15 +156,15 @@ export function LandingNav() {
 							className={cn(
 								"group relative rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-ring",
 								activeSection === link.href
-									? "text-gray-900 dark:text-gray-100"
-									: "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+									? "text-foreground"
+									: "text-muted-foreground hover:text-foreground",
 							)}
 						>
 							{t(link.labelKey)}
 							<span
 								aria-hidden="true"
 								className={cn(
-									"absolute bottom-1.5 left-4 right-4 h-px bg-gray-900 dark:bg-gray-100 origin-left transition-transform duration-300",
+									"absolute bottom-1.5 left-4 right-4 h-px bg-foreground origin-left transition-transform duration-300",
 									activeSection === link.href
 										? "scale-x-100"
 										: "scale-x-0 group-hover:scale-x-100",
@@ -189,7 +189,7 @@ export function LandingNav() {
 						}
 						aria-expanded={mobileMenuOpen}
 						aria-controls="mobile-menu"
-						className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 focus-ring md:hidden"
+						className="relative flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-ring md:hidden"
 					>
 						<svg
 							className={cn(
@@ -231,14 +231,14 @@ export function LandingNav() {
 
 					<Link
 						href="/sign-in"
-						className="hidden rounded-lg px-4 py-2 text-sm font-medium text-gray-500 no-underline transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 focus-ring sm:inline-flex"
+						className="hidden rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground focus-ring sm:inline-flex"
 					>
 						{t("nav.sign_in")}
 					</Link>
 
 					<Link
 						href="/sign-up"
-						className="hidden rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white no-underline transition-all hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 btn-shadow focus-ring sm:inline-flex"
+						className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground no-underline transition-all hover:bg-primary/90 btn-shadow focus-ring sm:inline-flex"
 					>
 						{t("nav.get_started")}
 					</Link>
@@ -252,7 +252,7 @@ export function LandingNav() {
 					ref={menuRef as React.RefObject<HTMLElement>}
 					aria-label={t("nav.aria_label")}
 					onKeyDown={handleMenuKeyDown}
-					className="border-t border-gray-200/80 bg-white/95 backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-950/95 md:hidden mobile-menu-enter"
+					className="border-t border-border/80 bg-background/95 backdrop-blur-md md:hidden mobile-menu-enter"
 				>
 					<div className="mx-auto max-w-6xl space-y-1 px-6 py-4">
 						{NAV_LINKS.map((link, i) => (
@@ -265,8 +265,8 @@ export function LandingNav() {
 								className={cn(
 									"block rounded-lg px-4 py-3 text-base font-medium transition-colors focus-ring",
 									activeSection === link.href
-										? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-										: "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-100",
+										? "bg-muted text-foreground"
+										: "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
 								)}
 							>
 								{t(link.labelKey)}
@@ -275,18 +275,18 @@ export function LandingNav() {
 					</div>
 
 					{/* Mobile CTA buttons */}
-					<div className="mx-auto max-w-6xl border-t border-gray-200/60 dark:border-gray-800/60 px-6 pb-6 pt-4 flex flex-col gap-3">
+					<div className="mx-auto max-w-6xl border-t border-border/60 px-6 pb-6 pt-4 flex flex-col gap-3">
 						<Link
 							href="/sign-in"
 							onClick={closeMobileMenu}
-							className="block rounded-lg px-4 py-3 text-center text-base font-medium text-gray-600 no-underline transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-100 focus-ring"
+							className="block rounded-lg px-4 py-3 text-center text-base font-medium text-muted-foreground no-underline transition-colors hover:bg-muted/50 hover:text-foreground focus-ring"
 						>
 							{t("nav.sign_in")}
 						</Link>
 						<Link
 							href="/sign-up"
 							onClick={closeMobileMenu}
-							className="block rounded-lg bg-gray-900 px-4 py-3 text-center text-base font-medium text-white no-underline transition-all hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 btn-shadow focus-ring"
+							className="block rounded-lg bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground no-underline transition-all hover:bg-primary/90 btn-shadow focus-ring"
 						>
 							{t("nav.get_started")}
 						</Link>
