@@ -19,6 +19,10 @@ All notable changes to VantageStarter are documented in this file.
   - Removed gray gradient bands: FeaturesSection bg overlay + TechStack section fades
   - Hero cycling words brighter (`oklch(0.90)` up from `0.80`)
   - Pricing cards: `bg-card/border-border` → `bg-white dark:bg-gray-900 / border-gray-200 dark:border-gray-800`
+- **Nav copy-source**: Replaced all OKLCH tokens with litui.dev's exact gray-*/dark: classes (13 substitutions)
+- **Features**: Restored subtle `bg-gradient-to-b from-gray-50/50` overlay matching litui.dev
+- **card-elevated**: Lighter resting shadow matching litui.dev (was too heavy)
+- **grid-pattern**: Solid lines `oklch(0.95)` matching litui.dev (was semi-transparent `oklch(0.93/0.5)`)
 - Fixed `hero-gradient` light mode: was dark overlay (`oklch(0.16)`), now light bloom (`oklch(0.92)`) matching litui.dev
 - Added dark mode variant for `hero-gradient`
 - FeaturesSection: added missing subtitle paragraph under h2 (litui.dev parity)

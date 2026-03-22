@@ -414,32 +414,31 @@ body::before {
 /* Card with shadow depth and hover lift — use when content is truly distinct and actionable */
 .card-elevated {
   box-shadow:
-    0 4px 6px -1px oklch(0 0 0 / 0.05),
-    0 10px 15px -3px oklch(0 0 0 / 0.08),
-    0 20px 25px -5px oklch(0 0 0 / 0.06);
-  transition: box-shadow 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo);
+    0 1px 2px 0 oklch(0 0 0 / 0.03),
+    0 1px 3px 0 oklch(0 0 0 / 0.04),
+    0 2px 4px -1px oklch(0 0 0 / 0.03);
+  transition: all 0.4s var(--ease-out-expo);
 }
 
 .card-elevated:hover {
   box-shadow:
-    0 6px 12px -1px oklch(0 0 0 / 0.07),
-    0 16px 24px -3px oklch(0 0 0 / 0.10),
-    0 28px 32px -5px oklch(0 0 0 / 0.08);
+    0 4px 6px -1px oklch(0 0 0 / 0.05),
+    0 10px 15px -3px oklch(0 0 0 / 0.08),
+    0 20px 25px -5px oklch(0 0 0 / 0.06);
   transform: translateY(-2px);
 }
 
 .dark .card-elevated {
   box-shadow:
-    0 4px 6px -1px oklch(0 0 0 / 0.20),
-    0 10px 15px -3px oklch(0 0 0 / 0.30),
-    0 20px 25px -5px oklch(0 0 0 / 0.30);
+    0 1px 3px 0 oklch(0 0 0 / 0.2),
+    0 1px 2px -1px oklch(0 0 0 / 0.2);
 }
 
 .dark .card-elevated:hover {
   box-shadow:
-    0 6px 12px -1px oklch(0 0 0 / 0.25),
-    0 16px 24px -3px oklch(0 0 0 / 0.35),
-    0 28px 32px -5px oklch(0 0 0 / 0.35);
+    0 4px 6px -1px oklch(0 0 0 / 0.2),
+    0 10px 15px -3px oklch(0 0 0 / 0.3),
+    0 20px 25px -5px oklch(0 0 0 / 0.3);
 }
 
 /* Button shadow — subtle depth for primary CTAs */
@@ -504,15 +503,15 @@ body::before {
 /* Subtle grid background */
 .grid-pattern {
   background-image:
-    linear-gradient(to right, oklch(0.93 0 0 / 0.5) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.93 0 0 / 0.5) 1px, transparent 1px);
+    linear-gradient(to right, oklch(0.95 0 0) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.95 0 0) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
 .dark .grid-pattern {
   background-image:
-    linear-gradient(to right, oklch(0.18 0 0 / 0.6) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.18 0 0 / 0.6) 1px, transparent 1px);
+    linear-gradient(to right, oklch(0.18 0 0) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.18 0 0) 1px, transparent 1px);
 }
 
 /* Radial gradient overlay for hero (litui.dev: light bloom in light mode, dark glow in dark) */
