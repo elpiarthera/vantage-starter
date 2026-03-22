@@ -90,7 +90,7 @@ export function CTASection() {
 				aria-hidden="true"
 			/>
 
-			<div className="relative mx-auto max-w-6xl px-6">
+			<div className="relative mx-auto max-w-6xl px-6 lg:px-12">
 				<div className="text-center">
 					{/* Eyebrow */}
 					<p
@@ -185,7 +185,7 @@ export function CTASection() {
 							<button
 								type="button"
 								onClick={handleCopy}
-								aria-label={copied ? "Copied!" : "Copy command"}
+								aria-label={copied ? t("copied") : t("copy_command")}
 								className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
 							>
 								{copied ? (
@@ -204,7 +204,7 @@ export function CTASection() {
 										>
 											<path d="M20 6 9 17l-5-5" />
 										</svg>
-										Copied!
+										{t("copied")}
 									</>
 								) : (
 									<>
@@ -223,7 +223,7 @@ export function CTASection() {
 											<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
 											<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
 										</svg>
-										Copy
+										{t("copy")}
 									</>
 								)}
 							</button>

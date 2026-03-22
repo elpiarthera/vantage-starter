@@ -218,7 +218,7 @@
 
 .skeleton {
   * {
-    pointer-events: none !important;
+    pointer-events: none;
   }
 
   *[class^="text-"] {
@@ -430,6 +430,12 @@ body::before {
   transition: transform 100ms var(--ease-out-expo);
 }
 
+/* Focus ring — keyboard navigation indicator using OKLCH tokens */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground);
+}
+
 /* Icon container — feature grid icons, size-10, no large icon above heading */
 .icon-container {
   @apply size-10 rounded-lg bg-muted/50 flex items-center justify-center;
@@ -533,14 +539,7 @@ body::before {
 
 /* Subtle text gradient for emphasis headlines */
 .text-gradient {
-  background: linear-gradient(135deg, oklch(0.12 0 0) 0%, oklch(0.40 0 0) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark .text-gradient {
-  background: linear-gradient(135deg, oklch(0.95 0 0) 0%, oklch(0.65 0 0) 100%);
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--muted-foreground) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

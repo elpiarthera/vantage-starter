@@ -2589,6 +2589,7 @@
     },
     "nav": {
       "aria_label": "Navigation principale",
+      "home_aria": "Accueil VantageStarter",
       "features": "Fonctionnalités",
       "pricing": "Tarifs",
       "sign_in": "Connexion",
@@ -2607,7 +2608,10 @@
       "subline": "Chaque kit SaaS a ajouté l’IA après coup. VantageStarter a été conçu pour les agents dès le premier commit — backend temps réel, UI générative, facturation par crédits, armée de 36 agents incluse.",
       "cta_primary": "Obtenir VantageStarter",
       "cta_secondary": "Voir l’architecture",
-      "social_proof_micro": "Construit sur Convex. Livré avec Clerk. Propulsé par AI SDK v6."
+      "social_proof_micro": "Construit sur Convex. Livré avec Clerk. Propulsé par AI SDK v6.",
+      "badge": "Boilerplate SaaS AI-Native",
+      "copied": "Copié !",
+      "copy_command": "Copier la commande"
     },
     "features": {
       "eyebrow": "Ce que l'ère agentique exige",
@@ -2662,7 +2666,10 @@
       "subline": "Arrêtez de reconstruire la plomberie. VantageStarter vous donne la pile complète — backend temps réel, authentification, facturation, UI générative et 36 agents — pour que vous puissiez livrer ce qui compte.",
       "cta_primary": "Obtenir VantageStarter",
       "cta_secondary": "Voir sur GitHub",
-      "quick_label": "Ou commencez maintenant :"
+      "quick_label": "Ou commencez maintenant :",
+      "copied": "Copié !",
+      "copy": "Copier",
+      "copy_command": "Copier la commande"
     },
     "footer": {
       "legal_nav_aria": "Navigation légale",

@@ -2589,6 +2589,7 @@
     },
     "nav": {
       "aria_label": "Main navigation",
+      "home_aria": "VantageStarter home",
       "features": "Features",
       "pricing": "Pricing",
       "sign_in": "Sign in",
@@ -2607,7 +2608,10 @@
       "subline": "Every SaaS starter kit bolted AI on later. VantageStarter was architected for agents from commit one — real-time backend, generative UI, credit billing, 36-agent plugin army included.",
       "cta_primary": "Get VantageStarter",
       "cta_secondary": "View the architecture",
-      "social_proof_micro": "Built on Convex. Shipped with Clerk. Powered by AI SDK v6."
+      "social_proof_micro": "Built on Convex. Shipped with Clerk. Powered by AI SDK v6.",
+      "badge": "AI-Native SaaS Boilerplate",
+      "copied": "Copied!",
+      "copy_command": "Copy command"
     },
     "features": {
       "eyebrow": "What the agentic era demands",
@@ -2698,7 +2702,10 @@
       "subline": "Stop rebuilding the plumbing. VantageStarter gives you the full stack — real-time backend, auth, billing, generative UI, and 36 agents — so you can ship what matters.",
       "cta_primary": "Get VantageStarter",
       "cta_secondary": "View on GitHub",
-      "quick_label": "Or start right now:"
+      "quick_label": "Or start right now:",
+      "copied": "Copied!",
+      "copy": "Copy",
+      "copy_command": "Copy command"
     },
     "footer": {
       "legal_nav_aria": "Legal navigation",

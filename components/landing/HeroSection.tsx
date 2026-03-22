@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Link } from "@/i18n/routing";
 
 function TerminalMockup() {
+	const t = useTranslations("landing.hero");
 	const [copied, setCopied] = useState(false);
 	const command = "npx create-vantage-app my-saas";
 
@@ -58,8 +59,8 @@ function TerminalMockup() {
 				<button
 					type="button"
 					onClick={handleCopy}
-					aria-label={copied ? "Copied!" : "Copy command"}
-					className="shrink-0 p-1.5 rounded transition-colors duration-150 text-muted-foreground/50 hover:text-foreground hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+					aria-label={copied ? t("copied") : t("copy_command")}
+					className="shrink-0 p-1.5 rounded transition-colors duration-150 text-muted-foreground/50 hover:text-foreground hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
 				>
 					{copied ? (
 						<svg
@@ -138,7 +139,7 @@ export function HeroSection() {
 						<span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
 					</span>
 					<span className="text-sm font-medium text-muted-foreground">
-						AI-Native SaaS Boilerplate
+						{t("badge")}
 					</span>
 				</div>
 

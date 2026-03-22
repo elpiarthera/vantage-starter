@@ -56,7 +56,11 @@ export function PricingSection() {
 	const t = useTranslations("landing.pricing");
 
 	return (
-		<section id="pricing" aria-labelledby="pricing-heading" className="py-24">
+		<section
+			id="pricing"
+			aria-labelledby="pricing-heading"
+			className="py-24 md:py-32"
+		>
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Header */}
 				<div className="mb-12 max-w-xl">

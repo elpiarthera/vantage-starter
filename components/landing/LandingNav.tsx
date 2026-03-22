@@ -136,7 +136,7 @@ export function LandingNav() {
 				<Link
 					href="/"
 					className="group flex items-center gap-2.5 no-underline"
-					aria-label="VantageStarter home"
+					aria-label={t("nav.home_aria")}
 				>
 					<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background text-xs font-bold shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-2deg]">
 						VS

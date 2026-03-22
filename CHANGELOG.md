@@ -23,3 +23,8 @@ All notable changes to VantageStarter are documented in this file.
 - Hero cycling words invisible — `.text-gradient` was overriding `-webkit-text-fill-color` on animated words
 - FAQ questions empty — accordion items used `slot="trigger"` instead of `slot="header"`
 - Hero CTA arrow icon wrapping to second line — added flex layout to icon-end slot span
+- **CRITICAL**: Added `.focus-ring` class to globals.css — keyboard focus was invisible on all nav elements (WCAG 2.4.7)
+- **i18n**: Replaced 7 hardcoded English strings with `t()` calls (Hero badge, copy buttons, Nav aria-label) + added en/fr keys
+- `hover:bg-white/5` → `hover:bg-foreground/5` in HeroSection (non-OKLCH literal)
+- `.text-gradient` now uses `var(--foreground)`/`var(--muted-foreground)` tokens instead of hardcoded OKLCH
+- Section padding consistency: Pricing + FAQ now use `md:py-32`, CTA added `lg:px-12`
