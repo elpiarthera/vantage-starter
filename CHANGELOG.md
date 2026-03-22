@@ -4,6 +4,12 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (copy-source pass)
+- **FeaturesSection**: Copied litui.dev Features.tsx structure — uniform card grid, gray-*/dark: classes, hover gradient overlay, icon inversion, reveal animation
+- **CTASection**: Copied litui.dev Cta.tsx — inline command block, native anchor CTAs, floating circles, reveal with staggered delays
+- **LandingFooter**: Copied litui.dev Footer.tsx — link underline animation, social icon hover lift, gray-*/dark: classes
+- **HeroSection**: Copied litui.dev Hero.tsx — exact badge, terminal chrome, CTA button styles
+
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
 - **Design system**: Monochrome grayscale preset (zero chroma OKLCH) adopting litui.dev's color system

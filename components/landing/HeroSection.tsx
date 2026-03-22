@@ -9,96 +9,77 @@ function TerminalMockup() {
 	const [copied, setCopied] = useState(false);
 	const command = "npx create-vantage-app my-saas";
 
-	function handleCopy() {
-		navigator.clipboard.writeText(command).then(() => {
-			setCopied(true);
-			setTimeout(() => setCopied(false), 1800);
-		});
-	}
+	const handleCopy = async () => {
+		await navigator.clipboard.writeText(command);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	return (
-		<figure
-			className="rounded-xl overflow-hidden code-block terminal-glow"
-			aria-label="Terminal showing installation command"
-		>
-			{/* macOS window chrome */}
-			<div className="flex items-center gap-2 px-4 py-3 border-b border-border/30">
+		<div className="code-block overflow-hidden rounded-xl terminal-glow">
+			<div className="flex items-center gap-2 border-b border-gray-800 px-4 py-3">
 				<div className="flex gap-1.5">
-					<div
-						className="h-3 w-3 rounded-full bg-muted-foreground/30 transition-all hover:bg-[oklch(0.65_0.22_25)] hover:scale-110"
-						aria-hidden="true"
-					/>
-					<div
-						className="h-3 w-3 rounded-full bg-muted-foreground/30 transition-all hover:bg-[oklch(0.75_0.18_65)] hover:scale-110"
-						aria-hidden="true"
-					/>
-					<div
-						className="h-3 w-3 rounded-full bg-muted-foreground/30 transition-all hover:bg-[oklch(0.60_0.18_145)] hover:scale-110"
-						aria-hidden="true"
-					/>
+					<div className="h-3 w-3 rounded-full bg-gray-700 transition-all hover:bg-red-400 hover:scale-110" />
+					<div className="h-3 w-3 rounded-full bg-gray-700 transition-all hover:bg-yellow-400 hover:scale-110" />
+					<div className="h-3 w-3 rounded-full bg-gray-700 transition-all hover:bg-green-400 hover:scale-110" />
 				</div>
-				<span className="ml-2 text-xs text-muted-foreground/50 font-medium select-none">
-					terminal
-				</span>
+				<span className="ml-2 text-xs text-gray-500 font-medium">Terminal</span>
 			</div>
-
-			{/* Command line */}
-			<div className="flex items-center justify-between p-5 gap-4">
-				<div className="flex items-center gap-3 min-w-0">
-					{/* Prompt symbol */}
-					<span
-						className="text-sm font-mono shrink-0 text-muted-foreground"
-						aria-hidden="true"
-					>
+			<div className="p-5">
+				<code className="font-mono text-sm flex items-center gap-3">
+					<span className="text-gray-500 select-none" aria-hidden="true">
 						$
 					</span>
-					<code className="text-sm font-mono text-foreground/90 truncate">
-						{command}
-					</code>
-				</div>
-
-				{/* Copy button */}
-				<button
-					type="button"
-					onClick={handleCopy}
-					aria-label={copied ? t("copied") : t("copy_command")}
-					className="shrink-0 p-1.5 rounded transition-colors duration-150 text-muted-foreground/50 hover:text-foreground hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-				>
-					{copied ? (
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M20 6 9 17l-5-5" />
-						</svg>
-					) : (
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="14"
-							height="14"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							aria-hidden="true"
-						>
-							<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-							<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-						</svg>
-					)}
-				</button>
+					<span className="text-white">
+						<span className="font-semibold">npx</span> create-vantage-app
+						my-saas
+					</span>
+					<button
+						type="button"
+						onClick={handleCopy}
+						aria-label={copied ? t("copied") : t("copy_command")}
+						className="ml-auto rounded-md p-1.5 text-gray-500 transition-all hover:bg-gray-800 hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+					>
+						{copied ? (
+							<svg
+								className="h-4 w-4 text-green-400"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								aria-hidden="true"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M5 13l4 4L19 7"
+								/>
+							</svg>
+						) : (
+							<svg
+								className="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								aria-hidden="true"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+								/>
+							</svg>
+						)}
+					</button>
+				</code>
+				{copied && (
+					<span className="mt-1 block text-xs text-green-400 text-right animate-fade-in-up">
+						{t("copied")}
+					</span>
+				)}
 			</div>
-		</figure>
+		</div>
 	);
 }
 
@@ -108,134 +89,135 @@ export function HeroSection() {
 	return (
 		<section
 			aria-label={t("aria_label")}
-			className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-32 bg-background"
+			className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-32"
 		>
-			{/* Grid pattern background */}
+			{/* Background decorations */}
 			<div
 				className="pointer-events-none absolute inset-0 grid-pattern"
 				aria-hidden="true"
 			/>
-
-			{/* Radial gradient overlay — top-center brighten */}
 			<div
 				className="pointer-events-none absolute inset-0 hero-gradient"
 				aria-hidden="true"
 			/>
 
-			{/* Decorative blobs — left and right */}
+			{/* Decorative circles with subtle pulsing */}
 			<div
-				className="pointer-events-none absolute -left-32 top-20 h-64 w-64 rounded-full bg-muted opacity-60 blur-3xl animate-[pulse_8s_ease-in-out_infinite]"
+				className="pointer-events-none absolute -left-32 top-20 h-64 w-64 rounded-full bg-gray-100 dark:bg-gray-800 opacity-60 blur-3xl animate-[pulse_8s_ease-in-out_infinite]"
 				aria-hidden="true"
 			/>
 			<div
-				className="pointer-events-none absolute -right-32 top-40 h-80 w-80 rounded-full bg-muted opacity-50 blur-3xl animate-[pulse_10s_ease-in-out_infinite_2s]"
+				className="pointer-events-none absolute -right-32 top-40 h-80 w-80 rounded-full bg-gray-100 dark:bg-gray-800 opacity-50 blur-3xl animate-[pulse_10s_ease-in-out_infinite_2s]"
 				aria-hidden="true"
 			/>
 
-			{/* Content */}
-			<div className="relative z-10 max-w-6xl mx-auto px-6 w-full flex flex-col items-center text-center">
-				{/* Badge pill — above H1 */}
-				<div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-foreground/10 bg-foreground/5 px-4 py-2 shadow-[0_1px_2px_oklch(0_0_0/0.04),inset_0_1px_0_oklch(1_0_0/0.06)] backdrop-blur-sm hero-enter">
-					<span className="relative flex h-2 w-2" aria-hidden="true">
-						<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-muted-foreground/40 opacity-75" />
-						<span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
-					</span>
-					<span className="text-sm font-medium text-muted-foreground">
-						{t("badge")}
-					</span>
-				</div>
-
-				{/* H1 — two lines: "Born agentic." then "Not [animated word]." */}
-				<h1 className="mb-8 text-4xl font-extrabold tracking-[-0.03em] text-foreground sm:text-5xl md:text-6xl lg:text-7xl hero-enter">
-					{t("headline_line1")}
-					<br />
-					<span className="whitespace-nowrap text-gradient">
-						{t("headline_not")}{" "}
-						{/* Animated words — stacked, only one visible at a time */}
-						<span className="sr-only">{t("headline_animated_aria")}</span>
-						<span className="inline-grid" aria-hidden="true">
-							<span
-								className="hero-animated-word hero-word-1"
-								style={{ gridArea: "1 / 1" }}
-								aria-hidden="true"
-							>
-								{t("headline_word1")}
-							</span>
-							<span
-								className="hero-animated-word hero-word-2"
-								style={{ gridArea: "1 / 1" }}
-								aria-hidden="true"
-							>
-								{t("headline_word2")}
-							</span>
-							<span
-								className="hero-animated-word hero-word-3"
-								style={{ gridArea: "1 / 1" }}
-								aria-hidden="true"
-							>
-								{t("headline_word3")}
-							</span>
+			<div className="relative mx-auto max-w-6xl px-6">
+				<div className="text-center">
+					{/* Badge */}
+					<div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/80 px-4 py-2 shadow-[0_1px_2px_oklch(0_0_0/0.04),inset_0_1px_0_oklch(1_0_0/0.8)] backdrop-blur-sm animate-fade-in-up opacity-0 stagger-1">
+						<span className="relative flex h-2 w-2" aria-hidden="true">
+							<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-400 dark:bg-gray-500 opacity-75" />
+							<span className="relative inline-flex h-2 w-2 rounded-full bg-gray-900 dark:bg-gray-100" />
 						</span>
-						{t("headline_period")}
-					</span>
-				</h1>
+						<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+							{t("badge")}
+						</span>
+					</div>
 
-				{/* Subline */}
-				<p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground md:text-xl leading-relaxed hero-enter-delay-1">
-					{t("subline")}
-				</p>
+					{/* Main headline — preserved word cycling animation */}
+					<h1 className="mb-6 text-4xl font-extrabold tracking-[-0.03em] text-gray-900 dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl animate-fade-in-up opacity-0 stagger-2">
+						{t("headline_line1")}
+						<br />
+						<span className="whitespace-nowrap text-gradient">
+							{t("headline_not")}{" "}
+							{/* Animated words — stacked, only one visible at a time */}
+							<span className="sr-only">{t("headline_animated_aria")}</span>
+							<span className="inline-grid" aria-hidden="true">
+								<span
+									className="hero-animated-word hero-word-1"
+									style={{ gridArea: "1 / 1" }}
+									aria-hidden="true"
+								>
+									{t("headline_word1")}
+								</span>
+								<span
+									className="hero-animated-word hero-word-2"
+									style={{ gridArea: "1 / 1" }}
+									aria-hidden="true"
+								>
+									{t("headline_word2")}
+								</span>
+								<span
+									className="hero-animated-word hero-word-3"
+									style={{ gridArea: "1 / 1" }}
+									aria-hidden="true"
+								>
+									{t("headline_word3")}
+								</span>
+							</span>
+							{t("headline_period")}
+						</span>
+					</h1>
 
-				{/* CTAs */}
-				<div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-0 hero-enter-delay-2">
-					<Link
-						href="/sign-up"
-						className="group flex items-center gap-2 rounded-xl bg-foreground px-7 py-3.5 text-base font-bold text-background transition-all hover:bg-foreground/90 hover:shadow-lg active:scale-[0.98] btn-shadow focus-ring"
-					>
-						{t("cta_primary")}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							aria-hidden="true"
-							className="w-4 h-4 transition-transform group-hover:translate-x-1"
+					{/* Subheadline */}
+					<p className="mx-auto mb-12 max-w-2xl text-lg text-gray-500 dark:text-gray-400 md:text-xl leading-relaxed animate-fade-in-up opacity-0 stagger-3">
+						{t("subline")}
+					</p>
+
+					{/* CTA buttons */}
+					<div className="flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in-up opacity-0 stagger-4">
+						<Link
+							href="/sign-up"
+							className="group flex items-center gap-2 rounded-xl bg-gray-900 dark:bg-gray-100 px-7 py-3.5 text-base font-bold text-white dark:text-gray-900 transition-all hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg active:scale-[0.98] btn-shadow focus-ring"
 						>
-							<path d="M5 12h14" />
-							<path d="m12 5 7 7-7 7" />
-						</svg>
-					</Link>
-					<a
-						href="https://github.com/vantage-starter"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-all hover:border-foreground/20 hover:bg-muted hover:shadow-md active:scale-[0.98] shadow-sm focus-ring"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							aria-hidden="true"
+							{t("cta_primary")}
+							<svg
+								className="h-4 w-4 transition-transform group-hover:translate-x-1"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								aria-hidden="true"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M13 7l5 5m0 0l-5 5m5-5H6"
+								/>
+							</svg>
+						</Link>
+						<a
+							href="https://github.com/vantage-starter"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="flex items-center gap-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-7 py-3.5 text-base font-semibold text-gray-900 dark:text-gray-100 transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md active:scale-[0.98] shadow-sm focus-ring"
 						>
-							<path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-						</svg>
-						{t("cta_secondary")}
-					</a>
+							<svg
+								className="h-5 w-5"
+								fill="currentColor"
+								viewBox="0 0 24 24"
+								aria-hidden="true"
+							>
+								<path
+									fillRule="evenodd"
+									clipRule="evenodd"
+									d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+								/>
+							</svg>
+							{t("cta_secondary")}
+						</a>
+					</div>
 				</div>
 
-				{/* Terminal mockup */}
-				<div className="mx-auto mt-16 max-w-md w-full hero-enter-delay-3">
+				{/* Quick install command */}
+				<div className="mx-auto mt-16 max-w-md animate-fade-in-up opacity-0 stagger-5">
 					<TerminalMockup />
 				</div>
 			</div>
 
-			{/* Bottom fade — blends into FeaturesSection */}
+			{/* Bottom fade */}
 			<div
-				className="pointer-events-none absolute bottom-0 left-0 right-0 h-[180px] bottom-fade"
+				className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bottom-fade"
 				aria-hidden="true"
 			/>
 		</section>

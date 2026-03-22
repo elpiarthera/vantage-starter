@@ -1,205 +1,243 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type React from "react";
-import { useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 type FeatureItem = {
 	icon: React.ReactNode;
 	titleKey: string;
 	descKey: string;
-	/** "large" cards span 2 cols on desktop and get extra padding / larger title */
-	size?: "large" | "standard";
 };
 
 const FEATURES: FeatureItem[] = [
 	{
 		icon: (
 			<svg
+				className="h-6 w-6"
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
 				fill="none"
+				viewBox="0 0 24 24"
 				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
 				aria-hidden="true"
 			>
-				<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-				<path d="M5 3v4" />
-				<path d="M19 17v4" />
-				<path d="M3 5h4" />
-				<path d="M17 19h4" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M5 3v4"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M19 17v4"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M3 5h4"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M17 19h4"
+				/>
 			</svg>
 		),
 		titleKey: "ai_renders_title",
 		descKey: "ai_renders_desc",
-		size: "large",
 	},
 	{
 		icon: (
 			<svg
+				className="h-6 w-6"
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
 				fill="none"
+				viewBox="0 0 24 24"
 				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
 				aria-hidden="true"
 			>
-				<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M13 10V3L4 14h7v7l9-11h-7z"
+				/>
 			</svg>
 		),
 		titleKey: "realtime_title",
 		descKey: "realtime_desc",
-		size: "standard",
 	},
 	{
 		icon: (
 			<svg
+				className="h-6 w-6"
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
 				fill="none"
+				viewBox="0 0 24 24"
 				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
 				aria-hidden="true"
 			>
 				<circle cx="8" cy="8" r="6" />
-				<path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
-				<path d="M7 6h1v4" />
-				<path d="m16.71 13.88.7.71-2.82 2.82" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M18.09 10.37A6 6 0 1 1 10.34 18"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M7 6h1v4"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="m16.71 13.88.7.71-2.82 2.82"
+				/>
 			</svg>
 		),
 		titleKey: "credits_title",
 		descKey: "credits_desc",
-		size: "standard",
 	},
 	{
 		icon: (
 			<svg
+				className="h-6 w-6"
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
 				fill="none"
+				viewBox="0 0 24 24"
 				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
 				aria-hidden="true"
 			>
-				<rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-				<circle cx="9" cy="9" r="2" />
-				<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+				/>
 			</svg>
 		),
 		titleKey: "media_title",
 		descKey: "media_desc",
-		size: "large",
 	},
 	{
 		icon: (
 			<svg
+				className="h-6 w-6"
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
 				fill="none"
+				viewBox="0 0 24 24"
 				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
 				aria-hidden="true"
 			>
-				<path d="M12 8V4H8" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M12 8V4H8"
+				/>
 				<rect width="16" height="12" x="4" y="8" rx="2" />
-				<path d="M2 14h2" />
-				<path d="M20 14h2" />
-				<path d="M15 13v2" />
-				<path d="M9 13v2" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M2 14h2"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M20 14h2"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M15 13v2"
+				/>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M9 13v2"
+				/>
 			</svg>
 		),
 		titleKey: "agents_title",
 		descKey: "agents_desc",
-		size: "standard",
 	},
 	{
 		icon: (
 			<svg
+				className="h-6 w-6"
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
 				fill="none"
+				viewBox="0 0 24 24"
 				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
 				aria-hidden="true"
 			>
-				<circle cx="12" cy="12" r="10" />
-				<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-				<path d="M2 12h20" />
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth={1.5}
+					d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+				/>
 			</svg>
 		),
 		titleKey: "i18n_title",
 		descKey: "i18n_desc",
-		size: "standard",
 	},
 ];
 
-function useRevealOnScroll(
-	ref: React.RefObject<HTMLElement | null>,
-	delay = 0,
-) {
+function useReveal({ threshold = 0.15 }: { threshold?: number } = {}) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [isVisible, setIsVisible] = useState(false);
+
 	useEffect(() => {
 		const el = ref.current;
 		if (!el) return;
 
-		// Respect reduced motion
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-			el.style.opacity = "1";
-			el.style.transform = "none";
+			setIsVisible(true);
 			return;
-		}
-
-		el.classList.add("reveal");
-		if (delay > 0) {
-			el.style.transitionDelay = `${delay}s`;
 		}
 
 		const observer = new IntersectionObserver(
 			([entry]) => {
 				if (entry.isIntersecting) {
-					el.classList.add("revealed");
-					observer.disconnect();
+					setIsVisible(true);
+					observer.unobserve(el);
 				}
 			},
-			{ threshold: 0.1 },
+			{ threshold },
 		);
 
 		observer.observe(el);
 		return () => observer.disconnect();
-	}, [ref, delay]);
+	}, [threshold]);
+
+	return { ref, isVisible };
 }
 
 export function FeaturesSection() {
 	const t = useTranslations("landing.features");
-	const headerRef = useRef<HTMLDivElement>(null);
-	const gridRef = useRef<HTMLDivElement>(null);
-
-	useRevealOnScroll(headerRef as React.RefObject<HTMLElement | null>);
-	useRevealOnScroll(gridRef as React.RefObject<HTMLElement | null>, 0.1);
+	const { ref: headingRef, isVisible: headingVisible } = useReveal({
+		threshold: 0.2,
+	});
+	const { ref: gridRef, isVisible: gridVisible } = useReveal({
+		threshold: 0.1,
+	});
 
 	return (
 		<section
@@ -207,21 +245,23 @@ export function FeaturesSection() {
 			aria-labelledby="features-heading"
 			className="relative py-24 md:py-32"
 		>
-			{/* Subtle section background */}
+			{/* Subtle background */}
 			<div
-				className="pointer-events-none absolute inset-0 bg-gradient-to-b from-muted/30 to-transparent"
+				className="pointer-events-none absolute inset-0 bg-gradient-to-b from-gray-50/50 dark:from-gray-900/50 to-transparent"
 				aria-hidden="true"
 			/>
 
-			<div className="relative max-w-6xl mx-auto px-6 lg:px-12">
-				{/* Section header */}
-				<div ref={headerRef} className="mb-16 text-center">
-					<p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+			<div className="relative mx-auto max-w-6xl px-6">
+				<div
+					ref={headingRef}
+					className={`mb-16 text-center reveal ${headingVisible ? "revealed" : ""}`}
+				>
+					<p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400">
 						{t("eyebrow")}
 					</p>
 					<h2
 						id="features-heading"
-						className="font-heading font-bold text-foreground text-3xl md:text-4xl lg:text-5xl leading-[1.15] tracking-[-0.03em] mb-4"
+						className="mb-4 text-3xl font-bold tracking-[-0.02em] text-gray-900 dark:text-gray-100 md:text-4xl lg:text-5xl"
 					>
 						{t("heading")}
 					</h2>
@@ -229,74 +269,32 @@ export function FeaturesSection() {
 
 				<div ref={gridRef} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
 					{FEATURES.map((feature, index) => (
-						<FeatureCard
+						<div
 							key={feature.titleKey}
-							feature={feature}
-							t={t}
-							staggerIndex={index}
-						/>
+							className={`group relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 card-elevated transition-[border-color] hover:border-gray-300 dark:hover:border-gray-700 reveal ${gridVisible ? "revealed" : ""}`}
+							style={{ transitionDelay: `${index * 0.08}s` }}
+						>
+							{/* Subtle gradient on hover */}
+							<div
+								className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50 dark:from-gray-800 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+								aria-hidden="true"
+							/>
+
+							<div className="relative">
+								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all duration-[400ms] group-hover:bg-gray-900 dark:group-hover:bg-gray-100 group-hover:text-white dark:group-hover:text-gray-900 group-hover:shadow-md group-hover:scale-105">
+									{feature.icon}
+								</div>
+								<h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 transition-transform duration-300 group-hover:translate-x-0.5">
+									{t(feature.titleKey)}
+								</h3>
+								<p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+									{t(feature.descKey)}
+								</p>
+							</div>
+						</div>
 					))}
 				</div>
 			</div>
 		</section>
-	);
-}
-
-const STAGGER_DELAYS = [0, 0.06, 0.12, 0.18, 0.24, 0.35];
-
-function FeatureCard({
-	feature,
-	t,
-	className,
-	staggerIndex = 0,
-}: {
-	feature: FeatureItem;
-	t: ReturnType<typeof useTranslations>;
-	className?: string;
-	staggerIndex?: number;
-}) {
-	const isLarge = feature.size === "large";
-	const delay = STAGGER_DELAYS[staggerIndex] ?? 0;
-
-	return (
-		<article
-			className={cn(
-				"group relative rounded-2xl border border-border bg-card p-6",
-				"card-elevated transition-[border-color] hover:border-border/60",
-				className,
-			)}
-			style={{ transitionDelay: `${delay}s` }}
-		>
-			{/* Subtle gradient overlay on hover */}
-			<div
-				className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-muted/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-				aria-hidden="true"
-			/>
-
-			<div className="relative">
-				{/* Icon — inverts on hover */}
-				<div
-					className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-foreground transition-all duration-300 group-hover:bg-foreground group-hover:text-background group-hover:shadow-md group-hover:scale-105"
-					aria-hidden="true"
-				>
-					{feature.icon}
-				</div>
-
-				{/* Title */}
-				<h3
-					className={cn(
-						"font-heading font-semibold leading-[1.3] tracking-[-0.015em] text-foreground mb-2 transition-transform duration-300 group-hover:translate-x-0.5",
-						isLarge ? "text-lg" : "text-[1.0625rem]",
-					)}
-				>
-					{t(feature.titleKey)}
-				</h3>
-
-				{/* Description */}
-				<p className="text-sm leading-relaxed text-muted-foreground">
-					{t(feature.descKey)}
-				</p>
-			</div>
-		</article>
 	);
 }

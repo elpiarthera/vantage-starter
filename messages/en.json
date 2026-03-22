@@ -2715,9 +2715,19 @@
       "tagline": "The AI-native SaaS boilerplate. Ship your idea in days, not months.",
       "col_product": "Product",
       "col_legal": "Legal",
+      "col_resources": "Resources",
       "features": "Features",
       "pricing": "Pricing",
-      "github": "GitHub"
+      "faq": "FAQ",
+      "docs": "Docs",
+      "github": "GitHub",
+      "res_nextjs": "Next.js",
+      "res_convex": "Convex",
+      "res_clerk": "Clerk",
+      "res_litui": "lit-ui",
+      "built_with": "Built with",
+      "mit_license": "Open source under MIT License",
+      "discord": "Discord"
     }
   }
 }
