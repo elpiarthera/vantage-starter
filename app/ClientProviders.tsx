@@ -5,24 +5,24 @@ import { Toaster } from "sonner";
 import { clerkLocalizations } from "@/i18n/clerk-localization";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
-// Dark electric blue palette — matches dark-electric-blue.css .dark tokens
+// Monochrome grayscale palette — pure achromatic equivalents
 // Clerk appearance API does not accept oklch() — using verified hex approximations.
-// oklch(0.55 0.15 250) → #3366cc (primary blue)
-// oklch(0.08 0.01 240) → #101218 (deep background)
-// oklch(0.12 0.01 240) → #1a1c2e (card/modal/popover surface)
-// oklch(0.16 0.015 240) → #22243a (input background — slightly lighter than card)
-// oklch(0.22 0.02 240) → #2e3148 (border)
-// oklch(0.93 0.01 240) → #e8e9f0 (primary text)
-// oklch(0.65 0.01 240) → #9a9baa (secondary text / muted)
+// oklch(0.95 0 0) → #f0f0f0 (near white — primary button bg)
+// oklch(0.08 0 0) → #141414 (gray-950 — deep background)
+// oklch(0.12 0 0) → #1f1f1f (gray-900 — card/modal/popover surface)
+// oklch(0.16 0 0) → #292929 (gray-850 — input background)
+// oklch(0.22 0 0) → #383838 (between gray-800/700 — border)
+// oklch(0.95 0 0) → #f0f0f0 (near white — primary text)
+// oklch(0.65 0 0) → #a3a3a3 (gray-400 — secondary text / muted)
 
-const CLERK_PRIMARY = "#3366cc"; // oklch(0.55 0.15 250)
-const CLERK_BG = "#101218"; // oklch(0.08 0.01 240)
-const CLERK_CARD = "#1a1c2e"; // oklch(0.12 0.01 240) — modal/card/popover bg
-const CLERK_INPUT_BG = "#22243a"; // oklch(0.16 0.015 240) — slightly lighter than card
-const CLERK_BORDER = "#2e3148"; // oklch(0.22 0.02 240)
-const CLERK_TEXT = "#e8e9f0"; // oklch(0.93 0.01 240)
-const CLERK_TEXT_MUTED = "#9a9baa"; // oklch(0.65 0.01 240)
-const CLERK_DANGER = "#c0392b"; // oklch(0.65 0.22 25)
+const CLERK_PRIMARY = "#e8e8e8"; // light gray button (like bg-gray-100)
+const CLERK_BG = "#141414"; // oklch(0.08 0 0) — gray-950
+const CLERK_CARD = "#1f1f1f"; // oklch(0.12 0 0) — gray-900
+const CLERK_INPUT_BG = "#292929"; // oklch(0.16 0 0) — gray-850
+const CLERK_BORDER = "#383838"; // oklch(0.22 0 0) — between gray-800 and gray-700
+const CLERK_TEXT = "#f0f0f0"; // oklch(0.95 0 0) — near white
+const CLERK_TEXT_MUTED = "#a3a3a3"; // oklch(0.65 0 0) — gray-400
+const CLERK_DANGER = "#c0392b"; // keep red for danger
 
 // ClerkProvider in @clerk/nextjs v6 is typed as an async Server Component
 // (Promise<React.JSX.Element>), which is incompatible with @types/react 18.0.x JSX.
@@ -64,7 +64,8 @@ export function ClientProviders({
 					fontWeight: { normal: 400, medium: 500, bold: 700 },
 
 					// Sharp corners everywhere — editorial design system
-					borderRadius: "0px",
+					// Rounded corners — matches landing card style (rounded-2xl)
+					borderRadius: "16px",
 
 					spacingUnit: "1rem",
 				},
@@ -78,7 +79,7 @@ export function ClientProviders({
 						borderColor: CLERK_BORDER,
 						borderWidth: "1px",
 						borderStyle: "solid",
-						borderRadius: "0px",
+						borderRadius: "16px",
 						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
 					},
 
@@ -88,12 +89,12 @@ export function ClientProviders({
 						borderColor: CLERK_BORDER,
 						borderWidth: "1px",
 						borderStyle: "solid",
-						borderRadius: "0px",
+						borderRadius: "16px",
 						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
 					},
 					organizationSwitcherPopoverActionButton: {
 						color: CLERK_TEXT,
-						borderRadius: "0px",
+						borderRadius: "16px",
 					},
 					organizationSwitcherPopoverActionButton__createOrganization: {
 						color: CLERK_TEXT,
@@ -109,7 +110,7 @@ export function ClientProviders({
 					},
 					// Trigger button — styled in DashboardHeader; keep minimal here
 					organizationSwitcherTrigger: {
-						borderRadius: "0px",
+						borderRadius: "16px",
 					},
 					organizationSwitcherTriggerIcon: {
 						color: CLERK_TEXT_MUTED,
@@ -121,12 +122,12 @@ export function ClientProviders({
 						borderColor: CLERK_BORDER,
 						borderWidth: "1px",
 						borderStyle: "solid",
-						borderRadius: "0px",
+						borderRadius: "16px",
 						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
 					},
 					userButtonPopoverActionButton: {
 						color: CLERK_TEXT,
-						borderRadius: "0px",
+						borderRadius: "16px",
 					},
 					userPreviewMainIdentifier: {
 						color: CLERK_TEXT,
@@ -141,7 +142,7 @@ export function ClientProviders({
 						borderColor: CLERK_BORDER,
 						borderWidth: "1px",
 						borderStyle: "solid",
-						borderRadius: "0px",
+						borderRadius: "16px",
 						boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
 					},
 					modalBackdrop: {
@@ -188,26 +189,26 @@ export function ClientProviders({
 						minHeight: "44px",
 						backgroundColor: CLERK_INPUT_BG,
 						borderColor: CLERK_BORDER,
-						borderRadius: "0px",
+						borderRadius: "16px",
 						color: CLERK_TEXT,
 						fontWeight: "500",
 					},
 					formButtonPrimary: {
 						minHeight: "44px",
-						backgroundColor: CLERK_PRIMARY,
-						borderRadius: "0px",
-						color: "#ffffff",
+						backgroundColor: CLERK_TEXT,
+						borderRadius: "16px",
+						color: CLERK_BG,
 						fontWeight: "600",
 					},
 					formButtonReset: {
-						borderRadius: "0px",
+						borderRadius: "16px",
 						color: CLERK_TEXT_MUTED,
 					},
 					formFieldInput: {
 						minHeight: "48px",
 						backgroundColor: CLERK_INPUT_BG,
 						borderColor: CLERK_BORDER,
-						borderRadius: "0px",
+						borderRadius: "16px",
 						color: CLERK_TEXT,
 					},
 					formFieldLabel: {
@@ -228,12 +229,12 @@ export function ClientProviders({
 					otpCodeFieldInput: {
 						backgroundColor: CLERK_INPUT_BG,
 						borderColor: CLERK_BORDER,
-						borderRadius: "0px",
+						borderRadius: "16px",
 						color: CLERK_TEXT,
 					},
 					alternativeMethodsBlockButton: {
 						borderColor: CLERK_BORDER,
-						borderRadius: "0px",
+						borderRadius: "16px",
 						color: CLERK_TEXT_MUTED,
 					},
 					formResendCodeLink: {
