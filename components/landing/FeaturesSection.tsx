@@ -202,68 +202,40 @@ export function FeaturesSection() {
 	useRevealOnScroll(gridRef as React.RefObject<HTMLElement | null>, 0.1);
 
 	return (
-		<section id="features" aria-labelledby="features-heading" className="py-24">
-			<div className="max-w-6xl mx-auto px-6 lg:px-12">
+		<section
+			id="features"
+			aria-labelledby="features-heading"
+			className="relative py-24 md:py-32"
+		>
+			{/* Subtle section background */}
+			<div
+				className="pointer-events-none absolute inset-0 bg-gradient-to-b from-muted/30 to-transparent"
+				aria-hidden="true"
+			/>
+
+			<div className="relative max-w-6xl mx-auto px-6 lg:px-12">
 				{/* Section header */}
-				<div ref={headerRef} className="mb-12 md:mb-16 max-w-2xl">
-					<p
-						className="text-xs font-medium uppercase tracking-[0.08em] mb-3"
-						style={{ color: "var(--accent-warm)" }}
-					>
+				<div ref={headerRef} className="mb-16 text-center">
+					<p className="mb-3 text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">
 						{t("eyebrow")}
 					</p>
 					<h2
 						id="features-heading"
-						className="font-heading font-bold text-foreground text-3xl md:text-4xl leading-[1.15] tracking-[-0.03em]"
+						className="font-heading font-bold text-foreground text-3xl md:text-4xl lg:text-5xl leading-[1.15] tracking-[-0.03em] mb-4"
 					>
 						{t("heading")}
 					</h2>
 				</div>
 
-				{/*
-				 * Asymmetric bento layout — 3-column base grid
-				 *
-				 * Row 1: [feature 1 — large, col-span-2] [feature 2 — standard]
-				 * Row 2: [feature 3 — standard] [feature 4 — large, col-span-2]
-				 * Row 3: [feature 5 — equal] [feature 6 — equal]
-				 *
-				 * Mobile: single column, all same size
-				 */}
-				<div
-					ref={gridRef}
-					className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-l border-border"
-				>
-					{/* Row 1 */}
-					<FeatureCard
-						feature={FEATURES[0]}
-						t={t}
-						className="md:col-span-2"
-						staggerIndex={0}
-					/>
-					<FeatureCard feature={FEATURES[1]} t={t} staggerIndex={1} />
-
-					{/* Row 2 */}
-					<FeatureCard feature={FEATURES[2]} t={t} staggerIndex={2} />
-					<FeatureCard
-						feature={FEATURES[3]}
-						t={t}
-						className="md:col-span-2"
-						staggerIndex={3}
-					/>
-
-					{/* Row 3 — 2 equal cells spanning full 3-col width */}
-					<FeatureCard
-						feature={FEATURES[4]}
-						t={t}
-						className="md:col-span-1"
-						staggerIndex={4}
-					/>
-					<FeatureCard
-						feature={FEATURES[5]}
-						t={t}
-						className="md:col-span-2"
-						staggerIndex={5}
-					/>
+				<div ref={gridRef} className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+					{FEATURES.map((feature, index) => (
+						<FeatureCard
+							key={feature.titleKey}
+							feature={feature}
+							t={t}
+							staggerIndex={index}
+						/>
+					))}
 				</div>
 			</div>
 		</section>
@@ -289,42 +261,42 @@ function FeatureCard({
 	return (
 		<article
 			className={cn(
-				// Inner grid borders
-				"border-r border-b border-border",
-				// Background
-				"bg-[var(--card)]",
-				// Padding: large cards get extra breathing room
-				isLarge ? "p-10 md:p-12" : "p-8",
-				// Hover: border brightens + background lifts
-				"group transition-colors duration-300 ease-out-expo",
-				"hover:bg-[var(--card-hover)] hover:border-[var(--border-hover)]",
-				// Caller-supplied span classes
+				"group relative rounded-2xl border border-border bg-card p-6",
+				"card-elevated transition-[border-color] hover:border-border/60",
 				className,
 			)}
 			style={{ transitionDelay: `${delay}s` }}
 		>
-			{/* Icon — wrapped in .icon-container, inverts on hover */}
+			{/* Subtle gradient overlay on hover */}
 			<div
-				className="icon-container mb-5 transition-colors duration-300 ease-out-expo group-hover:bg-foreground group-hover:text-background"
+				className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-muted/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
 				aria-hidden="true"
-			>
-				{feature.icon}
+			/>
+
+			<div className="relative">
+				{/* Icon — inverts on hover */}
+				<div
+					className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-foreground transition-all duration-300 group-hover:bg-foreground group-hover:text-background group-hover:shadow-md group-hover:scale-105"
+					aria-hidden="true"
+				>
+					{feature.icon}
+				</div>
+
+				{/* Title */}
+				<h3
+					className={cn(
+						"font-heading font-semibold leading-[1.3] tracking-[-0.015em] text-foreground mb-2 transition-transform duration-300 group-hover:translate-x-0.5",
+						isLarge ? "text-lg" : "text-[1.0625rem]",
+					)}
+				>
+					{t(feature.titleKey)}
+				</h3>
+
+				{/* Description */}
+				<p className="text-sm leading-relaxed text-muted-foreground">
+					{t(feature.descKey)}
+				</p>
 			</div>
-
-			{/* Title */}
-			<h3
-				className={cn(
-					"font-heading font-medium leading-[1.3] tracking-[-0.015em] text-foreground mb-3",
-					isLarge ? "text-xl" : "text-[1.125rem]",
-				)}
-			>
-				{t(feature.titleKey)}
-			</h3>
-
-			{/* Description */}
-			<p className="text-muted-foreground text-sm leading-relaxed">
-				{t(feature.descKey)}
-			</p>
 		</article>
 	);
 }

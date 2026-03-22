@@ -2696,7 +2696,13 @@
       "legal_nav_aria": "Legal navigation",
       "legal": "Legal",
       "privacy": "Privacy",
-      "contact": "Contact"
+      "contact": "Contact",
+      "tagline": "The AI-native SaaS boilerplate. Ship your idea in days, not months.",
+      "col_product": "Product",
+      "col_legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "github": "GitHub"
     }
   }
 }

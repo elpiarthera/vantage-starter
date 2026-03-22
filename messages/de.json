@@ -2660,7 +2660,13 @@
       "legal_nav_aria": "Rechtliche Navigation",
       "legal": "Impressum",
       "privacy": "Datenschutz",
-      "contact": "Kontakt"
+      "contact": "Kontakt",
+      "tagline": "Das KI-native SaaS-Boilerplate. Starten Sie Ihre Idee in Tagen, nicht Monaten.",
+      "col_product": "Produkt",
+      "col_legal": "Rechtliches",
+      "features": "Funktionen",
+      "pricing": "Preise",
+      "github": "GitHub"
     },
     "faq": {
       "heading": "Fragen",

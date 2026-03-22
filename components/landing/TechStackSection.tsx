@@ -220,47 +220,48 @@ export function TechStackSection() {
 		<section
 			id="tech-stack"
 			aria-labelledby="techstack-heading"
-			className="py-24 border-t border-border"
+			className="relative py-20 md:py-24"
 		>
-			<div className="max-w-6xl mx-auto px-6 lg:px-12">
-				<h2
+			{/* Section fades for seamless transitions */}
+			<div
+				className="pointer-events-none absolute inset-x-0 top-0 h-16 section-fade-top"
+				aria-hidden="true"
+			/>
+			<div
+				className="pointer-events-none absolute inset-x-0 bottom-0 h-16 section-fade-bottom"
+				aria-hidden="true"
+			/>
+
+			<div className="relative max-w-6xl mx-auto px-6 lg:px-12 py-14">
+				<p
 					id="techstack-heading"
-					className="text-sm font-medium text-muted-foreground tracking-[0.05em] uppercase mb-10 text-center"
+					className="mb-10 text-lg text-muted-foreground text-center"
 				>
 					{t("heading")}
-				</h2>
+				</p>
 
-				{/* Logo row with separator lines between items */}
+				{/* Icon grid — box style matching litui.dev FrameworkLogos */}
 				<ul
 					ref={rowRef}
-					className="flex flex-wrap justify-center items-center list-none m-0 p-0"
+					className="flex flex-wrap items-center justify-center gap-6 md:gap-10 list-none m-0 p-0"
 				>
-					{TECH_STACK.map(({ name, icon }, i) => (
-						<li key={name} className="flex items-center">
-							{/* Logo item */}
-							<div
-								className="flex flex-col items-center gap-2 group px-6 md:px-8 py-4"
-								title={name}
-							>
-								<div
-									className="w-10 h-10 opacity-40 grayscale transition-all duration-300 ease-out-expo group-hover:opacity-100 group-hover:grayscale-0 dark:opacity-30 dark:group-hover:opacity-100"
-									role="img"
-									aria-label={name}
-								>
+					{TECH_STACK.map(({ name, icon }, index) => (
+						<li
+							key={name}
+							className="reveal-scale group flex flex-col items-center gap-3"
+							style={{
+								transitionDelay: `${index * 0.08}s`,
+								animationDelay: `${index * 0.08}s`,
+							}}
+						>
+							<div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground shadow-sm transition-all duration-300 group-hover:border-border/60 group-hover:bg-muted group-hover:text-foreground group-hover:shadow-md group-hover:-translate-y-1">
+								<div className="w-8 h-8" role="img" aria-label={name}>
 									{icon}
 								</div>
-								<span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out-expo whitespace-nowrap">
-									{name}
-								</span>
 							</div>
-
-							{/* Separator — not after the last item */}
-							{i < TECH_STACK.length - 1 && (
-								<div
-									className="h-8 w-px bg-border shrink-0 hidden sm:block"
-									aria-hidden="true"
-								/>
-							)}
+							<span className="text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
+								{name}
+							</span>
 						</li>
 					))}
 				</ul>

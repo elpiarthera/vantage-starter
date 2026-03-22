@@ -10,8 +10,8 @@ const nextConfig = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
-	experimental: {
-		optimizePackageImports: ["lucide-react"],
+	logging: {
+		browserToTerminal: true,
 	},
 	// CSP: Clerk (FAPI + Cloudflare Turnstile CAPTCHA), Convex (eval), Vercel Live, blob: for voice recording.
 	// Cloudflare Turnstile requires https://challenges.cloudflare.com in both script-src AND frame-src.

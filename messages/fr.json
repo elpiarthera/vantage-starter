@@ -2660,7 +2660,13 @@
       "legal_nav_aria": "Navigation légale",
       "legal": "Mentions légales",
       "privacy": "Confidentialité",
-      "contact": "Contact"
+      "contact": "Contact",
+      "tagline": "Le boilerplate SaaS natif IA. Lancez votre idée en jours, pas en mois.",
+      "col_product": "Produit",
+      "col_legal": "Légal",
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "github": "GitHub"
     },
     "faq": {
       "heading": "Questions",

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-SessionStart hook: scans VantageStarter project context to orient the
-orchestrator at session start.
+SessionStart hook: orients the orchestrator at session start.
 
-Emits a brief session context as additionalContext so the agent starts
-with the right mental model before the first user message.
-
-Silent if no actionable context found.
+1. Checks if project-context.md exists — if not, prompts onboarding
+2. Loads project identity for context
+3. Detects active domains from recent work
+4. Emits brief session context as additionalContext
 """
 
 import json
@@ -15,9 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 
-# Domain keywords mapped to VantageStarter's 7 agents
 DOMAIN_KEYWORDS = {
-    "frontend": ["component", "ui", "page", "responsive", "css", "tailwind", "shadcn", "layout", "modal"],
+    "frontend": ["component", "ui", "page", "responsive", "css", "tailwind", "layout", "modal", "lit-ui", "lui-"],
     "convex": ["convex", "schema", "mutation", "query", "action", "cron", "storage", "index"],
     "clerk": ["clerk", "auth", "signin", "signup", "organization", "rbac", "middleware", "webhook"],
     "seo": ["seo", "metadata", "canonical", "sitemap", "robots", "schema.org", "og tag"],
@@ -36,49 +34,44 @@ def detect_domains(text: str) -> list:
     return sorted(scores, key=scores.get, reverse=True)[:3]
 
 
-def get_progress_context() -> str:
-    progress = ROOT / "PROGRESS.md"
-    if not progress.exists():
+def get_project_context() -> str:
+    """Read project-context.md for product identity."""
+    ctx = ROOT / "project-context.md"
+    if not ctx.exists():
         return ""
     try:
-        lines = progress.read_text().splitlines()
-        return "\n".join(lines[-15:])
-    except Exception:
-        return ""
-
-
-def get_stack_context() -> str:
-    """Brief stack reminder from CLAUDE.md."""
-    claude_md = ROOT / "CLAUDE.md"
-    if not claude_md.exists():
-        return ""
-    try:
-        content = claude_md.read_text()
-        # Extract just the stack section
-        if "## STACK" in content:
-            start = content.index("## STACK")
-            end = content.find("\n---", start)
-            return content[start:end][:400] if end != -1 else content[start:start+400]
+        content = ctx.read_text()
+        # Extract just Product section (first ~10 lines after ## Product)
+        if "## Product" in content:
+            start = content.index("## Product")
+            end = content.find("\n##", start + 1)
+            return content[start:end].strip() if end != -1 else content[start:start + 300].strip()
     except Exception:
         pass
     return ""
 
 
 def main():
-    progress = get_progress_context()
-    domains = detect_domains(progress)
-
-    if not domains and not progress:
-        return 0  # Silent
-
     brief_parts = []
-    if domains:
-        brief_parts.append(f"Active domains: {', '.join(domains)}")
+
+    # Check onboarding status
+    project_ctx = ROOT / "project-context.md"
+    if not project_ctx.exists():
+        brief_parts.append(
+            "ONBOARDING REQUIRED: project-context.md not found. "
+            "Run the onboarding agent to configure this project. "
+            "Say 'set up my project' or delegate to the onboarding agent."
+        )
+    else:
+        # Load product identity
+        identity = get_project_context()
+        if identity:
+            brief_parts.append(identity)
 
     # Stack reminder
     brief_parts.append(
-        "Stack: Next.js 15 + Convex + Clerk + Polar + AI SDK v6. "
-        "7 agents: frontend-dev, convex-expert, clerk-expert, seo-dev, sentinel, accessibility-audit, senior-dev."
+        "Stack: Next.js 15 + Convex + Clerk + Polar + AI SDK v6 + lit-ui. "
+        "8 agents: onboarding, frontend-dev, convex-expert, clerk-expert, seo-dev, sentinel, accessibility-audit, senior-dev."
     )
 
     session_brief = " | ".join(brief_parts)
