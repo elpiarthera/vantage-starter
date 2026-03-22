@@ -29,6 +29,7 @@ All notable changes to VantageStarter are documented in this file.
 - **Page bg**: `bg-background` → `bg-white dark:bg-gray-950` matching litui.dev exactly
 - **CSS fades**: `.bottom-fade`, `.section-fade-top/bottom` now use explicit oklch + `.dark` variants instead of `var(--background)`
 - **ThemeToggle**: Replaced shadcn Button + lucide-react with litui.dev's exact plain button + inline SVG sun/moon
+- **Gray palette**: Overrode Tailwind's blue-tinted default grays with pure achromatic `oklch(X 0 0)` values matching litui.dev — eliminates blue cast on all `gray-*` classes
 
 ### Added
 - **Onboarding**: `project-context.md` generated via interactive 7-phase setup (identity, design, stack, env)
