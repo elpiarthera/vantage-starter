@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../lit-ui"
+		},
+		{
+			"path": "../vantage-studio"
 		}
 	],
 	"settings": {}
