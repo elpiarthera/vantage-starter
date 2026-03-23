@@ -33,6 +33,7 @@ All notable changes to VantageStarter are documented in this file.
 - **Chat page**: Removed purple accents — header icon, live indicator, empty state all use neutral tokens (bg-muted, text-muted-foreground). Input area wrapped in bg-card rounded-xl.
 - **Architect page**: Sessions in rounded-xl cards with hover states. "New session" button styled as CTA (bg-primary). Labels lightened. Removed lucide-react + shadcn ScrollArea.
 - **Account page**: Tab active indicator uses border-foreground (not blue). Profile sections in rounded-xl cards. Inputs match v0 styling (bg-transparent, border-input). Replaced 6 lucide-react icons with inline SVGs.
+- **Removed breadcrumb nav**: Deleted DashboardNav + DashboardBreadcrumbProvider from dashboard layout. Sidebar already shows active page — breadcrumbs added zero value and wasted vertical space.
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)
