@@ -1,6 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
-import { GeistMono } from "geist/font/mono";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -34,19 +33,15 @@ const softwareApplicationSchema = {
 	},
 };
 
-// Space Grotesk — geometric, distinctive letterforms for headings
-const spaceGrotesk = Space_Grotesk({
+const geist = Geist({
 	subsets: ["latin"],
-	weight: ["500", "700"],
-	variable: "--font-heading",
+	variable: "--font-sans",
 	display: "swap",
 });
 
-// Inter — clean, legible for body text
-const inter = Inter({
+const geistMono = Geist_Mono({
 	subsets: ["latin"],
-	weight: ["400", "500"],
-	variable: "--font-sans",
+	variable: "--font-mono",
 	display: "swap",
 });
 
@@ -76,7 +71,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 	return (
 		<html
 			lang={locale}
-			className={`${spaceGrotesk.variable} ${inter.variable} ${GeistMono.variable} antialiased`}
+			className={`${geist.variable} ${geistMono.variable} antialiased`}
 			suppressHydrationWarning
 		>
 			<head>

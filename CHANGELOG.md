@@ -8,6 +8,7 @@ All notable changes to VantageStarter are documented in this file.
 - **Design tokens**: Adopted v0.app's complete OKLCH token set as dark-first defaults — background oklch(0.145), card oklch(0.205), border oklch(1 0 0 / 10%), radius 0.625rem
 - **Preset**: Removed .dark block — root IS dark now (v0.app dark-first pattern)
 - **Dashboard**: Reverted hardcoded gray-* back to semantic tokens (bg-background, bg-card, border-border) which now resolve to v0 values
+- **Typography**: Replaced Inter + Space Grotesk with Geist + Geist Mono (v0.app font stack)
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

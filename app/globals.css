@@ -3,7 +3,7 @@
    Default preset: Monochrome Grayscale (zero chroma)
    Loaded via @import before @tailwind base (SSR-safe static default)
    Runtime preset switching: <link href> swap via PresetLoader component
-   Fonts: Space Grotesk (headings) + Inter (body) + Geist Mono (code)
+   Fonts: Geist (headings + body) + Geist Mono (code)
    ============================================================================ */
 
 /* Default preset — Monochrome Grayscale. Must be before @tailwind directives. */
@@ -120,9 +120,9 @@
     letter-spacing: -0.01em;
   }
 
-  /* Heading font — Space Grotesk for all headings */
+  /* Heading font — Geist for all headings */
   h1, h2, h3, h4 {
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
   }
 
   /* Typography scale per design system v2 */
