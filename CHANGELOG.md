@@ -7,7 +7,8 @@ All notable changes to VantageStarter are documented in this file.
 ### Changed (Day 17 — v0.app design system)
 - **Design tokens**: Adopted v0.app's complete OKLCH token set as dark-first defaults — background oklch(0.145), card oklch(0.205), border oklch(1 0 0 / 10%), radius 0.625rem
 - **Preset**: Removed .dark block — root IS dark now (v0.app dark-first pattern)
-- **Token consolidation**: ALL tokens moved to single preset file (dark-electric-blue.css). Removed duplicate/conflicting definitions from globals.css `:root` and `.dark` blocks. Single source of truth.
+- **Token consolidation**: ALL tokens moved to single preset file (base.css). Removed duplicate/conflicting definitions from globals.css `:root` and `.dark` blocks. Single source of truth.
+- **CRITICAL FIX**: tailwind.config.ts was double-wrapping oklch — `oklch(var(--X))` when vars already contain `oklch(...)`. Changed ALL color defs to `var(--X)` directly. This was causing ALL semantic colors to be invalid CSS.
 - **Dashboard**: Reverted hardcoded gray-* back to semantic tokens (bg-background, bg-card, border-border) which now resolve to v0 values
 - **Typography**: Replaced Inter + Space Grotesk with Geist + Geist Mono (v0.app font stack)
 - **Sidebar**: Added collapse/expand toggle button with double-chevron icon in footer (collapsible="icon" already supported)
