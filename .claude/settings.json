@@ -11,23 +11,6 @@
   "hooks": {
     "SessionStart": [{"hooks": [{"type": "command", "command": "python3 hooks/session-start-profiler.py"}]}],
     "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 hooks/user-prompt-submit-routing.py"}]}],
-    "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}],
-    "PreToolUse": [
-      {"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "python3 hooks/block-orchestrator-code-edits.py"}]},
-      {"matcher": "Agent", "hooks": [
-        {"type": "command", "command": "python3 hooks/enforce-agent-rules.py"},
-        {"type": "command", "command": "python3 hooks/enforce-brief-template.py"}
-      ]},
-      {"matcher": "Bash", "hooks": [{"type": "command", "command": "bash hooks/enforce-quality-gate.sh"}]}
-    ],
-    "PostToolUse": [
-      {"matcher": "Write|Edit", "hooks": [
-        {"type": "command", "command": "python3 hooks/post-tool-use-validate.py"},
-        {"type": "command", "command": "python3 hooks/post-tool-use-qa.py"}
-      ]},
-      {"matcher": "Agent", "hooks": [
-        {"type": "command", "command": "python3 hooks/post-agent-review.py"}
-      ]}
-    ]
+    "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}]
   }
 }
