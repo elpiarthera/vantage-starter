@@ -143,37 +143,54 @@ export default function ArchitectPage() {
 
 	return (
 		<div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
-			{/* Page header — only visible when in a session */}
-			{activeSessionId && (
-				<div className="flex items-center gap-3 px-6 md:px-8 py-3 border-b border-border shrink-0">
-					<button
-						type="button"
-						onClick={() => setActiveSessionId(null)}
-						className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-						aria-label="Back to sessions"
-					>
+			{/* Page header — always visible */}
+			<div className="border-b border-border px-4 md:px-6 py-4 shrink-0">
+				<div className="flex items-center gap-3">
+					<div className="size-8 rounded-xl bg-muted flex items-center justify-center">
 						<svg
-							width="14"
-							height="14"
+							className="size-4 text-muted-foreground"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
 							strokeWidth="1.5"
 							aria-hidden="true"
 						>
-							<path d="M19 12H5M12 5l-7 7 7 7" />
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M12 2L2 7l10 5 10-5-10-5z"
+							/>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M2 17l10 5 10-5"
+							/>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M2 12l10 5 10-5"
+							/>
 						</svg>
-						Back
-					</button>
+					</div>
+					<div>
+						<h1 className="text-base font-semibold text-foreground">
+							Architect
+						</h1>
+						<p className="text-xs text-muted-foreground">
+							Describe what you want to build
+						</p>
+					</div>
+
+					{/* New session action */}
 					<button
 						type="button"
 						onClick={handleNewSession}
-						className="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						className="ml-auto text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
 					>
 						New session
 					</button>
 				</div>
-			)}
+			</div>
 
 			{/* Main content */}
 			<div className="flex-1 overflow-hidden">
