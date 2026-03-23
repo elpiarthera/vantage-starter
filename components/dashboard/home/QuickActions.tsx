@@ -1,22 +1,19 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function QuickActions() {
 	const t = useTranslations("dashboard");
 
 	return (
-		<Card className="rounded-2xl card-elevated border-border">
-			<CardHeader>
-				<CardTitle className="text-base">{t("quick_actions.title")}</CardTitle>
-			</CardHeader>
-			<CardContent>
-				{/* TODO: Add product-specific quick actions */}
-				<p className="text-sm text-muted-foreground">
-					No actions configured yet.
-				</p>
-			</CardContent>
-		</Card>
+		<div className="bg-card border border-border rounded-xl p-6">
+			<h3 className="text-sm font-medium text-foreground mb-4">
+				{t("quick_actions.title")}
+			</h3>
+			{/* TODO: Add product-specific quick actions */}
+			<p className="text-sm text-muted-foreground">
+				No actions configured yet.
+			</p>
+		</div>
 	);
 }

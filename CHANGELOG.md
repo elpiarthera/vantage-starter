@@ -11,6 +11,9 @@ All notable changes to VantageStarter are documented in this file.
 - **Typography**: Replaced Inter + Space Grotesk with Geist + Geist Mono (v0.app font stack)
 - **Sidebar**: Added collapse/expand toggle button with double-chevron icon in footer (collapsible="icon" already supported)
 - **Architect page**: Removed sessions sidebar — sessions list now inline in main content. Removed 4 nav layers → 1. Eliminated hardcoded blue-tinted bg `oklch(0.115 0.01 240)`
+- **Sidebar v2**: Moved collapse toggle to header (panel icon), removed footer. Proper section separators.
+- **Architect v2**: Sessions in card containers, CTA button styled (bg-primary), empty state vertically centered
+- **Dashboard home cards**: Removed shadcn Card shell, replaced with native `div.bg-card.border.border-border.rounded-xl.p-6`
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

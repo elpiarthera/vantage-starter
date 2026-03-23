@@ -1,20 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ActivityFeed() {
 	const t = useTranslations("dashboard");
 
 	return (
-		<Card className="rounded-2xl card-elevated border-border">
-			<CardHeader>
-				<CardTitle className="text-base">{t("activity_feed.title")}</CardTitle>
-			</CardHeader>
-			<CardContent>
-				{/* TODO: Wire up to product-specific activity data */}
-				<p className="text-sm text-muted-foreground">No recent activity.</p>
-			</CardContent>
-		</Card>
+		<div className="bg-card border border-border rounded-xl p-6">
+			<h3 className="text-sm font-medium text-foreground mb-4">
+				{t("activity_feed.title")}
+			</h3>
+			{/* TODO: Wire up to product-specific activity data */}
+			<p className="text-sm text-muted-foreground">No recent activity.</p>
+		</div>
 	);
 }

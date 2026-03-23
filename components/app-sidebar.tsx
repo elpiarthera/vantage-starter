@@ -18,7 +18,6 @@ import { usePathname } from "next/navigation";
 import {
 	Sidebar,
 	SidebarContent,
-	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
@@ -56,26 +55,35 @@ export function AppSidebar() {
 				className="group-data-[side=left]:border-r border-sidebar-border bg-sidebar-background"
 				aria-label="Main navigation"
 			>
-				{/* ── Header: Logo ── */}
-				<SidebarHeader>
-					<SidebarMenu>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								asChild
-								className="h-10 min-h-[44px] rounded-none px-3 gap-2 hover:bg-transparent"
-							>
-								<Link
-									href="/dashboard"
-									onClick={handleNavClick}
-									aria-label="VantageStarter home"
-								>
-									<span className="font-heading font-bold tracking-[-0.03em] text-foreground">
-										VantageStarter
-									</span>
-								</Link>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					</SidebarMenu>
+				{/* ── Header: Logo + collapse toggle ── */}
+				<SidebarHeader className="flex flex-row items-center justify-between px-3 h-14">
+					<Link
+						href="/dashboard"
+						onClick={handleNavClick}
+						aria-label="VantageStarter home"
+						className="font-heading font-bold tracking-[-0.03em] text-foreground hover:opacity-80 transition-opacity"
+					>
+						VantageStarter
+					</Link>
+					<button
+						type="button"
+						onClick={() => toggleSidebar()}
+						className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+						aria-label="Toggle sidebar"
+					>
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							aria-hidden="true"
+						>
+							<rect x="3" y="3" width="18" height="18" rx="2" />
+							<path d="M9 3v18" />
+						</svg>
+					</button>
 				</SidebarHeader>
 
 				{/* ── Content ── */}
@@ -254,41 +262,6 @@ export function AppSidebar() {
 						</SidebarGroupContent>
 					</SidebarGroup>
 				</SidebarContent>
-
-				{/* ── Footer: Collapse toggle ── */}
-				<SidebarFooter>
-					<SidebarMenu>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								onClick={() => toggleSidebar()}
-								className="h-9 min-h-[44px] rounded-none px-4 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground transition-colors"
-							>
-								<svg
-									width="18"
-									height="18"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="1.5"
-									className="shrink-0"
-									aria-hidden="true"
-								>
-									<path
-										d="M11 19l-7-7 7-7"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									/>
-									<path
-										d="M18 19l-7-7 7-7"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									/>
-								</svg>
-								<span>Collapse</span>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					</SidebarMenu>
-				</SidebarFooter>
 			</Sidebar>
 		</TooltipProvider>
 	);

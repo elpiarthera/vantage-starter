@@ -58,40 +58,42 @@ function NoWorkspace() {
 
 function EmptyState({ onNew }: { onNew: () => void }) {
 	return (
-		<div className="flex flex-col items-center gap-4 text-center max-w-xs mx-auto py-12">
-			<div className="icon-container" aria-hidden="true">
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.5"
-					className="text-muted-foreground"
-					aria-hidden="true"
+		<div className="flex items-center justify-center h-full">
+			<div className="flex flex-col items-center gap-4 text-center max-w-xs mx-auto py-12">
+				<div className="icon-container" aria-hidden="true">
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="text-muted-foreground"
+						aria-hidden="true"
+					>
+						<path d="M12 2L2 7l10 5 10-5-10-5z" />
+						<path d="M2 17l10 5 10-5" />
+						<path d="M2 12l10 5 10-5" />
+					</svg>
+				</div>
+				<div className="space-y-1">
+					<h2 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
+						Architect
+					</h2>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						Describe what you want to accomplish. I&apos;ll design an agent
+						workforce and execution plan.
+					</p>
+				</div>
+				<button
+					type="button"
+					onClick={onNew}
+					className="btn-shadow rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					aria-label="Start a new planning session"
 				>
-					<path d="M12 2L2 7l10 5 10-5-10-5z" />
-					<path d="M2 17l10 5 10-5" />
-					<path d="M2 12l10 5 10-5" />
-				</svg>
+					Start planning
+				</button>
 			</div>
-			<div className="space-y-1">
-				<h2 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
-					Architect
-				</h2>
-				<p className="text-sm text-muted-foreground leading-relaxed">
-					Describe what you want to accomplish. I&apos;ll design an agent
-					workforce and execution plan.
-				</p>
-			</div>
-			<button
-				type="button"
-				onClick={onNew}
-				className="btn-shadow active-scale rounded-full px-8 py-2 font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-				aria-label="Start a new planning session"
-			>
-				Start planning
-			</button>
 		</div>
 	);
 }
