@@ -20,21 +20,109 @@ const STATUS_LABELS: Record<MissionStatus, string> = {
 	failed: "Failed",
 };
 
-const STATUS_ICONS: Record<MissionStatus, string> = {
-	pending: "🕐",
-	executing: "⚡",
-	awaiting_checkpoint: "🔍",
-	completed: "✅",
-	failed: "❌",
+const STATUS_HEADER_CLASSES: Record<MissionStatus, string> = {
+	pending: "bg-muted text-muted-foreground",
+	executing: "bg-warning/10 text-warning",
+	awaiting_checkpoint: "bg-primary/10 text-primary",
+	completed: "bg-success/10 text-success",
+	failed: "bg-destructive/10 text-destructive",
 };
 
-const STATUS_HEADER_CLASSES: Record<MissionStatus, string> = {
-	pending: "bg-blue-500/10 text-blue-500",
-	executing: "bg-amber-500/10 text-amber-500",
-	awaiting_checkpoint: "bg-purple-500/10 text-purple-500",
-	completed: "bg-emerald-500/10 text-emerald-500",
-	failed: "bg-red-500/10 text-red-500",
-};
+function StatusIcon({ status }: { status: MissionStatus }) {
+	if (status === "pending") {
+		return (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<circle cx="12" cy="12" r="10" />
+				<polyline points="12 6 12 12 16 14" />
+			</svg>
+		);
+	}
+	if (status === "executing") {
+		return (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+			</svg>
+		);
+	}
+	if (status === "awaiting_checkpoint") {
+		return (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<circle cx="11" cy="11" r="8" />
+				<path d="m21 21-4.3-4.3" />
+			</svg>
+		);
+	}
+	if (status === "completed") {
+		return (
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				aria-hidden="true"
+			>
+				<circle cx="12" cy="12" r="10" />
+				<path d="m9 12 2 2 4-4" />
+			</svg>
+		);
+	}
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="14"
+			height="14"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<circle cx="12" cy="12" r="10" />
+			<path d="m15 9-6 6" />
+			<path d="m9 9 6 6" />
+		</svg>
+	);
+}
 
 interface MissionColumnProps {
 	status: MissionStatus;
@@ -78,8 +166,7 @@ export function MissionColumn({
 	};
 
 	return (
-		<div
-			role="region"
+		<section
 			aria-label={`${STATUS_LABELS[status]} column`}
 			className={cn(
 				"flex flex-col min-w-[280px] max-w-[320px] shrink-0 rounded-xl transition-colors",
@@ -95,14 +182,16 @@ export function MissionColumn({
 					STATUS_HEADER_CLASSES[status],
 				)}
 			>
-				<span>{STATUS_ICONS[status]}</span>
-				<span className="font-medium text-sm">{STATUS_LABELS[status]}</span>
-				<span className="ml-auto text-xs font-medium bg-background/50 px-1.5 py-0.5 rounded">
+				<StatusIcon status={status} />
+				<span className="text-xs font-medium uppercase tracking-wider">
+					{STATUS_LABELS[status]}
+				</span>
+				<span className="ml-auto text-xs font-medium bg-background/50 px-1.5 py-0.5 rounded-full">
 					{missions.length}
 				</span>
 			</div>
 
-			<div className="flex flex-col gap-3 flex-1 overflow-y-auto pb-4 min-h-[120px]">
+			<ul className="flex flex-col gap-3 flex-1 overflow-y-auto pb-4 min-h-[120px]">
 				{missions.map((mission) => (
 					<DraggableMissionCard
 						key={mission._id}
@@ -126,8 +215,8 @@ export function MissionColumn({
 						{isDragOver ? "Drop here" : "No missions"}
 					</div>
 				)}
-			</div>
-		</div>
+			</ul>
+		</section>
 	);
 }
 
@@ -146,15 +235,14 @@ function DraggableMissionCard({
 	onDragEnd,
 	onClick,
 }: DraggableMissionCardProps) {
-	const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+	const handleDragStart = (e: React.DragEvent<HTMLLIElement>) => {
 		e.dataTransfer.setData("text/mission-id", mission._id);
 		e.dataTransfer.effectAllowed = "move";
 		onDragStart();
 	};
 
 	return (
-		<div
-			role="listitem"
+		<li
 			draggable
 			className={cn(
 				"transition-all",
@@ -164,6 +252,6 @@ function DraggableMissionCard({
 			onDragEnd={onDragEnd}
 		>
 			<MissionCard mission={mission} onClick={onClick} />
-		</div>
+		</li>
 	);
 }

@@ -124,7 +124,7 @@ export function ViewOptions({
 			<button
 				type="button"
 				onClick={() => setOpen((v) => !v)}
-				className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted min-h-[44px]"
+				className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted min-h-[44px]"
 			>
 				<IconSettings className="size-4" />
 				<span className="hidden sm:inline">View</span>
@@ -140,7 +140,7 @@ export function ViewOptions({
 					/>
 
 					{/* Popover panel */}
-					<div className="absolute right-0 z-50 mt-2 w-64 rounded-lg border border-border bg-card p-3 shadow-lg">
+					<div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-border bg-popover p-3 shadow-lg">
 						<div className="flex rounded-lg bg-muted p-1">
 							{availableViews.map((type) => (
 								<button
@@ -151,9 +151,9 @@ export function ViewOptions({
 										setOpen(false);
 									}}
 									className={cn(
-										"flex flex-1 flex-col items-center gap-1 rounded-md py-2.5 text-xs font-medium transition-colors",
+										"flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 px-3 text-xs font-medium transition-colors",
 										viewType === type.id
-											? "bg-background shadow-sm text-foreground"
+											? "bg-accent text-foreground"
 											: "text-muted-foreground hover:text-foreground",
 									)}
 								>

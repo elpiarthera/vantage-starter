@@ -16,15 +16,15 @@ type MissionStatus =
 // Inline status badge styles replacing cva + missionStatusBadge from lib/status-variants
 const STATUS_BADGE_CLASSES: Record<MissionStatus, string> = {
 	pending:
-		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-500/10 text-slate-400",
+		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground",
 	executing:
-		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-500/10 text-amber-500",
+		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-warning/10 text-warning",
 	awaiting_checkpoint:
-		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-500/10 text-blue-500",
+		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary",
 	completed:
-		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-500",
+		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-success/10 text-success",
 	failed:
-		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-500/10 text-red-500",
+		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-destructive/10 text-destructive",
 };
 
 const STATUS_LABELS: Record<MissionStatus, string> = {
@@ -36,9 +36,9 @@ const STATUS_LABELS: Record<MissionStatus, string> = {
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-	urgent: "text-red-500",
-	high: "text-orange-500",
-	medium: "text-blue-500",
+	urgent: "text-destructive",
+	high: "text-warning",
+	medium: "text-primary",
 	low: "text-muted-foreground",
 };
 
@@ -182,7 +182,7 @@ export function MissionListView({
 						<button
 							key={mission._id}
 							type="button"
-							className="flex w-full items-center gap-4 px-4 py-3 lg:px-6 hover:bg-muted/50 cursor-pointer transition-colors min-h-[60px] text-left"
+							className="flex w-full items-center gap-4 px-4 py-3 lg:px-6 hover:bg-accent cursor-pointer transition-colors rounded-lg min-h-[60px] text-left"
 							onClick={() => handleClick(mission._id)}
 						>
 							{/* Status badge */}

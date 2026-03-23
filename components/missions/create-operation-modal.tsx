@@ -121,13 +121,13 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 				>
 					{/* Backdrop */}
 					<div
-						className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+						className="absolute inset-0 bg-background/80 backdrop-blur-sm"
 						onClick={handleClose}
 						aria-hidden="true"
 					/>
 
 					{/* Card */}
-					<div className="relative z-10 mt-[20vh] w-full max-w-lg bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl">
+					<div className="relative z-10 mt-[20vh] w-full max-w-lg bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg">
 						<div className="p-6">
 							{/* Header */}
 							<div className="flex items-start justify-between mb-6">
@@ -169,7 +169,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 								<div>
 									<label htmlFor="operation-name" className={labelClass}>
 										Name{" "}
-										<span className="text-red-500" aria-hidden="true">
+										<span className="text-destructive" aria-hidden="true">
 											*
 										</span>
 									</label>
@@ -244,7 +244,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 									type="button"
 									onClick={handleClose}
 									disabled={isSubmitting}
-									className="flex-1 sm:flex-none h-12 px-6 text-base rounded-lg border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50"
+									className="flex-1 sm:flex-none px-6 py-2.5 text-sm rounded-lg border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50"
 								>
 									Cancel
 								</button>
@@ -252,7 +252,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 									type="button"
 									onClick={() => void handleSubmit()}
 									disabled={isSubmitting || !name.trim()}
-									className="flex-1 h-12 px-6 text-base rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+									className="flex-1 px-6 py-2.5 text-sm rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
 								>
 									{isSubmitting ? "Creating..." : "Add Operation"}
 								</button>

@@ -119,22 +119,22 @@ function StatCard({
 }: StatCardProps) {
 	const containerClass =
 		trend === "up"
-			? "bg-emerald-500/5 border border-emerald-500/20"
+			? "bg-success/5 border border-success/20"
 			: trend === "down"
-				? "bg-red-500/5 border border-red-500/20"
-				: "bg-transparent";
+				? "bg-destructive/5 border border-destructive/20"
+				: "bg-card border border-border";
 
 	const changeClass =
 		trend === "up"
-			? "text-emerald-500"
+			? "text-success"
 			: trend === "down"
-				? "text-red-500"
+				? "text-destructive"
 				: "text-muted-foreground";
 
 	return (
 		<div
 			className={cn(
-				"flex-1 min-w-0 space-y-4 rounded-lg p-4",
+				"flex-1 min-w-0 space-y-4 rounded-xl p-4",
 				containerClass,
 				className,
 			)}

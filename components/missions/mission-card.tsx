@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 type Mission = Doc<"missions">;
 
 const priorityColors: Record<string, { bg: string; text: string }> = {
-	urgent: { bg: "bg-red-500/10", text: "text-red-500" },
-	high: { bg: "bg-orange-500/10", text: "text-orange-500" },
-	medium: { bg: "bg-yellow-500/10", text: "text-yellow-600" },
-	low: { bg: "bg-green-500/10", text: "text-green-600" },
+	urgent: { bg: "bg-destructive/10", text: "text-destructive" },
+	high: { bg: "bg-warning/10", text: "text-warning" },
+	medium: { bg: "bg-warning/10", text: "text-warning" },
+	low: { bg: "bg-success/10", text: "text-success" },
 };
 
 interface MissionCardProps {
@@ -68,22 +68,20 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 		: (mission.progress ?? 0);
 
 	return (
-		<div
-			className="rounded-xl border border-border bg-card p-4 cursor-pointer hover:shadow-md transition-shadow"
+		<article
+			className="rounded-xl border border-border bg-card p-4 cursor-pointer hover:bg-accent transition-colors"
 			onClick={onClick ?? handleViewDetails}
 			onKeyDown={(e) => {
 				if (e.key === "Enter" || e.key === " ") {
 					(onClick ?? handleViewDetails)();
 				}
 			}}
-			role="button"
-			tabIndex={0}
 		>
 			{/* Header: Priority Badge + Menu */}
 			<div className="flex items-start justify-between mb-4">
 				<span
 					className={cn(
-						"inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium capitalize",
+						"inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium capitalize",
 						priorityStyle.bg,
 						priorityStyle.text,
 					)}
@@ -95,7 +93,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 				<div ref={menuRef} className="relative">
 					<button
 						type="button"
-						className="flex items-center justify-center size-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+						className="flex items-center justify-center size-6 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 						onClick={(e) => {
 							e.stopPropagation();
 							setMenuOpen((prev) => !prev);
@@ -131,7 +129,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 							<button
 								type="button"
 								role="menuitem"
-								className="w-full text-left px-3 py-1.5 text-foreground hover:bg-muted/60 transition-colors"
+								className="w-full text-left px-3 py-1.5 text-foreground hover:bg-accent transition-colors"
 								onClick={(e) => {
 									e.stopPropagation();
 									setMenuOpen(false);
@@ -144,7 +142,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 							<button
 								type="button"
 								role="menuitem"
-								className="w-full text-left px-3 py-1.5 text-red-500 hover:bg-muted/60 transition-colors"
+								className="w-full text-left px-3 py-1.5 text-destructive hover:bg-accent transition-colors"
 								onClick={(e) => {
 									e.stopPropagation();
 									handleArchive();
@@ -159,7 +157,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 
 			{/* Title & Brief */}
 			<div className="mb-3">
-				<h3 className="text-xs font-medium mb-2 line-clamp-2 text-foreground">
+				<h3 className="text-xs font-semibold mb-2 line-clamp-2 text-foreground">
 					{mission.name}
 				</h3>
 				{mission.brief && (
@@ -275,7 +273,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 					<span className="text-[8px] font-medium text-primary">A</span>
 				</div>
 			</div>
-		</div>
+		</article>
 	);
 }
 
@@ -323,13 +321,13 @@ function ProgressRing({
 				className={cn(
 					"transition-all duration-300",
 					progress >= 100
-						? "text-emerald-500"
+						? "text-success"
 						: progress >= 75
-							? "text-emerald-500"
+							? "text-success"
 							: progress >= 50
-								? "text-blue-500"
+								? "text-primary"
 								: progress >= 25
-									? "text-amber-500"
+									? "text-warning"
 									: "text-muted-foreground",
 				)}
 			/>

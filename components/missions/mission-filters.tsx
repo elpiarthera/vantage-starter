@@ -25,15 +25,15 @@ interface MissionFiltersProps {
 
 const STATUS_OPTIONS: { value: MissionStatus; label: string; color: string }[] =
 	[
-		{ value: "pending", label: "Pending", color: "bg-slate-400" },
-		{ value: "executing", label: "Executing", color: "bg-amber-500" },
+		{ value: "pending", label: "Pending", color: "bg-muted-foreground" },
+		{ value: "executing", label: "Executing", color: "bg-warning" },
 		{
 			value: "awaiting_checkpoint",
 			label: "Awaiting Checkpoint",
-			color: "bg-blue-500",
+			color: "bg-primary",
 		},
-		{ value: "completed", label: "Completed", color: "bg-emerald-500" },
-		{ value: "failed", label: "Failed", color: "bg-red-500" },
+		{ value: "completed", label: "Completed", color: "bg-success" },
+		{ value: "failed", label: "Failed", color: "bg-destructive" },
 	];
 
 const PRIORITY_OPTIONS: {
@@ -41,10 +41,10 @@ const PRIORITY_OPTIONS: {
 	label: string;
 	color: string;
 }[] = [
-	{ value: "urgent", label: "Urgent", color: "bg-red-500" },
-	{ value: "high", label: "High", color: "bg-orange-500" },
-	{ value: "medium", label: "Medium", color: "bg-yellow-500" },
-	{ value: "low", label: "Low", color: "bg-slate-400" },
+	{ value: "urgent", label: "Urgent", color: "bg-destructive" },
+	{ value: "high", label: "High", color: "bg-warning" },
+	{ value: "medium", label: "Medium", color: "bg-warning" },
+	{ value: "low", label: "Low", color: "bg-muted-foreground" },
 ];
 
 // Inline SVG replacing lucide-react Filter icon
@@ -171,7 +171,7 @@ export function MissionFilters({
 			<button
 				type="button"
 				onClick={() => setOpen((v) => !v)}
-				className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted min-h-[44px]"
+				className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted min-h-[44px]"
 			>
 				<IconFilter className="size-4" />
 				<span className="hidden sm:inline">{getFilterLabel()}</span>
@@ -192,7 +192,7 @@ export function MissionFilters({
 					/>
 
 					{/* Popover panel */}
-					<div className="absolute right-0 z-50 mt-2 w-64 rounded-lg border border-border bg-card p-4 shadow-lg">
+					<div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-border bg-popover p-3 shadow-lg">
 						<div className="space-y-4">
 							{/* Header */}
 							<div className="flex items-center justify-between">
@@ -273,7 +273,7 @@ export function MissionFilters({
 									id="show-archived"
 									checked={filters.showArchived}
 									onChange={toggleShowArchived}
-									dotColor="bg-slate-500"
+									dotColor="bg-muted-foreground"
 									label="Show Archived"
 								/>
 							</div>

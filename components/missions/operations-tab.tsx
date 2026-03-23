@@ -8,14 +8,14 @@ import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { CreateOperationModal } from "./create-operation-modal";
 import { OperationDetailSheet } from "./operation-detail-sheet";
 
-// Status dot colors — inline, no external dependency
+// Status dot colors — semantic tokens only
 const STATUS_DOT: Record<string, string> = {
-	pending: "bg-[oklch(0.65_0.01_232)]",
-	blocked: "bg-[oklch(0.55_0.18_25)]",
-	in_progress: "bg-[oklch(0.6_0.15_232)]",
-	awaiting_review: "bg-[oklch(0.72_0.15_85)]",
-	completed: "bg-[oklch(0.62_0.15_145)]",
-	failed: "bg-[oklch(0.5_0.2_25)]",
+	pending: "bg-muted-foreground",
+	blocked: "bg-destructive",
+	in_progress: "bg-primary",
+	awaiting_review: "bg-warning",
+	completed: "bg-success",
+	failed: "bg-destructive",
 };
 
 interface OperationsTabProps {
@@ -238,7 +238,7 @@ function OperationCard({ operation }: { operation: Doc<"operations"> }) {
 								<hr className="border-border my-1" />
 								<button
 									type="button"
-									className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[oklch(0.55_0.18_25)] hover:bg-muted transition-colors"
+									className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted transition-colors"
 									onClick={() => {
 										setIsMenuOpen(false);
 										void handleDelete();

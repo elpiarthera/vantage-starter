@@ -199,14 +199,14 @@ export function CreateMissionModal({
 				>
 					{/* Backdrop */}
 					<div
-						className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+						className="absolute inset-0 bg-background/80 backdrop-blur-sm"
 						onClick={handleClose}
 						aria-hidden="true"
 					/>
 
 					{/* Card */}
 					<div
-						className="relative z-10 w-full max-w-[600px] max-h-[90vh] overflow-y-auto bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl"
+						className="relative z-10 w-full max-w-[600px] max-h-[90vh] overflow-y-auto bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg"
 						onKeyDown={handleKeyDown}
 					>
 						<div className="p-6">
@@ -250,7 +250,7 @@ export function CreateMissionModal({
 								<div>
 									<label htmlFor="mission-name" className={labelClass}>
 										Name{" "}
-										<span className="text-red-500" aria-hidden="true">
+										<span className="text-destructive" aria-hidden="true">
 											*
 										</span>
 									</label>
@@ -274,7 +274,7 @@ export function CreateMissionModal({
 										>
 											Brief
 										</label>
-										<span className="text-xs text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded">
+										<span className="text-xs text-warning bg-warning/10 px-1.5 py-0.5 rounded">
 											AI Context
 										</span>
 									</div>
@@ -295,7 +295,7 @@ export function CreateMissionModal({
 											fill="none"
 											stroke="currentColor"
 											strokeWidth="1.5"
-											className="mt-0.5 text-amber-500 shrink-0"
+											className="mt-0.5 text-warning shrink-0"
 											aria-hidden="true"
 										>
 											<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
@@ -507,7 +507,7 @@ export function CreateMissionModal({
 									type="button"
 									onClick={handleClose}
 									disabled={isSubmitting}
-									className="flex-1 sm:flex-none h-12 px-6 text-base rounded-lg border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50"
+									className="flex-1 sm:flex-none px-6 py-2.5 text-sm rounded-lg border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50"
 								>
 									Cancel
 								</button>
@@ -515,7 +515,7 @@ export function CreateMissionModal({
 									type="button"
 									onClick={handleSubmit}
 									disabled={isSubmitting || !name.trim()}
-									className="flex-1 h-12 px-6 text-base rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+									className="flex-1 px-6 py-2.5 text-sm rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
 								>
 									{isSubmitting ? "Creating..." : "Create Mission"}
 								</button>

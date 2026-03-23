@@ -22,10 +22,10 @@ export function MissionsHeader({
 	children,
 }: MissionsHeaderProps) {
 	return (
-		<header className="flex items-center justify-between p-4 md:p-6 border-b border-[var(--border)] shrink-0">
+		<header className="flex items-center justify-between p-4 md:p-6 border-b border-border shrink-0">
 			{/* Left: icon + title */}
 			<div className="flex items-center gap-3">
-				<div className="flex size-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+				<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
 					{/* Target icon */}
 					<svg
 						width="20"
@@ -34,7 +34,7 @@ export function MissionsHeader({
 						fill="none"
 						stroke="currentColor"
 						strokeWidth="1.5"
-						className="text-[var(--primary)]"
+						className="text-primary"
 						aria-hidden="true"
 					>
 						<circle cx="12" cy="12" r="10" />
@@ -43,12 +43,10 @@ export function MissionsHeader({
 					</svg>
 				</div>
 				<div>
-					<h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+					<h1 className="text-2xl font-semibold tracking-tight text-foreground">
 						Mission Control
 					</h1>
-					<p className="text-sm text-[var(--muted-foreground)]">
-						See the factory floor
-					</p>
+					<p className="text-sm text-muted-foreground">See the factory floor</p>
 				</div>
 			</div>
 
@@ -60,7 +58,7 @@ export function MissionsHeader({
 					trigger={
 						<button
 							type="button"
-							className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2.5 text-sm font-medium hover:bg-[var(--primary)]/90 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+							className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						>
 							{/* Rocket icon */}
 							<svg

@@ -31,12 +31,12 @@ const STATUS_LABEL: Record<OperationStatus, string> = {
 };
 
 const STATUS_DOT: Record<OperationStatus, string> = {
-	pending: "bg-[oklch(0.65_0.01_232)]",
-	blocked: "bg-[oklch(0.55_0.18_25)]",
-	in_progress: "bg-[oklch(0.6_0.15_232)]",
-	awaiting_review: "bg-[oklch(0.72_0.15_85)]",
-	completed: "bg-[oklch(0.62_0.15_145)]",
-	failed: "bg-[oklch(0.5_0.2_25)]",
+	pending: "bg-muted-foreground",
+	blocked: "bg-destructive",
+	in_progress: "bg-primary",
+	awaiting_review: "bg-warning",
+	completed: "bg-success",
+	failed: "bg-destructive",
 };
 
 // Valid status transitions
@@ -98,14 +98,14 @@ export function OperationDetailSheet({
 		<>
 			{/* Backdrop */}
 			<div
-				className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+				className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
 				onClick={() => onOpenChange(false)}
 				aria-hidden="true"
 			/>
 
 			{/* Sheet */}
 			<aside
-				className="fixed right-0 inset-y-0 z-50 w-full max-w-[400px] bg-[var(--card)] border-l border-[var(--border)] shadow-2xl flex flex-col"
+				className="fixed right-0 inset-y-0 z-50 w-full max-w-[400px] bg-[var(--card)] border-l border-[var(--border)] shadow-lg flex flex-col"
 				aria-label="Operation details"
 			>
 				{/* Header */}
@@ -268,10 +268,10 @@ export function OperationDetailSheet({
 					{/* Error */}
 					{operation.error ? (
 						<div>
-							<p className="text-xs font-medium text-[oklch(0.55_0.18_25)] uppercase tracking-wide mb-2">
+							<p className="text-xs font-medium text-destructive uppercase tracking-wide mb-2">
 								Error
 							</p>
-							<pre className="text-xs text-[oklch(0.55_0.18_25)] bg-[oklch(0.55_0.18_25)]/10 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words border border-[oklch(0.55_0.18_25)]/20">
+							<pre className="text-xs text-destructive bg-destructive/10 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words border border-destructive/20">
 								{operation.error}
 							</pre>
 						</div>
@@ -286,7 +286,7 @@ export function OperationDetailSheet({
 							onOpenChange(false);
 							onDelete();
 						}}
-						className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm text-[oklch(0.55_0.18_25)] border border-[oklch(0.55_0.18_25)]/30 hover:bg-[oklch(0.55_0.18_25)]/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.55_0.18_25)]"
+						className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
 					>
 						{/* trash icon */}
 						<svg
