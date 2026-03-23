@@ -383,7 +383,13 @@ body::before {
 
 /* Icon container — feature grid icons, size-10, no large icon above heading */
 .icon-container {
-  @apply size-10 rounded-lg bg-muted/50 flex items-center justify-center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
