@@ -32,10 +32,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const navItemClass = cn(
-	"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground",
-	"transition-colors hover:bg-transparent hover:text-foreground",
-	// Active: subtle bg fill, no border accent
-	"data-[active=true]:bg-accent data-[active=true]:text-foreground",
+	"h-9 min-h-[44px] rounded-md px-3 text-sm font-medium text-muted-foreground",
+	"transition-colors hover:bg-sidebar-accent hover:text-foreground",
+	// Active: subtle bg fill matching v0 sidebar-accent
+	"data-[active=true]:bg-sidebar-accent data-[active=true]:text-foreground",
 );
 
 // Duration matches the easing token defined in globals.css
@@ -70,7 +70,7 @@ export function AppSidebar() {
 				<SidebarContent>
 					{/* ─── OVERVIEW ─── */}
 					<SidebarGroup>
-						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
 							Overview
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -200,7 +200,7 @@ export function AppSidebar() {
 
 					{/* ─── WORKSPACE ─── */}
 					<SidebarGroup>
-						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
 							Workspace
 						</SidebarGroupLabel>
 						<SidebarGroupContent>

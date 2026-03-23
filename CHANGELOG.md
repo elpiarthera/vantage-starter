@@ -24,6 +24,7 @@ All notable changes to VantageStarter are documented in this file.
 - **Hooks v2**: Added post-agent-qa.py (advisory QA reminder after agent completes). Simplified settings.json — removed crashing PreToolUse/PostToolUse hooks.
 - **Infrastructure**: Added check-messages skill, brief templates (brief-ui.md, brief-backend.md), v0 reference screenshots
 - **Sidebar v4**: Tokens match page bg (oklch 0.145 — seamless blend). Active item uses bg-accent fill instead of left-border. Removed .dark sidebar overrides.
+- **Sidebar v5**: hover:bg-sidebar-accent on all items, active uses bg-sidebar-accent, rounded-md pill shape, section labels lighter (11px, 60% opacity)
 - **Header v2**: Decluttered — LanguageSwitcher hidden on desktop, credits show number only (no badge), avatar only on desktop (no name/chevron). Height reduced to h-12/h-14.
 - **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.
 
