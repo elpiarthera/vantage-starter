@@ -27,6 +27,7 @@ All notable changes to VantageStarter are documented in this file.
 - **Sidebar v5**: hover:bg-sidebar-accent on all items, active uses bg-sidebar-accent, rounded-md pill shape, section labels lighter (11px, 60% opacity)
 - **Header v2**: Decluttered — LanguageSwitcher hidden on desktop, credits show number only (no badge), avatar only on desktop (no name/chevron). Height reduced to h-12/h-14.
 - **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.
+- **Sidebar v6**: Hover-to-open — `collapsible="icon"` (3rem icon strip when collapsed), `onMouseEnter`/`onMouseLeave` floats sidebar over content as overlay (v0.app behavior). Logo text hidden when collapsed.
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

@@ -15,6 +15,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import * as React from "react";
 import {
 	Sidebar,
 	SidebarContent,
@@ -43,16 +44,34 @@ const navTransition = "150ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function AppSidebar() {
 	const pathname = usePathname();
-	const { setOpenMobile } = useSidebar();
+	const { setOpenMobile, state, setOpen } = useSidebar();
+	const isHoverExpandedRef = React.useRef(false);
 
 	const handleNavClick = () => setOpenMobile(false);
+
+	const handleMouseEnter = () => {
+		if (state === "collapsed") {
+			isHoverExpandedRef.current = true;
+			setOpen(true);
+		}
+	};
+
+	const handleMouseLeave = () => {
+		if (isHoverExpandedRef.current) {
+			isHoverExpandedRef.current = false;
+			setOpen(false);
+		}
+	};
 
 	return (
 		<TooltipProvider delayDuration={0}>
 			<Sidebar
-				collapsible="offcanvas"
+				collapsible="icon"
 				className="group-data-[side=left]:border-r border-sidebar-border bg-sidebar-background"
 				aria-label="Main navigation"
+				data-hover-open={isHoverExpandedRef.current ? "true" : undefined}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
 			>
 				{/* ── Header: Logo ── */}
 				<SidebarHeader className="flex flex-row items-center px-4 h-14">
@@ -60,7 +79,7 @@ export function AppSidebar() {
 						href="/dashboard"
 						onClick={handleNavClick}
 						aria-label="VantageStarter home"
-						className="font-heading font-bold tracking-[-0.03em] text-foreground hover:opacity-80 transition-opacity"
+						className="font-heading font-bold tracking-[-0.03em] text-foreground hover:opacity-80 transition-opacity group-data-[collapsible=icon]:hidden"
 					>
 						VantageStarter
 					</Link>

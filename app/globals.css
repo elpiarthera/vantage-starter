@@ -584,6 +584,15 @@ body::before {
   }
 }
 
+/* ── Sidebar hover-open overlay ──────────────────────────────────────────────
+   When the sidebar is hover-expanded from collapsed icon mode, keep the spacer
+   div pinned at icon width so the panel floats over content instead of pushing
+   it. Targets: the peer wrapper's first child (spacer div) via :has().
+   ──────────────────────────────────────────────────────────────────────────── */
+.peer:has([data-hover-open]) > div:first-child {
+  width: var(--sidebar-width-icon) !important;
+}
+
 .mobile-menu-enter {
   animation: slide-down 0.25s var(--ease-out-expo) forwards;
 }

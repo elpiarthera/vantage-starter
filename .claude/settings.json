@@ -12,6 +12,11 @@
     "SessionStart": [{"hooks": [{"type": "command", "command": "python3 hooks/session-start-profiler.py"}]}],
     "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 hooks/user-prompt-submit-routing.py"}]}],
     "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}],
+    "PreToolUse": [
+      {"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "python3 hooks/block-orchestrator-code-edits.py"}]},
+      {"matcher": "Agent", "hooks": [{"type": "command", "command": "python3 hooks/enforce-brief-template.py"}]},
+      {"matcher": "mcp__claude-peers__send_message", "hooks": [{"type": "command", "command": "python3 hooks/enforce-peer-brief-format.py"}]}
+    ],
     "PostToolUse": [
       {"matcher": "Agent", "hooks": [{"type": "command", "command": "python3 hooks/post-agent-qa.py"}]}
     ]
