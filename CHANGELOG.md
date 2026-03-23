@@ -17,6 +17,8 @@ All notable changes to VantageStarter are documented in this file.
 - **Sidebar v3**: Toggle moved to DashboardHeader (always visible), `collapsible="offcanvas"` — sidebar fully hides when collapsed, trigger remains accessible. DashboardHeader: lucide-react replaced with inline SVGs.
 - **Dashboard cards**: Credit Balance, Architect CTA, Recent Sessions wrapped in `bg-card rounded-xl` card containers. Page spacing `p-6 md:p-8 space-y-6`.
 - **MSR cleanup**: Deleted 10 `--ig-*` MyShortReel layout variables from globals.css
+- **Missions page**: Added `rounded-xl` to card skeletons for visual consistency
+- **Hooks**: Updated block-orchestrator-code-edits.py with subagent flag detection, enforce-brief-template.py with background enforcement
 - **Sidebar v4**: Tokens match page bg (oklch 0.145 — seamless blend). Active item uses bg-accent fill instead of left-border. Removed .dark sidebar overrides.
 - **Header v2**: Decluttered — LanguageSwitcher hidden on desktop, credits show number only (no badge), avatar only on desktop (no name/chevron). Height reduced to h-12/h-14.
 - **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.

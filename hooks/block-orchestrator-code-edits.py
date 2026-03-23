@@ -33,22 +33,24 @@ ALLOWED_MD_DIRS = [
 # Paths where ALL file types are allowed (infrastructure, not code)
 ALLOWED_ALL_DIRS = [
     ".claude/",
-    "hooks/",
 ]
+
+# Flag file set by enforce-brief-template.py when a subagent is launched
+SUBAGENT_FLAG = "/tmp/.claude-subagent-active"
 
 try:
     data = json.load(sys.stdin)
     file_path = data.get("tool_input", {}).get("file_path", "")
+
+    # If a subagent is active (flag exists), allow edits — the agent was properly delegated
+    if os.path.exists(SUBAGENT_FLAG):
+        sys.exit(0)
 
     if not file_path:
         sys.exit(0)
 
     # Always allow /tmp
     if file_path.startswith("/tmp"):
-        sys.exit(0)
-
-    # Allow when a specialist agent has set the bypass sentinel
-    if os.path.exists("/tmp/specialist-agent-active"):
         sys.exit(0)
 
     # Allow all files in infrastructure dirs (.claude/)

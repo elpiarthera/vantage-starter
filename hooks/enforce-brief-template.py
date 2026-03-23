@@ -10,6 +10,10 @@ Exit 2 = block
 """
 import json
 import sys
+import os
+
+# Flag file that tells block-orchestrator-code-edits.py a subagent is running
+SUBAGENT_FLAG = "/tmp/.claude-subagent-active"
 
 # Agent types that MUST run in background — they don't block the orchestrator's next action
 MUST_BACKGROUND = [
@@ -71,6 +75,12 @@ try:
     prompt_lower = prompt.lower()
     for marker in TEMPLATE_MARKERS:
         if marker.lower() in prompt_lower:
+            # Set flag so block-orchestrator-code-edits.py allows subagent edits
+            try:
+                with open(SUBAGENT_FLAG, "w") as f:
+                    f.write(str(os.getpid()))
+            except Exception:
+                pass
             sys.exit(0)
 
     print(

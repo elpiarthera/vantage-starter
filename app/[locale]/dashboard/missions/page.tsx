@@ -124,7 +124,7 @@ function MissionCard({ mission, operationCount, locale }: MissionCardProps) {
 
 function MissionCardSkeleton() {
 	return (
-		<div className="border border-border bg-card p-6 space-y-4">
+		<div className="border border-border bg-card rounded-xl p-6 space-y-4">
 			<div className="flex items-start justify-between gap-3">
 				<div className="space-y-2 flex-1 min-w-0">
 					<div className="animate-pulse bg-muted rounded h-5 w-3/4" />
@@ -232,7 +232,7 @@ function MissionsList({ locale }: { locale: string }) {
 
 	if (!workspaceId) {
 		return (
-			<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-4 border border-dashed border-border">
+			<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-4 border border-dashed border-border rounded-xl">
 				<div className="icon-container" aria-hidden="true">
 					<svg
 						width="16"
