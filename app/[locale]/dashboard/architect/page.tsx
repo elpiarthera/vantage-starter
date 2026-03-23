@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { cn } from "@/lib/utils";
 import { ChatInterface } from "./_components/chat-interface";
 import { SessionList } from "./_components/session-list";
 
@@ -57,35 +56,33 @@ function NoWorkspace() {
 	);
 }
 
-function NoSessionSelected({ onNew }: { onNew: () => void }) {
+function EmptyState({ onNew }: { onNew: () => void }) {
 	return (
-		<div className="flex flex-col items-center justify-center h-full px-6 text-center gap-6">
-			<div className="flex flex-col items-center gap-4 max-w-xs">
-				<div className="icon-container" aria-hidden="true">
-					<svg
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="1.5"
-						className="text-[oklch(0.62_0.18_240)]"
-						aria-hidden="true"
-					>
-						<path d="M12 2L2 7l10 5 10-5-10-5z" />
-						<path d="M2 17l10 5 10-5" />
-						<path d="M2 12l10 5 10-5" />
-					</svg>
-				</div>
-				<div className="space-y-1">
-					<h2 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
-						Architect
-					</h2>
-					<p className="text-sm text-muted-foreground leading-relaxed">
-						Describe what you want to accomplish. I&apos;ll design an agent
-						workforce and execution plan.
-					</p>
-				</div>
+		<div className="flex flex-col items-center gap-4 text-center max-w-xs mx-auto py-12">
+			<div className="icon-container" aria-hidden="true">
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1.5"
+					className="text-muted-foreground"
+					aria-hidden="true"
+				>
+					<path d="M12 2L2 7l10 5 10-5-10-5z" />
+					<path d="M2 17l10 5 10-5" />
+					<path d="M2 12l10 5 10-5" />
+				</svg>
+			</div>
+			<div className="space-y-1">
+				<h2 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
+					Architect
+				</h2>
+				<p className="text-sm text-muted-foreground leading-relaxed">
+					Describe what you want to accomplish. I&apos;ll design an agent
+					workforce and execution plan.
+				</p>
 			</div>
 			<button
 				type="button"
@@ -106,7 +103,6 @@ function NoSessionSelected({ onNew }: { onNew: () => void }) {
 export default function ArchitectPage() {
 	const router = useRouter();
 	const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-	const [sidebarOpen, setSidebarOpen] = useState(false);
 
 	const workspaces = useQuery(api.workspaces.list);
 	const workspaceId = workspaces?.[0]?._id;
@@ -118,7 +114,6 @@ export default function ArchitectPage() {
 		try {
 			const sessionId = await createSession({ workspaceId });
 			setActiveSessionId(sessionId);
-			setSidebarOpen(false);
 		} catch (err) {
 			console.error("[architect] Failed to create session:", err);
 		}
@@ -145,126 +140,30 @@ export default function ArchitectPage() {
 	}
 
 	return (
-		<div className={cn("flex h-[calc(100vh-8rem)] overflow-hidden")}>
-			{/* ================================================================
-			    LEFT SIDEBAR — session list
-			    Desktop: always visible (w-64)
-			    Mobile: slide-in drawer controlled by sidebarOpen
-			    ================================================================ */}
-			<aside
-				className={cn(
-					"shrink-0 border-r border-border",
-					"hidden md:flex md:flex-col md:w-64",
-				)}
-				style={{ backgroundColor: "oklch(0.115 0.01 240)" }}
-				aria-label="Session history"
-			>
-				<SessionList
-					workspaceId={workspaceId}
-					activeSessionId={activeSessionId}
-					onSessionSelect={setActiveSessionId}
-					onNewSession={handleNewSession}
-				/>
-			</aside>
-
-			{/* Mobile sidebar overlay */}
-			{sidebarOpen && (
-				<div
-					className="fixed inset-0 z-40 md:hidden"
-					onClick={() => setSidebarOpen(false)}
-					aria-hidden="true"
-				>
-					<div className="absolute inset-0 bg-black/60" />
-				</div>
-			)}
-
-			<aside
-				className={cn(
-					"fixed inset-y-0 left-0 z-50 w-72 border-r border-border",
-					"flex flex-col md:hidden",
-					"transition-transform duration-300",
-					sidebarOpen ? "translate-x-0" : "-translate-x-full",
-				)}
-				style={{
-					backgroundColor: "oklch(0.115 0.01 240)",
-					transitionTimingFunction: "var(--ease-out-expo)",
-				}}
-				aria-label="Session history"
-				aria-hidden={!sidebarOpen}
-			>
-				{/* Mobile close button */}
-				<div className="flex items-center justify-between px-4 py-3 border-b border-border">
-					<span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-						Sessions
-					</span>
-					<button
-						type="button"
-						onClick={() => setSidebarOpen(false)}
-						className="text-muted-foreground hover:text-foreground transition-colors duration-150 p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						aria-label="Close session list"
-					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							aria-hidden="true"
+		<div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
+			{/* Page header — always visible */}
+			<div className="flex items-center justify-end px-4 md:px-6 py-3 border-b border-border shrink-0">
+				{activeSessionId ? (
+					<div className="flex items-center gap-3">
+						<button
+							type="button"
+							onClick={() => setActiveSessionId(null)}
+							className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+							aria-label="Back to sessions"
 						>
-							<path d="M18 6L6 18M6 6l12 12" />
-						</svg>
-					</button>
-				</div>
-				<SessionList
-					workspaceId={workspaceId}
-					activeSessionId={activeSessionId}
-					onSessionSelect={(id) => {
-						setActiveSessionId(id);
-						setSidebarOpen(false);
-					}}
-					onNewSession={handleNewSession}
-				/>
-			</aside>
-
-			{/* ================================================================
-			    RIGHT PANEL — chat interface
-			    ================================================================ */}
-			<section
-				className="flex-1 flex flex-col min-w-0 overflow-hidden"
-				aria-label="Architect chat"
-			>
-				{/* Mobile header with sidebar toggle */}
-				<div className="flex items-center gap-3 px-4 py-3 border-b border-border md:hidden shrink-0">
-					<button
-						type="button"
-						onClick={() => setSidebarOpen(true)}
-						className="text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-						aria-label="Open session list"
-					>
-						<svg
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							aria-hidden="true"
-						>
-							<path d="M3 6h18M3 12h18M3 18h18" />
-						</svg>
-					</button>
-					<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
-						Architect
-					</h1>
-				</div>
-
-				{/* Desktop page header */}
-				<div className="hidden md:flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-					<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
-						Architect
-					</h1>
-					{activeSessionId && (
+							<svg
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								aria-hidden="true"
+							>
+								<path d="M19 12H5M12 5l-7 7 7 7" />
+							</svg>
+							Back
+						</button>
 						<button
 							type="button"
 							onClick={handleNewSession}
@@ -272,22 +171,40 @@ export default function ArchitectPage() {
 						>
 							New session
 						</button>
-					)}
-				</div>
+					</div>
+				) : (
+					<button
+						type="button"
+						onClick={handleNewSession}
+						className="rounded-full text-xs h-7 px-3 border border-border bg-transparent text-foreground hover:bg-muted transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					>
+						New session
+					</button>
+				)}
+			</div>
 
-				{/* Chat or empty state */}
-				<div className="flex-1 overflow-hidden">
-					{activeSessionId ? (
-						<ChatInterface
-							sessionId={activeSessionId as Id<"architectSessions">}
-							workspaceId={workspaceId}
-							onPlanConfirmed={handlePlanConfirmed}
-						/>
-					) : (
-						<NoSessionSelected onNew={handleNewSession} />
-					)}
-				</div>
-			</section>
+			{/* Main content */}
+			<div className="flex-1 overflow-hidden">
+				{activeSessionId ? (
+					<ChatInterface
+						sessionId={activeSessionId as Id<"architectSessions">}
+						workspaceId={workspaceId}
+						onPlanConfirmed={handlePlanConfirmed}
+					/>
+				) : (
+					<div className="h-full overflow-y-auto">
+						<div className="max-w-2xl mx-auto px-4 md:px-6 py-8 space-y-8">
+							<SessionList
+								workspaceId={workspaceId}
+								activeSessionId={activeSessionId}
+								onSessionSelect={setActiveSessionId}
+								onNewSession={handleNewSession}
+							/>
+							<EmptyState onNew={handleNewSession} />
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

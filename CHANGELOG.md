@@ -9,6 +9,8 @@ All notable changes to VantageStarter are documented in this file.
 - **Preset**: Removed .dark block — root IS dark now (v0.app dark-first pattern)
 - **Dashboard**: Reverted hardcoded gray-* back to semantic tokens (bg-background, bg-card, border-border) which now resolve to v0 values
 - **Typography**: Replaced Inter + Space Grotesk with Geist + Geist Mono (v0.app font stack)
+- **Sidebar**: Added collapse/expand toggle button with double-chevron icon in footer (collapsible="icon" already supported)
+- **Architect page**: Removed sessions sidebar — sessions list now inline in main content. Removed 4 nav layers → 1. Eliminated hardcoded blue-tinted bg `oklch(0.115 0.01 240)`
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

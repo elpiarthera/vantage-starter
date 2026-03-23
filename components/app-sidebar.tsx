@@ -18,6 +18,7 @@ import { usePathname } from "next/navigation";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
@@ -44,7 +45,7 @@ const navTransition = "150ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function AppSidebar() {
 	const pathname = usePathname();
-	const { setOpenMobile } = useSidebar();
+	const { setOpenMobile, toggleSidebar } = useSidebar();
 
 	const handleNavClick = () => setOpenMobile(false);
 
@@ -253,6 +254,41 @@ export function AppSidebar() {
 						</SidebarGroupContent>
 					</SidebarGroup>
 				</SidebarContent>
+
+				{/* ── Footer: Collapse toggle ── */}
+				<SidebarFooter>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								onClick={() => toggleSidebar()}
+								className="h-9 min-h-[44px] rounded-none px-4 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground transition-colors"
+							>
+								<svg
+									width="18"
+									height="18"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="1.5"
+									className="shrink-0"
+									aria-hidden="true"
+								>
+									<path
+										d="M11 19l-7-7 7-7"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									/>
+									<path
+										d="M18 19l-7-7 7-7"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									/>
+								</svg>
+								<span>Collapse</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarFooter>
 			</Sidebar>
 		</TooltipProvider>
 	);
