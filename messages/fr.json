@@ -2720,5 +2720,12 @@
     "techstack": {
       "heading": "Construit sur la stack moderne"
     }
+  },
+  "app_sidebar": {
+    "new_button_label": "Nouveau",
+    "new_chat": "Nouvelle conversation",
+    "new_mission": "Nouvelle mission",
+    "new_architect_session": "Nouvelle session Architect",
+    "more_new_options": "Plus d'options"
   }
 }

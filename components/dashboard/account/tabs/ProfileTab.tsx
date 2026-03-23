@@ -357,10 +357,10 @@ export function ProfileTab({ user }: ProfileTabProps) {
 		.toUpperCase();
 
 	return (
-		<div className="space-y-6 md:space-y-8">
+		<div className="space-y-8">
 			{/* Profile Picture Section */}
-			<Card className="rounded-xl border border-border p-4 md:p-6">
-				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border bg-transparent p-4 md:p-6">
+				<h3 className="text-base font-medium text-foreground mb-4">
 					{t("profile_picture")}
 				</h3>
 				<div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
@@ -397,8 +397,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
 			</Card>
 
 			{/* Personal Information */}
-			<Card className="rounded-xl border border-border p-4 md:p-6">
-				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border bg-transparent p-4 md:p-6">
+				<h3 className="text-base font-medium text-foreground mb-4">
 					{t("personal_info")}
 				</h3>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -458,8 +458,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
       */}
 
 			{/* Preferences - Language only for now; Theme and email notification commented (COMMENT DO NOT DELETE) */}
-			<Card className="rounded-xl border border-border p-4 md:p-6">
-				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border bg-transparent p-4 md:p-6">
+				<h3 className="text-base font-medium text-foreground mb-4">
 					{t("preferences")}
 				</h3>
 				<div className="space-y-4 md:space-y-6">
@@ -527,8 +527,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
 			</Card>
 
 			{/* Security */}
-			<Card className="rounded-xl border border-border p-4 md:p-6">
-				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border bg-transparent p-4 md:p-6">
+				<h3 className="text-base font-medium text-foreground mb-4">
 					{t("security")}
 				</h3>
 				<Button
@@ -568,8 +568,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
 			</div>
 
 			{/* Danger Zone */}
-			<Card className="rounded-xl border border-destructive p-4 md:p-6">
-				<h3 className="text-lg font-semibold text-destructive mb-2">
+			<Card className="rounded-xl border border-destructive bg-transparent p-4 md:p-6">
+				<h3 className="text-base font-medium text-destructive mb-2">
 					{t("danger_zone")}
 				</h3>
 				<p className="text-sm text-muted-foreground mb-4">

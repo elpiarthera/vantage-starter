@@ -35,6 +35,10 @@ All notable changes to VantageStarter are documented in this file.
 - **Account page**: Tab active indicator uses border-foreground (not blue). Profile sections in rounded-xl cards. Inputs match v0 styling (bg-transparent, border-input). Replaced 6 lucide-react icons with inline SVGs.
 - **Removed breadcrumb nav**: Deleted DashboardNav + DashboardBreadcrumbProvider from dashboard layout. Sidebar already shows active page — breadcrumbs added zero value and wasted vertical space.
 - **Architect aligned to Chat**: Same layout pattern — agent header (icon + title + subtitle), centered empty state with icon, input bar with bg-card rounded-xl + arrow send button + "Press Enter" hint.
+- **Account page v2**: Title reduced to text-base, tabs compact (inline-flex, not stretched), cards bg-transparent, section headings text-base font-medium, space-y-8 between sections.
+- **Search modal**: Cmd+K / Ctrl+K opens command palette with search input + quick navigation links (Dashboard, Chat, Missions, Architect, Settings). Escape/backdrop to close.
+- **"New" button**: Added to sidebar top — "New Chat" with dropdown for New Chat, New Mission, New Architect Session. Hidden when sidebar collapsed.
+- **User dropdown**: Restyled to v0 popover tokens (bg-popover, border-border, hover:bg-accent).
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

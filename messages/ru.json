@@ -2704,5 +2704,12 @@
     "techstack": {
       "heading": "Построено на современном стеке"
     }
+  },
+  "app_sidebar": {
+    "new_button_label": "Новый",
+    "new_chat": "Новый чат",
+    "new_mission": "Новая миссия",
+    "new_architect_session": "Новая сессия Architect",
+    "more_new_options": "Больше вариантов"
   }
 }

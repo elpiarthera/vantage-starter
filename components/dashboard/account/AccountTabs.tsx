@@ -9,7 +9,6 @@ import { NotificationsTab } from "@/components/dashboard/account/tabs/Notificati
 import { ProfileTab } from "@/components/dashboard/account/tabs/ProfileTab";
 import { SubscriptionTab } from "@/components/dashboard/account/tabs/SubscriptionTab";
 import { UsageCreditsTab } from "@/components/dashboard/account/tabs/UsageCreditsTab";
-import { useDevice } from "@/contexts/DeviceContext";
 
 interface AccountTabsProps {
 	user: UserResource;
@@ -124,27 +123,13 @@ export function AccountTabs({ user }: AccountTabsProps) {
 		tabParam && validTabs.includes(tabParam) ? tabParam : "profile";
 
 	const [activeTab, setActiveTab] = useState<TabId>(initialTab);
-	const { isMobile } = useDevice();
 	const t = useTranslations("account_tabs");
 
 	return (
 		<div className="w-full">
 			{/* Tab Navigation */}
-			<div className="border-b border-border bg-card sticky top-14 md:top-16 z-40">
-				<div
-					className={`
-            flex gap-1 px-4 md:px-6
-            ${isMobile ? "overflow-x-auto scrollbar-hide" : ""}
-          `}
-					style={
-						!isMobile
-							? {
-									display: "grid",
-									gridTemplateColumns: `repeat(${tabs.length}, 1fr)`,
-								}
-							: undefined
-					}
-				>
+			<div className="border-b border-border sticky top-14 md:top-16 z-40 bg-background px-4 md:px-6">
+				<div className="flex gap-0 overflow-x-auto scrollbar-hide">
 					{tabs.map((tab) => {
 						const Icon = tab.icon;
 						const isActive = activeTab === tab.id;
@@ -155,19 +140,15 @@ export function AccountTabs({ user }: AccountTabsProps) {
 								type="button"
 								onClick={() => setActiveTab(tab.id)}
 								className={`
-                  flex items-center justify-center gap-2 px-4 py-3 md:py-4
-                  text-sm md:text-base font-medium whitespace-nowrap
-                  border-b-2 transition-colors
-                  min-h-[44px] min-w-[44px]
-                  ${isMobile ? "flex-shrink-0" : ""}
-                  ${isActive ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"}
-                  ${isMobile ? "active:bg-muted" : "hover:text-foreground hover:bg-muted"}
+                  flex items-center gap-1.5 px-3 py-2.5
+                  text-sm font-medium whitespace-nowrap
+                  border-b transition-colors duration-150
+                  min-h-[40px] min-w-[44px] -mb-px
+                  ${isActive ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}
                 `}
 							>
-								<Icon className="h-4 w-4" />
-								<span className={isMobile ? "text-xs" : ""}>
-									{t(tab.label)}
-								</span>
+								<Icon className="h-3.5 w-3.5 shrink-0" />
+								<span>{t(tab.label)}</span>
 							</button>
 						);
 					})}

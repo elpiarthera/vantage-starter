@@ -2704,5 +2704,12 @@
     "techstack": {
       "heading": "Auf dem modernen Stack gebaut"
     }
+  },
+  "app_sidebar": {
+    "new_button_label": "Neu",
+    "new_chat": "Neuer Chat",
+    "new_mission": "Neue Mission",
+    "new_architect_session": "Neue Architect-Sitzung",
+    "more_new_options": "Weitere Optionen"
   }
 }

@@ -255,7 +255,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<SignOutButton>
-					<DropdownMenuItem className="cursor-pointer text-destructive">
+					<DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
 						<svg
 							width="16"
 							height="16"
