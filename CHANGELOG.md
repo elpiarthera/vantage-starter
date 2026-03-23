@@ -29,6 +29,7 @@ All notable changes to VantageStarter are documented in this file.
 - **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.
 - **Sidebar v6**: Hover-to-open — `collapsible="icon"` (3rem icon strip when collapsed), `onMouseEnter`/`onMouseLeave` floats sidebar over content as overlay (v0.app behavior). Logo text hidden when collapsed.
 - **Hooks**: Added enforce-peer-brief-format.py. Updated screenshots.
+- **Sidebar v7**: Fixed bg seam — `--sidebar-background` changed from `oklch(0.205)` to `oklch(0.145)` matching `--background`. Seamless blend like v0.app.
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)
