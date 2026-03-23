@@ -13,10 +13,9 @@
  * Active state: subtle bg-accent fill, no border accent.
  */
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
 import * as React from "react";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import { SearchModal } from "@/components/search-modal";
 import {
 	Sidebar,

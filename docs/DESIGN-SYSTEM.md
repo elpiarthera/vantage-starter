@@ -46,7 +46,7 @@ Last updated: 2026-03-23
 
 | Token | Value |
 |-------|-------|
-| Sidebar | oklch(0.205 0 0) |
+| Sidebar | oklch(0.145 0 0) |
 | Sidebar Foreground | oklch(0.985 0 0) |
 | Sidebar Primary | oklch(0.488 0.243 264.376) |
 | Sidebar Primary Foreground | oklch(0.985 0 0) |
@@ -54,6 +54,8 @@ Last updated: 2026-03-23
 | Sidebar Accent Foreground | oklch(0.985 0 0) |
 | Sidebar Border | oklch(1 0 0 / 10%) |
 | Sidebar Ring | oklch(0.439 0 0) |
+
+Note: Sidebar background matches page background (oklch 0.145) for seamless blend, unlike v0's default (oklch 0.205).
 
 ### Status
 
@@ -75,6 +77,8 @@ Last updated: 2026-03-23
 |----------|-------|
 | Radius | 0.625rem |
 | Shadow | 0 1px 2px 0 #0000000d |
+| Card Hover | oklch(0.269 0 0) |
+| Border Hover | oklch(1 0 0 / 20%) |
 
 ### CSS Variables
 
