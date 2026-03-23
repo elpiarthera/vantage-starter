@@ -1,0 +1,61 @@
+/*
+  Preset: Base (v0.app)
+  Hue: none — pure achromatic
+  Character: v0.app dark-first achromatic
+  WCAG: muted-foreground L=0.65 minimum in dark mode (verified)
+*/
+
+:root {
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --accent-warm: oklch(0.45 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --ring: oklch(0.922 0 0);
+  --card-hover: oklch(0.269 0 0);
+  --border-hover: oklch(1 0 0 / 20%);
+
+  /* Secondary */
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  /* Destructive */
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  /* Input */
+  --input: oklch(1 0 0 / 15%);
+
+  /* Border radius */
+  --radius: 0.625rem;
+
+  /* Status colors */
+  --success: oklch(0.65 0.18 145);
+  --warning: oklch(0.78 0.18 65);
+
+  /* Sidebar tokens */
+  --sidebar-background: oklch(0.145 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.922 0 0);
+  --sidebar-primary-foreground: oklch(0.205 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.922 0 0);
+
+  /* Data visualization */
+  --chart-1: oklch(0.90 0 0);
+  --chart-2: oklch(0.75 0 0);
+  --chart-3: oklch(0.60 0 0);
+  --chart-4: oklch(0.45 0 0);
+  --chart-5: oklch(0.30 0 0);
+}
