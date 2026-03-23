@@ -20,6 +20,8 @@ All notable changes to VantageStarter are documented in this file.
 - **MSR cleanup**: Deleted 10 `--ig-*` MyShortReel layout variables from globals.css
 - **Missions page**: Added `rounded-xl` to card skeletons for visual consistency
 - **Hooks**: Updated block-orchestrator-code-edits.py with subagent flag detection, enforce-brief-template.py with background enforcement
+- **Hooks v2**: Added post-agent-qa.py (advisory QA reminder after agent completes). Simplified settings.json — removed crashing PreToolUse/PostToolUse hooks.
+- **Infrastructure**: Added check-messages skill, brief templates (brief-ui.md, brief-backend.md), v0 reference screenshots
 - **Sidebar v4**: Tokens match page bg (oklch 0.145 — seamless blend). Active item uses bg-accent fill instead of left-border. Removed .dark sidebar overrides.
 - **Header v2**: Decluttered — LanguageSwitcher hidden on desktop, credits show number only (no badge), avatar only on desktop (no name/chevron). Height reduced to h-12/h-14.
 - **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.

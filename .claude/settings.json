@@ -11,6 +11,9 @@
   "hooks": {
     "SessionStart": [{"hooks": [{"type": "command", "command": "python3 hooks/session-start-profiler.py"}]}],
     "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 hooks/user-prompt-submit-routing.py"}]}],
-    "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}]
+    "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}],
+    "PostToolUse": [
+      {"matcher": "Agent", "hooks": [{"type": "command", "command": "python3 hooks/post-agent-qa.py"}]}
+    ]
   }
 }
