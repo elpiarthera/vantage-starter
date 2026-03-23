@@ -4,6 +4,13 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (Day 17 — app UI alignment)
+- **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)
+- **DashboardHeader**: `text-red-600` → `text-destructive`, `bg-red-500` → `bg-destructive`
+- **ErrorState**: `text-red-500/400` → `text-destructive`, `border-red-500/30` → `border-destructive/30`
+- **ProfileTab**: `bg-red-600` → `bg-destructive`, warning banner classes already semantic
+- **PurchaseCreditsModal**: `text-green-500` → `text-success`
+
 ### Changed (copy-source pass)
 - **FeaturesSection**: Copied litui.dev Features.tsx structure — uniform card grid, gray-*/dark: classes, hover gradient overlay, icon inversion, reveal animation
 - **CTASection**: Copied litui.dev Cta.tsx — inline command block, native anchor CTAs, floating circles, reveal with staggered delays

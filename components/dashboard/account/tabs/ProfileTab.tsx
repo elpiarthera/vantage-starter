@@ -489,7 +489,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 									{t("delete_confirm_desc")}
 								</p>
 								{subscription?.status === "active" && (
-									<div className="flex items-start gap-2 rounded-md border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-sm text-orange-300">
+									<div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
 										<AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
 										<span>
 											{t("delete_confirm_active_sub", {
@@ -500,7 +500,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 									</div>
 								)}
 								{credits && credits.balance > 0 && (
-									<div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-300">
+									<div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
 										<AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
 										<span>
 											{t("delete_confirm_credits_lost", {
@@ -519,7 +519,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 						<AlertDialogAction
 							onClick={handleDeleteAccount}
 							disabled={isDeleting}
-							className="min-h-[44px] bg-red-600 text-white hover:bg-red-700"
+							className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
 						>
 							{isDeleting ? (
 								<>

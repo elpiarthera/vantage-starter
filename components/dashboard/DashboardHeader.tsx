@@ -112,7 +112,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 					<SignOutButton>
 						<Button
 							variant="ghost"
-							className="w-full justify-start min-h-[48px] text-red-600 active:scale-95"
+							className="w-full justify-start min-h-[48px] text-destructive active:scale-95"
 						>
 							<LogOut className="mr-2 h-5 w-5" />
 							<span>{t("log_out")}</span>

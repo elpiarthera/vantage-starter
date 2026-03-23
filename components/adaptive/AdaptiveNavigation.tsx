@@ -43,7 +43,7 @@ export function AdaptiveNavigation({
 					>
 						<button
 							type="button"
-							className="w-full text-left p-4 flex items-center justify-between hover:bg-[#223649] transition-colors"
+							className="w-full text-left p-4 flex items-center justify-between hover:bg-muted transition-colors"
 							onClick={() => onToggleExpanded?.(item.id)}
 							aria-expanded={expandedItems?.has(item.id)}
 							aria-controls={`content-${item.id}`}
@@ -53,7 +53,7 @@ export function AdaptiveNavigation({
 									className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
 										item.isComplete
 											? "bg-green-500 text-white"
-											: "bg-[#314d68] text-gray-300"
+											: "bg-muted text-muted-foreground"
 									}`}
 								>
 									{item.isComplete ? (
@@ -79,8 +79,11 @@ export function AdaptiveNavigation({
 										className="text-xs px-2 py-1 rounded"
 										style={{
 											backgroundColor:
-												item.duration === 5 ? "#0d7ff2" : "#314d68",
-											color: "white",
+												item.duration === 5 ? "var(--primary)" : "var(--muted)",
+											color:
+												item.duration === 5
+													? "var(--primary-foreground)"
+													: "var(--muted-foreground)",
 										}}
 									>
 										{item.duration}s
