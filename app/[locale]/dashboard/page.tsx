@@ -36,7 +36,7 @@ function CreditCard_({
 	isLoading: boolean;
 }) {
 	return (
-		<div className="card-elevated border border-border p-6 flex items-center justify-between gap-6">
+		<div className="card-elevated bg-card border border-border rounded-xl p-6 flex items-center justify-between gap-6">
 			<div className="flex items-center gap-4">
 				<div className="icon-container shrink-0" aria-hidden="true">
 					<svg
@@ -77,7 +77,7 @@ function CreditCard_({
 
 function ArchitectCTA() {
 	return (
-		<div className="card-elevated border border-border p-6 flex items-start justify-between gap-6">
+		<div className="card-elevated bg-card border border-border rounded-xl p-6 flex items-start justify-between gap-6">
 			<div className="flex items-start gap-4">
 				<div className="icon-container shrink-0 mt-0.5" aria-hidden="true">
 					<svg
@@ -193,7 +193,7 @@ function SessionsEmptyState() {
 
 function RecentSessions({ sessions }: { sessions: Session[] }) {
 	return (
-		<div className="border border-border">
+		<div className="bg-card border border-border rounded-xl overflow-hidden">
 			<div className="px-6 py-4 border-b border-border flex items-center justify-between">
 				<h2 className="font-heading font-semibold text-sm text-foreground tracking-[-0.015em]">
 					Recent sessions
@@ -286,7 +286,7 @@ export default function DashboardPage() {
 	const sessions = recentSessions?.sessions ?? [];
 
 	return (
-		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 space-y-4 animate-in fade-in duration-300">
+		<div className="max-w-6xl mx-auto p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
 			<CreditCard_ balance={creditsRemaining} isLoading={creditsLoading} />
 			<ArchitectCTA />
 			<RecentSessions sessions={sessions} />

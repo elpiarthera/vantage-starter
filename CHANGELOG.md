@@ -14,6 +14,8 @@ All notable changes to VantageStarter are documented in this file.
 - **Sidebar v2**: Moved collapse toggle to header (panel icon), removed footer. Proper section separators.
 - **Architect v2**: Sessions in card containers, CTA button styled (bg-primary), empty state vertically centered
 - **Dashboard home cards**: Removed shadcn Card shell, replaced with native `div.bg-card.border.border-border.rounded-xl.p-6`
+- **Sidebar v3**: Toggle moved to DashboardHeader (always visible), `collapsible="offcanvas"` — sidebar fully hides when collapsed, trigger remains accessible. DashboardHeader: lucide-react replaced with inline SVGs.
+- **Dashboard cards**: Credit Balance, Architect CTA, Recent Sessions wrapped in `bg-card rounded-xl` card containers. Page spacing `p-6 md:p-8 space-y-6`.
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

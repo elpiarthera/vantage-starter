@@ -44,19 +44,19 @@ const navTransition = "150ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function AppSidebar() {
 	const pathname = usePathname();
-	const { setOpenMobile, toggleSidebar } = useSidebar();
+	const { setOpenMobile } = useSidebar();
 
 	const handleNavClick = () => setOpenMobile(false);
 
 	return (
 		<TooltipProvider delayDuration={0}>
 			<Sidebar
-				collapsible="icon"
+				collapsible="offcanvas"
 				className="group-data-[side=left]:border-r border-sidebar-border bg-sidebar-background"
 				aria-label="Main navigation"
 			>
-				{/* ── Header: Logo + collapse toggle ── */}
-				<SidebarHeader className="flex flex-row items-center justify-between px-3 h-14">
+				{/* ── Header: Logo ── */}
+				<SidebarHeader className="flex flex-row items-center px-4 h-14">
 					<Link
 						href="/dashboard"
 						onClick={handleNavClick}
@@ -65,25 +65,6 @@ export function AppSidebar() {
 					>
 						VantageStarter
 					</Link>
-					<button
-						type="button"
-						onClick={() => toggleSidebar()}
-						className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-						aria-label="Toggle sidebar"
-					>
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.5"
-							aria-hidden="true"
-						>
-							<rect x="3" y="3" width="18" height="18" rx="2" />
-							<path d="M9 3v18" />
-						</svg>
-					</button>
 				</SidebarHeader>
 
 				{/* ── Content ── */}

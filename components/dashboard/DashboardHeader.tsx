@@ -1,14 +1,6 @@
 "use client";
 
 import { OrganizationSwitcher, SignOutButton, useUser } from "@clerk/nextjs";
-import {
-	Bell,
-	ChevronDown,
-	CreditCard,
-	LogOut,
-	Settings,
-	User,
-} from "lucide-react";
 import { useTranslations } from "next-intl";
 import type React from "react";
 import { useState } from "react";
@@ -38,7 +30,7 @@ import { Link } from "@/i18n/routing";
 
 interface DashboardHeaderProps {
 	/**
-	 * Optional SidebarTrigger (hamburger) rendered on mobile only.
+	 * SidebarTrigger (panel toggle) rendered on all breakpoints.
 	 * Passed from dashboard layout when AppSidebar is active.
 	 */
 	sidebarTrigger?: React.ReactNode;
@@ -85,7 +77,19 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						className="w-full justify-start min-h-[48px] active:scale-95"
 						onClick={() => setShowPurchaseModal(true)}
 					>
-						<CreditCard className="mr-2 h-5 w-5" />
+						<svg
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							className="mr-2 shrink-0"
+							aria-hidden="true"
+						>
+							<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+							<line x1="1" y1="10" x2="23" y2="10" />
+						</svg>
 						<span>{t("credits")}</span>
 						<Badge variant="secondary" className="ml-auto text-xs">
 							{tCredits("your_balance", { balance })}
@@ -96,7 +100,19 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							variant="ghost"
 							className="w-full justify-start min-h-[48px] active:scale-95"
 						>
-							<User className="mr-2 h-5 w-5" />
+							<svg
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								className="mr-2 shrink-0"
+								aria-hidden="true"
+							>
+								<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+								<circle cx="12" cy="7" r="4" />
+							</svg>
 							<span>{t("profile")}</span>
 						</Button>
 					</Link>
@@ -105,7 +121,19 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							variant="ghost"
 							className="w-full justify-start min-h-[48px] active:scale-95"
 						>
-							<Settings className="mr-2 h-5 w-5" />
+							<svg
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								className="mr-2 shrink-0"
+								aria-hidden="true"
+							>
+								<circle cx="12" cy="12" r="3" />
+								<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+							</svg>
 							<span>{t("settings")}</span>
 						</Button>
 					</Link>
@@ -114,7 +142,20 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							variant="ghost"
 							className="w-full justify-start min-h-[48px] text-destructive active:scale-95"
 						>
-							<LogOut className="mr-2 h-5 w-5" />
+							<svg
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								className="mr-2 shrink-0"
+								aria-hidden="true"
+							>
+								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+								<polyline points="16 17 21 12 16 7" />
+								<line x1="21" y1="12" x2="9" y2="12" />
+							</svg>
 							<span>{t("log_out")}</span>
 						</Button>
 					</SignOutButton>
@@ -136,7 +177,18 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						<AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
 					</Avatar>
 					<span className="text-sm">{userName}</span>
-					<ChevronDown className="h-4 w-4 opacity-50" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="opacity-50 shrink-0"
+						aria-hidden="true"
+					>
+						<polyline points="6 9 12 15 18 9" />
+					</svg>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
@@ -146,7 +198,19 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 					className="cursor-pointer"
 					onClick={() => setShowPurchaseModal(true)}
 				>
-					<CreditCard className="mr-2 h-4 w-4" />
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						className="mr-2 shrink-0"
+						aria-hidden="true"
+					>
+						<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+						<line x1="1" y1="10" x2="23" y2="10" />
+					</svg>
 					<span>{t("credits")}</span>
 					<Badge variant="secondary" className="ml-auto text-xs">
 						{tCredits("your_balance", { balance })}
@@ -155,20 +219,57 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 				<DropdownMenuSeparator />
 				<DropdownMenuItem asChild>
 					<Link href="/dashboard/account" className="cursor-pointer">
-						<User className="mr-2 h-4 w-4" />
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							className="mr-2 shrink-0"
+							aria-hidden="true"
+						>
+							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+							<circle cx="12" cy="7" r="4" />
+						</svg>
 						<span>{t("profile")}</span>
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>
 					<Link href="/dashboard/account" className="cursor-pointer">
-						<Settings className="mr-2 h-4 w-4" />
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							className="mr-2 shrink-0"
+							aria-hidden="true"
+						>
+							<circle cx="12" cy="12" r="3" />
+							<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+						</svg>
 						<span>{t("settings")}</span>
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<SignOutButton>
-					<DropdownMenuItem className="cursor-pointer text-red-600">
-						<LogOut className="mr-2 h-4 w-4" />
+					<DropdownMenuItem className="cursor-pointer text-destructive">
+						<svg
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							className="mr-2 shrink-0"
+							aria-hidden="true"
+						>
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+							<polyline points="16 17 21 12 16 7" />
+							<line x1="21" y1="12" x2="9" y2="12" />
+						</svg>
 						<span>{t("log_out")}</span>
 					</DropdownMenuItem>
 				</SignOutButton>
@@ -178,14 +279,12 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 
 	return (
 		<>
-			<header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+			<header className="sticky top-0 z-50 w-full border-b border-border bg-background">
 				<div className="container flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
-					{/* Left: Hamburger (mobile only) + Org Switcher */}
+					{/* Left: Sidebar toggle (all breakpoints) + Org Switcher */}
 					<div className="flex items-center gap-2">
-						{/* SidebarTrigger: shown on mobile; sidebar handles its own md:hidden logic */}
-						{sidebarTrigger && (
-							<div className="md:hidden">{sidebarTrigger}</div>
-						)}
+						{/* SidebarTrigger: always visible so user can re-open collapsed sidebar */}
+						{sidebarTrigger}
 						{/* Org Switcher — visible on all breakpoints */}
 						<OrganizationSwitcher
 							hidePersonal={false}
@@ -198,7 +297,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 								elements: {
 									rootBox: "flex items-center",
 									organizationSwitcherTrigger:
-										"min-h-[36px] px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 ease-out text-sm gap-2 text-gray-900 dark:text-gray-100",
+										"min-h-[36px] px-3 py-1.5 rounded-lg hover:bg-muted transition-colors duration-150 ease-out text-sm gap-2 text-foreground",
 								},
 							}}
 						/>
@@ -213,13 +312,25 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						<button
 							type="button"
 							onClick={() => setShowPurchaseModal(true)}
-							className="hidden md:flex items-center gap-1 min-h-[44px] px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+							className="hidden md:flex items-center gap-1 min-h-[44px] px-2 rounded-md hover:bg-muted transition-colors cursor-pointer"
 							aria-label={tCredits("your_balance", { balance })}
 						>
-							<CreditCard className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								className="text-muted-foreground shrink-0"
+								aria-hidden="true"
+							>
+								<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+								<line x1="1" y1="10" x2="23" y2="10" />
+							</svg>
 							<Badge
 								variant="outline"
-								className="text-xs border-muted text-gray-500 dark:text-gray-400 hover:border-primary hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+								className="text-xs border-muted text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
 							>
 								{tCredits("your_balance", { balance })}
 							</Badge>
@@ -232,8 +343,19 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							className={`relative min-h-[44px] min-w-[44px] ${isMobile ? "active:scale-95" : "hover:bg-accent"}`}
 							aria-label="Notifications"
 						>
-							<Bell className="h-5 w-5" />
-							<span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+							<svg
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								aria-hidden="true"
+							>
+								<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+								<path d="M13.73 21a2 2 0 0 1-3.46 0" />
+							</svg>
+							<span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
 						</Button>
 
 						{/* User Menu - Adaptive (Sheet on mobile, Dropdown on desktop) */}
