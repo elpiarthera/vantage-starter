@@ -30,6 +30,9 @@ All notable changes to VantageStarter are documented in this file.
 - **Sidebar v6**: Hover-to-open — `collapsible="icon"` (3rem icon strip when collapsed), `onMouseEnter`/`onMouseLeave` floats sidebar over content as overlay (v0.app behavior). Logo text hidden when collapsed.
 - **Hooks**: Added enforce-peer-brief-format.py. Updated screenshots.
 - **Sidebar v7**: Fixed bg seam — `--sidebar-background` changed from `oklch(0.205)` to `oklch(0.145)` matching `--background`. Seamless blend like v0.app.
+- **Chat page**: Removed purple accents — header icon, live indicator, empty state all use neutral tokens (bg-muted, text-muted-foreground). Input area wrapped in bg-card rounded-xl.
+- **Architect page**: Sessions in rounded-xl cards with hover states. "New session" button styled as CTA (bg-primary). Labels lightened. Removed lucide-react + shadcn ScrollArea.
+- **Account page**: Tab active indicator uses border-foreground (not blue). Profile sections in rounded-xl cards. Inputs match v0 styling (bg-transparent, border-input). Replaced 6 lucide-react icons with inline SVGs.
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

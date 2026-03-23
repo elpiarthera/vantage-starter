@@ -3,14 +3,6 @@
 import { useClerk } from "@clerk/nextjs";
 import type { UserResource } from "@clerk/types";
 import { useAction, useMutation, useQuery } from "convex/react";
-import {
-	AlertTriangle,
-	Camera,
-	Download,
-	Key,
-	Loader2,
-	Trash2,
-} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -42,6 +34,124 @@ import { Switch } from "@/components/ui/switch";
 import { useDevice } from "@/contexts/DeviceContext";
 import { api } from "@/convex/_generated/api";
 import { usePathname, useRouter } from "@/i18n/routing";
+
+// Inline SVG icons — no icon library
+function IconAlertTriangle({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+			<path d="M12 9v4" />
+			<path d="M12 17h.01" />
+		</svg>
+	);
+}
+
+function IconCamera({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+			<circle cx="12" cy="13" r="3" />
+		</svg>
+	);
+}
+
+function IconDownload({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+			<polyline points="7 10 12 15 17 10" />
+			<line x1="12" y1="15" x2="12" y2="3" />
+		</svg>
+	);
+}
+
+function IconKey({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<circle cx="7.5" cy="15.5" r="5.5" />
+			<path d="m21 2-9.6 9.6" />
+			<path d="m15.5 7.5 3 3L22 7l-3-3" />
+		</svg>
+	);
+}
+
+function IconLoader({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M21 12a9 9 0 1 1-6.219-8.56" />
+		</svg>
+	);
+}
+
+function IconTrash({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M3 6h18" />
+			<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+			<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+		</svg>
+	);
+}
 
 interface ProfileTabProps {
 	user: UserResource;
@@ -249,8 +359,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
 	return (
 		<div className="space-y-6 md:space-y-8">
 			{/* Profile Picture Section */}
-			<Card className="p-4 md:p-6">
-				<h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border p-4 md:p-6">
+				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
 					{t("profile_picture")}
 				</h3>
 				<div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
@@ -265,16 +375,16 @@ export function ProfileTab({ user }: ProfileTabProps) {
 							variant="outline"
 							onClick={handlePhotoUpload}
 							disabled={isUploadingPhoto}
-							className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:bg-accent" : "hover:bg-accent"}`}
+							className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:bg-muted" : "hover:bg-muted"}`}
 						>
 							{isUploadingPhoto ? (
 								<>
-									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+									<IconLoader className="h-4 w-4 mr-2 animate-spin" />
 									{t("uploading")}
 								</>
 							) : (
 								<>
-									<Camera className="h-4 w-4 mr-2" />
+									<IconCamera className="h-4 w-4 mr-2" />
 									{t("upload_photo")}
 								</>
 							)}
@@ -287,28 +397,38 @@ export function ProfileTab({ user }: ProfileTabProps) {
 			</Card>
 
 			{/* Personal Information */}
-			<Card className="p-4 md:p-6">
-				<h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border p-4 md:p-6">
+				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
 					{t("personal_info")}
 				</h3>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 					<div className="space-y-2">
-						<Label htmlFor="name">{t("full_name")}</Label>
+						<Label
+							htmlFor="name"
+							className="text-sm font-medium text-muted-foreground"
+						>
+							{t("full_name")}
+						</Label>
 						<Input
 							id="name"
 							value={formData.name}
 							onChange={(e) => handleInputChange("name", e.target.value)}
-							className="min-h-[48px]"
+							className="min-h-[48px] rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground"
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="email">{t("email_address")}</Label>
+						<Label
+							htmlFor="email"
+							className="text-sm font-medium text-muted-foreground"
+						>
+							{t("email_address")}
+						</Label>
 						<Input
 							id="email"
 							type="email"
 							value={formData.email}
 							onChange={(e) => handleInputChange("email", e.target.value)}
-							className="min-h-[48px]"
+							className="min-h-[48px] rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground"
 						/>
 					</div>
 				</div>
@@ -317,8 +437,8 @@ export function ProfileTab({ user }: ProfileTabProps) {
 			{/* Organization Settings (if applicable) */}
 			{/* TODO: Sprint X - Implement organization support with Clerk Organizations API
       {user.organizationId && (
-        <Card className="p-4 md:p-6">
-          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">Organization</h3>
+        <Card className="rounded-xl border border-border p-4 md:p-6">
+          <h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">Organization</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -338,15 +458,15 @@ export function ProfileTab({ user }: ProfileTabProps) {
       */}
 
 			{/* Preferences - Language only for now; Theme and email notification commented (COMMENT DO NOT DELETE) */}
-			<Card className="p-4 md:p-6">
-				<h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border p-4 md:p-6">
+				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
 					{t("preferences")}
 				</h3>
 				<div className="space-y-4 md:space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 						{/* COMMENT DO NOT DELETE - Theme: to implement later (see docs/Post MVP Improvement/Post-MVP-Improvement.md)
 						<div className="space-y-2">
-							<Label htmlFor="theme">{t("theme")}</Label>
+							<Label htmlFor="theme" className="text-sm font-medium text-muted-foreground">{t("theme")}</Label>
 							<Select
 								value={formData.theme}
 								onValueChange={(value) => handleInputChange("theme", value)}
@@ -363,7 +483,12 @@ export function ProfileTab({ user }: ProfileTabProps) {
 						</div>
 						*/}
 						<div className="space-y-2">
-							<Label htmlFor="language">{t("language")}</Label>
+							<Label
+								htmlFor="language"
+								className="text-sm font-medium text-muted-foreground"
+							>
+								{t("language")}
+							</Label>
 							<Select
 								value={formData.language}
 								onValueChange={handleLanguageChange}
@@ -402,16 +527,16 @@ export function ProfileTab({ user }: ProfileTabProps) {
 			</Card>
 
 			{/* Security */}
-			<Card className="p-4 md:p-6">
-				<h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
+			<Card className="rounded-xl border border-border p-4 md:p-6">
+				<h3 className="text-lg font-semibold text-foreground mb-4 md:mb-6">
 					{t("security")}
 				</h3>
 				<Button
 					variant="outline"
 					onClick={() => setIsPasswordModalOpen(true)}
-					className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:bg-accent" : "hover:bg-accent"}`}
+					className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:bg-muted" : "hover:bg-muted"}`}
 				>
-					<Key className="h-4 w-4 mr-2" />
+					<IconKey className="h-4 w-4 mr-2" />
 					{t("change_password")}
 				</Button>
 			</Card>
@@ -421,11 +546,11 @@ export function ProfileTab({ user }: ProfileTabProps) {
 				<Button
 					onClick={handleSave}
 					disabled={isSaving}
-					className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:scale-98" : "hover:scale-105"}`}
+					className={`min-h-[44px] ${isMobile ? "w-full" : ""}`}
 				>
 					{isSaving ? (
 						<>
-							<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+							<IconLoader className="h-4 w-4 mr-2 animate-spin" />
 							{t("saving")}
 						</>
 					) : (
@@ -435,16 +560,16 @@ export function ProfileTab({ user }: ProfileTabProps) {
 				<Button
 					variant="outline"
 					onClick={handleExportData}
-					className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:bg-accent" : "hover:bg-accent"}`}
+					className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:bg-muted" : "hover:bg-muted"}`}
 				>
-					<Download className="h-4 w-4 mr-2" />
+					<IconDownload className="h-4 w-4 mr-2" />
 					{t("export_data")}
 				</Button>
 			</div>
 
 			{/* Danger Zone */}
-			<Card className="p-4 md:p-6 border-destructive">
-				<h3 className="text-lg md:text-xl font-semibold mb-2 text-destructive">
+			<Card className="rounded-xl border border-destructive p-4 md:p-6">
+				<h3 className="text-lg font-semibold text-destructive mb-2">
 					{t("danger_zone")}
 				</h3>
 				<p className="text-sm text-muted-foreground mb-4">
@@ -455,12 +580,12 @@ export function ProfileTab({ user }: ProfileTabProps) {
 					variant="destructive"
 					disabled={isDeleting}
 					onClick={() => setIsDeleteDialogOpen(true)}
-					className={`min-h-[44px] ${isMobile ? "w-full" : ""} ${isMobile ? "active:scale-98" : "hover:scale-105"}`}
+					className={`min-h-[44px] ${isMobile ? "w-full" : ""}`}
 				>
 					{isDeleting ? (
-						<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+						<IconLoader className="h-4 w-4 mr-2 animate-spin" />
 					) : (
-						<Trash2 className="h-4 w-4 mr-2" />
+						<IconTrash className="h-4 w-4 mr-2" />
 					)}
 					{t("delete_account")}
 				</Button>
@@ -480,7 +605,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 				<AlertDialogContent className="bg-card border-border">
 					<AlertDialogHeader>
 						<AlertDialogTitle className="flex items-center gap-2 text-foreground">
-							<AlertTriangle className="h-5 w-5 text-destructive" />
+							<IconAlertTriangle className="h-5 w-5 text-destructive" />
 							{t("delete_confirm_title")}
 						</AlertDialogTitle>
 						<AlertDialogDescription asChild>
@@ -490,7 +615,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 								</p>
 								{subscription?.status === "active" && (
 									<div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-										<AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+										<IconAlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
 										<span>
 											{t("delete_confirm_active_sub", {
 												planName:
@@ -501,7 +626,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 								)}
 								{credits && credits.balance > 0 && (
 									<div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-										<AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+										<IconAlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
 										<span>
 											{t("delete_confirm_credits_lost", {
 												balance: credits.balance,
@@ -523,7 +648,7 @@ export function ProfileTab({ user }: ProfileTabProps) {
 						>
 							{isDeleting ? (
 								<>
-									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+									<IconLoader className="h-4 w-4 mr-2 animate-spin" />
 									{t("delete_confirm_submit")}
 								</>
 							) : (

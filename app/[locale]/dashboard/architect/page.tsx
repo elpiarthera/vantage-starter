@@ -143,47 +143,37 @@ export default function ArchitectPage() {
 
 	return (
 		<div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
-			{/* Page header — always visible */}
-			<div className="flex items-center justify-end px-4 md:px-6 py-3 border-b border-border shrink-0">
-				{activeSessionId ? (
-					<div className="flex items-center gap-3">
-						<button
-							type="button"
-							onClick={() => setActiveSessionId(null)}
-							className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-							aria-label="Back to sessions"
+			{/* Page header — only visible when in a session */}
+			{activeSessionId && (
+				<div className="flex items-center gap-3 px-6 md:px-8 py-3 border-b border-border shrink-0">
+					<button
+						type="button"
+						onClick={() => setActiveSessionId(null)}
+						className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+						aria-label="Back to sessions"
+					>
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							aria-hidden="true"
 						>
-							<svg
-								width="14"
-								height="14"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								aria-hidden="true"
-							>
-								<path d="M19 12H5M12 5l-7 7 7 7" />
-							</svg>
-							Back
-						</button>
-						<button
-							type="button"
-							onClick={handleNewSession}
-							className="rounded-full text-xs h-7 px-3 border border-border bg-transparent text-foreground hover:bg-muted transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						>
-							New session
-						</button>
-					</div>
-				) : (
+							<path d="M19 12H5M12 5l-7 7 7 7" />
+						</svg>
+						Back
+					</button>
 					<button
 						type="button"
 						onClick={handleNewSession}
-						className="rounded-full text-xs h-7 px-3 border border-border bg-transparent text-foreground hover:bg-muted transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						className="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						New session
 					</button>
-				)}
-			</div>
+				</div>
+			)}
 
 			{/* Main content */}
 			<div className="flex-1 overflow-hidden">
@@ -195,7 +185,7 @@ export default function ArchitectPage() {
 					/>
 				) : (
 					<div className="h-full overflow-y-auto">
-						<div className="max-w-2xl mx-auto px-4 md:px-6 py-8 space-y-8">
+						<div className="max-w-2xl mx-auto p-6 md:p-8 space-y-8">
 							<SessionList
 								workspaceId={workspaceId}
 								activeSessionId={activeSessionId}
