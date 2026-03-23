@@ -7,7 +7,7 @@ export function ActivityFeed() {
 	const t = useTranslations("dashboard");
 
 	return (
-		<Card>
+		<Card className="rounded-2xl card-elevated border-border">
 			<CardHeader>
 				<CardTitle className="text-base">{t("activity_feed.title")}</CardTitle>
 			</CardHeader>

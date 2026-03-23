@@ -54,7 +54,7 @@ export function AccountTabs({ user }: AccountTabsProps) {
 	return (
 		<div className="w-full">
 			{/* Tab Navigation */}
-			<div className="border-b border-border bg-card sticky top-14 md:top-16 z-40">
+			<div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-14 md:top-16 z-40">
 				<div
 					className={`
             flex gap-1 px-4 md:px-6
@@ -84,8 +84,8 @@ export function AccountTabs({ user }: AccountTabsProps) {
                   border-b-2 transition-colors
                   min-h-[44px] min-w-[44px]
                   ${isMobile ? "flex-shrink-0" : ""}
-                  ${isActive ? "border-primary text-primary" : "border-transparent text-muted-foreground"}
-                  ${isMobile ? "active:bg-accent" : "hover:text-foreground hover:bg-accent/50"}
+                  ${isActive ? "border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100" : "border-transparent text-gray-500 dark:text-gray-400"}
+                  ${isMobile ? "active:bg-gray-100 dark:active:bg-gray-800" : "hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"}
                 `}
 							>
 								<Icon className="h-4 w-4" />

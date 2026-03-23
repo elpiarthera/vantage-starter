@@ -178,7 +178,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 
 	return (
 		<>
-			<header className="sticky top-0 z-50 w-full border-b border-border bg-background">
+			<header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
 				<div className="container flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
 					{/* Left: Hamburger (mobile only) + Org Switcher */}
 					<div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 								elements: {
 									rootBox: "flex items-center",
 									organizationSwitcherTrigger:
-										"min-h-[36px] px-3 py-1.5 rounded-none hover:bg-accent transition-colors duration-150 ease-out text-sm gap-2 text-foreground",
+										"min-h-[36px] px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 ease-out text-sm gap-2 text-gray-900 dark:text-gray-100",
 								},
 							}}
 						/>
@@ -213,13 +213,13 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						<button
 							type="button"
 							onClick={() => setShowPurchaseModal(true)}
-							className="hidden md:flex items-center gap-1 min-h-[44px] px-2 rounded-md hover:bg-accent transition-colors cursor-pointer"
+							className="hidden md:flex items-center gap-1 min-h-[44px] px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
 							aria-label={tCredits("your_balance", { balance })}
 						>
-							<CreditCard className="h-4 w-4 text-muted-foreground" />
+							<CreditCard className="h-4 w-4 text-gray-500 dark:text-gray-400" />
 							<Badge
 								variant="outline"
-								className="text-xs border-muted text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
+								className="text-xs border-muted text-gray-500 dark:text-gray-400 hover:border-primary hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
 							>
 								{tCredits("your_balance", { balance })}
 							</Badge>

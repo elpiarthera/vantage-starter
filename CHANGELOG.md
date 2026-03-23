@@ -10,6 +10,9 @@ All notable changes to VantageStarter are documented in this file.
 - **ErrorState**: `text-red-500/400` → `text-destructive`, `border-red-500/30` → `border-destructive/30`
 - **ProfileTab**: `bg-red-600` → `bg-destructive`, warning banner classes already semantic
 - **PurchaseCreditsModal**: `text-green-500` → `text-success`
+- **DashboardHeader**: Replaced semantic tokens with explicit gray-*/dark: classes matching landing (border-border → border-gray-200/800, bg-background → bg-white/gray-950)
+- **AccountTabs**: Active tab underline border-primary → border-gray-900/100, hover states → gray-50/800
+- **ActivityFeed + QuickActions**: Card borders/backgrounds aligned to landing card pattern (gray-200/800, white/gray-900)
 
 ### Changed (copy-source pass)
 - **FeaturesSection**: Copied litui.dev Features.tsx structure — uniform card grid, gray-*/dark: classes, hover gradient overlay, icon inversion, reveal animation
