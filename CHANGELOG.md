@@ -16,6 +16,10 @@ All notable changes to VantageStarter are documented in this file.
 - **Dashboard home cards**: Removed shadcn Card shell, replaced with native `div.bg-card.border.border-border.rounded-xl.p-6`
 - **Sidebar v3**: Toggle moved to DashboardHeader (always visible), `collapsible="offcanvas"` — sidebar fully hides when collapsed, trigger remains accessible. DashboardHeader: lucide-react replaced with inline SVGs.
 - **Dashboard cards**: Credit Balance, Architect CTA, Recent Sessions wrapped in `bg-card rounded-xl` card containers. Page spacing `p-6 md:p-8 space-y-6`.
+- **MSR cleanup**: Deleted 10 `--ig-*` MyShortReel layout variables from globals.css
+- **Sidebar v4**: Tokens match page bg (oklch 0.145 — seamless blend). Active item uses bg-accent fill instead of left-border. Removed .dark sidebar overrides.
+- **Header v2**: Decluttered — LanguageSwitcher hidden on desktop, credits show number only (no badge), avatar only on desktop (no name/chevron). Height reduced to h-12/h-14.
+- **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.
 
 ### Fixed (Day 17 — app UI alignment)
 - **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)

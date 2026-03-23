@@ -40,15 +40,15 @@
     --success: oklch(0.55 0.18 145);
     --warning: oklch(0.72 0.18 65);
 
-    /* Sidebar tokens — Monochrome Grayscale preset */
-    --sidebar-background: oklch(0.97 0 0);
-    --sidebar-foreground: oklch(0.25 0 0);
-    --sidebar-primary: oklch(0.22 0 0);
-    --sidebar-primary-foreground: oklch(0.99 0 0);
-    --sidebar-accent: oklch(0.96 0 0);
-    --sidebar-accent-foreground: oklch(0.20 0 0);
-    --sidebar-border: oklch(0.88 0 0);
-    --sidebar-ring: oklch(0.22 0 0);
+    /* Sidebar tokens — matches page bg for seamless blend */
+    --sidebar-background: oklch(0.145 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.922 0 0);
+    --sidebar-primary-foreground: oklch(0.205 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.922 0 0);
 
     /* Data visualization */
     --chart-1: oklch(0.22 0 0);
@@ -56,18 +56,6 @@
     --chart-3: oklch(0.55 0 0);
     --chart-4: oklch(0.70 0 0);
     --chart-5: oklch(0.85 0 0);
-
-    /* Safe-area & layout variables (preserved from MSR) */
-    --ig-prompt-bar-min-height: 116px;
-    --ig-action-bar-height: 56px;
-    --ig-floating-panel-top: 96px;
-    --ig-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --ig-margin-sm: 16px;
-    --ig-margin-md: 24px;
-    --ig-prompt-bar-total: calc(var(--ig-prompt-bar-min-height) + var(--ig-safe-area-bottom) + var(--ig-margin-md));
-    --ig-action-bar-total: calc(var(--ig-action-bar-height) + var(--ig-margin-sm));
-    --ig-canvas-bottom-offset: calc(var(--ig-prompt-bar-total) + var(--ig-action-bar-total));
-    --ig-mobile-button-offset: calc(var(--ig-prompt-bar-total) + var(--ig-margin-md));
   }
 
   .dark {
@@ -85,16 +73,6 @@
     /* Status */
     --success: oklch(0.65 0.18 145);
     --warning: oklch(0.78 0.18 65);
-
-    /* Sidebar */
-    --sidebar-background: oklch(0.12 0 0);
-    --sidebar-foreground: oklch(0.90 0 0);
-    --sidebar-primary: oklch(0.90 0 0);
-    --sidebar-primary-foreground: oklch(0.10 0 0);
-    --sidebar-accent: oklch(0.20 0 0);
-    --sidebar-accent-foreground: oklch(0.90 0 0);
-    --sidebar-border: oklch(0.25 0 0);
-    --sidebar-ring: oklch(0.90 0 0);
 
     /* Data visualization */
     --chart-1: oklch(0.90 0 0);

@@ -4,7 +4,6 @@ import { useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Progress } from "@/components/ui/progress";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -79,18 +78,18 @@ function MissionCard({ mission, operationCount, locale }: MissionCardProps) {
 	return (
 		<Link
 			href={`/${locale}/dashboard/missions/${mission._id}`}
-			className="group card-elevated block border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			className="group block bg-card border border-border rounded-xl p-5 hover:border-[oklch(1_0_0/20%)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 			aria-label={`View mission: ${mission.name}`}
 		>
-			<div className="p-6 space-y-4">
+			<div className="space-y-4">
 				{/* Header row */}
 				<div className="flex items-start justify-between gap-3">
 					<div className="min-w-0">
-						<h2 className="font-heading font-semibold text-foreground truncate text-base tracking-[-0.03em] leading-snug group-hover:text-primary transition-colors duration-150">
+						<h2 className="text-sm font-medium text-foreground truncate">
 							{mission.name}
 						</h2>
 						{mission.description && (
-							<p className="mt-1 text-sm text-muted-foreground line-clamp-1">
+							<p className="mt-1 text-xs text-muted-foreground line-clamp-1">
 								{mission.description}
 							</p>
 						)}
@@ -104,16 +103,18 @@ function MissionCard({ mission, operationCount, locale }: MissionCardProps) {
 						<span>{operationCount} operations</span>
 						<span>{progress}%</span>
 					</div>
-					<Progress value={progress} className="h-1" />
+					<div className="relative h-1 w-full overflow-hidden rounded-full bg-muted">
+						<div
+							className="h-full bg-primary transition-all"
+							style={{ width: `${progress}%` }}
+						/>
+					</div>
 				</div>
 
 				{/* Footer */}
-				<div className="flex items-center justify-between text-xs text-muted-foreground">
-					<span>
-						Created{" "}
-						{formatDistanceToNow(mission.createdAt, { addSuffix: true })}
-					</span>
-				</div>
+				<p className="text-xs text-muted-foreground mt-2">
+					Created {formatDistanceToNow(mission.createdAt, { addSuffix: true })}
+				</p>
 			</div>
 		</Link>
 	);
@@ -147,7 +148,7 @@ function MissionCardSkeleton() {
 
 function EmptyState() {
 	return (
-		<div className="flex flex-col items-center justify-center py-24 px-6 text-center gap-6 border border-dashed border-border">
+		<div className="col-span-full flex flex-col items-center justify-center py-16 px-6 text-center gap-6 border border-dashed border-border rounded-xl">
 			<div className="flex flex-col items-center gap-4">
 				<div className="icon-container" aria-hidden="true">
 					<svg
@@ -176,7 +177,7 @@ function EmptyState() {
 			</div>
 			<Link
 				href="/dashboard/architect"
-				className="inline-flex items-center gap-2 btn-shadow active-scale rounded-full px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				aria-label="Go to Architect to create a mission"
 			>
 				<svg
@@ -221,7 +222,7 @@ function MissionsList({ locale }: { locale: string }) {
 
 	if (isLoading) {
 		return (
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{["sk-1", "sk-2", "sk-3", "sk-4"].map((id) => (
 					<MissionCardSkeleton key={id} />
 				))}
@@ -266,7 +267,7 @@ function MissionsList({ locale }: { locale: string }) {
 	}
 
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{missions.map((mission) => (
 				<MissionCard
 					key={mission._id}
@@ -286,7 +287,7 @@ export default function MissionsPage() {
 	const locale = typeof params?.locale === "string" ? params.locale : "en";
 
 	return (
-		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10">
+		<div className="max-w-6xl mx-auto p-6 md:p-8">
 			<header className="mb-8">
 				<h1 className="font-heading text-2xl font-bold tracking-[-0.03em] text-foreground">
 					Missions

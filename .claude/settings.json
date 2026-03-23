@@ -13,7 +13,11 @@
     "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 hooks/user-prompt-submit-routing.py"}]}],
     "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}],
     "PreToolUse": [
-      {"matcher": "Agent", "hooks": [{"type": "command", "command": "python3 hooks/enforce-agent-rules.py"}]},
+      {"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "python3 hooks/block-orchestrator-code-edits.py"}]},
+      {"matcher": "Agent", "hooks": [
+        {"type": "command", "command": "python3 hooks/enforce-agent-rules.py"},
+        {"type": "command", "command": "python3 hooks/enforce-brief-template.py"}
+      ]},
       {"matcher": "Bash", "hooks": [{"type": "command", "command": "bash hooks/enforce-quality-gate.sh"}]}
     ],
     "PostToolUse": [

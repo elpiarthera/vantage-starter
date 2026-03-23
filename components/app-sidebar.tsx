@@ -10,7 +10,7 @@
  * Mobile: hidden at <md, opens as Sheet drawer via hamburger trigger in layout.
  * Touch targets: all nav items min-h-[44px].
  * Footer removed — org switcher + user profile live in the top header bar.
- * Active state: 2px left border only, no background fill.
+ * Active state: subtle bg-accent fill, no border accent.
  */
 
 import Link from "next/link";
@@ -34,9 +34,8 @@ import { cn } from "@/lib/utils";
 const navItemClass = cn(
 	"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground",
 	"transition-colors hover:bg-transparent hover:text-foreground",
-	// Active: 2px left border, text shifts right to compensate, no bg fill
-	"data-[active=true]:bg-transparent data-[active=true]:text-foreground",
-	"data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
+	// Active: subtle bg fill, no border accent
+	"data-[active=true]:bg-accent data-[active=true]:text-foreground",
 );
 
 // Duration matches the easing token defined in globals.css

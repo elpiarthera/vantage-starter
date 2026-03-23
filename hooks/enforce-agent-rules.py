@@ -70,15 +70,41 @@ def main():
     prompt = tool_input.get("prompt", "")
     has_file_path = ("/" in prompt and ("." in prompt.split("/")[-1] if "/" in prompt else False)) or \
                     (".tsx" in prompt or ".ts" in prompt or ".css" in prompt or ".py" in prompt or ".md" in prompt)
-    if not has_file_path and agent_type not in {"Explore", "Plan", "copywriter", "strategy-researcher",
-                                                  "blog-writer", "email-assistant", "translator",
-                                                  "meeting-summarizer", "proposal-generator", "statusline-setup",
-                                                  "claude-code-guide"}:
+    non_code_agents = {"Explore", "Plan", "copywriter", "strategy-researcher",
+                       "blog-writer", "email-assistant", "translator",
+                       "meeting-summarizer", "proposal-generator", "statusline-setup",
+                       "claude-code-guide"}
+    if not has_file_path and agent_type not in non_code_agents:
         print(json.dumps({
             "decision": "block",
             "reason": "BLOCKED: Agent brief has NO file paths. Dev agents need specific files to edit. "
                       "Include: exact file path, what to change, and expected result. "
                       "Example: 'FILE: /path/to/file.tsx — change X to Y on line Z'"
+        }))
+        return 0
+
+    # Rule 4: UI/frontend tasks MUST include screenshot references
+    ui_agents = {"dev-frontend", "artistic-director", "image-designer", "accessibility-audit",
+                 "seo-visual", "onboarding"}
+    ui_keywords = {"css", "style", "layout", "sidebar", "card", "button", "nav", "header",
+                   "footer", "modal", "dialog", "theme", "color", "font", "spacing", "design",
+                   "ui", "ux", "visual", "align", "responsive", "mobile"}
+    prompt_lower = prompt.lower()
+    is_ui_task = agent_type in ui_agents or any(kw in prompt_lower for kw in ui_keywords)
+    has_screenshot_ref = any(marker in prompt_lower for marker in {
+        "screenshot", "reference image", "see attached", "visual reference",
+        "compare with", "match this", ".png", ".jpg", ".jpeg", ".webp",
+        "/tmp/", "screenshot_", "firecrawl"
+    })
+    if is_ui_task and not has_screenshot_ref and agent_type not in non_code_agents:
+        print(json.dumps({
+            "decision": "block",
+            "reason": "BLOCKED: UI/visual task detected but NO screenshot reference in brief. "
+                      "Every visual task MUST include: "
+                      "(1) screenshot of REFERENCE (what it should look like), "
+                      "(2) screenshot of CURRENT state (what's wrong). "
+                      "Attach images or provide file paths to screenshots. "
+                      "Text descriptions of visual layout ALWAYS fail."
         }))
         return 0
 

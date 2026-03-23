@@ -169,14 +169,14 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="ghost"
-					className="gap-2 px-3 min-h-[44px] hover:bg-accent"
+					className="gap-2 px-2 min-h-[44px] hover:bg-accent"
 					aria-label="User menu"
 				>
 					<Avatar className="h-8 w-8">
 						<AvatarImage src={userImage} alt={userName} />
 						<AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
 					</Avatar>
-					<span className="text-sm">{userName}</span>
+					<span className="md:hidden text-sm">{userName}</span>
 					<svg
 						width="16"
 						height="16"
@@ -184,7 +184,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						fill="none"
 						stroke="currentColor"
 						strokeWidth="1.5"
-						className="opacity-50 shrink-0"
+						className="md:hidden opacity-50 shrink-0"
 						aria-hidden="true"
 					>
 						<polyline points="6 9 12 15 18 9" />
@@ -280,7 +280,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 	return (
 		<>
 			<header className="sticky top-0 z-50 w-full border-b border-border bg-background">
-				<div className="container flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
+				<div className="container flex h-12 md:h-14 items-center justify-between px-4 md:px-6">
 					{/* Left: Sidebar toggle (all breakpoints) + Org Switcher */}
 					<div className="flex items-center gap-2">
 						{/* SidebarTrigger: always visible so user can re-open collapsed sidebar */}
@@ -303,16 +303,18 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						/>
 					</div>
 
-					{/* Right: Language Switcher + Credits + Notifications + User Menu */}
+					{/* Right: Language Switcher (mobile only) + Credits + Notifications + User Menu */}
 					<div className="flex items-center gap-2 md:gap-4">
-						{/* Language Switcher */}
-						<LanguageSwitcher />
+						{/* Language Switcher — mobile only */}
+						<div className="md:hidden">
+							<LanguageSwitcher />
+						</div>
 
 						{/* Credit balance — visible on desktop, opens purchase modal */}
 						<button
 							type="button"
 							onClick={() => setShowPurchaseModal(true)}
-							className="hidden md:flex items-center gap-1 min-h-[44px] px-2 rounded-md hover:bg-muted transition-colors cursor-pointer"
+							className="hidden md:flex items-center gap-1.5 min-h-[44px] px-2 rounded-md hover:bg-muted transition-colors cursor-pointer"
 							aria-label={tCredits("your_balance", { balance })}
 						>
 							<svg
@@ -328,12 +330,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 								<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
 								<line x1="1" y1="10" x2="23" y2="10" />
 							</svg>
-							<Badge
-								variant="outline"
-								className="text-xs border-muted text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
-							>
-								{tCredits("your_balance", { balance })}
-							</Badge>
+							<span className="text-sm text-muted-foreground">{balance}</span>
 						</button>
 
 						{/* Notifications */}
