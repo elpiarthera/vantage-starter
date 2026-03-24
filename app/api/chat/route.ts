@@ -3,6 +3,7 @@ import { streamText } from "ai";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { systemPrompt } from "@/lib/ai/prompts/chat";
 import { getModelFromGateway } from "@/lib/ai/providers";
 
 /**
@@ -93,8 +94,18 @@ export async function POST(req: Request) {
 		const resolvedProvider = aiModel?.provider ?? "anthropic";
 
 		// 5. Build system prompt
-		const systemPrompt =
-			"You are a helpful AI assistant. Keep your responses concise and helpful. You can assist with a wide range of tasks including writing, analysis, coding, brainstorming, and answering questions.";
+		// Geolocation is extracted from Vercel edge headers when available.
+		// @vercel/functions is optional — fall back to undefined values in local dev.
+		const requestHints = {
+			longitude: req.headers.get("x-vercel-ip-longitude") ?? undefined,
+			latitude: req.headers.get("x-vercel-ip-latitude") ?? undefined,
+			city: req.headers.get("x-vercel-ip-city") ?? undefined,
+			country: req.headers.get("x-vercel-ip-country") ?? undefined,
+		};
+		const prompt = systemPrompt({
+			selectedChatModel: selectedModel,
+			requestHints,
+		});
 
 		// 6. Build messages array for AI SDK v6
 		// AI SDK v6 sends messages with `parts` array instead of `content` string.
@@ -104,7 +115,7 @@ export async function POST(req: Request) {
 			| { role: "user"; content: string }
 			| { role: "assistant"; content: string }
 		> = [
-			{ role: "system", content: systemPrompt },
+			{ role: "system", content: prompt },
 			...messages
 				.filter(
 					(msg: { role: string; content?: string; parts?: unknown[] }) =>
