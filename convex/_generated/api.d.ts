@@ -41,6 +41,7 @@ import type * as rateLimits from "../rateLimits.js";
 import type * as ratelimit from "../ratelimit.js";
 import type * as schemas_architect from "../schemas/architect.js";
 import type * as seed from "../seed.js";
+import type * as seed_seedCreditCosts from "../seed/seedCreditCosts.js";
 import type * as seedCredits from "../seedCredits.js";
 import type * as sharedLinks from "../sharedLinks.js";
 import type * as skills from "../skills.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   ratelimit: typeof ratelimit;
   "schemas/architect": typeof schemas_architect;
   seed: typeof seed;
+  "seed/seedCreditCosts": typeof seed_seedCreditCosts;
   seedCredits: typeof seedCredits;
   sharedLinks: typeof sharedLinks;
   skills: typeof skills;
