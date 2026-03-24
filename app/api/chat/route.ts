@@ -192,8 +192,8 @@ export async function POST(req: Request) {
 			},
 		});
 
-		// 8. Return streaming text response
-		return result.toTextStreamResponse();
+		// 8. Return UI message stream (required for AI SDK v6 useChat/DefaultChatTransport)
+		return result.toUIMessageStreamResponse();
 	} catch (error) {
 		const latency = Date.now() - startTime;
 		console.error("[Chat API] Error:", error);
