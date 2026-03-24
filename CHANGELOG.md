@@ -5,6 +5,7 @@ All notable changes to VantageStarter are documented in this file.
 ## [Unreleased]
 
 ### Added (Day 19 — vantage-studio migration Phase 1 + Phase 3)
+- **hooks/block-orchestrator-code-edits.py**: Replaced broken symlink with actual hook script — enforces orchestrator delegation rules
 - **Schema**: Added `chats` (table 26), `projects` (table 27), `messages` (table 28) tables to Convex schema
 - **convex/chats.ts**: 8 functions (list, getById, listRecent, create, update, remove + 2 internal) — workspace-scoped chat sessions
 - **convex/projects.ts**: 6 functions (list, get, create, update, archive, assignTask) — organizational folders for chats

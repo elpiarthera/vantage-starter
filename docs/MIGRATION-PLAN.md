@@ -3,7 +3,7 @@
 **Date**: 2026-03-24
 **Author**: dev-senior-dev
 **Branch**: `Day-19-migration-phase1`
-**Status**: Phase 1 COMPLETE — reviewed by 3 specialists, all findings resolved
+**Status**: Phase 1 + Phase 3 COMPLETE — committed on `Day-19-migration-phase1`, tsc clean, biome clean
 **Priority**: P0 Critical
 **Estimated Effort**: 20–26 hours
 **Dependencies**: workspaces table (Done), missions system (Done)
@@ -1100,13 +1100,13 @@ The implementation is complete when:
 
 ### Phase 1 — Convex Backend
 
-**Completed**: —
-**Actual hours**: —
-**Commit**: —
-**QA result**: —
-**Files created**: —
-**Files modified**: —
-**Deferred items**: —
+**Completed**: 2026-03-24
+**Actual hours**: ~2h (agent-assisted)
+**Commit**: `b200ba1` on `Day-19-migration-phase1`
+**QA result**: tsc clean, biome clean, 3 specialist reviews passed, all 11 findings fixed
+**Files created**: `convex/chats.ts`, `convex/projects.ts`, `convex/messages.ts`, `convex/ratelimit.ts`
+**Files modified**: `convex/schema.ts` (added chats, projects, messages tables)
+**Deferred items**: `votes` table cleanup in `deleteAfterTimestamp` (Phase 4/P2)
 
 ### Phase 2 — Chat List UI
 
@@ -1119,12 +1119,12 @@ The implementation is complete when:
 
 ### Phase 3 — Custom Roles/Personas/Frameworks
 
-**Completed**: —
-**Actual hours**: —
-**Commit**: —
-**QA result**: —
-**Files created**: —
-**Files modified**: —
+**Completed**: 2026-03-24
+**Actual hours**: ~1.5h (agent-assisted)
+**Commit**: `b200ba1` on `Day-19-migration-phase1`
+**QA result**: tsc clean, biome clean, security guards verified (S1/S3/H4/H5/D1-D5)
+**Files created**: `convex/customRoles.ts`, `convex/customPersonas.ts`, `convex/customFrameworks.ts`
+**Files modified**: `convex/ratelimit.ts` (added 3 rate limit keys)
 
 ### Phase 4 — Messages Enhancement
 
