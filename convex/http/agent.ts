@@ -34,7 +34,7 @@ import { getWorkspaceNamespace, ragClient } from "../lib/rag";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const internal = internalGen as any;
 
-const CREDIT_COST_ACTION_TYPE = "chat";
+const CREDIT_COST_ACTION_TYPE = "chat_message";
 
 // Rate limiter instance — same 20 req/min aiStreaming limit as chat endpoint
 const rateLimiter = new RateLimiter(components.ratelimiter, {

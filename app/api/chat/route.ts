@@ -35,7 +35,8 @@ export async function POST(req: Request) {
 			});
 		}
 		// Obtain Clerk JWT so fetchMutation carries auth identity to Convex
-		convexToken = (await authResult.getToken({ template: "convex" })) ?? undefined;
+		convexToken =
+			(await authResult.getToken({ template: "convex" })) ?? undefined;
 
 		// 2. Parse request body
 		const body = await req.json();
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
 			api.credits.deductCreditsPublic,
 			{
 				clerkUserId: userId,
-				actionType: "step2_chat_message",
+				actionType: "chat_message",
 				projectId,
 				projectName,
 			},
@@ -104,12 +105,10 @@ export async function POST(req: Request) {
 		// 6. Build messages array for AI SDK v6
 		const coreMessages = [
 			{ role: "system" as const, content: systemPrompt },
-			...messages.map(
-				(msg: { role: string; content: string }) => ({
-					role: msg.role as "user" | "assistant",
-					content: msg.content,
-				}),
-			),
+			...messages.map((msg: { role: string; content: string }) => ({
+				role: msg.role as "user" | "assistant",
+				content: msg.content,
+			})),
 		];
 
 		// 7. Stream response from OpenAI
@@ -138,29 +137,29 @@ export async function POST(req: Request) {
 					outputTokens,
 				});
 
-			// Log to Convex usageTracking (fire and forget)
-			try {
-				await fetchMutation(
-					api.usageTracking.logAIUsage,
-					{
-						userId,
-						projectId,
-						resourceType: "chat",
-						resourceId: sceneId,
-						eventType: "step2_conversation",
-						service: "openai",
-						model: "gpt-4o",
-						creditsUsed: 1,
-						cost,
-						metadata: {
-							inputTokens,
-							outputTokens,
-							latency,
-							success: true,
+				// Log to Convex usageTracking (fire and forget)
+				try {
+					await fetchMutation(
+						api.usageTracking.logAIUsage,
+						{
+							userId,
+							projectId,
+							resourceType: "chat",
+							resourceId: sceneId,
+							eventType: "chat_conversation",
+							service: "openai",
+							model: "gpt-4o",
+							creditsUsed: 1,
+							cost,
+							metadata: {
+								inputTokens,
+								outputTokens,
+								latency,
+								success: true,
+							},
 						},
-					},
-					{ token: convexToken },
-				);
+						{ token: convexToken },
+					);
 					console.log(`[Chat API] Cost tracked: $${cost.toFixed(4)}`);
 				} catch (error) {
 					console.error("[Chat API] Failed to log usage:", error);
@@ -201,7 +200,7 @@ export async function POST(req: Request) {
 				{
 					userId: userId || undefined,
 					resourceType: "chat",
-					eventType: "step2_conversation",
+					eventType: "chat_conversation",
 					service: "openai",
 					model: "gpt-4o",
 					creditsUsed: 0,

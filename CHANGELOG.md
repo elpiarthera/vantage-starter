@@ -4,6 +4,12 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (Day 19 — credit system + action types)
+- **convex/seed/seedCreditCosts.ts**: Created idempotent seed for 7 credit action types (chat_message, architect_message, image_generation, image_edit, video_generation, video_assembly, audio_narration)
+- **app/api/chat/route.ts**: Renamed `step2_chat_message` → `chat_message`, `step2_conversation` → `chat_conversation`
+- **convex/http/ai.ts, convex/http/agent.ts**: Normalized `CREDIT_COST_ACTION_TYPE` from `"chat"` → `"chat_message"`
+- **app/api/architect/chat/route.ts**: Added missing credit deduction (actionType: `architect_message`) with refund on error
+
 ### Fixed (Day 19 — org access + project filter)
 - **convex/chats.ts, projects.ts, customRoles.ts, customPersonas.ts, customFrameworks.ts**: Fixed workspace resolution to support org members — all list/get queries now check both `workspace.ownerId` AND `workspace.organizationId` for access, not just owner
 - **app/[locale]/dashboard/chat/page.tsx**: Added project selector/filter dropdown (Task 2.4) — filters chats by project, responsive, OKLCH tokens, new chats inherit selected project
