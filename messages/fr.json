@@ -2682,7 +2682,13 @@
 			"col_legal": "Légal",
 			"features": "Fonctionnalités",
 			"pricing": "Tarifs",
-			"github": "GitHub"
+			"github": "GitHub",
+			"faq": "FAQ",
+			"res_nextjs": "Next.js",
+			"res_convex": "Convex",
+			"built_with": "Construit avec",
+			"mit_license": "Open source sous licence MIT",
+			"discord": "Discord"
 		},
 		"faq": {
 			"heading": "Questions",
