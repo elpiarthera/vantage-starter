@@ -1,6 +1,6 @@
 # How to Set Admin Role for Users
 
-This guide explains how to grant admin access to users in MyShortReel.
+This guide explains how to grant admin access to users in VantageStarter.
 
 ---
 
@@ -17,7 +17,7 @@ This guide explains how to grant admin access to users in MyShortReel.
 ### Set Admin by Email (Recommended)
 
 ```bash
-cd /home/laurentperello/MyShortReel-beta
+cd /home/laurentperello/coding/vantage-starter
 npx convex run adminHelpers:setAdminByEmail '{"email": "user@example.com", "role": "admin"}'
 ```
 
@@ -36,7 +36,7 @@ npx convex run adminHelpers:setAdminByEmail '{"email": "user@example.com", "role
 
 ## Role Types
 
-MyShortReel uses a role-based access control system:
+VantageStarter uses a role-based access control system:
 
 | Role | Description | Admin Panel Access |
 |------|-------------|-------------------|
@@ -157,7 +157,7 @@ If you prefer a UI instead of command line:
 
 1. **Go to Convex Dashboard:**
    - Visit: https://dashboard.convex.dev/
-   - Select your project (myshortreel)
+   - Select your project (vantage-starter)
 
 2. **Navigate to users table:**
    - Click "Data" in the left sidebar

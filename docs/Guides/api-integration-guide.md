@@ -1,6 +1,6 @@
 # API Integration Guide
 
-Complete guide for integrating AI services (fal.ai, OpenAI, Rendi) and handling API calls in MyShortReel.
+Complete guide for integrating AI services (fal.ai, OpenAI, Rendi) and handling API calls in VantageStarter.
 
 **Last Updated**: December 20, 2025
 
@@ -24,7 +24,7 @@ Complete guide for integrating AI services (fal.ai, OpenAI, Rendi) and handling 
 ### Service Architecture
 
 ```
-MyShortReel
+VantageStarter
 ├── fal.ai (Primary AI Provider)
 │   ├── Image Generation (Nano Banana Pro / Gemini 3 Pro, Seedream v4)
 │   ├── Image Editing (Nano Banana Pro Edit)
@@ -370,6 +370,6 @@ async function enhanceWithOpenAI(apiKey: string, basePrompt: string) {
 
 ---
 
-**Maintained By**: MyShortReel Development Team  
+**Maintained By**: VantageStarter Development Team  
 **Last Updated**: December 20, 2025  
 **Version**: 3.0

@@ -1,6 +1,6 @@
 # Convex Database Schema Documentation
 
-**Project**: MyShortReel  
+**Project**: VantageStarter  
 **Version**: 2.0  
 **Last Updated**: December 19, 2025  
 **Status**: Implemented  
@@ -11,7 +11,7 @@
 ## 📊 Database Schema Tree
 
 ```
-MyShortReel Database (Convex)
+VantageStarter Database (Convex)
 │
 ├── 🏢 organizations
 │   ├── _id: Id<"organizations">
@@ -303,7 +303,7 @@ MyShortReel Database (Convex)
 
 ## Overview
 
-This document defines the complete Convex database schema for MyShortReel. The schema supports:
+This document defines the complete Convex database schema for VantageStarter. The schema supports:
 
 - **Multi-tenancy**: Organization-based data isolation using Clerk Organizations
 - **Organization types**: Individual, Couple, Agency, Team
@@ -354,4 +354,4 @@ The schema supports detailed tracking and configuration for the following produc
 
 **Document Version**: 2.0  
 **Last Updated**: December 19, 2025  
-**Maintained By**: MyShortReel Development Team
+**Maintained By**: VantageStarter Development Team
