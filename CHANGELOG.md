@@ -4,6 +4,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (Day 19 — Migration Phase 1: Convex Backend)
+- **`convex/chats.ts`** — 11 functions (6 queries + 5 mutations) ported from vantage-studio with full auth adapter, workspace ownership checks, rate limiting (10 creates/min), audit logging on delete, string length validation
+- **`convex/projects.ts`** — 6 functions (2 queries + 4 mutations) ported with ownership checks, rate limiting (5 creates/min), audit logging on archive, compound index for archived filter
+- **`convex/messages.ts`** — 9 functions (2 queries + 3 mutations + 3 internal) ported with ownership chain checks (message→chat→workspace), rate limiting (30 saves/min, 60 updates/min), votes cascade stripped, string length validation (100K chars)
+- **`convex/ratelimit.ts`** — Centralized rate limiter config using @convex-dev/ratelimiter token bucket
+- **Schema**: Added `chats`, `projects`, `messages` tables with typed validators, composite indexes (`by_workspace_created`, `by_workspace_archived`, `by_chat_created`)
+- **Security**: 11 findings resolved — cross-user data leak prevention (B2, B3, F1-F3), ownership checks on all mutations (H4-H9), cross-workspace projectId validation (F6), standardized error strings ("Forbidden" for access denied)
+- **Code quality**: Zero `v.any()` in returns validators (only justified AI SDK fields in messages), no double auth calls, typed document validators, no redundant indexes
+
+### Removed (Day 19)
+- **`Changelog.md`** — Deleted old MyShortReel changelog (334KB). `CHANGELOG.md` is the single source of truth.
+
 ### Changed (Day 17 — v0.app design system)
 - **Design tokens**: Adopted v0.app's complete OKLCH token set as dark-first defaults — background oklch(0.145), card oklch(0.205), border oklch(1 0 0 / 10%), radius 0.625rem
 - **Preset**: Removed .dark block — root IS dark now (v0.app dark-first pattern)

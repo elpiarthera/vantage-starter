@@ -744,4 +744,113 @@ export default defineSchema({
 	})
 		.index("by_session", ["sessionId"])
 		.index("by_session_created", ["sessionId", "createdAt"]),
+
+	// ============================================================================
+	// CHAT SYSTEM TABLES (Phase 1 — ported from vantage-studio)
+	// ============================================================================
+
+	/**
+	 * 26. Chats Table
+	 * Workspace-scoped conversation containers.
+	 * Distinct from chatMessages (table 4) — parent-scoped by workspaces._id.
+	 */
+	chats: defineTable({
+		title: v.string(),
+		workspaceId: v.id("workspaces"),
+		projectId: v.optional(v.id("projects")),
+		createdBy: v.string(), // Clerk user ID
+		visibility: v.optional(
+			v.union(v.literal("private"), v.literal("workspace")),
+		),
+		isPinned: v.optional(v.boolean()),
+		enabledToolkits: v.optional(
+			v.array(
+				v.object({
+					slug: v.string(),
+					isConnected: v.boolean(),
+				}),
+			),
+		),
+		selectedModel: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_workspace_created", ["workspaceId", "createdAt"])
+		.index("by_project", ["projectId"])
+		.index("by_creator", ["createdBy"]),
+
+	/**
+	 * 27. Projects Table
+	 * Organizes chats within a workspace.
+	 */
+	projects: defineTable({
+		name: v.string(),
+		description: v.optional(v.string()),
+		icon: v.optional(v.string()),
+		color: v.optional(v.string()),
+		workspaceId: v.id("workspaces"),
+		createdBy: v.string(), // Clerk user ID
+		settings: v.optional(
+			v.object({
+				defaultView: v.optional(
+					v.union(v.literal("board"), v.literal("list"), v.literal("timeline")),
+				),
+				color: v.optional(v.string()),
+				icon: v.optional(v.string()),
+			}),
+		),
+		orderPosition: v.optional(v.number()),
+		isArchived: v.optional(v.boolean()),
+		taskCount: v.optional(v.number()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		// D3: compound index for archived filter — avoids in-memory JS filtering in list query
+		.index("by_workspace_archived", ["workspaceId", "isArchived"]),
+
+	/**
+	 * 28. Messages Table
+	 * Individual messages within a chat.
+	 * Distinct from chatMessages (table 4) — parent-scoped by chats._id.
+	 */
+	messages: defineTable({
+		chatId: v.id("chats"),
+		role: v.union(v.literal("user"), v.literal("assistant")),
+		content: v.string(),
+		// v.any() justified: AI SDK v6 `parts` shape is provider-controlled (text/tool-call/tool-result
+		// union). Typed validators planned for Phase 5 once the shape is stable across providers.
+		// TODO Phase 5: replace with v.union(v.object({type: v.literal("text"), ...}), ...)
+		parts: v.optional(v.any()),
+		// v.any() justified: attachment metadata (file URLs, mime types) comes from Convex file storage
+		// response whose shape may vary. Typed validators planned for Phase 5.
+		// TODO Phase 5: type as v.object({ url: v.string(), name: v.string(), mimeType: v.string() })
+		attachments: v.optional(v.any()),
+		toolCalls: v.optional(
+			v.array(
+				v.object({
+					id: v.string(),
+					toolName: v.string(),
+					// v.any() justified: tool args are user-defined JSON schemas — shape is controlled by the
+					// tool definition, not by Convex. Cannot type-check without generating validators per tool.
+					// TODO Phase 5: generate per-tool validators from the tool registry.
+					args: v.any(),
+					// v.any() justified: tool results are user-defined — same reasoning as args above.
+					// TODO Phase 5: generate per-tool result validators from the tool registry.
+					result: v.optional(v.any()),
+					status: v.union(
+						v.literal("pending"),
+						v.literal("success"),
+						v.literal("error"),
+					),
+				}),
+			),
+		),
+		createdAt: v.number(),
+	})
+		// D2: by_chat removed — by_chat_created (["chatId", "createdAt"]) is a superset.
+		// All queries that need chatId-only filtering can use by_chat_created with eq(chatId).
+		.index("by_chat_created", ["chatId", "createdAt"]),
 });
