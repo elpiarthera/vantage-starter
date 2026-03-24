@@ -13,9 +13,8 @@
  * Active state: subtle bg-accent fill, no border accent.
  */
 
-import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/routing";
+import * as React from "react";
 import { SearchModal } from "@/components/search-modal";
 import {
 	Sidebar,
@@ -31,6 +30,7 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 const navItemClass = cn(
@@ -167,7 +167,13 @@ export function AppSidebar() {
 											</button>
 										</div>
 										{newMenuOpen && (
-											<div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-border bg-popover p-1 shadow-lg">
+											<div
+												className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-border p-1.5 shadow-lg"
+												style={{
+													backgroundColor: "oklch(0.269 0 0)",
+													color: "oklch(0.985 0 0)",
+												}}
+											>
 												<Link
 													href="/dashboard/chat"
 													onClick={() => {
