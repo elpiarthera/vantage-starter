@@ -20,7 +20,21 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
 import { rateLimiter } from "./ratelimit";
 
-// Tool call schema for reuse
+// Tool call schema for reuse.
+//
+// AI SDK v6 shape emitted by streamText (for reference):
+//   { toolCallId: string, toolName: string, args: unknown }  ← tool-call step
+//   { toolCallId: string, toolName: string, result: unknown } ← tool-result step
+//
+// Mapping to our schema:
+//   id        = toolCallId  (renamed for brevity; callers must map toolCallId → id)
+//   toolName  = toolName    ✓ exact match
+//   args      = args        ✓ exact match
+//   result    = result      ✓ exact match (optional — absent until result arrives)
+//   status    — NOT emitted by AI SDK v6; must be set client-side:
+//               "pending"  when saving the tool-call step
+//               "success"  when saving the tool-result step (no error thrown)
+//               "error"    when saving the tool-result step with an error result
 const toolCallSchema = v.object({
 	id: v.string(),
 	toolName: v.string(),
@@ -30,6 +44,8 @@ const toolCallSchema = v.object({
 	// v.any() justified — tool results are user-defined, same reasoning as args
 	// TODO Phase 5: generate per-tool result validators from the tool registry
 	result: v.optional(v.any()),
+	// status is NOT emitted by AI SDK v6 — callers must derive it client-side
+	// (see comment block above for the mapping)
 	status: v.union(
 		v.literal("pending"),
 		v.literal("success"),

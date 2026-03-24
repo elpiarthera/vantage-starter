@@ -1,46 +1,11 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { makeFunctionReference } from "convex/server";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
-
-// chats.ts is new and not yet in the generated API — use makeFunctionReference
-// until `npx convex dev` regenerates api.d.ts with the chats module.
-const chatsList = makeFunctionReference<
-	"query",
-	{ limit?: number },
-	{
-		chats: Array<{
-			_id: string;
-			_creationTime: number;
-			title: string;
-			workspaceId: string;
-			createdBy: string;
-			createdAt: number;
-			updatedAt: number;
-			isPinned?: boolean;
-			visibility?: "private" | "workspace";
-			projectId?: string;
-			selectedModel?: string;
-		}>;
-		hasMore: boolean;
-	}
->("chats:list");
-
-const chatsCreate = makeFunctionReference<
-	"mutation",
-	{
-		workspaceId: string;
-		title: string;
-		visibility?: "private" | "workspace";
-		projectId?: string;
-	},
-	string
->("chats:create");
 
 function SkeletonRow() {
 	return (
@@ -90,8 +55,8 @@ export default function ChatListPage() {
 	const [search, setSearch] = useState("");
 	const [creating, setCreating] = useState(false);
 
-	const result = useQuery(chatsList, { limit: 30 });
-	const createChat = useMutation(chatsCreate);
+	const result = useQuery(api.chats.list, { limit: 30 });
+	const createChat = useMutation(api.chats.create);
 	const defaultWorkspaceId = useQuery(api.workspaces.getDefault);
 
 	const isLoading = result === undefined;
