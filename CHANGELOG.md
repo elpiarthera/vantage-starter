@@ -4,72 +4,19 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
-### Added (Day 19 — Phase 1 + Phase 3 migration)
-- **Convex backend — chats system**: `convex/chats.ts` (11 functions: list, getForCurrentWorkspace, getByWorkspace, getById, listRecent, listByProject, create, update, updateSelectedModel, updateEnabledToolkits, remove). Full workspace-scoped auth, rate limiting (10 creates/min), audit logging on delete, typed return validators.
-- **Convex backend — projects system**: `convex/projects.ts` (6 functions: list, get, create, update, archive, assignTask). Compound index for archived filter, ownership checks, rate limiting (5 creates/min), audit logging on archive.
-- **Convex backend — messages system**: `convex/messages.ts` (9 functions: list, getById, save, update, deleteAfterTimestamp + 3 internal mutations). Rate limiting (30 saves/min, 60 updates/min), content length validation (100K chars), no votes dependency.
-- **Convex backend — custom entities API**: `convex/customRoles.ts`, `convex/customPersonas.ts`, `convex/customFrameworks.ts` (5 functions each: list, get, create, update, remove). System entities readable by all, non-deletable. User entities workspace-scoped with ownership guards.
-- **Rate limiting**: `convex/ratelimit.ts` — 7 rate limit definitions using @convex-dev/ratelimiter token bucket.
-- **Schema**: Added `chats`, `projects`, `messages` tables to `convex/schema.ts` with proper indexes (`by_workspace_created`, `by_workspace_archived`, `by_chat_created`). Removed redundant `by_chat` index.
-- **Security**: 11 findings from 3-specialist review (Sentinel, Convex Expert, Senior Dev) — all resolved. Cross-user data leak prevention, workspace ownership checks, string length validation, standardized error messages ("Forbidden").
-
-### Added (Day 19 — Migration Phase 1: Convex Backend)
-- **`convex/chats.ts`** — 11 functions (6 queries + 5 mutations) ported from vantage-studio with full auth adapter, workspace ownership checks, rate limiting (10 creates/min), audit logging on delete, string length validation
-- **`convex/projects.ts`** — 6 functions (2 queries + 4 mutations) ported with ownership checks, rate limiting (5 creates/min), audit logging on archive, compound index for archived filter
-- **`convex/messages.ts`** — 9 functions (2 queries + 3 mutations + 3 internal) ported with ownership chain checks (message→chat→workspace), rate limiting (30 saves/min, 60 updates/min), votes cascade stripped, string length validation (100K chars)
-- **`convex/ratelimit.ts`** — Centralized rate limiter config using @convex-dev/ratelimiter token bucket
-- **Schema**: Added `chats`, `projects`, `messages` tables with typed validators, composite indexes (`by_workspace_created`, `by_workspace_archived`, `by_chat_created`)
-- **Security**: 11 findings resolved — cross-user data leak prevention (B2, B3, F1-F3), ownership checks on all mutations (H4-H9), cross-workspace projectId validation (F6), standardized error strings ("Forbidden" for access denied)
-- **Code quality**: Zero `v.any()` in returns validators (only justified AI SDK fields in messages), no double auth calls, typed document validators, no redundant indexes
-
-### Removed (Day 19)
-- **`Changelog.md`** — Deleted old MyShortReel changelog (334KB). `CHANGELOG.md` is the single source of truth.
-
-### Changed (Day 17 — v0.app design system)
-- **Design tokens**: Adopted v0.app's complete OKLCH token set as dark-first defaults — background oklch(0.145), card oklch(0.205), border oklch(1 0 0 / 10%), radius 0.625rem
-- **Preset**: Removed .dark block — root IS dark now (v0.app dark-first pattern)
-- **Token consolidation**: ALL tokens moved to single preset file (base.css). Removed duplicate/conflicting definitions from globals.css `:root` and `.dark` blocks. Single source of truth.
-- **CRITICAL FIX**: tailwind.config.ts was double-wrapping oklch — `oklch(var(--X))` when vars already contain `oklch(...)`. Changed ALL color defs to `var(--X)` directly. This was causing ALL semantic colors to be invalid CSS.
-- **Dashboard**: Reverted hardcoded gray-* back to semantic tokens (bg-background, bg-card, border-border) which now resolve to v0 values
-- **Typography**: Replaced Inter + Space Grotesk with Geist + Geist Mono (v0.app font stack)
-- **Sidebar**: Added collapse/expand toggle button with double-chevron icon in footer (collapsible="icon" already supported)
-- **Architect page**: Removed sessions sidebar — sessions list now inline in main content. Removed 4 nav layers → 1. Eliminated hardcoded blue-tinted bg `oklch(0.115 0.01 240)`
-- **Sidebar v2**: Moved collapse toggle to header (panel icon), removed footer. Proper section separators.
-- **Architect v2**: Sessions in card containers, CTA button styled (bg-primary), empty state vertically centered
-- **Dashboard home cards**: Removed shadcn Card shell, replaced with native `div.bg-card.border.border-border.rounded-xl.p-6`
-- **Sidebar v3**: Toggle moved to DashboardHeader (always visible), `collapsible="offcanvas"` — sidebar fully hides when collapsed, trigger remains accessible. DashboardHeader: lucide-react replaced with inline SVGs.
-- **Dashboard cards**: Credit Balance, Architect CTA, Recent Sessions wrapped in `bg-card rounded-xl` card containers. Page spacing `p-6 md:p-8 space-y-6`.
-- **MSR cleanup**: Deleted 10 `--ig-*` MyShortReel layout variables from globals.css
-- **Missions page**: Added `rounded-xl` to card skeletons for visual consistency
-- **Hooks**: Updated block-orchestrator-code-edits.py with subagent flag detection, enforce-brief-template.py with background enforcement
-- **Hooks v2**: Added post-agent-qa.py (advisory QA reminder after agent completes). Simplified settings.json — removed crashing PreToolUse/PostToolUse hooks.
-- **Infrastructure**: Added check-messages skill, brief templates (brief-ui.md, brief-backend.md), v0 reference screenshots
-- **Sidebar v4**: Tokens match page bg (oklch 0.145 — seamless blend). Active item uses bg-accent fill instead of left-border. Removed .dark sidebar overrides.
-- **Sidebar v5**: hover:bg-sidebar-accent on all items, active uses bg-sidebar-accent, rounded-md pill shape, section labels lighter (11px, 60% opacity)
-- **Header v2**: Decluttered — LanguageSwitcher hidden on desktop, credits show number only (no badge), avatar only on desktop (no name/chevron). Height reduced to h-12/h-14.
-- **Missions page**: Responsive card grid (1/2/3 cols), v0-style cards (bg-card, rounded-xl, hover border), centered empty state with styled CTA.
-- **Sidebar v6**: Hover-to-open — `collapsible="icon"` (3rem icon strip when collapsed), `onMouseEnter`/`onMouseLeave` floats sidebar over content as overlay (v0.app behavior). Logo text hidden when collapsed.
-- **Hooks**: Added enforce-peer-brief-format.py. Updated screenshots.
-- **Sidebar v7**: Fixed bg seam — `--sidebar-background` changed from `oklch(0.205)` to `oklch(0.145)` matching `--background`. Seamless blend like v0.app.
-- **Chat page**: Removed purple accents — header icon, live indicator, empty state all use neutral tokens (bg-muted, text-muted-foreground). Input area wrapped in bg-card rounded-xl.
-- **Architect page**: Sessions in rounded-xl cards with hover states. "New session" button styled as CTA (bg-primary). Labels lightened. Removed lucide-react + shadcn ScrollArea.
-- **Account page**: Tab active indicator uses border-foreground (not blue). Profile sections in rounded-xl cards. Inputs match v0 styling (bg-transparent, border-input). Replaced 6 lucide-react icons with inline SVGs.
-- **Removed breadcrumb nav**: Deleted DashboardNav + DashboardBreadcrumbProvider from dashboard layout. Sidebar already shows active page — breadcrumbs added zero value and wasted vertical space.
-- **Architect aligned to Chat**: Same layout pattern — agent header (icon + title + subtitle), centered empty state with icon, input bar with bg-card rounded-xl + arrow send button + "Press Enter" hint.
-- **Account page v2**: Title reduced to text-base, tabs compact (inline-flex, not stretched), cards bg-transparent, section headings text-base font-medium, space-y-8 between sections.
-- **Search modal**: Cmd+K / Ctrl+K opens command palette with search input + quick navigation links (Dashboard, Chat, Missions, Architect, Settings). Escape/backdrop to close.
-- **"New" button**: Added to sidebar top — "New Chat" with dropdown for New Chat, New Mission, New Architect Session. Hidden when sidebar collapsed.
-- **User dropdown**: Restyled to v0 popover tokens (bg-popover, border-border, hover:bg-accent).
-
-### Fixed (Day 17 — app UI alignment)
-- **AdaptiveNavigation**: Replaced 7 hardcoded hex colors (#223649, #314d68, #0d7ff2) with semantic tokens (bg-muted, bg-primary, text-muted-foreground)
-- **DashboardHeader**: `text-red-600` → `text-destructive`, `bg-red-500` → `bg-destructive`
-- **ErrorState**: `text-red-500/400` → `text-destructive`, `border-red-500/30` → `border-destructive/30`
-- **ProfileTab**: `bg-red-600` → `bg-destructive`, warning banner classes already semantic
-- **PurchaseCreditsModal**: `text-green-500` → `text-success`
-- **DashboardHeader**: Replaced semantic tokens with explicit gray-*/dark: classes matching landing (border-border → border-gray-200/800, bg-background → bg-white/gray-950)
-- **AccountTabs**: Active tab underline border-primary → border-gray-900/100, hover states → gray-50/800
-- **ActivityFeed + QuickActions**: Card borders/backgrounds aligned to landing card pattern (gray-200/800, white/gray-900)
+### Added (Day 19 — vantage-studio migration Phase 1 + Phase 3)
+- **Schema**: Added `chats` (table 26), `projects` (table 27), `messages` (table 28) tables to Convex schema
+- **convex/chats.ts**: 8 functions (list, getById, listRecent, create, update, remove + 2 internal) — workspace-scoped chat sessions
+- **convex/projects.ts**: 6 functions (list, get, create, update, archive, assignTask) — organizational folders for chats
+- **convex/messages.ts**: 6 functions (list, getById, save, update, deleteAfterTimestamp + saveSystem internal) — chat messages with tool call support
+- **convex/customRoles.ts**: 5 functions (list, get, create, update, remove) — 4-Pillars agent role CRUD
+- **convex/customPersonas.ts**: 5 functions (list, get, create, update, remove) — 4-Pillars persona CRUD
+- **convex/customFrameworks.ts**: 5 functions (list, get, create, update, remove) — 4-Pillars framework CRUD
+- **convex/rateLimits.ts**: Added `createCustomRole`, `createCustomPersona`, `createCustomFramework` token bucket rate limits (10/min)
+- All functions use `requireAuth`/`requireAuthWithWorkspace` from `convex/lib/auth.ts`
+- All mutations have ownership checks (`createdBy !== user.clerkUserId` → "Forbidden")
+- Phase 3 files enforce S1 (system entities readable by all) and S3 (system entities non-deletable by non-admins) guards
+- All functions have typed `returns` validators; `v.any()` only where justified (AI SDK fields) with `// TODO Phase 5` comments
 
 ### Changed (copy-source pass)
 - **FeaturesSection**: Copied litui.dev Features.tsx structure — uniform card grid, gray-*/dark: classes, hover gradient overlay, icon inversion, reveal animation
