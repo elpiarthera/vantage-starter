@@ -1,14 +1,8 @@
 {
 	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../lit-ui"
-		},
-		{
-			"path": "../vantage-studio"
-		}
+		{ "path": "." },
+		{ "path": "../lit-ui" },
+		{ "path": "../vantage-studio" }
 	],
 	"settings": {}
 }
