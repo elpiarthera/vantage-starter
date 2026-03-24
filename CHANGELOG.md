@@ -4,6 +4,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (Day 19 — dynamic AI model system via Vercel AI Gateway)
+- **convex/schema.ts**: Added `aiModels` table with indexes (by_model_id, by_provider, by_category, by_enabled)
+- **convex/aiModels.ts**: Full CRUD API (list, listAll, getByModelId, getDefault, create, update, toggle, setDefault, remove) + seed with 24 models across 6 providers (Anthropic, OpenAI, Google, xAI, DeepSeek, Mistral)
+- **lib/ai/providers.ts**: Created `getModelFromGateway()` bridge — resolves model IDs to Vercel AI Gateway paths with fallback map
+- **app/api/chat/route.ts**: Replaced hardcoded `openai("gpt-4o")` with dynamic gateway lookup via `api.aiModels.getByModelId` + `getModelFromGateway()`. Removed OPENAI_API_KEY dependency.
+- **app/api/architect/chat/route.ts**: Same — defaults to `claude-sonnet-4-5` via gateway
+- Adding a model is now table-based (insert a row in Convex), not code-based
+
 ### Fixed (Day 19 — credit system + action types)
 - **convex/seed/seedCreditCosts.ts**: Created idempotent seed for 7 credit action types (chat_message, architect_message, image_generation, image_edit, video_generation, video_assembly, audio_narration)
 - **app/api/chat/route.ts**: Renamed `step2_chat_message` → `chat_message`, `step2_conversation` → `chat_conversation`

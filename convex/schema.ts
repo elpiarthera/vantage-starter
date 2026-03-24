@@ -853,4 +853,88 @@ export default defineSchema({
 		// D2: by_chat removed — by_chat_created (["chatId", "createdAt"]) is a superset.
 		// All queries that need chatId-only filtering can use by_chat_created with eq(chatId).
 		.index("by_chat_created", ["chatId", "createdAt"]),
+
+	// ============================================================================
+	// AI MODEL CATALOG (ported from vantage-studio)
+	// ============================================================================
+
+	/**
+	 * 29. AI Models Table
+	 * Global catalog of available AI models — admins manage, all users read.
+	 * No workspace scoping — these are platform-level settings.
+	 *
+	 * Data source: Vercel AI Gateway (https://vercel.com/ai-gateway/models)
+	 * Last updated: January 17, 2026
+	 */
+	aiModels: defineTable({
+		// === IDENTIFIERS ===
+		// Internal ID used in code and stored in chats.selectedModel
+		modelId: v.string(), // e.g., "gpt-4o", "claude-sonnet-4"
+
+		// Vercel AI Gateway model path (provider/model-name format)
+		gatewayModel: v.string(), // e.g., "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514"
+
+		// === DISPLAY INFO ===
+		displayName: v.string(), // e.g., "GPT-4o", "Claude Sonnet 4"
+		description: v.string(), // e.g., "Best for tasks & tools"
+		logoUrl: v.optional(v.string()), // e.g., "https://vercel.com/.../anthropic.png"
+
+		// === PROVIDER INFO ===
+		provider: v.union(
+			v.literal("anthropic"),
+			v.literal("openai"),
+			v.literal("google"),
+			v.literal("xai"),
+			v.literal("deepseek"),
+			v.literal("meta"),
+			v.literal("mistral"),
+		),
+
+		// === CAPABILITIES ===
+		contextWindow: v.number(), // e.g., 128000, 200000, 1000000
+		maxOutput: v.number(), // e.g., 4096, 8192, 16384
+		bestAt: v.string(), // e.g., "Tool calling & tasks"
+
+		// === PRICING (per million tokens) ===
+		inputCostPerMillion: v.optional(v.number()), // e.g., 3.00 for $3.00/M
+		outputCostPerMillion: v.optional(v.number()), // e.g., 15.00 for $15.00/M
+
+		// === CACHING ===
+		supportsCache: v.optional(v.boolean()),
+		cacheReadCostPerMillion: v.optional(v.number()),
+		cacheWriteCostPerMillion: v.optional(v.number()),
+
+		// === WEB SEARCH ===
+		supportsWebSearch: v.optional(v.boolean()),
+		webSearchCostPer1K: v.optional(v.number()),
+
+		// === CATEGORIZATION ===
+		category: v.union(
+			v.literal("flagship"),
+			v.literal("balanced"),
+			v.literal("fast"),
+			v.literal("reasoning"),
+			v.literal("coding"),
+			v.literal("vision"),
+		),
+
+		// === FEATURES ===
+		supportsVision: v.optional(v.boolean()),
+		supportsTools: v.optional(v.boolean()),
+		supportsStreaming: v.optional(v.boolean()),
+		supportsReasoning: v.optional(v.boolean()),
+
+		// === AVAILABILITY ===
+		isEnabled: v.boolean(),
+		isDefault: v.optional(v.boolean()),
+		orderPosition: v.optional(v.number()),
+
+		// === TIMESTAMPS ===
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_model_id", ["modelId"])
+		.index("by_provider", ["provider"])
+		.index("by_category", ["category"])
+		.index("by_enabled", ["isEnabled"]),
 });

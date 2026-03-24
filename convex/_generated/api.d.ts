@@ -10,6 +10,7 @@
 
 import type * as adminHelpers from "../adminHelpers.js";
 import type * as agents from "../agents.js";
+import type * as aiModels from "../aiModels.js";
 import type * as architectSessions from "../architectSessions.js";
 import type * as assets from "../assets.js";
 import type * as chatMessages from "../chatMessages.js";
@@ -60,6 +61,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   adminHelpers: typeof adminHelpers;
   agents: typeof agents;
+  aiModels: typeof aiModels;
   architectSessions: typeof architectSessions;
   assets: typeof assets;
   chatMessages: typeof chatMessages;

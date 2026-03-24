@@ -13,12 +13,12 @@
  * Workspace context injected manually (Phase 5 RAG deferred per ORCHESTRATION-PLAN.md).
  */
 
-import { openai } from "@ai-sdk/openai";
 import { auth } from "@clerk/nextjs/server";
 import { streamText } from "ai";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { getModelFromGateway } from "@/lib/ai/providers";
 import { getArchitectPrompt } from "@/lib/architect/prompts";
 
 export const maxDuration = 60;
@@ -196,9 +196,23 @@ export async function POST(req: Request) {
 			throw new Error("Failed to save message");
 		});
 
-		// 12. Stream using OpenAI (same provider as /api/chat)
+		// 12. Resolve model via Vercel AI Gateway (Claude by default for architect tasks)
+		const selectedModel = "claude-sonnet-4-5";
+		let aiModel: { gatewayModel: string } | null = null;
+		try {
+			aiModel = await fetchQuery(
+				api.aiModels.getByModelId,
+				{ modelId: selectedModel },
+				{ token: convexToken },
+			);
+		} catch (e) {
+			console.warn("[Architect API] Model lookup failed, using fallback:", e);
+		}
+		const model = getModelFromGateway(selectedModel, aiModel?.gatewayModel);
+
+		// 13. Stream response
 		const result = streamText({
-			model: openai("gpt-4o"),
+			model,
 			system: fullSystemPrompt,
 			prompt: message,
 		});
