@@ -3,12 +3,11 @@ import { streamText } from "ai";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { AI_DIRECTOR_PROMPT } from "@/lib/ai/prompts";
 import { getModelFromGateway } from "@/lib/ai/providers";
 
 /**
  * POST /api/chat
- * Streaming chat endpoint for AI Director conversations.
+ * Streaming chat endpoint for AI chat conversations.
  *
  * Features:
  * - Streams responses in real-time using Vercel AI SDK
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
 
 		// 2. Parse request body
 		const body = await req.json();
-		const { messages, projectId, projectName, sceneId, occasion } = body;
+		const { messages, projectId, projectName, sceneId } = body;
 
 		if (!messages || !Array.isArray(messages)) {
 			return new Response(
@@ -93,10 +92,9 @@ export async function POST(req: Request) {
 		const model = getModelFromGateway(selectedModel, aiModel?.gatewayModel);
 		const resolvedProvider = aiModel?.provider ?? "anthropic";
 
-		// 5. Build system prompt for AI Director using modular prompt
-		const systemPrompt = AI_DIRECTOR_PROMPT.getPrompt(
-			occasion ? { projectType: occasion } : undefined,
-		);
+		// 5. Build system prompt
+		const systemPrompt =
+			"You are a helpful AI assistant. Keep your responses concise and helpful. You can assist with a wide range of tasks including writing, analysis, coding, brainstorming, and answering questions.";
 
 		// 6. Build messages array for AI SDK v6
 		// AI SDK v6 sends messages with `parts` array instead of `content` string.
