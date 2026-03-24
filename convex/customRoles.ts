@@ -48,29 +48,34 @@ export const list = query({
 	args: {},
 	returns: v.array(customRoleDoc),
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-
 		// System roles are readable by anyone (including unauthenticated)
 		const systemRoles = await ctx.db
 			.query("customRoles")
 			.withIndex("by_system", (q) => q.eq("isSystem", true))
 			.collect();
 
-		if (!identity) {
-			return systemRoles;
-		}
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return systemRoles;
 
-		// Workspace resolution via by_owner_and_default — no user.activeWorkspaceId
-		const workspace = await ctx.db
+		// 1. Try owned default workspace
+		const ownedWorkspace = await ctx.db
 			.query("workspaces")
 			.withIndex("by_owner_and_default", (q) =>
-				q.eq("ownerId", identity.subject).eq("isDefault", true),
+				q.eq("ownerId", user.clerkUserId).eq("isDefault", true),
 			)
 			.unique();
 
-		if (!workspace) {
-			return systemRoles;
+		// 2. Fall back to org workspace
+		let workspace = ownedWorkspace;
+		if (!workspace && user.organizationId) {
+			const orgId = user.organizationId;
+			workspace = await ctx.db
+				.query("workspaces")
+				.withIndex("by_organization", (q) => q.eq("organizationId", orgId))
+				.first();
 		}
+
+		if (!workspace) return systemRoles;
 
 		// Get workspace-specific (user-created) roles
 		const workspaceRoles = await ctx.db
@@ -105,16 +110,20 @@ export const get = query({
 			return role;
 		}
 
-		// S3: user-created roles require workspace ownership verification
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return null;
+		// S3: user-created roles require workspace access (owner or org member)
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return null;
 
 		if (!role.workspaceId) return null;
 
 		const ws = await ctx.db.get(role.workspaceId);
-		if (!ws || ws.ownerId !== identity.subject) {
-			throw new Error("Forbidden");
-		}
+		if (!ws) throw new Error("Forbidden");
+		const isOwner = ws.ownerId === user.clerkUserId;
+		const isOrgMember =
+			ws.organizationId !== null &&
+			ws.organizationId !== undefined &&
+			ws.organizationId === user.organizationId;
+		if (!isOwner && !isOrgMember) throw new Error("Forbidden");
 
 		return role;
 	},

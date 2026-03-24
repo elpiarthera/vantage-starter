@@ -49,23 +49,32 @@ export const list = query({
 	args: {},
 	returns: v.array(customPersonaDoc),
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-
 		// System personas are readable by all — return them even if unauthenticated
 		const systemPersonas = await ctx.db
 			.query("customPersonas")
 			.withIndex("by_system", (q) => q.eq("isSystem", true))
 			.collect();
 
-		if (!identity) return systemPersonas;
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return systemPersonas;
 
-		// Workspace resolution via by_owner_and_default — no user.activeWorkspaceId
-		const workspace = await ctx.db
+		// 1. Try owned default workspace
+		const ownedWorkspace = await ctx.db
 			.query("workspaces")
 			.withIndex("by_owner_and_default", (q) =>
-				q.eq("ownerId", identity.subject).eq("isDefault", true),
+				q.eq("ownerId", user.clerkUserId).eq("isDefault", true),
 			)
 			.unique();
+
+		// 2. Fall back to org workspace
+		let workspace = ownedWorkspace;
+		if (!workspace && user.organizationId) {
+			const orgId = user.organizationId;
+			workspace = await ctx.db
+				.query("workspaces")
+				.withIndex("by_organization", (q) => q.eq("organizationId", orgId))
+				.first();
+		}
 
 		if (!workspace) return systemPersonas;
 
@@ -89,8 +98,8 @@ export const get = query({
 	args: { id: v.id("customPersonas") },
 	returns: v.union(customPersonaDoc, v.null()),
 	handler: async (ctx, { id }) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return null;
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return null;
 
 		const persona = await ctx.db.get(id);
 		if (!persona) return null;
@@ -98,12 +107,16 @@ export const get = query({
 		// System personas are readable by all authenticated users
 		if (persona.isSystem) return persona;
 
-		// S3: workspace ownership check — prevents cross-user persona reads
+		// S3: workspace access check — owner or org member
 		if (persona.workspaceId) {
 			const ws = await ctx.db.get(persona.workspaceId);
-			if (!ws || ws.ownerId !== identity.subject) {
-				throw new Error("Forbidden");
-			}
+			if (!ws) throw new Error("Forbidden");
+			const isOwner = ws.ownerId === user.clerkUserId;
+			const isOrgMember =
+				ws.organizationId !== null &&
+				ws.organizationId !== undefined &&
+				ws.organizationId === user.organizationId;
+			if (!isOwner && !isOrgMember) throw new Error("Forbidden");
 		}
 
 		return persona;

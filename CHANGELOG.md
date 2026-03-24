@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (Day 19 — org access + project filter)
+- **convex/chats.ts, projects.ts, customRoles.ts, customPersonas.ts, customFrameworks.ts**: Fixed workspace resolution to support org members — all list/get queries now check both `workspace.ownerId` AND `workspace.organizationId` for access, not just owner
+- **app/[locale]/dashboard/chat/page.tsx**: Added project selector/filter dropdown (Task 2.4) — filters chats by project, responsive, OKLCH tokens, new chats inherit selected project
+
 ### Changed (Day 19 — cleanup + Phase 4)
 - **app/[locale]/dashboard/chat/page.tsx**: Replaced makeFunctionReference bridge with proper `api.chats.*` generated imports
 - **convex/messages.ts**: Added AI SDK v6 field mapping documentation on toolCallSchema (toolCalls already implemented in Phase 1)

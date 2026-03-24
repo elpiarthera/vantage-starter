@@ -60,23 +60,37 @@ export const list = query({
 	},
 	returns: v.array(projectDoc),
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return [];
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return [];
 
-		// Workspace resolution — no user.activeWorkspaceId
+		// Workspace resolution — supports owner and org member
 		let workspaceId = args.workspaceId;
 		if (workspaceId) {
 			const ws = await ctx.db.get(workspaceId);
-			if (!ws || ws.ownerId !== identity.subject) return [];
+			if (!ws) return [];
+			const isOwner = ws.ownerId === user.clerkUserId;
+			const isOrgMember =
+				ws.organizationId !== null &&
+				ws.organizationId !== undefined &&
+				ws.organizationId === user.organizationId;
+			if (!isOwner && !isOrgMember) return [];
 		}
 		if (!workspaceId) {
-			const defaultWs = await ctx.db
+			const ownedWs = await ctx.db
 				.query("workspaces")
 				.withIndex("by_owner_and_default", (q) =>
-					q.eq("ownerId", identity.subject).eq("isDefault", true),
+					q.eq("ownerId", user.clerkUserId).eq("isDefault", true),
 				)
 				.unique();
-			workspaceId = defaultWs?._id;
+			workspaceId = ownedWs?._id;
+			if (!workspaceId && user.organizationId) {
+				const orgId = user.organizationId;
+				const orgWs = await ctx.db
+					.query("workspaces")
+					.withIndex("by_organization", (q) => q.eq("organizationId", orgId))
+					.first();
+				workspaceId = orgWs?._id;
+			}
 		}
 
 		if (!workspaceId) return [];
@@ -108,17 +122,21 @@ export const get = query({
 	args: { id: v.id("projects") },
 	returns: v.union(projectDoc, v.null()),
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return null;
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return null;
 
 		const project = await ctx.db.get(args.id);
 		if (!project) return null;
 
-		// S2: workspace ownership check — prevents cross-user project reads
+		// S2: workspace access check — owner or org member
 		const ws = await ctx.db.get(project.workspaceId);
-		if (!ws || ws.ownerId !== identity.subject) {
-			throw new Error("Forbidden");
-		}
+		if (!ws) throw new Error("Forbidden");
+		const isOwner = ws.ownerId === user.clerkUserId;
+		const isOrgMember =
+			ws.organizationId !== null &&
+			ws.organizationId !== undefined &&
+			ws.organizationId === user.organizationId;
+		if (!isOwner && !isOrgMember) throw new Error("Forbidden");
 
 		return project;
 	},

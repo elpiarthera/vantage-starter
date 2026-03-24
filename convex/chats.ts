@@ -48,6 +48,7 @@ const chatDoc = v.object({
 /**
  * List chats for the current user's default workspace.
  * Used by SidebarHistory — real-time subscription.
+ * Supports both personal workspace owners and org members.
  *
  * @returns Paginated chat list with hasMore indicator
  */
@@ -60,16 +61,26 @@ export const list = query({
 		hasMore: v.boolean(),
 	}),
 	handler: async (ctx, { limit = 50 }) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return { chats: [], hasMore: false };
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return { chats: [], hasMore: false };
 
-		// Workspace resolution via by_owner_and_default — no user.activeWorkspaceId
-		const workspace = await ctx.db
+		// 1. Try owned default workspace
+		const ownedWorkspace = await ctx.db
 			.query("workspaces")
 			.withIndex("by_owner_and_default", (q) =>
-				q.eq("ownerId", identity.subject).eq("isDefault", true),
+				q.eq("ownerId", user.clerkUserId).eq("isDefault", true),
 			)
 			.unique();
+
+		// 2. Fall back to org workspace if user has no owned default
+		let workspace = ownedWorkspace;
+		if (!workspace && user.organizationId) {
+			const orgId = user.organizationId;
+			workspace = await ctx.db
+				.query("workspaces")
+				.withIndex("by_organization", (q) => q.eq("organizationId", orgId))
+				.first();
+		}
 
 		if (!workspace) return { chats: [], hasMore: false };
 
@@ -96,16 +107,26 @@ export const getForCurrentWorkspace = query({
 	args: {},
 	returns: v.array(chatDoc),
 	handler: async (ctx) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return [];
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return [];
 
-		// Workspace resolution via by_owner_and_default — no user.activeWorkspaceId
-		const workspace = await ctx.db
+		// 1. Try owned default workspace
+		const ownedWorkspace = await ctx.db
 			.query("workspaces")
 			.withIndex("by_owner_and_default", (q) =>
-				q.eq("ownerId", identity.subject).eq("isDefault", true),
+				q.eq("ownerId", user.clerkUserId).eq("isDefault", true),
 			)
 			.unique();
+
+		// 2. Fall back to org workspace if user has no owned default
+		let workspace = ownedWorkspace;
+		if (!workspace && user.organizationId) {
+			const orgId = user.organizationId;
+			workspace = await ctx.db
+				.query("workspaces")
+				.withIndex("by_organization", (q) => q.eq("organizationId", orgId))
+				.first();
+		}
 
 		if (!workspace) return [];
 
@@ -121,21 +142,25 @@ export const getForCurrentWorkspace = query({
 
 /**
  * Get chats for a specific workspace.
- * Validates workspace ownership before returning data.
+ * Validates workspace ownership or org membership before returning data.
  */
 export const getByWorkspace = query({
 	args: { workspaceId: v.id("workspaces") },
 	returns: v.array(chatDoc),
 	handler: async (ctx, { workspaceId }) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return [];
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return [];
 
 		const workspace = await ctx.db.get(workspaceId);
 		if (!workspace) return [];
 
-		// Ownership check — vantage-starter is single-owner (no workspaceMembers table)
-		// TODO: add member check when workspaceMembers table is added
-		if (workspace.ownerId !== identity.subject) return [];
+		// Access check: owner OR org member
+		const isOwner = workspace.ownerId === user.clerkUserId;
+		const isOrgMember =
+			workspace.organizationId !== null &&
+			workspace.organizationId !== undefined &&
+			workspace.organizationId === user.organizationId;
+		if (!isOwner && !isOrgMember) return [];
 
 		return await ctx.db
 			.query("chats")
@@ -156,17 +181,21 @@ export const getById = query({
 	args: { id: v.id("chats") },
 	returns: v.union(chatDoc, v.null()),
 	handler: async (ctx, { id }) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return null;
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return null;
 
 		const chat = await ctx.db.get(id);
 		if (!chat) return null;
 
-		// B2: workspace ownership check — prevents cross-user chat reads
+		// B2: workspace access check — owner or org member
 		const ws = await ctx.db.get(chat.workspaceId);
-		if (!ws || ws.ownerId !== identity.subject) {
-			throw new Error("Forbidden");
-		}
+		if (!ws) throw new Error("Forbidden");
+		const isOwner = ws.ownerId === user.clerkUserId;
+		const isOrgMember =
+			ws.organizationId !== null &&
+			ws.organizationId !== undefined &&
+			ws.organizationId === user.organizationId;
+		if (!isOwner && !isOrgMember) throw new Error("Forbidden");
 
 		return chat;
 	},
@@ -182,24 +211,37 @@ export const listRecent = query({
 	},
 	returns: v.array(chatDoc),
 	handler: async (ctx, { workspaceId, limit = 20 }) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return [];
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return [];
 
-		// Use provided workspaceId or resolve via by_owner_and_default
-		// Workspace resolution — no user.activeWorkspaceId
+		// Use provided workspaceId or resolve default
 		let wsId = workspaceId;
 		if (wsId) {
 			const ws = await ctx.db.get(wsId);
-			if (!ws || ws.ownerId !== identity.subject) return [];
+			if (!ws) return [];
+			const isOwner = ws.ownerId === user.clerkUserId;
+			const isOrgMember =
+				ws.organizationId !== null &&
+				ws.organizationId !== undefined &&
+				ws.organizationId === user.organizationId;
+			if (!isOwner && !isOrgMember) return [];
 		}
 		if (!wsId) {
-			const defaultWs = await ctx.db
+			const ownedWs = await ctx.db
 				.query("workspaces")
 				.withIndex("by_owner_and_default", (q) =>
-					q.eq("ownerId", identity.subject).eq("isDefault", true),
+					q.eq("ownerId", user.clerkUserId).eq("isDefault", true),
 				)
 				.unique();
-			wsId = defaultWs?._id;
+			wsId = ownedWs?._id;
+			if (!wsId && user.organizationId) {
+				const orgId = user.organizationId;
+				const orgWs = await ctx.db
+					.query("workspaces")
+					.withIndex("by_organization", (q) => q.eq("organizationId", orgId))
+					.first();
+				wsId = orgWs?._id;
+			}
 		}
 
 		if (!wsId) return [];
@@ -229,17 +271,21 @@ export const listByProject = query({
 		hasMore: v.boolean(),
 	}),
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) return { chats: [], hasMore: false };
+		const user = await requireAuth(ctx).catch(() => null);
+		if (!user) return { chats: [], hasMore: false };
 
 		const project = await ctx.db.get(args.projectId);
 		if (!project) return { chats: [], hasMore: false };
 
 		// Validate workspace access before returning project chats
 		const ws = await ctx.db.get(project.workspaceId);
-		if (!ws || ws.ownerId !== identity.subject) {
-			return { chats: [], hasMore: false };
-		}
+		if (!ws) return { chats: [], hasMore: false };
+		const isOwner = ws.ownerId === user.clerkUserId;
+		const isOrgMember =
+			ws.organizationId !== null &&
+			ws.organizationId !== undefined &&
+			ws.organizationId === user.organizationId;
+		if (!isOwner && !isOrgMember) return { chats: [], hasMore: false };
 
 		const limit = args.limit ?? 20;
 		const results = await ctx.db

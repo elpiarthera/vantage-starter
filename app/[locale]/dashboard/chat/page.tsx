@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 function SkeletonRow() {
 	return (
@@ -27,6 +28,25 @@ function PinIcon() {
 			aria-hidden="true"
 		>
 			<path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+		</svg>
+	);
+}
+
+function FolderIcon() {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="14"
+			height="14"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
 		</svg>
 	);
 }
@@ -54,13 +74,34 @@ export default function ChatListPage() {
 
 	const [search, setSearch] = useState("");
 	const [creating, setCreating] = useState(false);
+	const [selectedProjectId, setSelectedProjectId] = useState<
+		Id<"projects"> | ""
+	>("");
 
-	const result = useQuery(api.chats.list, { limit: 30 });
+	// All chats — used when no project filter is active
+	const allChatsResult = useQuery(
+		api.chats.list,
+		selectedProjectId === "" ? { limit: 30 } : "skip",
+	);
+
+	// Project-filtered chats — used when a project is selected
+	const projectChatsResult = useQuery(
+		api.chats.listByProject,
+		selectedProjectId !== ""
+			? { projectId: selectedProjectId, limit: 30 }
+			: "skip",
+	);
+
 	const createChat = useMutation(api.chats.create);
 	const defaultWorkspaceId = useQuery(api.workspaces.getDefault);
 
-	const isLoading = result === undefined;
-	const chats = result?.chats ?? [];
+	// Projects list — no args needed, resolves default workspace automatically
+	const projects = useQuery(api.projects.list, {});
+
+	const activeResult =
+		selectedProjectId === "" ? allChatsResult : projectChatsResult;
+	const isLoading = activeResult === undefined;
+	const chats = activeResult?.chats ?? [];
 
 	const filtered = search.trim()
 		? chats.filter((c) =>
@@ -79,12 +120,15 @@ export default function ChatListPage() {
 			const chatId = await createChat({
 				workspaceId: defaultWorkspaceId,
 				title: t("newChat"),
+				projectId: selectedProjectId !== "" ? selectedProjectId : undefined,
 			});
 			router.push(`/${locale}/dashboard/chat/${chatId}`);
 		} finally {
 			setCreating(false);
 		}
 	}
+
+	const hasProjects = projects !== undefined && projects.length > 0;
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -119,33 +163,80 @@ export default function ChatListPage() {
 					</button>
 				</div>
 
-				{/* Search */}
-				<div className="relative mb-6">
-					<div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							className="text-muted-foreground"
-							aria-hidden="true"
-						>
-							<circle cx="11" cy="11" r="8" />
-							<line x1="21" y1="21" x2="16.65" y2="16.65" />
-						</svg>
+				{/* Search + Project filter */}
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center mb-6">
+					<div className="relative flex-1">
+						<div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								className="text-muted-foreground"
+								aria-hidden="true"
+							>
+								<circle cx="11" cy="11" r="8" />
+								<line x1="21" y1="21" x2="16.65" y2="16.65" />
+							</svg>
+						</div>
+						<input
+							type="search"
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder={t("searchPlaceholder")}
+							className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-shadow duration-150"
+						/>
 					</div>
-					<input
-						type="search"
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder={t("searchPlaceholder")}
-						className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-shadow duration-150"
-					/>
+
+					{/* Project filter — only shown when projects exist */}
+					{hasProjects && (
+						<div className="relative sm:w-48 shrink-0">
+							<div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
+								<FolderIcon />
+							</div>
+							<select
+								value={selectedProjectId}
+								onChange={(e) => {
+									const val = e.target.value;
+									setSelectedProjectId(
+										val === "" ? "" : (val as Id<"projects">),
+									);
+								}}
+								aria-label={t("filterByProject")}
+								className="w-full appearance-none rounded-lg border border-border bg-card pl-9 pr-8 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-shadow duration-150 cursor-pointer data-[active=false]:text-muted-foreground"
+							>
+								<option value="">{t("allProjects")}</option>
+								{projects.map((project) => (
+									<option key={project._id} value={project._id}>
+										{project.icon ? `${project.icon} ` : ""}
+										{project.name}
+									</option>
+								))}
+							</select>
+							{/* Custom chevron */}
+							<div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="14"
+									height="14"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									aria-hidden="true"
+								>
+									<polyline points="6 9 12 15 18 9" />
+								</svg>
+							</div>
+						</div>
+					)}
 				</div>
 
 				{/* Chat list */}
