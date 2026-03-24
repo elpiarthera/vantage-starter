@@ -7,7 +7,7 @@ import { customProvider, type LanguageModel } from "ai";
  * Uses Vercel AI Gateway for multi-provider access with a single API key.
  * The gateway provides access to Anthropic, OpenAI, Google, xAI, DeepSeek, and more.
  *
- * Environment variable: AI_GATEWAY_SECRET
+ * Environment variable: AI_GATEWAY_API_KEY
  *
  * DYNAMIC MODEL SYSTEM:
  * Models are stored in Convex `aiModels` table and can be managed by admins.
