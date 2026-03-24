@@ -201,6 +201,9 @@ export function ModelSelector({
 
 	const selectedModel = models.find((m) => m.modelId === optimisticModelId);
 
+	// TODO: add entitlements filtering when credit tiers are wired
+	// (see vantage-studio model-selector.tsx:178-187)
+
 	// Group by category in canonical order — memoized
 	const byCategory = useMemo(
 		() =>
