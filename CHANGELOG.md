@@ -4,6 +4,15 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (Day 19 — Phase 1 + Phase 3 migration)
+- **Convex backend — chats system**: `convex/chats.ts` (11 functions: list, getForCurrentWorkspace, getByWorkspace, getById, listRecent, listByProject, create, update, updateSelectedModel, updateEnabledToolkits, remove). Full workspace-scoped auth, rate limiting (10 creates/min), audit logging on delete, typed return validators.
+- **Convex backend — projects system**: `convex/projects.ts` (6 functions: list, get, create, update, archive, assignTask). Compound index for archived filter, ownership checks, rate limiting (5 creates/min), audit logging on archive.
+- **Convex backend — messages system**: `convex/messages.ts` (9 functions: list, getById, save, update, deleteAfterTimestamp + 3 internal mutations). Rate limiting (30 saves/min, 60 updates/min), content length validation (100K chars), no votes dependency.
+- **Convex backend — custom entities API**: `convex/customRoles.ts`, `convex/customPersonas.ts`, `convex/customFrameworks.ts` (5 functions each: list, get, create, update, remove). System entities readable by all, non-deletable. User entities workspace-scoped with ownership guards.
+- **Rate limiting**: `convex/ratelimit.ts` — 7 rate limit definitions using @convex-dev/ratelimiter token bucket.
+- **Schema**: Added `chats`, `projects`, `messages` tables to `convex/schema.ts` with proper indexes (`by_workspace_created`, `by_workspace_archived`, `by_chat_created`). Removed redundant `by_chat` index.
+- **Security**: 11 findings from 3-specialist review (Sentinel, Convex Expert, Senior Dev) — all resolved. Cross-user data leak prevention, workspace ownership checks, string length validation, standardized error messages ("Forbidden").
+
 ### Added (Day 19 — Migration Phase 1: Convex Backend)
 - **`convex/chats.ts`** — 11 functions (6 queries + 5 mutations) ported from vantage-studio with full auth adapter, workspace ownership checks, rate limiting (10 creates/min), audit logging on delete, string length validation
 - **`convex/projects.ts`** — 6 functions (2 queries + 4 mutations) ported with ownership checks, rate limiting (5 creates/min), audit logging on archive, compound index for archived filter

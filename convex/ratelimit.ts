@@ -5,10 +5,13 @@
  * All rate limits keyed by Clerk user ID (identity.subject).
  *
  * Limits:
- * - chats.create:       10 / minute  — prevents spam session creation
- * - messages.save:      30 / minute  — prevents programmatic AI credit drain
- * - projects.create:     5 / minute  — low-frequency operation
- * - messages.update:    60 / minute  — prevents spam edits
+ * - chats.create:           10 / minute  — prevents spam session creation
+ * - messages.save:          30 / minute  — prevents programmatic AI credit drain
+ * - projects.create:         5 / minute  — low-frequency operation
+ * - messages.update:        60 / minute  — prevents spam edits
+ * - customRoles.create:     10 / minute  — user-defined role creation
+ * - customPersonas.create:  10 / minute  — user-defined persona creation
+ * - customFrameworks.create: 10 / minute  — user-defined framework creation
  *
  * Internal mutations are exempt — called by trusted server-side actions only.
  */
@@ -42,5 +45,29 @@ export const rateLimiter = new RateLimiter(components.ratelimiter, {
 		rate: 60,
 		period: 60_000,
 		capacity: 60,
+	},
+
+	// customRoles.create — 10 per 60s per user
+	createCustomRole: {
+		kind: "token bucket",
+		rate: 10,
+		period: 60_000,
+		capacity: 10,
+	},
+
+	// customPersonas.create — 10 per 60s per user
+	createCustomPersona: {
+		kind: "token bucket",
+		rate: 10,
+		period: 60_000,
+		capacity: 10,
+	},
+
+	// customFrameworks.create — 10 per 60s per user
+	createCustomFramework: {
+		kind: "token bucket",
+		rate: 10,
+		period: 60_000,
+		capacity: 10,
 	},
 });
