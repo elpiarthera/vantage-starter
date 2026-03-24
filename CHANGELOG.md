@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (Day 19 — model selector UI)
+- **components/chat/ModelSelector.tsx**: Dropdown model selector with provider badges, grouped by category (flagship/balanced/fast/reasoning/coding), outside-click close, OKLCH tokens
+- **components/chat/ChatPage.tsx**: Wired model selector into chat header, passes `selectedModel` via `sendMessage` body option (AI SDK v6 per-request pattern)
+
 ### Added (Day 19 — dynamic AI model system via Vercel AI Gateway)
 - **convex/schema.ts**: Added `aiModels` table with indexes (by_model_id, by_provider, by_category, by_enabled)
 - **convex/aiModels.ts**: Full CRUD API (list, listAll, getByModelId, getDefault, create, update, toggle, setDefault, remove) + seed with 24 models across 6 providers (Anthropic, OpenAI, Google, xAI, DeepSeek, Mistral)

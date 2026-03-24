@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { MessageList } from "./MessageList";
+import { ModelSelector } from "./ModelSelector";
 
 interface ChatPageProps {
 	chatId?: string;
 }
 
 export function ChatPage({ chatId }: ChatPageProps) {
+	const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
+
 	// v6 useChat: sendMessage replaces handleSubmit+handleInputChange
 	// transport defaults to DefaultChatTransport → /api/chat
 	// id namespaces the client-side message store per chat session
@@ -61,7 +64,9 @@ export function ChatPage({ chatId }: ChatPageProps) {
 			textareaRef.current.style.height = "44px";
 			setTextareaHeight(44);
 		}
-		await sendMessage({ text });
+		// Pass selectedModel per-request via ChatRequestOptions.body
+		// so the route can read body.selectedModel without a static transport
+		await sendMessage({ text }, { body: { selectedModel } });
 	};
 
 	const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,6 +103,11 @@ export function ChatPage({ chatId }: ChatPageProps) {
 							ToolLoopAgent — knowledge base + tools
 						</p>
 					</div>
+
+					<ModelSelector
+						selectedModelId={selectedModel}
+						onModelChange={setSelectedModel}
+					/>
 
 					{/* Live indicator */}
 					{isStreaming && (
