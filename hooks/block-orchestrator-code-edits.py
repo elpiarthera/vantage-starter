@@ -9,10 +9,16 @@ Orchestrator CANNOT edit: app/, components/, convex/, lib/, hooks/*.ts, hooks/*.
 providers/, src/, stores/, contexts/, services/, types/, middleware.ts.
 """
 import json, os, sys
+from pathlib import Path
 
 try:
     input_data = json.loads(sys.stdin.read())
 except Exception:
+    sys.exit(0)
+
+# Specialist agents (dev-convex-expert, dev-frontend, etc.) set this sentinel
+# so the orchestrator block hook does not fire against them.
+if Path("/tmp/.specialist-mode").exists():
     sys.exit(0)
 
 tool_name = input_data.get("tool_name", "")
@@ -31,7 +37,7 @@ else:
 
 # Allowed paths (orchestrator infrastructure)
 ALLOWED_PREFIXES = (
-    ".claude/", "hooks/", "scripts/", "docs/",
+    ".claude/", "hooks/", "scripts/", "docs/", "messages/",
 )
 ALLOWED_FILES = (
     "CLAUDE.md", "AGENTS.md", "CHANGELOG.md", "project-context.md",

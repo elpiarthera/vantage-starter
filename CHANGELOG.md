@@ -4,6 +4,13 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (Day 19 — Phase 2: Chat List UI)
+- **app/[locale]/dashboard/chat/page.tsx**: Rebuilt as chat list page — search, pinned sorting, skeleton loading, empty state, "New chat" button
+- **app/[locale]/dashboard/chat/[chatId]/page.tsx**: New session shell page (Server Component, Next.js 15 async params)
+- **components/chat/ChatPage.tsx**: Added optional `chatId` prop, passed to `useChat({ id: chatId })` for session isolation
+- **convex/workspaces.ts**: Added `getDefault` query — returns user's default workspace ID
+- **messages/en.json + fr.json**: Added `chat` i18n namespace (10 keys each)
+
 ### Added (Day 19 — vantage-studio migration Phase 1 + Phase 3)
 - **hooks/block-orchestrator-code-edits.py**: Replaced broken symlink with actual hook script — enforces orchestrator delegation rules
 - **Schema**: Added `chats` (table 26), `projects` (table 27), `messages` (table 28) tables to Convex schema

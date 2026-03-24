@@ -7,10 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { MessageList } from "./MessageList";
 
-export function ChatPage() {
+interface ChatPageProps {
+	chatId?: string;
+}
+
+export function ChatPage({ chatId }: ChatPageProps) {
 	// v6 useChat: sendMessage replaces handleSubmit+handleInputChange
 	// transport defaults to DefaultChatTransport → /api/chat
-	const { messages, sendMessage, stop, status, error } = useChat();
+	// id namespaces the client-side message store per chat session
+	const { messages, sendMessage, stop, status, error } = useChat({
+		id: chatId,
+	});
 
 	const isStreaming = status === "streaming" || status === "submitted";
 
