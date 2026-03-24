@@ -99,16 +99,39 @@ export async function POST(req: Request) {
 		);
 
 		// 6. Build messages array for AI SDK v6
+		// AI SDK v6 sends messages with `parts` array instead of `content` string.
+		// Extract text from parts if content is missing.
 		const coreMessages: Array<
 			| { role: "system"; content: string }
 			| { role: "user"; content: string }
 			| { role: "assistant"; content: string }
 		> = [
 			{ role: "system", content: systemPrompt },
-			...messages.map((msg: { role: string; content: string }) => ({
-				role: msg.role as "user" | "assistant",
-				content: msg.content,
-			})),
+			...messages
+				.filter(
+					(msg: { role: string; content?: string; parts?: unknown[] }) =>
+						msg.role === "user" || msg.role === "assistant",
+				)
+				.map(
+					(msg: {
+						role: string;
+						content?: string;
+						parts?: Array<{ type: string; text?: string }>;
+					}) => {
+						let text = msg.content || "";
+						if (!text && msg.parts) {
+							const textParts = msg.parts.filter(
+								(p) => p.type === "text" && p.text,
+							);
+							text = textParts.map((p) => p.text).join("\n");
+						}
+						return {
+							role: msg.role as "user" | "assistant",
+							content: text,
+						};
+					},
+				)
+				.filter((msg) => msg.content),
 		];
 
 		// 7. Stream response via gateway
