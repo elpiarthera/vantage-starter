@@ -1,24 +1,90 @@
 {
   "permissions": {
     "allow": [
-      "Read(**)", "Write(**)", "Edit(**)",
-      "Bash(npx tsc --noEmit)", "Bash(npx biome check *)",
-      "Bash(npx biome format *)",
-      "Bash(git *)", "Bash(ls *)", "Bash(mkdir *)",
-      "Bash(python3 scripts/*)", "Bash(python3 tests/*)"
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Bash(*)",
+      "Agent(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "mcp__vantage-memory__*",
+      "mcp__convex__*",
+      "mcp__composio__*",
+      "mcp__firecrawl__*",
+      "mcp__exa__*"
     ]
   },
   "hooks": {
-    "SessionStart": [{"hooks": [{"type": "command", "command": "python3 hooks/session-start-profiler.py"}]}],
-    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 hooks/user-prompt-submit-routing.py"}]}],
-    "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 hooks/subagent-start-bootstrap.py"}]}],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"/home/elpi/coding/vantage-starter/.claude/hooks/session-start-tau.py\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/user-prompt-submit-routing.py"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/subagent-start-bootstrap.py"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
-      {"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "python3 hooks/block-orchestrator-code-edits.py"}]},
-      {"matcher": "Agent", "hooks": [{"type": "command", "command": "python3 hooks/enforce-brief-template.py"}]},
-      {"matcher": "mcp__claude-peers__send_message", "hooks": [{"type": "command", "command": "python3 hooks/enforce-peer-brief-format.py"}]}
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/block-orchestrator-code-edits.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/enforce-brief-template.py"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude-peers__send_message",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/enforce-peer-brief-format.py"
+          }
+        ]
+      }
     ],
     "PostToolUse": [
-      {"matcher": "Agent", "hooks": [{"type": "command", "command": "python3 hooks/post-agent-qa.py"}]}
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/post-agent-qa.py"
+          }
+        ]
+      }
     ]
   }
 }
