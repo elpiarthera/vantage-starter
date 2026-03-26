@@ -29,9 +29,30 @@ function IconBot() {
 			<rect x="3" y="11" width="18" height="10" rx="2" />
 			<circle cx="12" cy="5" r="2" />
 			<line x1="12" y1="7" x2="12" y2="11" />
-			<line x1="8" y1="16" x2="8" y2="16" strokeWidth="2.5" strokeLinecap="round" />
-			<line x1="12" y1="16" x2="12" y2="16" strokeWidth="2.5" strokeLinecap="round" />
-			<line x1="16" y1="16" x2="16" y2="16" strokeWidth="2.5" strokeLinecap="round" />
+			<line
+				x1="8"
+				y1="16"
+				x2="8"
+				y2="16"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="12"
+				y1="16"
+				x2="12"
+				y2="16"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="16"
+				y1="16"
+				x2="16"
+				y2="16"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+			/>
 		</svg>
 	);
 }
@@ -338,6 +359,250 @@ export const vantageOSRegistry: ComponentRegistry = {
 			>
 				{label}
 			</button>
+		);
+	},
+
+	// ============================================================================
+	// ONBOARDING COMPONENTS
+	// ============================================================================
+
+	OnboardingConfig: ({ element, children }: any) => {
+		const { projectName, clientName, sector, summary, painPoints } =
+			element.props;
+
+		return (
+			<section
+				className="w-full border border-border bg-[oklch(0.17_0.01_240)] overflow-hidden"
+				aria-label={`Onboarding config: ${projectName}`}
+			>
+				{/* Header */}
+				<div className="border-b border-border px-6 py-5">
+					<div className="flex items-start justify-between gap-4 mb-2">
+						<h2 className="font-space-grotesk text-lg font-semibold text-[oklch(0.93_0.01_240)] leading-tight">
+							{projectName}
+						</h2>
+						<span className="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border border-[oklch(0.62_0.18_240)] text-[oklch(0.62_0.18_240)] uppercase tracking-wider">
+							{sector}
+						</span>
+					</div>
+
+					<p className="text-xs text-[oklch(0.65_0.01_240)] mb-3">
+						{clientName}
+					</p>
+
+					{summary && (
+						<div className="bg-[oklch(0.13_0.01_240)] border border-border px-4 py-3 mb-4">
+							<p className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider mb-1">
+								Summary
+							</p>
+							<p className="text-sm text-[oklch(0.93_0.01_240)] leading-relaxed">
+								{summary}
+							</p>
+						</div>
+					)}
+
+					{painPoints && painPoints.length > 0 && (
+						<div>
+							<p className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider mb-2">
+								Pain Points
+							</p>
+							<div className="flex flex-wrap gap-1.5">
+								{painPoints.map((pain: string) => (
+									<span
+										key={pain}
+										className="text-xs px-2.5 py-1 rounded-full bg-[oklch(0.65_0.2_25)]/10 border border-[oklch(0.65_0.2_25)]/30 text-[oklch(0.75_0.15_25)]"
+									>
+										{pain}
+									</span>
+								))}
+							</div>
+						</div>
+					)}
+				</div>
+
+				{/* Selected teams, agents, skills */}
+				<div className="px-6 py-4 space-y-2">{children}</div>
+			</section>
+		);
+	},
+
+	TeamSelection: ({ element, children }: any) => {
+		const { name, description, category, agentCount, selected, matchedPains } =
+			element.props;
+
+		return (
+			<fieldset
+				className={cn(
+					"border p-4 transition-colors duration-150",
+					selected
+						? "border-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)]/5"
+						: "border-border bg-[oklch(0.13_0.01_240)]",
+				)}
+			>
+				<legend className="sr-only">{name}</legend>
+				{/* Top row */}
+				<div className="flex items-start gap-3 mb-3">
+					<div
+						className={cn(
+							"mt-0.5 shrink-0 w-5 h-5 flex items-center justify-center rounded-full border",
+							selected
+								? "border-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)] text-white"
+								: "border-[oklch(0.45_0.01_240)]",
+						)}
+					>
+						{selected && <IconCheck />}
+					</div>
+
+					<div className="flex-1 min-w-0">
+						<div className="flex items-center gap-2 flex-wrap mb-1">
+							<span className="text-sm font-medium text-[oklch(0.93_0.01_240)]">
+								{name}
+							</span>
+							<span className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.17_0.01_240)] text-[oklch(0.65_0.01_240)] border border-border">
+								{category}
+							</span>
+							<span className="text-xs px-2 py-0.5 rounded-full border border-[oklch(0.62_0.18_240)]/50 text-[oklch(0.62_0.18_240)] tabular-nums">
+								{agentCount} agent{agentCount !== 1 ? "s" : ""}
+							</span>
+						</div>
+						{description && (
+							<p className="text-xs text-[oklch(0.65_0.01_240)] leading-relaxed">
+								{description}
+							</p>
+						)}
+					</div>
+				</div>
+
+				{/* Matched pains */}
+				{matchedPains && matchedPains.length > 0 && (
+					<div className="flex flex-wrap gap-1.5 ml-8 mb-3">
+						{matchedPains.map((pain: string) => (
+							<span
+								key={pain}
+								className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.65_0.2_25)]/10 border border-[oklch(0.65_0.2_25)]/30 text-[oklch(0.75_0.15_25)]"
+							>
+								{pain}
+							</span>
+						))}
+					</div>
+				)}
+
+				{/* Child agents */}
+				{children && <div className="ml-8 space-y-1.5">{children}</div>}
+			</fieldset>
+		);
+	},
+
+	AgentSelection: ({ element, children }: any) => {
+		const { name, role, description, skills, selected } = element.props;
+
+		return (
+			<div
+				className={cn(
+					"flex items-start gap-3 border p-3 transition-colors duration-150",
+					selected
+						? "border-[oklch(0.62_0.18_240)]/40 bg-[oklch(0.62_0.18_240)]/5"
+						: "border-border bg-[oklch(0.13_0.01_240)]",
+				)}
+			>
+				{/* Bot icon */}
+				<div
+					className={cn(
+						"mt-0.5 shrink-0",
+						selected
+							? "text-[oklch(0.62_0.18_240)]"
+							: "text-[oklch(0.45_0.01_240)]",
+					)}
+				>
+					<IconBot />
+				</div>
+
+				<div className="flex-1 min-w-0">
+					<div className="flex items-center gap-2 flex-wrap mb-0.5">
+						<span className="text-sm font-medium text-[oklch(0.93_0.01_240)]">
+							{name}
+						</span>
+						<span className="text-xs text-[oklch(0.65_0.01_240)]">{role}</span>
+					</div>
+
+					{description && (
+						<p className="text-xs text-[oklch(0.65_0.01_240)] leading-relaxed mb-2">
+							{description}
+						</p>
+					)}
+
+					{skills && skills.length > 0 && (
+						<div className="flex flex-wrap gap-1.5">
+							{skills.map((skill: string) => (
+								<span
+									key={skill}
+									className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.17_0.01_240)] border border-border text-[oklch(0.65_0.01_240)]"
+								>
+									{skill}
+								</span>
+							))}
+						</div>
+					)}
+
+					{children && <div className="mt-2">{children}</div>}
+				</div>
+			</div>
+		);
+	},
+
+	SkillSelection: ({ element }: any) => {
+		const { name, description, category, selected } = element.props;
+
+		return (
+			<div
+				className={cn(
+					"flex items-center gap-3 border px-3 py-2.5 transition-colors duration-150",
+					selected
+						? "border-[oklch(0.62_0.18_240)]/40 bg-[oklch(0.62_0.18_240)]/5"
+						: "border-border bg-[oklch(0.13_0.01_240)]",
+				)}
+			>
+				{/* Checkbox indicator */}
+				<div
+					className={cn(
+						"shrink-0 w-4 h-4 flex items-center justify-center border",
+						selected
+							? "border-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)] text-white"
+							: "border-[oklch(0.45_0.01_240)]",
+					)}
+				>
+					{selected && (
+						<svg
+							width="10"
+							height="10"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="3"
+							aria-hidden="true"
+						>
+							<polyline points="20 6 9 17 4 12" />
+						</svg>
+					)}
+				</div>
+
+				<div className="flex-1 min-w-0">
+					<div className="flex items-center gap-2 flex-wrap">
+						<span className="text-xs font-medium text-[oklch(0.93_0.01_240)]">
+							{name}
+						</span>
+						{description && (
+							<span className="text-xs text-[oklch(0.65_0.01_240)] truncate">
+								{description}
+							</span>
+						)}
+					</div>
+				</div>
+
+				<span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-[oklch(0.17_0.01_240)] border border-border text-[oklch(0.65_0.01_240)]">
+					{category}
+				</span>
+			</div>
 		);
 	},
 };

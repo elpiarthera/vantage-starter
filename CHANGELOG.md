@@ -4,6 +4,12 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (Phase 1 — Registry Integration)
+- **`lib/registry/types.ts`**: TypeScript types for `RegistryTeam`, `RegistryAgent`, `RegistrySkill`, `RegistryHook`, `PainMapping`, `RegistryRecommendation`. Includes `PAIN_MAPPINGS` constant — 10 pain→team mappings covering prospecting, content marketing, SEO, client retention, social media, email campaigns, analytics, developer productivity, competitive intelligence, and internal operations.
+- **`convex/schema.ts`**: Added 3 new tables — `registryTeams` (27), `registryAgents` (28), `registrySkills` (29) — with stable slug IDs, category indexes, and team-scoped indexes.
+- **`convex/registry.ts`**: Five authenticated queries — `listTeams` (optional category filter), `getTeam`, `listAgentsByTeam`, `listSkillsByTeam`, `listSkills`, and `getRecommendationsForPains` (maps pain IDs through `PAIN_MAPPINGS`, loads teams+agents+skills, sorts by priority).
+- **`convex/seed/seedRegistry.ts`**: Idempotent `seedRegistry` internalMutation — seeds 15 teams, 28 agents, 76 skills across marketing, sales, support, analytics, operations, and engineering. Run via `npx convex run seed/seedRegistry:seedRegistry`.
+
 ### Changed (copy-source pass)
 - **FeaturesSection**: Copied litui.dev Features.tsx structure — uniform card grid, gray-*/dark: classes, hover gradient overlay, icon inversion, reveal animation
 - **CTASection**: Copied litui.dev Cta.tsx — inline command block, native anchor CTAs, floating circles, reveal with staggered delays

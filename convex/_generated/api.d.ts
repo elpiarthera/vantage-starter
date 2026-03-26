@@ -8,12 +8,15 @@
  * @module
  */
 
+import type * as actions_scrapeClient from "../actions/scrapeClient.js";
+import type * as actions_scrapeCompetitor from "../actions/scrapeCompetitor.js";
 import type * as adminHelpers from "../adminHelpers.js";
 import type * as agents from "../agents.js";
 import type * as architectSessions from "../architectSessions.js";
 import type * as assets from "../assets.js";
 import type * as chatMessages from "../chatMessages.js";
 import type * as checkpoints from "../checkpoints.js";
+import type * as consultantProjects from "../consultantProjects.js";
 import type * as credits from "../credits.js";
 import type * as email from "../email.js";
 import type * as files from "../files.js";
@@ -32,8 +35,11 @@ import type * as operations from "../operations.js";
 import type * as orchestration from "../orchestration.js";
 import type * as polar from "../polar.js";
 import type * as rateLimits from "../rateLimits.js";
+import type * as registry from "../registry.js";
 import type * as schemas_architect from "../schemas/architect.js";
 import type * as seed from "../seed.js";
+import type * as seed_seedCreditCosts from "../seed/seedCreditCosts.js";
+import type * as seed_seedRegistry from "../seed/seedRegistry.js";
 import type * as seedCredits from "../seedCredits.js";
 import type * as sharedLinks from "../sharedLinks.js";
 import type * as skills from "../skills.js";
@@ -50,12 +56,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/scrapeClient": typeof actions_scrapeClient;
+  "actions/scrapeCompetitor": typeof actions_scrapeCompetitor;
   adminHelpers: typeof adminHelpers;
   agents: typeof agents;
   architectSessions: typeof architectSessions;
   assets: typeof assets;
   chatMessages: typeof chatMessages;
   checkpoints: typeof checkpoints;
+  consultantProjects: typeof consultantProjects;
   credits: typeof credits;
   email: typeof email;
   files: typeof files;
@@ -74,8 +83,11 @@ declare const fullApi: ApiFromModules<{
   orchestration: typeof orchestration;
   polar: typeof polar;
   rateLimits: typeof rateLimits;
+  registry: typeof registry;
   "schemas/architect": typeof schemas_architect;
   seed: typeof seed;
+  "seed/seedCreditCosts": typeof seed_seedCreditCosts;
+  "seed/seedRegistry": typeof seed_seedRegistry;
   seedCredits: typeof seedCredits;
   sharedLinks: typeof sharedLinks;
   skills: typeof skills;

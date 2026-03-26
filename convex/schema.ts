@@ -732,6 +732,53 @@ export default defineSchema({
 		.index("by_existing_mission", ["existingMissionId"]),
 
 	/**
+	 * 26. Consultant Projects Table
+	 * Onboarding flow: client scrape → competitor intel → discovery chat → config generation.
+	 */
+	consultantProjects: defineTable({
+		workspaceId: v.id("workspaces"),
+		name: v.string(),
+		clientName: v.string(),
+		clientWebsiteUrl: v.string(),
+		sector: v.string(),
+		brandKit: v.optional(v.any()), // Scraped brand data: name, tagline, colors, products, tech stack
+		competitors: v.optional(
+			v.array(
+				v.object({
+					name: v.string(),
+					url: v.string(),
+					positioning: v.optional(v.string()),
+					pricing: v.optional(v.string()),
+					offers: v.optional(v.string()),
+					differentiators: v.optional(v.string()),
+					scrapedAt: v.optional(v.number()),
+					error: v.optional(v.string()),
+				}),
+			),
+		),
+		knowledgeBase: v.optional(v.any()), // Extracted content from client site
+		sessionId: v.optional(v.id("architectSessions")),
+		config: v.optional(v.any()), // Generated OnboardingConfig JSON
+		status: v.union(
+			v.literal("created"),
+			v.literal("scraping"),
+			v.literal("competitors"),
+			v.literal("discovery"),
+			v.literal("review"),
+			v.literal("deployed"),
+		),
+		selectedTeams: v.optional(v.array(v.string())),
+		selectedAgents: v.optional(v.array(v.string())),
+		selectedSkills: v.optional(v.array(v.string())),
+		createdBy: v.string(), // Clerk user ID
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		.index("by_status", ["status"]),
+
+	/**
 	 * 25. Architect Messages Table
 	 * Individual messages within an Architect session.
 	 */
@@ -744,4 +791,70 @@ export default defineSchema({
 	})
 		.index("by_session", ["sessionId"])
 		.index("by_session_created", ["sessionId", "createdAt"]),
+
+	// ============================================================================
+	// REGISTRY TABLES (Phase 1 — consultant onboarding)
+	// Stores vantage-registry component catalogue locally for fast query + fallback.
+	// ============================================================================
+
+	/**
+	 * 27. Registry Teams Table
+	 * A team is a named bundle of agents + skills organized around a business function.
+	 * category: the business domain (marketing, sales, engineering, operations, support, analytics).
+	 */
+	registryTeams: defineTable({
+		teamId: v.string(), // Stable slug, e.g. "content-marketing"
+		name: v.string(),
+		description: v.string(),
+		category: v.union(
+			v.literal("marketing"),
+			v.literal("sales"),
+			v.literal("engineering"),
+			v.literal("operations"),
+			v.literal("support"),
+			v.literal("analytics"),
+		),
+		agentIds: v.array(v.string()),
+		skillIds: v.array(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_team_id", ["teamId"])
+		.index("by_category", ["category"]),
+
+	/**
+	 * 28. Registry Agents Table
+	 * An agent is a specialist AI worker belonging to one team.
+	 */
+	registryAgents: defineTable({
+		agentId: v.string(), // Stable slug, e.g. "content-strategist"
+		name: v.string(),
+		role: v.string(),
+		description: v.string(),
+		skills: v.array(v.string()), // skill IDs
+		teamId: v.string(),
+		persona: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_agent_id", ["agentId"])
+		.index("by_team", ["teamId"]),
+
+	/**
+	 * 29. Registry Skills Table
+	 * A skill is a reusable capability that agents can execute.
+	 */
+	registrySkills: defineTable({
+		skillId: v.string(), // Stable slug, e.g. "blog-post-writing"
+		name: v.string(),
+		description: v.string(),
+		category: v.string(),
+		agentId: v.optional(v.string()),
+		teamId: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_skill_id", ["skillId"])
+		.index("by_team", ["teamId"])
+		.index("by_category", ["category"]),
 });
