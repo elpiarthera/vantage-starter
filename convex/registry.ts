@@ -173,6 +173,9 @@ export const getRecommendationsForPains = query({
 		if (args.painIds.length === 0) {
 			return [];
 		}
+		if (args.painIds.length > 20) {
+			throw new Error("Too many painIds (max 20)");
+		}
 
 		// Build a map: teamId → { matchedPains, highestPriority }
 		const teamScores = new Map<

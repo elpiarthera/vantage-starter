@@ -196,7 +196,7 @@ export const updateStatus = mutation({
 
 		const VALID_TRANSITIONS: Record<string, string[]> = {
 			created: ["scraping"],
-			scraping: ["competitors"],
+			scraping: ["competitors", "discovery"],
 			competitors: ["discovery"],
 			discovery: ["review"],
 			review: ["deployed"],

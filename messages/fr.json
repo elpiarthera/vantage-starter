@@ -2760,6 +2760,8 @@
 		"competitors": "Concurrents",
 		"startDiscovery": "Démarrer la découverte",
 		"deployConfig": "Déployer cette configuration",
+		"downloadConfig": "Télécharger la config",
+		"downloading": "Téléchargement…",
 		"step1Title": "Créer un projet",
 		"step1Desc": "Entrez les informations du client pour commencer.",
 		"step2Title": "Ajouter des concurrents",

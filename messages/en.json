@@ -2764,6 +2764,8 @@
 		"competitors": "Competitors",
 		"startDiscovery": "Start Discovery",
 		"deployConfig": "Deploy This Config",
+		"downloadConfig": "Download Config",
+		"downloading": "Downloading…",
 		"step1Title": "Create Project",
 		"step1Desc": "Enter the client details to get started.",
 		"step2Title": "Add Competitors",

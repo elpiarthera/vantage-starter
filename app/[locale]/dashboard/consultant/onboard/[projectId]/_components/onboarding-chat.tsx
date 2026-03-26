@@ -20,6 +20,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+	generateConfig,
+	type OnboardingConfigSpec,
+	type SelectedAgent,
+	type SelectedSkill,
+	type SelectedTeam,
+} from "@/lib/consultant/config-generator";
 import { vantageOSRegistry } from "@/lib/json-render/registry";
 import { cn } from "@/lib/utils";
 
@@ -76,10 +83,12 @@ function AssistantBubble({
 	text,
 	spec,
 	isStreaming,
+	thinkingLabel = "Thinking",
 }: {
 	text: string;
 	spec: Spec | null;
 	isStreaming?: boolean;
+	thinkingLabel?: string;
 }) {
 	return (
 		<div className="flex justify-start">
@@ -105,7 +114,7 @@ function AssistantBubble({
 				)}
 				{!text && !spec && isStreaming && (
 					<div className="flex items-center gap-2 text-xs text-muted-foreground">
-						<output className="sr-only">Thinking</output>
+						<output className="sr-only">{thinkingLabel}</output>
 						<StreamingDots />
 					</div>
 				)}
@@ -121,72 +130,191 @@ function AssistantBubble({
 function ConfirmConfigBar({
 	spec,
 	projectId,
+	projectName,
+	clientName,
+	sector,
 	onConfirmed,
 }: {
 	spec: Spec;
 	projectId: Id<"consultantProjects">;
+	projectName: string;
+	clientName: string;
+	sector: string;
 	onConfirmed: () => void;
 }) {
 	const t = useTranslations("consultant");
 	const [isConfirming, setIsConfirming] = useState(false);
+	const [isDownloading, setIsDownloading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const updateProject = useMutation(api.consultantProjects.update);
 	const updateStatus = useMutation(api.consultantProjects.updateStatus);
 
-	const extractConfig = useCallback(() => {
+	/**
+	 * Extract the full OnboardingConfigSpec from the json-render spec tree.
+	 * Walks OnboardingConfig → TeamSelection → AgentSelection → SkillSelection.
+	 */
+	const extractConfigSpec = useCallback((): {
+		configSpec: OnboardingConfigSpec;
+		selectedTeamIds: string[];
+		selectedAgentIds: string[];
+		selectedSkillIds: string[];
+	} | null => {
 		if (!spec?.elements || !spec.root) return null;
 
 		const root = spec.elements[spec.root as string];
 		if (!root || root.type !== "OnboardingConfig") return null;
 
-		const p = root.props as Record<string, unknown>;
+		const rootProps = root.props as Record<string, unknown>;
+		const summary =
+			typeof rootProps.summary === "string" ? rootProps.summary : "";
+		const painPoints = Array.isArray(rootProps.painPoints)
+			? (rootProps.painPoints as string[])
+			: [];
 
-		const selectedTeams: string[] = [];
-		const selectedAgents: string[] = [];
-		const selectedSkills: string[] = [];
+		const teams: SelectedTeam[] = [];
+		const selectedTeamIds: string[] = [];
+		const selectedAgentIds: string[] = [];
+		const selectedSkillIds: string[] = [];
 
 		for (const childId of root.children ?? []) {
-			const team = spec.elements[childId as string];
-			if (!team || team.type !== "TeamSelection") continue;
+			const teamEl = spec.elements[childId as string];
+			if (!teamEl || teamEl.type !== "TeamSelection") continue;
 
-			const tp = team.props as Record<string, unknown>;
-			if (tp.selected && typeof tp.teamId === "string") {
-				selectedTeams.push(tp.teamId);
-			}
+			const tp = teamEl.props as Record<string, unknown>;
+			const teamId =
+				typeof tp.teamId === "string" ? tp.teamId : String(childId);
+			const isTeamSelected = Boolean(tp.selected);
 
-			for (const agentChildId of team.children ?? []) {
-				const agent = spec.elements[agentChildId as string];
-				if (!agent || agent.type !== "AgentSelection") continue;
+			const agents: SelectedAgent[] = [];
+			const teamSkills: SelectedSkill[] = [];
 
-				const ap = agent.props as Record<string, unknown>;
-				if (ap.selected && typeof ap.agentId === "string") {
-					selectedAgents.push(ap.agentId);
-				}
+			for (const agentChildId of teamEl.children ?? []) {
+				const agentEl = spec.elements[agentChildId as string];
+				if (!agentEl || agentEl.type !== "AgentSelection") continue;
 
-				for (const skillChildId of agent.children ?? []) {
-					const skill = spec.elements[skillChildId as string];
-					if (!skill || skill.type !== "SkillSelection") continue;
+				const ap = agentEl.props as Record<string, unknown>;
+				const agentId =
+					typeof ap.agentId === "string" ? ap.agentId : String(agentChildId);
+				const isAgentSelected = Boolean(ap.selected);
 
-					const sp = skill.props as Record<string, unknown>;
-					if (sp.selected && typeof sp.skillId === "string") {
-						selectedSkills.push(sp.skillId);
+				const agentSkillIds: string[] = Array.isArray(ap.skills)
+					? (ap.skills as string[])
+					: [];
+
+				// Collect skill definitions from agent's children
+				for (const skillChildId of agentEl.children ?? []) {
+					const skillEl = spec.elements[skillChildId as string];
+					if (!skillEl || skillEl.type !== "SkillSelection") continue;
+
+					const sp = skillEl.props as Record<string, unknown>;
+					const skillId =
+						typeof sp.skillId === "string" ? sp.skillId : String(skillChildId);
+					const isSkillSelected = Boolean(sp.selected);
+
+					const skill: SelectedSkill = {
+						skillId,
+						name: typeof sp.name === "string" ? sp.name : skillId,
+						description:
+							typeof sp.description === "string" ? sp.description : "",
+						category: typeof sp.category === "string" ? sp.category : "",
+						selected: isSkillSelected,
+					};
+
+					// Add to teamSkills (deduplicated later by generateConfig)
+					if (!teamSkills.some((s) => s.skillId === skillId)) {
+						teamSkills.push(skill);
+					}
+
+					if (isSkillSelected) {
+						selectedSkillIds.push(skillId);
 					}
 				}
+
+				const agent: SelectedAgent = {
+					agentId,
+					name: typeof ap.name === "string" ? ap.name : agentId,
+					role: typeof ap.role === "string" ? ap.role : "",
+					description: typeof ap.description === "string" ? ap.description : "",
+					skills: agentSkillIds,
+					teamId,
+					selected: isAgentSelected,
+				};
+
+				agents.push(agent);
+				if (isAgentSelected) {
+					selectedAgentIds.push(agentId);
+				}
+			}
+
+			const team: SelectedTeam = {
+				teamId,
+				name: typeof tp.name === "string" ? tp.name : teamId,
+				description: typeof tp.description === "string" ? tp.description : "",
+				category: typeof tp.category === "string" ? tp.category : "",
+				agentCount:
+					typeof tp.agentCount === "number" ? tp.agentCount : agents.length,
+				selected: isTeamSelected,
+				matchedPains: Array.isArray(tp.matchedPains)
+					? (tp.matchedPains as string[])
+					: undefined,
+				agents,
+				skills: teamSkills,
+			};
+
+			teams.push(team);
+			if (isTeamSelected) {
+				selectedTeamIds.push(teamId);
 			}
 		}
 
-		return {
-			config: spec,
-			selectedTeams,
-			selectedAgents,
-			selectedSkills,
-			summary: typeof p.summary === "string" ? p.summary : "",
+		const configSpec: OnboardingConfigSpec = {
+			projectName,
+			clientName,
+			sector,
+			summary,
+			painPoints,
+			teams,
 		};
-	}, [spec]);
+
+		return { configSpec, selectedTeamIds, selectedAgentIds, selectedSkillIds };
+	}, [spec, projectName, clientName, sector]);
+
+	const handleDownload = useCallback(() => {
+		const extracted = extractConfigSpec();
+		if (!extracted) return;
+
+		setIsDownloading(true);
+		try {
+			const generated = generateConfig(extracted.configSpec);
+			const payload = JSON.stringify(
+				{
+					generatedAt: new Date().toISOString(),
+					summary: generated.summary,
+					stats: {
+						teamCount: generated.teamCount,
+						agentCount: generated.agentCount,
+						skillCount: generated.skillCount,
+					},
+					files: generated.files,
+				},
+				null,
+				2,
+			);
+			const blob = new Blob([payload], { type: "application/json" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `${projectName.replace(/\s+/g, "-").toLowerCase()}-config.json`;
+			a.click();
+			URL.revokeObjectURL(url);
+		} finally {
+			setIsDownloading(false);
+		}
+	}, [extractConfigSpec, projectName]);
 
 	const handleConfirm = async () => {
-		const extracted = extractConfig();
+		const extracted = extractConfigSpec();
 		if (!extracted) {
 			setError(t("configExtractError"));
 			return;
@@ -198,10 +326,10 @@ function ConfirmConfigBar({
 		try {
 			await updateProject({
 				projectId,
-				config: extracted.config,
-				selectedTeams: extracted.selectedTeams,
-				selectedAgents: extracted.selectedAgents,
-				selectedSkills: extracted.selectedSkills,
+				config: spec,
+				selectedTeams: extracted.selectedTeamIds,
+				selectedAgents: extracted.selectedAgentIds,
+				selectedSkills: extracted.selectedSkillIds,
 			});
 			await updateStatus({ projectId, status: "review" });
 			onConfirmed();
@@ -232,15 +360,39 @@ function ConfirmConfigBar({
 						</p>
 					)}
 				</div>
-				<button
-					type="button"
-					onClick={handleConfirm}
-					disabled={isConfirming}
-					className="btn-shadow active-scale rounded-full shrink-0 h-11 px-5 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					aria-label={t("deployConfig")}
-				>
-					{isConfirming ? t("saving") : t("deployConfig")}
-				</button>
+				<div className="flex items-center gap-2 shrink-0">
+					<button
+						type="button"
+						onClick={handleDownload}
+						disabled={isDownloading || isConfirming}
+						className="rounded-full h-11 px-4 text-sm font-medium border border-border bg-transparent text-foreground hover:bg-muted disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2"
+						aria-label={t("downloadConfig")}
+					>
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							aria-hidden="true"
+						>
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+							<polyline points="7 10 12 15 17 10" />
+							<line x1="12" y1="15" x2="12" y2="3" />
+						</svg>
+						{isDownloading ? t("downloading") : t("downloadConfig")}
+					</button>
+					<button
+						type="button"
+						onClick={handleConfirm}
+						disabled={isConfirming || isDownloading}
+						className="btn-shadow active-scale rounded-full h-11 px-5 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						aria-label={t("deployConfig")}
+					>
+						{isConfirming ? t("saving") : t("deployConfig")}
+					</button>
+				</div>
 			</div>
 		</div>
 	);
@@ -441,13 +593,19 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 										isStreaming={
 											isStreaming && msg === messages[messages.length - 1]
 										}
+										thinkingLabel={t("thinking")}
 									/>
 								)}
 							</div>
 						))}
 
 						{isStreaming && messages.length === 0 && (
-							<AssistantBubble text="" spec={null} isStreaming />
+							<AssistantBubble
+								text=""
+								spec={null}
+								isStreaming
+								thinkingLabel={t("thinking")}
+							/>
 						)}
 
 						<div ref={sentinelRef} aria-hidden="true" />
@@ -472,6 +630,9 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 					<ConfirmConfigBar
 						spec={activeSpec}
 						projectId={projectId as Id<"consultantProjects">}
+						projectName={project.name}
+						clientName={project.clientName}
+						sector={project.sector}
 						onConfirmed={handleConfirmed}
 					/>
 				)}

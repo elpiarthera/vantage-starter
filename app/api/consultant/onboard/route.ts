@@ -117,12 +117,46 @@ export async function POST(req: Request) {
 			{ token: convexToken },
 		).catch(() => []);
 
-		// 8. Load conversation history if session exists
+		// 8. Ensure architect session exists — create one if missing
+		let sessionId = project.sessionId;
+		if (!sessionId) {
+			try {
+				sessionId = await fetchMutation(
+					api.architectSessions.create,
+					{
+						workspaceId: project.workspaceId,
+						title: `Onboarding: ${project.clientName}`,
+					},
+					{ token: convexToken },
+				);
+				// Patch sessionId back onto the project (best-effort)
+				await fetchMutation(
+					api.consultantProjects.update,
+					{
+						projectId: projectId as Id<"consultantProjects">,
+						sessionId,
+					},
+					{ token: convexToken },
+				).catch((patchErr) => {
+					console.error(
+						"[consultant/onboard] Failed to patch sessionId onto project:",
+						patchErr,
+					);
+				});
+			} catch (sessionErr) {
+				console.error(
+					"[consultant/onboard] Failed to create architect session:",
+					sessionErr,
+				);
+			}
+		}
+
+		// 9. Load conversation history from session
 		let historyText = "";
-		if (project.sessionId) {
+		if (sessionId) {
 			const history = await fetchQuery(
 				api.architectSessions.getMessages,
-				{ sessionId: project.sessionId },
+				{ sessionId },
 				{ token: convexToken },
 			).catch(() => []);
 
@@ -135,7 +169,7 @@ export async function POST(req: Request) {
 			}
 		}
 
-		// 9. Build OnboardingContext
+		// 10. Build OnboardingContext
 		const onboardingContext: OnboardingContext = {
 			projectName: project.name,
 			clientName: project.clientName,
@@ -152,15 +186,15 @@ export async function POST(req: Request) {
 			})),
 		};
 
-		// 10. Build system prompt
+		// 11. Build system prompt
 		const systemPrompt = onboardingPrompt(onboardingContext) + historyText;
 
-		// 11. Save user message BEFORE streaming (if session exists)
-		if (project.sessionId) {
+		// 12. Save user message BEFORE streaming (if session exists)
+		if (sessionId) {
 			await fetchMutation(
 				api.architectSessions.addMessage,
 				{
-					sessionId: project.sessionId,
+					sessionId,
 					role: "user",
 					content: message,
 				},
@@ -170,7 +204,7 @@ export async function POST(req: Request) {
 			});
 		}
 
-		// 12. Stream
+		// 13. Stream
 		const result = streamText({
 			model: openai("gpt-4o"),
 			system: systemPrompt,
