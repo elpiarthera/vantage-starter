@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as actions_scrapeClient from "../actions/scrapeClient.js";
+import type * as actions_scrapeCompetitor from "../actions/scrapeCompetitor.js";
 import type * as adminHelpers from "../adminHelpers.js";
 import type * as agents from "../agents.js";
 import type * as aiModels from "../aiModels.js";
@@ -16,6 +18,7 @@ import type * as assets from "../assets.js";
 import type * as chatMessages from "../chatMessages.js";
 import type * as chats from "../chats.js";
 import type * as checkpoints from "../checkpoints.js";
+import type * as consultantProjects from "../consultantProjects.js";
 import type * as credits from "../credits.js";
 import type * as customFrameworks from "../customFrameworks.js";
 import type * as customPersonas from "../customPersonas.js";
@@ -40,9 +43,11 @@ import type * as polar from "../polar.js";
 import type * as projects from "../projects.js";
 import type * as rateLimits from "../rateLimits.js";
 import type * as ratelimit from "../ratelimit.js";
+import type * as registry from "../registry.js";
 import type * as schemas_architect from "../schemas/architect.js";
 import type * as seed from "../seed.js";
 import type * as seed_seedCreditCosts from "../seed/seedCreditCosts.js";
+import type * as seed_seedRegistry from "../seed/seedRegistry.js";
 import type * as seedCredits from "../seedCredits.js";
 import type * as sharedLinks from "../sharedLinks.js";
 import type * as skills from "../skills.js";
@@ -59,6 +64,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/scrapeClient": typeof actions_scrapeClient;
+  "actions/scrapeCompetitor": typeof actions_scrapeCompetitor;
   adminHelpers: typeof adminHelpers;
   agents: typeof agents;
   aiModels: typeof aiModels;
@@ -67,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   chatMessages: typeof chatMessages;
   chats: typeof chats;
   checkpoints: typeof checkpoints;
+  consultantProjects: typeof consultantProjects;
   credits: typeof credits;
   customFrameworks: typeof customFrameworks;
   customPersonas: typeof customPersonas;
@@ -91,9 +99,11 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   rateLimits: typeof rateLimits;
   ratelimit: typeof ratelimit;
+  registry: typeof registry;
   "schemas/architect": typeof schemas_architect;
   seed: typeof seed;
   "seed/seedCreditCosts": typeof seed_seedCreditCosts;
+  "seed/seedRegistry": typeof seed_seedRegistry;
   seedCredits: typeof seedCredits;
   sharedLinks: typeof sharedLinks;
   skills: typeof skills;
