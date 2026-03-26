@@ -188,7 +188,7 @@ function ConfirmConfigBar({
 	const handleConfirm = async () => {
 		const extracted = extractConfig();
 		if (!extracted) {
-			setError("Could not extract configuration. Try asking the agent again.");
+			setError(t("configExtractError"));
 			return;
 		}
 
@@ -206,9 +206,7 @@ function ConfirmConfigBar({
 			await updateStatus({ projectId, status: "review" });
 			onConfirmed();
 		} catch (err) {
-			setError(
-				err instanceof Error ? err.message : "Failed to save configuration",
-			);
+			setError(err instanceof Error ? err.message : t("saveConfigError"));
 		} finally {
 			setIsConfirming(false);
 		}
@@ -238,10 +236,10 @@ function ConfirmConfigBar({
 					type="button"
 					onClick={handleConfirm}
 					disabled={isConfirming}
-					className="btn-shadow active-scale rounded-full shrink-0 h-9 px-5 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					className="btn-shadow active-scale rounded-full shrink-0 h-11 px-5 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					aria-label={t("deployConfig")}
 				>
-					{isConfirming ? "Saving..." : t("deployConfig")}
+					{isConfirming ? t("saving") : t("deployConfig")}
 				</button>
 			</div>
 		</div>
@@ -396,7 +394,7 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 							onClick={() =>
 								router.push(`/${locale}/dashboard/consultant/onboard`)
 							}
-							className="text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-1"
+							className="flex items-center justify-center min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-2"
 							aria-label={t("back")}
 						>
 							<svg

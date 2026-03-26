@@ -2804,6 +2804,12 @@
 		"projectNotFoundDesc": "This project does not exist or you do not have access.",
 		"send": "Send",
 		"thinking": "Thinking...",
-		"errorMessage": "Something went wrong. Please try again."
+		"errorMessage": "Something went wrong. Please try again.",
+		"configExtractError": "Could not extract configuration. Try asking the agent again.",
+		"saveConfigError": "Failed to save configuration",
+		"saving": "Saving...",
+		"createProjectError": "Failed to create project",
+		"invalidUrl": "Invalid URL. Please include https://",
+		"addCompetitorError": "Failed to add competitor"
 	}
 }

@@ -12,7 +12,12 @@
  */
 
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+	internalMutation,
+	internalQuery,
+	mutation,
+	query,
+} from "./_generated/server";
 import { requireAuth, requireAuthWithWorkspace } from "./lib/auth";
 
 // ============================================================================
@@ -80,6 +85,12 @@ export const create = mutation({
 	returns: v.id("consultantProjects"),
 	handler: async (ctx, args) => {
 		const { user } = await requireAuthWithWorkspace(ctx, args.workspaceId);
+
+		// Validate string lengths
+		if (args.name.length > 200) throw new Error("Name too long (max 200)");
+		if (args.clientName.length > 200)
+			throw new Error("Client name too long (max 200)");
+		if (args.sector.length > 100) throw new Error("Sector too long (max 100)");
 
 		// Validate URL format
 		try {
@@ -181,6 +192,20 @@ export const updateStatus = mutation({
 		}
 		if (project.createdBy !== user.clerkUserId) {
 			throw new Error("Forbidden: only the project creator can update status");
+		}
+
+		const VALID_TRANSITIONS: Record<string, string[]> = {
+			created: ["scraping"],
+			scraping: ["competitors"],
+			competitors: ["discovery"],
+			discovery: ["review"],
+			review: ["deployed"],
+		};
+		const allowed = VALID_TRANSITIONS[project.status];
+		if (!allowed?.includes(args.status)) {
+			throw new Error(
+				`Invalid status transition: ${project.status} → ${args.status}`,
+			);
 		}
 
 		await ctx.db.patch(args.projectId, {
@@ -333,6 +358,27 @@ export const updateCompetitorProfile = internalMutation({
 	},
 });
 
+/**
+ * Internal-only: return just createdBy + workspaceId for ownership checks.
+ * Used by scrape actions to verify the caller owns the project before proceeding.
+ * No auth check — callers are internal actions that already validated the user.
+ */
+export const getForOwnerCheck = internalQuery({
+	args: { projectId: v.id("consultantProjects") },
+	returns: v.union(
+		v.object({
+			createdBy: v.string(),
+			workspaceId: v.id("workspaces"),
+		}),
+		v.null(),
+	),
+	handler: async (ctx, args) => {
+		const project = await ctx.db.get(args.projectId);
+		if (!project) return null;
+		return { createdBy: project.createdBy, workspaceId: project.workspaceId };
+	},
+});
+
 // ============================================================================
 // QUERIES
 // ============================================================================
@@ -357,7 +403,23 @@ export const get = query({
 
 		const isCreator = project.createdBy === identity.subject;
 		const isOwner = workspace.ownerId === identity.subject;
-		if (!isCreator && !isOwner) return null;
+
+		// Check org membership — mirrors the access logic in `list`
+		let isOrgMember = false;
+		if (!isCreator && !isOwner) {
+			const user = await ctx.db
+				.query("users")
+				.withIndex("by_clerk_user_id", (q) =>
+					q.eq("clerkUserId", identity.subject),
+				)
+				.unique();
+			isOrgMember =
+				!!workspace.organizationId &&
+				!!user?.organizationId &&
+				workspace.organizationId === user.organizationId;
+		}
+
+		if (!isCreator && !isOwner && !isOrgMember) return null;
 
 		return project;
 	},

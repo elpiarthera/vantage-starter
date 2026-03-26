@@ -2800,6 +2800,12 @@
 		"projectNotFoundDesc": "Ce projet n'existe pas ou vous n'y avez pas accès.",
 		"send": "Envoyer",
 		"thinking": "Réflexion...",
-		"errorMessage": "Quelque chose s'est mal passé. Veuillez réessayer."
+		"errorMessage": "Quelque chose s'est mal passé. Veuillez réessayer.",
+		"configExtractError": "Impossible d'extraire la configuration. Essayez de demander à nouveau à l'agent.",
+		"saveConfigError": "Impossible de sauvegarder la configuration",
+		"saving": "Sauvegarde...",
+		"createProjectError": "Impossible de créer le projet",
+		"invalidUrl": "URL invalide. Veuillez inclure https://",
+		"addCompetitorError": "Impossible d'ajouter le concurrent"
 	}
 }

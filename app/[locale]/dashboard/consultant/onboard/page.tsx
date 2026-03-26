@@ -12,7 +12,7 @@
  * Backend: convex/consultantProjects.ts (create, addCompetitor, updateStatus)
  */
 
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
@@ -123,7 +123,7 @@ function StepIndicator({ current }: { current: Step }) {
 
 interface Step1Props {
 	workspaceId: Id<"workspaces">;
-	onCreated: (projectId: Id<"consultantProjects">) => void;
+	onCreated: (projectId: Id<"consultantProjects">, websiteUrl: string) => void;
 }
 
 function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
@@ -136,6 +136,7 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 	const [error, setError] = useState<string | null>(null);
 
 	const createProject = useMutation(api.consultantProjects.create);
+	const scrapeClient = useAction(api.actions.scrapeClient.run);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -145,16 +146,21 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 		setError(null);
 
 		try {
+			const url = websiteUrl.trim();
 			const projectId = await createProject({
 				workspaceId,
 				name: name.trim(),
 				clientName: clientName.trim(),
-				clientWebsiteUrl: websiteUrl.trim(),
+				clientWebsiteUrl: url,
 				sector,
 			});
-			onCreated(projectId);
+			// Fire-and-forget: scrapes client site, sets status scraping → competitors
+			scrapeClient({ projectId, url }).catch((err) => {
+				console.error("[scrapeClient] failed:", err);
+			});
+			onCreated(projectId, url);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to create project");
+			setError(err instanceof Error ? err.message : t("createProjectError"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -306,6 +312,7 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 	const addCompetitorMutation = useMutation(
 		api.consultantProjects.addCompetitor,
 	);
+	const scrapeCompetitor = useAction(api.actions.scrapeCompetitor.run);
 
 	const handleAdd = useCallback(async () => {
 		if (!newName.trim() || !newUrl.trim()) return;
@@ -318,12 +325,14 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 		setIsAdding(true);
 
 		const rowId = `comp-${Date.now()}`;
+		const trimmedName = newName.trim();
+		const trimmedUrl = newUrl.trim();
 
 		try {
 			// Validate URL client-side first
-			new URL(newUrl.trim());
+			new URL(trimmedUrl);
 		} catch {
-			setAddError("Invalid URL. Please include https://");
+			setAddError(t("invalidUrl"));
 			setIsAdding(false);
 			return;
 		}
@@ -332,8 +341,8 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 			...prev,
 			{
 				id: rowId,
-				name: newName.trim(),
-				url: newUrl.trim(),
+				name: trimmedName,
+				url: trimmedUrl,
 				status: "scraping",
 			},
 		]);
@@ -341,22 +350,28 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 		setNewUrl("");
 
 		try {
-			await addCompetitorMutation({
+			const competitorIndex = await addCompetitorMutation({
 				projectId,
-				name: newName.trim(),
-				url: newUrl.trim(),
+				name: trimmedName,
+				url: trimmedUrl,
 			});
-			// Scrape is async — mark as done optimistically
-			setCompetitors((prev) =>
-				prev.map((c) => (c.id === rowId ? { ...c, status: "done" } : c)),
-			);
+			// Fire-and-forget scrape — updates DB when done
+			scrapeCompetitor({ projectId, competitorIndex, url: trimmedUrl })
+				.then(() => {
+					setCompetitors((prev) =>
+						prev.map((c) => (c.id === rowId ? { ...c, status: "done" } : c)),
+					);
+				})
+				.catch(() => {
+					setCompetitors((prev) =>
+						prev.map((c) => (c.id === rowId ? { ...c, status: "failed" } : c)),
+					);
+				});
 		} catch (err) {
 			setCompetitors((prev) =>
 				prev.map((c) => (c.id === rowId ? { ...c, status: "failed" } : c)),
 			);
-			setAddError(
-				err instanceof Error ? err.message : "Failed to add competitor",
-			);
+			setAddError(err instanceof Error ? err.message : t("addCompetitorError"));
 		} finally {
 			setIsAdding(false);
 		}
@@ -366,10 +381,12 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 		competitors.length,
 		projectId,
 		addCompetitorMutation,
+		scrapeCompetitor,
 		t,
 	]);
 
 	const handleRemove = (id: string) => {
+		// Remove from local UI — competitor remains in DB (MVP: no removeCompetitor mutation)
 		setCompetitors((prev) => prev.filter((c) => c.id !== id));
 	};
 
@@ -415,7 +432,7 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 								type="button"
 								onClick={() => handleRemove(c.id)}
 								aria-label={t("removeCompetitor")}
-								className="shrink-0 text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-1"
+								className="shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-2"
 							>
 								<svg
 									width="14"
@@ -441,7 +458,7 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 						{t("addCompetitor")}
 					</legend>
 
-					<div className="flex gap-2">
+					<div className="flex flex-col sm:flex-row gap-2">
 						<input
 							type="text"
 							value={newName}
@@ -578,13 +595,23 @@ export default function ConsultantOnboardPage() {
 	const workspaces = useQuery(api.workspaces.list);
 	const workspaceId = workspaces?.[0]?._id;
 
-	const handleProjectCreated = (id: Id<"consultantProjects">) => {
+	const updateStatus = useMutation(api.consultantProjects.updateStatus);
+
+	const handleProjectCreated = (
+		id: Id<"consultantProjects">,
+		_websiteUrl: string,
+	) => {
 		setProjectId(id);
 		setStep(2);
 	};
 
-	const handleCompetitorsComplete = () => {
+	const handleCompetitorsComplete = async () => {
 		if (!projectId) return;
+		try {
+			await updateStatus({ projectId, status: "discovery" });
+		} catch (err) {
+			console.error("[onboard] updateStatus discovery failed:", err);
+		}
 		router.push(`/${locale}/dashboard/consultant/onboard/${projectId}`);
 	};
 

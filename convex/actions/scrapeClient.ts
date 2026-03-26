@@ -27,9 +27,22 @@ interface BrandKit {
 	domain: string;
 	headings: string[];
 	metaKeywords: string | null;
-	detectedColors: string[];
+	/** Renamed from detectedColors — matches OnboardingContext.brandKit.colors */
+	colors: string[];
 	logoUrl: string | null;
 	socialLinks: string[];
+	/**
+	 * Product/service names extracted from headings and paragraphs.
+	 * Matches OnboardingContext.brandKit.products.
+	 * TODO: improve extraction with a dedicated NLP pass or Firecrawl.
+	 */
+	products: string[];
+	/**
+	 * Technology stack hints extracted from meta generator tags.
+	 * Matches OnboardingContext.brandKit.techStack.
+	 * TODO: improve extraction (Wappalyzer-style fingerprinting).
+	 */
+	techStack: string[];
 	scrapedAt: number;
 	scrapedUrl: string;
 }
@@ -192,6 +205,58 @@ function extractColors(html: string): string[] {
 		.slice(0, 8);
 }
 
+/**
+ * Extract tech-stack hints from <meta name="generator"> tags and common
+ * script src patterns (WordPress, Shopify, Next.js, etc.).
+ * Returns up to 5 unique technology names.
+ */
+function extractTechStack(html: string): string[] {
+	const stack: string[] = [];
+
+	// meta generator: "WordPress 6.4", "Shopify", "Wix", etc.
+	const generator = extractMetaContent(html, "generator");
+	if (generator) {
+		// Strip version numbers so we get "WordPress" not "WordPress 6.4.2"
+		const tech = generator.split(/[\s/]/)[0].trim();
+		if (tech) stack.push(tech);
+	}
+
+	// Common JS framework fingerprints from script src attributes
+	const scriptPatterns: Array<[RegExp, string]> = [
+		[/_next\/static/i, "Next.js"],
+		[/nuxt/i, "Nuxt"],
+		[/gatsby/i, "Gatsby"],
+		[/wp-content\//i, "WordPress"],
+		[/cdn\.shopify\.com/i, "Shopify"],
+		[/static\.squarespace\.com/i, "Squarespace"],
+		[/assets\.webflow\.com/i, "Webflow"],
+		[/framer\.com/i, "Framer"],
+	];
+
+	for (const [pattern, name] of scriptPatterns) {
+		if (pattern.test(html) && !stack.includes(name)) {
+			stack.push(name);
+		}
+	}
+
+	return stack.slice(0, 5);
+}
+
+/**
+ * Extract product or service names from the first H1/H2 headings and short
+ * paragraphs that read like feature or product descriptions.
+ * Returns up to 6 candidate strings.
+ * TODO: improve with Firecrawl structured extraction.
+ */
+function extractProducts(headings: string[], _paragraphs: string[]): string[] {
+	// Heuristic: short headings (3–8 words) that look like product/feature names
+	const candidates = headings.filter((h) => {
+		const wordCount = h.trim().split(/\s+/).length;
+		return wordCount >= 2 && wordCount <= 8;
+	});
+	return candidates.slice(0, 6);
+}
+
 function extractParagraphs(html: string): string[] {
 	return [...html.matchAll(/<p[^>]*>(.*?)<\/p>/gi)]
 		.map((m) => m[1].replace(/<[^>]+>/g, "").trim())
@@ -214,7 +279,16 @@ export const run = action({
 	}),
 	handler: async (ctx, args) => {
 		// Auth check
-		await requireUser(ctx);
+		const identity = await requireUser(ctx);
+
+		// Ownership check — only the project creator may trigger a scrape
+		const project = await ctx.runQuery(
+			internal.consultantProjects.getForOwnerCheck,
+			{ projectId: args.projectId },
+		);
+		if (!project || project.createdBy !== identity.subject) {
+			return { success: false, error: "Forbidden" };
+		}
 
 		// Mark project as scraping
 		await ctx.runMutation(internal.consultantProjects.updateBrandKit, {
@@ -282,6 +356,8 @@ export const run = action({
 		const h2s = extractHeadings(html, "h2");
 		const paragraphs = extractParagraphs(html);
 
+		const allHeadings = [...h1s, ...h2s].slice(0, 10);
+
 		const brandKit: BrandKit = {
 			name:
 				extractMetaContent(html, "og:site_name") ??
@@ -299,11 +375,13 @@ export const run = action({
 				extractMetaContent(html, "og:description") ??
 				null,
 			domain,
-			headings: [...h1s, ...h2s].slice(0, 10),
+			headings: allHeadings,
 			metaKeywords: extractMetaContent(html, "keywords"),
-			detectedColors: extractColors(html),
+			colors: extractColors(html),
 			logoUrl: extractLogoUrl(html, finalUrl),
 			socialLinks: extractSocialLinks(links.external),
+			products: extractProducts(allHeadings, paragraphs),
+			techStack: extractTechStack(html),
 			scrapedAt: Date.now(),
 			scrapedUrl: finalUrl,
 		};

@@ -192,8 +192,11 @@ export const vantageOSRegistry: ComponentRegistry = {
 							Success Criteria
 						</p>
 						<ul className="space-y-2">
-							{successCriteria.map((criterion: string, i: number) => (
-								<li key={i} className="flex items-start gap-2 text-sm">
+							{successCriteria.map((criterion: string) => (
+								<li
+									key={criterion.substring(0, 50)}
+									className="flex items-start gap-2 text-sm"
+								>
 									<span className="mt-0.5 text-[oklch(0.62_0.18_240)] shrink-0">
 										<IconCheck />
 									</span>

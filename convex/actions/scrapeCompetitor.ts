@@ -238,7 +238,16 @@ export const run = action({
 	}),
 	handler: async (ctx, args) => {
 		// Auth check
-		await requireUser(ctx);
+		const identity = await requireUser(ctx);
+
+		// Ownership check — only the project creator may trigger a competitor scrape
+		const project = await ctx.runQuery(
+			internal.consultantProjects.getForOwnerCheck,
+			{ projectId: args.projectId },
+		);
+		if (!project || project.createdBy !== identity.subject) {
+			return { success: false, error: "Forbidden" };
+		}
 
 		const scrapedAt = Date.now();
 
