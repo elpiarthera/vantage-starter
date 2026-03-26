@@ -1,22 +1,20 @@
-import { openai } from "@ai-sdk/openai";
 import { auth } from "@clerk/nextjs/server";
 import { streamText } from "ai";
-import { fetchMutation } from "convex/nextjs";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { calculateAICost } from "@/lib/ai/costCalculation";
-import { AI_DIRECTOR_PROMPT } from "@/lib/ai/prompts";
+import { systemPrompt } from "@/lib/ai/prompts/chat";
+import { getModelFromGateway } from "@/lib/ai/providers";
 
 /**
  * POST /api/chat
- * Streaming chat endpoint for AI Director conversations
+ * Streaming chat endpoint for AI chat conversations.
  *
  * Features:
  * - Streams responses in real-time using Vercel AI SDK
- * - Uses OpenAI GPT-5-mini (primary) with Together.ai fallback (TODO)
+ * - Dynamic model selection via Vercel AI Gateway (no provider lock-in)
  * - Tracks token usage and costs to Convex usageTracking table
  * - Integrates with credit system (1 credit per message)
- * - Mobile-optimized with proper error handling
  */
 export async function POST(req: Request) {
 	const startTime = Date.now();
@@ -35,11 +33,12 @@ export async function POST(req: Request) {
 			});
 		}
 		// Obtain Clerk JWT so fetchMutation carries auth identity to Convex
-		convexToken = (await authResult.getToken({ template: "convex" })) ?? undefined;
+		convexToken =
+			(await authResult.getToken({ template: "convex" })) ?? undefined;
 
 		// 2. Parse request body
 		const body = await req.json();
-		const { messages, projectId, projectName, sceneId, occasion } = body;
+		const { messages, projectId, projectName, sceneId } = body;
 
 		if (!messages || !Array.isArray(messages)) {
 			return new Response(
@@ -53,7 +52,7 @@ export async function POST(req: Request) {
 			api.credits.deductCreditsPublic,
 			{
 				clerkUserId: userId,
-				actionType: "step2_chat_message",
+				actionType: "chat_message",
 				projectId,
 				projectName,
 			},
@@ -73,55 +72,87 @@ export async function POST(req: Request) {
 		}
 		transactionId = creditResult.transactionId;
 
-		// 4. Verify API key
-		const openaiKey = process.env.OPENAI_API_KEY;
-		if (!openaiKey) {
-			// Refund credits since we can't proceed
-			if (transactionId) {
-				await fetchMutation(
-					api.credits.refundCreditsPublic,
-					{
-						transactionId,
-						reason: "API key not configured",
-					},
-					{ token: convexToken },
-				);
-			}
-			return new Response(
-				JSON.stringify({
-					error:
-						"AI service not configured. Please add OPENAI_API_KEY to environment variables.",
-				}),
-				{ status: 503, headers: { "Content-Type": "application/json" } },
+		// 4. Resolve model dynamically via Vercel AI Gateway
+		// Gateway handles provider auth — no individual API keys required.
+		const selectedModel: string = body.selectedModel ?? "claude-sonnet-4-5";
+		let aiModel: {
+			provider: string;
+			gatewayModel: string;
+			inputCostPerMillion?: number | null;
+			outputCostPerMillion?: number | null;
+		} | null = null;
+		try {
+			aiModel = await fetchQuery(
+				api.aiModels.getByModelId,
+				{ modelId: selectedModel },
+				{ token: convexToken },
 			);
+		} catch (e) {
+			console.warn("[Chat API] Model lookup failed, using fallback:", e);
 		}
+		const model = getModelFromGateway(selectedModel, aiModel?.gatewayModel);
+		const resolvedProvider = aiModel?.provider ?? "anthropic";
 
-		// 5. Build system prompt for AI Director using modular prompt
-		const systemPrompt = AI_DIRECTOR_PROMPT.getPrompt(
-			occasion ? { projectType: occasion } : undefined,
-		);
+		// 5. Build system prompt
+		// Geolocation is extracted from Vercel edge headers when available.
+		// @vercel/functions is optional — fall back to undefined values in local dev.
+		const requestHints = {
+			longitude: req.headers.get("x-vercel-ip-longitude") ?? undefined,
+			latitude: req.headers.get("x-vercel-ip-latitude") ?? undefined,
+			city: req.headers.get("x-vercel-ip-city") ?? undefined,
+			country: req.headers.get("x-vercel-ip-country") ?? undefined,
+		};
+		const prompt = systemPrompt({
+			selectedChatModel: selectedModel,
+			requestHints,
+		});
 
 		// 6. Build messages array for AI SDK v6
-		const coreMessages = [
-			{ role: "system" as const, content: systemPrompt },
-			...messages.map(
-				(msg: { role: string; content: string }) => ({
-					role: msg.role as "user" | "assistant",
-					content: msg.content,
-				}),
-			),
+		// AI SDK v6 sends messages with `parts` array instead of `content` string.
+		// Extract text from parts if content is missing.
+		const coreMessages: Array<
+			| { role: "system"; content: string }
+			| { role: "user"; content: string }
+			| { role: "assistant"; content: string }
+		> = [
+			{ role: "system", content: prompt },
+			...messages
+				.filter(
+					(msg: { role: string; content?: string; parts?: unknown[] }) =>
+						msg.role === "user" || msg.role === "assistant",
+				)
+				.map(
+					(msg: {
+						role: string;
+						content?: string;
+						parts?: Array<{ type: string; text?: string }>;
+					}) => {
+						let text = msg.content || "";
+						if (!text && msg.parts) {
+							const textParts = msg.parts.filter(
+								(p) => p.type === "text" && p.text,
+							);
+							text = textParts.map((p) => p.text).join("\n");
+						}
+						return {
+							role: msg.role as "user" | "assistant",
+							content: text,
+						};
+					},
+				)
+				.filter((msg) => msg.content),
 		];
 
-		// 7. Stream response from OpenAI
+		// 7. Stream response via gateway
 		const result = await streamText({
-			model: openai("gpt-4o"),
-			messages: coreMessages as any,
+			model,
+			messages: coreMessages,
 			temperature: 0.7,
 			async onFinish({ usage, finishReason }) {
 				const latency = Date.now() - startTime;
 
-				// Extract token counts from usage object
-				// biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 usage type is inconsistent across versions
+				// AI SDK v6 usage shape: promptTokens / completionTokens
+				// biome-ignore lint/suspicious/noExplicitAny: AI SDK usage type varies across provider adapters
 				const usageData = usage as any;
 				const inputTokens =
 					usageData.promptTokens || usageData.inputTokens || 0;
@@ -129,38 +160,39 @@ export async function POST(req: Request) {
 					usageData.completionTokens || usageData.outputTokens || 0;
 
 				console.log(
-					`[Chat API] Finished - Reason: ${finishReason}, Tokens: ${inputTokens}/${outputTokens}, Latency: ${latency}ms`,
+					`[Chat API] Finished - Reason: ${finishReason}, Model: ${selectedModel}, Tokens: ${inputTokens}/${outputTokens}, Latency: ${latency}ms`,
 				);
 
-				// Calculate cost
-				const { cost } = calculateAICost("openai", "gpt-4o", {
-					inputTokens,
-					outputTokens,
-				});
+				// Cost calculation — per-million token rates from Convex or fallback
+				const inputCostRate = (aiModel?.inputCostPerMillion ?? 3.0) / 1_000_000;
+				const outputCostRate =
+					(aiModel?.outputCostPerMillion ?? 15.0) / 1_000_000;
+				const cost =
+					inputTokens * inputCostRate + outputTokens * outputCostRate;
 
-			// Log to Convex usageTracking (fire and forget)
-			try {
-				await fetchMutation(
-					api.usageTracking.logAIUsage,
-					{
-						userId,
-						projectId,
-						resourceType: "chat",
-						resourceId: sceneId,
-						eventType: "step2_conversation",
-						service: "openai",
-						model: "gpt-4o",
-						creditsUsed: 1,
-						cost,
-						metadata: {
-							inputTokens,
-							outputTokens,
-							latency,
-							success: true,
+				// Log to Convex usageTracking (fire and forget)
+				try {
+					await fetchMutation(
+						api.usageTracking.logAIUsage,
+						{
+							userId,
+							projectId,
+							resourceType: "chat",
+							resourceId: sceneId,
+							eventType: "chat_conversation",
+							service: resolvedProvider,
+							model: selectedModel,
+							creditsUsed: 1,
+							cost,
+							metadata: {
+								inputTokens,
+								outputTokens,
+								latency,
+								success: true,
+							},
 						},
-					},
-					{ token: convexToken },
-				);
+						{ token: convexToken },
+					);
 					console.log(`[Chat API] Cost tracked: $${cost.toFixed(4)}`);
 				} catch (error) {
 					console.error("[Chat API] Failed to log usage:", error);
@@ -169,8 +201,8 @@ export async function POST(req: Request) {
 			},
 		});
 
-		// 7. Return streaming text response
-		return result.toTextStreamResponse();
+		// 8. Return UI message stream (required for AI SDK v6 useChat/DefaultChatTransport)
+		return result.toUIMessageStreamResponse();
 	} catch (error) {
 		const latency = Date.now() - startTime;
 		console.error("[Chat API] Error:", error);
@@ -201,9 +233,9 @@ export async function POST(req: Request) {
 				{
 					userId: userId || undefined,
 					resourceType: "chat",
-					eventType: "step2_conversation",
-					service: "openai",
-					model: "gpt-4o",
+					eventType: "chat_conversation",
+					service: "anthropic",
+					model: "claude-sonnet-4-5",
 					creditsUsed: 0,
 					cost: 0,
 					metadata: {

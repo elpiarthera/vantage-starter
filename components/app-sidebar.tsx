@@ -10,11 +10,12 @@
  * Mobile: hidden at <md, opens as Sheet drawer via hamburger trigger in layout.
  * Touch targets: all nav items min-h-[44px].
  * Footer removed — org switcher + user profile live in the top header bar.
- * Active state: 2px left border only, no background fill.
+ * Active state: subtle bg-accent fill, no border accent.
  */
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import * as React from "react";
+import { SearchModal } from "@/components/search-modal";
 import {
 	Sidebar,
 	SidebarContent,
@@ -29,14 +30,14 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 const navItemClass = cn(
-	"h-9 min-h-[44px] rounded-none px-4 text-sm font-medium text-muted-foreground",
-	"transition-colors hover:bg-transparent hover:text-foreground",
-	// Active: 2px left border, text shifts right to compensate, no bg fill
-	"data-[active=true]:bg-transparent data-[active=true]:text-foreground",
-	"data-[active=true]:border-l-2 data-[active=true]:border-primary data-[active=true]:pl-[14px]",
+	"h-9 min-h-[44px] rounded-md px-3 text-sm font-medium text-muted-foreground",
+	"transition-colors hover:bg-sidebar-accent hover:text-foreground",
+	// Active: subtle bg fill matching v0 sidebar-accent
+	"data-[active=true]:bg-sidebar-accent data-[active=true]:text-foreground",
 );
 
 // Duration matches the easing token defined in globals.css
@@ -44,9 +45,55 @@ const navTransition = "150ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function AppSidebar() {
 	const pathname = usePathname();
-	const { setOpenMobile } = useSidebar();
+	const { setOpenMobile, state, setOpen } = useSidebar();
+	const isHoverExpandedRef = React.useRef(false);
+	const [searchOpen, setSearchOpen] = React.useState(false);
+	const [newMenuOpen, setNewMenuOpen] = React.useState(false);
+	const t = useTranslations("app_sidebar");
+
+	// Close new-menu when clicking outside
+	const newMenuRef = React.useRef<HTMLDivElement>(null);
+	React.useEffect(() => {
+		if (!newMenuOpen) return;
+		const handlePointerDown = (e: PointerEvent) => {
+			if (
+				newMenuRef.current &&
+				!newMenuRef.current.contains(e.target as Node)
+			) {
+				setNewMenuOpen(false);
+			}
+		};
+		document.addEventListener("pointerdown", handlePointerDown);
+		return () => document.removeEventListener("pointerdown", handlePointerDown);
+	}, [newMenuOpen]);
 
 	const handleNavClick = () => setOpenMobile(false);
+
+	// Cmd+K / Ctrl+K global shortcut
+	React.useEffect(() => {
+		const handleKey = (e: KeyboardEvent) => {
+			if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				setSearchOpen((prev) => !prev);
+			}
+		};
+		document.addEventListener("keydown", handleKey);
+		return () => document.removeEventListener("keydown", handleKey);
+	}, []);
+
+	const handleMouseEnter = () => {
+		if (state === "collapsed") {
+			isHoverExpandedRef.current = true;
+			setOpen(true);
+		}
+	};
+
+	const handleMouseLeave = () => {
+		if (isHoverExpandedRef.current) {
+			isHoverExpandedRef.current = false;
+			setOpen(false);
+		}
+	};
 
 	return (
 		<TooltipProvider delayDuration={0}>
@@ -54,34 +101,188 @@ export function AppSidebar() {
 				collapsible="icon"
 				className="group-data-[side=left]:border-r border-sidebar-border bg-sidebar-background"
 				aria-label="Main navigation"
+				data-hover-open={isHoverExpandedRef.current ? "true" : undefined}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
 			>
 				{/* ── Header: Logo ── */}
-				<SidebarHeader>
-					<SidebarMenu>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								asChild
-								className="h-10 min-h-[44px] rounded-none px-3 gap-2 hover:bg-transparent"
-							>
-								<Link
-									href="/dashboard"
-									onClick={handleNavClick}
-									aria-label="VantageStarter home"
-								>
-									<span className="font-heading font-bold tracking-[-0.03em] text-foreground">
-										VantageStarter
-									</span>
-								</Link>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					</SidebarMenu>
+				<SidebarHeader className="flex flex-row items-center px-4 h-14">
+					<Link
+						href="/dashboard"
+						onClick={handleNavClick}
+						aria-label="VantageStarter home"
+						className="font-heading font-bold tracking-[-0.03em] text-foreground hover:opacity-80 transition-opacity group-data-[collapsible=icon]:hidden"
+					>
+						VantageStarter
+					</Link>
 				</SidebarHeader>
+
+				{/* ── Search Modal ── */}
+				<SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
 				{/* ── Content ── */}
 				<SidebarContent>
+					{/* ─── NEW BUTTON ─── */}
+					<SidebarGroup className="pb-0 group-data-[collapsible=icon]:hidden">
+						<SidebarGroupContent>
+							<SidebarMenu>
+								<SidebarMenuItem>
+									<div ref={newMenuRef} className="relative px-2">
+										<div className="flex items-center gap-1">
+											<Link
+												href="/dashboard/chat"
+												onClick={handleNavClick}
+												className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+											>
+												{t("new_chat")}
+											</Link>
+											<button
+												type="button"
+												onClick={() => setNewMenuOpen((prev) => !prev)}
+												className="rounded-lg bg-primary px-2 py-2 text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+												aria-label={t("more_new_options")}
+												aria-expanded={newMenuOpen}
+											>
+												<svg
+													width="16"
+													height="16"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2"
+													aria-hidden="true"
+													style={{
+														transform: newMenuOpen
+															? "rotate(180deg)"
+															: "rotate(0deg)",
+														transition: `transform 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+													}}
+												>
+													<path
+														d="M6 9l6 6 6-6"
+														strokeLinecap="round"
+														strokeLinejoin="round"
+													/>
+												</svg>
+											</button>
+										</div>
+										{newMenuOpen && (
+											<div
+												className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-border p-1.5 shadow-lg"
+												style={{
+													backgroundColor: "oklch(0.269 0 0)",
+													color: "oklch(0.985 0 0)",
+												}}
+											>
+												<Link
+													href="/dashboard/chat"
+													onClick={() => {
+														handleNavClick();
+														setNewMenuOpen(false);
+													}}
+													className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+												>
+													{t("new_chat")}
+												</Link>
+												<Link
+													href="/dashboard/missions"
+													onClick={() => {
+														handleNavClick();
+														setNewMenuOpen(false);
+													}}
+													className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+												>
+													{t("new_mission")}
+												</Link>
+												<Link
+													href="/dashboard/architect"
+													onClick={() => {
+														handleNavClick();
+														setNewMenuOpen(false);
+													}}
+													className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+												>
+													{t("new_architect_session")}
+												</Link>
+											</div>
+										)}
+									</div>
+								</SidebarMenuItem>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					{/* Collapsed: icon-only "+" button */}
+					<SidebarGroup className="hidden pb-0 group-data-[collapsible=icon]:block">
+						<SidebarGroupContent>
+							<SidebarMenu>
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										asChild
+										className="flex h-9 min-h-[44px] w-full items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+										aria-label={t("new_chat")}
+									>
+										<Link href="/dashboard/chat" onClick={handleNavClick}>
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												aria-hidden="true"
+											>
+												<path
+													d="M12 5v14M5 12h14"
+													strokeLinecap="round"
+													strokeLinejoin="round"
+												/>
+											</svg>
+										</Link>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					{/* ─── SEARCH ─── */}
+					<SidebarGroup className="pb-0">
+						<SidebarGroupContent>
+							<SidebarMenu>
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										className={cn(navItemClass, "w-full")}
+										style={{ transition: `color ${navTransition}` }}
+										onClick={() => setSearchOpen(true)}
+									>
+										<svg
+											width="18"
+											height="18"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											strokeWidth="1.5"
+											className="shrink-0"
+											aria-hidden="true"
+										>
+											<circle cx="11" cy="11" r="8" />
+											<path d="m21 21-4.35-4.35" />
+										</svg>
+										<span>Search</span>
+										<kbd className="ml-auto hidden text-[10px] text-muted-foreground/60 font-mono group-data-[collapsible=icon]:hidden sm:inline-flex items-center gap-0.5">
+											⌘K
+										</kbd>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					<SidebarSeparator className="mx-3" />
+
 					{/* ─── OVERVIEW ─── */}
 					<SidebarGroup>
-						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
 							Overview
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -211,7 +412,7 @@ export function AppSidebar() {
 
 					{/* ─── WORKSPACE ─── */}
 					<SidebarGroup>
-						<SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
 							Workspace
 						</SidebarGroupLabel>
 						<SidebarGroupContent>

@@ -112,7 +112,7 @@ export function PurchaseCreditsModal({
 											credits
 										</span>
 										{(pkg.bonusCredits ?? 0) > 0 && (
-											<span className="text-sm text-green-500 font-medium">
+											<span className="text-sm text-success font-medium">
 												+{pkg.bonusCredits} bonus
 											</span>
 										)}

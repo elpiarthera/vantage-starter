@@ -22,7 +22,7 @@ import { DEFAULT_CHAT_MODEL } from "../../lib/ai/models";
 import { api, internal } from "../_generated/api";
 import { httpAction } from "../_generated/server";
 
-const CREDIT_COST_ACTION_TYPE = "chat";
+const CREDIT_COST_ACTION_TYPE = "chat_message";
 
 /**
  * Resolve a model ID to a LanguageModelV2 via the Vercel AI Gateway.

@@ -380,9 +380,7 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 	}
 
 	return (
-		<div
-			className={cn("flex h-[calc(100vh-8rem)] overflow-hidden")}
-		>
+		<div className={cn("flex h-[calc(100vh-8rem)] overflow-hidden")}>
 			{/* ================================================================
 			    RIGHT PANEL — chat interface (full width, no session sidebar)
 			    ================================================================ */}
@@ -417,7 +415,9 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 							<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
 								{project.name}
 							</h1>
-							<p className="text-xs text-muted-foreground">{project.clientName}</p>
+							<p className="text-xs text-muted-foreground">
+								{project.clientName}
+							</p>
 						</div>
 					</div>
 

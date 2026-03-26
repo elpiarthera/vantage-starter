@@ -8,7 +8,7 @@ VantageStarter ships with a pre-configured team of specialist agents in `.claude
 
 | Agent file | Name | Specialty |
 |-----------|------|-----------|
-| `frontend-dev.md` | `dev-frontend` | UI components, pages, Tailwind CSS, responsive design, shadcn/ui |
+| `frontend-dev.md` | `dev-frontend` | UI components, pages, Tailwind CSS, responsive design, lit-ui |
 | `convex-expert.md` | `dev-convex-expert` | Schema design, queries, mutations, actions, cron jobs, file storage |
 | `clerk-expert.md` | `dev-clerk-expert` | Auth setup, middleware, organizations, RBAC, custom sign-in flows |
 | `seo-dev.md` | `dev-seo` | Metadata, canonical URLs, schema.org, sitemap.ts, robots.ts |
@@ -58,7 +58,7 @@ The `.claude/skills/` directory contains 21 design critique and improvement skil
 | `harden` | Checks accessibility and contrast |
 | `distill` | Strips complexity, improves signal/noise ratio |
 | `optimize` | Performance — lazy loading, image optimization, bundle |
-| `normalize` | Aligns to shadcn/ui conventions |
+| `normalize` | Aligns to lit-ui conventions |
 | `frontend-design` | Umbrella skill for full component review |
 
 Invoke explicitly: `Use the polish skill on this component`

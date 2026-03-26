@@ -76,6 +76,11 @@ def main():
 
     # Peer messaging — auto-setup
     brief_parts.append(
+        "MEMORY (do immediately — 3 layers): "
+        "4. Call mcp__vantage-memory__recall(query='priorities pending blockers feedback rules', namespace='global', limit=10). "
+        "5. Call mcp__vantage-memory__recall(query='current status branch pending decisions', namespace='project/vantage-starter', limit=5). "
+        "6. Call mcp__vantage-memory__recall(query='session notes operational state', namespace='orchestrator/tau', limit=5). "
+        "Use recalled context to inform your session. "
         "PEER MESSAGING (do all 3 immediately): "
         "1. Call set_summary with what you are working on. "
         "2. Call check_messages to see if ElPi Corp orchestrator sent a mission. "

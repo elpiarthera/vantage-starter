@@ -62,6 +62,28 @@ export const list = query({
 });
 
 /**
+ * Get the current user's default workspace ID.
+ * Returns null if not authenticated or no default workspace found.
+ */
+export const getDefault = query({
+	args: {},
+	returns: v.union(v.id("workspaces"), v.null()),
+	handler: async (ctx) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) return null;
+
+		const workspace = await ctx.db
+			.query("workspaces")
+			.withIndex("by_owner_and_default", (q) =>
+				q.eq("ownerId", identity.subject).eq("isDefault", true),
+			)
+			.unique();
+
+		return workspace?._id ?? null;
+	},
+});
+
+/**
  * Get a specific workspace by ID.
  * Only returns workspace if the current user owns it.
  */

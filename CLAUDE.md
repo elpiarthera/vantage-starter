@@ -33,6 +33,16 @@ Tools: `store_memory`, `recall`, `store_episode`, `get_profile`, `update_profile
 
 ---
 
+## MEMORY PROTOCOL (non-negotiable)
+
+1. **After every significant decision** → `store_memory(type: "project", namespace: "project/vantage-starter")` — architecture choices, tech decisions, config changes.
+2. **After every correction from Laurent** → `store_memory(type: "feedback", namespace: "global")` — so all orchestrators learn. Include what was wrong and why.
+3. **After every failure/success pattern** → `store_episode(namespace: "orchestrator/tau")` — structured context/goal/action/outcome/insight + severity.
+4. **After completing a task** → `complete_task(taskId)` in VantageMemory — keep the task board accurate.
+5. **Never end a session** without updating tasks + writing diary via `write_diary`.
+
+---
+
 ## ORCHESTRATION PROTOCOL (non-negotiable)
 
 You are the orchestrator. You do NOT write code. You delegate to specialist agents.
@@ -277,47 +287,6 @@ docs/
 
 ---
 
-## VANTAGEMEMORY MCP — TOOL REFERENCE (mandatory)
-
-All values are **lowercase**. Never use uppercase for orchestrator names.
-
-```
-# Tasks
-list_tasks:     assignedTo="pi", status="todo"
-complete_task:  taskId="...", completionNote="what was done" (MANDATORY)
-start_task:     taskId="..."
-
-# Messaging
-send_message:   from="pi", channel="tau"|"broadcast"|"pi-chromebook", content="..."
-check_messages: recipient="pi", recipientInstanceId="pi-vps"
-mark_as_read:   receiptIds=["id1", "id2"]
-
-# Memory
-store_memory:   namespace="global"|"project/X", type="feedback"|"project", content="...", createdBy="pi"
-recall:         query="...", namespace="global", limit=5
-
-# Session
-set_summary:    orchestratorId="pi", instanceId="pi-vps", summary="..."
-list_peers:     (no args)
-```
-
-## MEMORY PROTOCOL (non-negotiable)
-
-1. After every significant decision -> store_memory (type: project)
-2. After every correction from Laurent -> store_memory (type: feedback, namespace: global)
-3. After every failure/success pattern -> store_episode
-4. After completing a task -> complete_task with completionNote (MANDATORY)
-5. When putting a task in review -> update_task with completionNote
-6. **After completing ANY task -> immediately run /check-tasks and start the next. Never wait. One task at a time.**
-7. Never end a session without updating tasks + writing diary
-
-## AUTONOMOUS WORK PROTOCOL (non-negotiable)
-
-- **One task at a time.** Pick the highest-priority unblocked task. Complete it. Then the next.
-- **Never wait.** After completing a task, auto-chain to the next.
-- **You are an architect, not a coder.** Delegate to specialist agents. Supervise. Validate. Report via completionNote.
-- **Report up.** After completing a task, send a message to pi-chromebook.
-
 <!-- convex-ai-start -->
 This project uses [Convex](https://convex.dev) as its backend.
 
@@ -325,3 +294,54 @@ When working on Convex code, **always read `convex/_generated/ai/guidelines.md` 
 
 Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
 <!-- convex-ai-end -->
+
+## VANTAGEMEMORY MCP — TOOL REFERENCE (mandatory)
+
+VantageMemory is the single source of truth for tasks, memory, messaging, and diary.
+All values are **lowercase**. Never use uppercase for orchestrator names.
+
+```
+# Tasks
+list_tasks:     assignedTo="pi"|"tau"|"phi"|"laurent", status="todo"|"in_progress"|"review"|"blocked"|"done"
+create_task:    title="...", assignedTo="pi", priority="high", createdBy="pi"
+update_task:    taskId="...", status="review"
+complete_task:  taskId="..."
+start_task:     taskId="..."
+
+# Messaging (replaces claude-peers)
+send_message:   from="pi", channel="tau"|"broadcast"|"tau,phi", content="..."
+check_messages: recipient="pi", recipientInstanceId="pi-chromebook"
+mark_as_read:   receiptIds=["receipt-id-1", "receipt-id-2"]
+
+# Memory
+store_memory:   namespace="global"|"project/elpi-corp"|"orchestrator/pi", type="feedback"|"project"|"user"|"reference", content="...", createdBy="pi"
+recall:         query="...", namespace="global", limit=5
+store_episode:  namespace="orchestrator/pi", createdBy="pi", context="...", goal="...", action="...", outcome="...", insight="...", severity="major"
+
+# Session
+set_summary:    orchestratorId="pi", instanceId="pi-chromebook", summary="..."
+list_peers:     (no args)
+
+# Diary
+write_diary:    date="2026-03-25", orchestrator="pi", content="...", highlights=["..."]
+```
+
+## MEMORY PROTOCOL (non-negotiable)
+
+1. After every significant decision -> store_memory (type: project)
+2. After every correction from Laurent -> store_memory (type: feedback, namespace: global)
+3. After every failure/success pattern -> store_episode
+4. After completing a task -> complete_task with completionNote describing what was done (MANDATORY)
+5. When putting a task in review -> update_task with completionNote describing what was done
+6. **After completing ANY task -> immediately run /check-tasks and start the next actionable task. Never wait. One task at a time.**
+7. Never end a session without updating tasks + writing diary
+
+## AUTONOMOUS WORK PROTOCOL (non-negotiable)
+
+- **One task at a time.** Pick the highest-priority unblocked task. Complete it. Then the next.
+- **Never wait.** After completing a task, auto-chain to the next. No "which task?" questions.
+- **Check messages every 5 minutes.** Run `/loop 5m /check-messages` at session start.
+- **You are an architect, not a coder.** Decompose tasks into briefs for specialist agents. Delegate. Supervise. Validate. Report via completionNote.
+- **Report up.** After completing a task, send a message to pi-chromebook via `send_message` with a summary of what was done.
+
+---

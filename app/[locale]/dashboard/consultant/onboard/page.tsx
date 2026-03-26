@@ -247,7 +247,11 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 				>
 					{SECTORS.map((s) => (
 						<option key={s} value={s}>
-							{t(`sector${s.charAt(0).toUpperCase()}${s.slice(1)}` as Parameters<typeof t>[0])}
+							{t(
+								`sector${s.charAt(0).toUpperCase()}${s.slice(1)}` as Parameters<
+									typeof t
+								>[0],
+							)}
 						</option>
 					))}
 				</select>
@@ -268,7 +272,10 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 			<button
 				type="submit"
 				disabled={
-					isSubmitting || !name.trim() || !clientName.trim() || !websiteUrl.trim()
+					isSubmitting ||
+					!name.trim() ||
+					!clientName.trim() ||
+					!websiteUrl.trim()
 				}
 				className="w-full h-10 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring btn-shadow active-scale"
 			>
@@ -296,7 +303,9 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 	const [addError, setAddError] = useState<string | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
 
-	const addCompetitorMutation = useMutation(api.consultantProjects.addCompetitor);
+	const addCompetitorMutation = useMutation(
+		api.consultantProjects.addCompetitor,
+	);
 
 	const handleAdd = useCallback(async () => {
 		if (!newName.trim() || !newUrl.trim()) return;
@@ -321,7 +330,12 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 
 		setCompetitors((prev) => [
 			...prev,
-			{ id: rowId, name: newName.trim(), url: newUrl.trim(), status: "scraping" },
+			{
+				id: rowId,
+				name: newName.trim(),
+				url: newUrl.trim(),
+				status: "scraping",
+			},
 		]);
 		setNewName("");
 		setNewUrl("");
@@ -346,7 +360,14 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 		} finally {
 			setIsAdding(false);
 		}
-	}, [newName, newUrl, competitors.length, projectId, addCompetitorMutation, t]);
+	}, [
+		newName,
+		newUrl,
+		competitors.length,
+		projectId,
+		addCompetitorMutation,
+		t,
+	]);
 
 	const handleRemove = (id: string) => {
 		setCompetitors((prev) => prev.filter((c) => c.id !== id));
@@ -369,7 +390,9 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 								<p className="text-sm font-medium text-foreground truncate">
 									{c.name}
 								</p>
-								<p className="text-xs text-muted-foreground truncate">{c.url}</p>
+								<p className="text-xs text-muted-foreground truncate">
+									{c.url}
+								</p>
 							</div>
 							<span
 								className={cn(
@@ -595,7 +618,9 @@ export default function ConsultantOnboardPage() {
 					<h1 className="font-heading text-xl font-semibold text-foreground tracking-[-0.03em] mb-1">
 						{t("title")}
 					</h1>
-					<p className="text-sm text-muted-foreground">{stepDescriptions[step]}</p>
+					<p className="text-sm text-muted-foreground">
+						{stepDescriptions[step]}
+					</p>
 				</div>
 
 				{/* Step indicator */}
