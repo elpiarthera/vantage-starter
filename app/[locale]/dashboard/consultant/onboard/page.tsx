@@ -38,12 +38,25 @@ interface CompetitorRow {
 // ============================================================================
 
 const SECTORS = [
+	"technology",
+	"consulting",
+	"finance",
+	"healthcare",
+	"manufacturing",
+	"retail",
+	"education",
+	"legal",
+	"real_estate",
+	"media",
+	"hospitality",
+	"logistics",
+	"energy",
+	"construction",
+	"agriculture",
+	"nonprofit",
+	"government",
 	"marketing",
 	"sales",
-	"engineering",
-	"operations",
-	"support",
-	"analytics",
 	"other",
 ] as const;
 
@@ -131,7 +144,7 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 	const [name, setName] = useState("");
 	const [clientName, setClientName] = useState("");
 	const [websiteUrl, setWebsiteUrl] = useState("");
-	const [sector, setSector] = useState<string>("marketing");
+	const [sector, setSector] = useState<string>("technology");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -245,22 +258,34 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 				<label htmlFor="sector" className="text-xs font-medium text-foreground">
 					{t("sector")}
 				</label>
-				<select
-					id="sector"
-					value={sector}
-					onChange={(e) => setSector(e.target.value)}
-					className={cn(inputClass, "cursor-pointer")}
-				>
-					{SECTORS.map((s) => (
-						<option key={s} value={s}>
-							{t(
-								`sector${s.charAt(0).toUpperCase()}${s.slice(1)}` as Parameters<
-									typeof t
-								>[0],
-							)}
-						</option>
-					))}
-				</select>
+				<div className="relative">
+					<select
+						id="sector"
+						value={sector}
+						onChange={(e) => setSector(e.target.value)}
+						className={cn(inputClass, "cursor-pointer appearance-none pr-10")}
+					>
+						{SECTORS.map((s) => (
+							<option key={s} value={s}>
+								{t(
+									`sector${s.charAt(0).toUpperCase()}${s.slice(1)}` as Parameters<
+										typeof t
+									>[0],
+								)}
+							</option>
+						))}
+					</select>
+					<svg
+						className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none size-4 text-muted-foreground"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+						aria-hidden="true"
+					>
+						<path d="m6 9 6 6 6-6" />
+					</svg>
+				</div>
 			</div>
 
 			{/* Error */}
