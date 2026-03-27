@@ -1,7 +1,7 @@
 "use client";
 
 import type { Spec } from "@json-render/core";
-import { Renderer, useChatUI } from "@json-render/react";
+import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -107,11 +107,13 @@ function AssistantBubble({
 				)}
 				{/* Plan rendering */}
 				{spec && (
-					<Renderer
-						spec={spec}
-						registry={vantageOSRegistry}
-						loading={isStreaming}
-					/>
+					<JSONUIProvider registry={vantageOSRegistry}>
+						<Renderer
+							spec={spec}
+							registry={vantageOSRegistry}
+							loading={isStreaming}
+						/>
+					</JSONUIProvider>
 				)}
 				{/* Streaming indicator when no text yet */}
 				{!text && !spec && isStreaming && (

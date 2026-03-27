@@ -12,7 +12,7 @@
  */
 
 import type { Spec } from "@json-render/core";
-import { Renderer, useChatUI } from "@json-render/react";
+import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -106,11 +106,13 @@ function AssistantBubble({
 					</p>
 				)}
 				{spec && (
-					<Renderer
-						spec={spec}
-						registry={vantageOSRegistry}
-						loading={isStreaming}
-					/>
+					<JSONUIProvider registry={vantageOSRegistry}>
+						<Renderer
+							spec={spec}
+							registry={vantageOSRegistry}
+							loading={isStreaming}
+						/>
+					</JSONUIProvider>
 				)}
 				{!text && !spec && isStreaming && (
 					<div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -530,7 +532,7 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 	}
 
 	return (
-		<div className={cn("flex h-[calc(100vh-8rem)] overflow-hidden")}>
+		<div className="flex flex-col flex-1 min-h-0 overflow-hidden">
 			{/* ================================================================
 			    RIGHT PANEL — chat interface (full width, no session sidebar)
 			    ================================================================ */}

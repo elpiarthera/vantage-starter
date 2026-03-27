@@ -76,3 +76,4 @@ playwright-report/
 
 # Turbo
 .turbo
+package-lock.json

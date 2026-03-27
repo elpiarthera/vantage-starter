@@ -8,7 +8,12 @@
 		},
 		{
 			"path": "../vantage-studio"
+		},
+		{
+			"path": "../vantage-peers-site"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"npm.packageManager": "pnpm"
+	}
 }

@@ -2732,7 +2732,8 @@
 		"new_chat": "Nouvelle conversation",
 		"new_mission": "Nouvelle mission",
 		"new_architect_session": "Nouvelle session Architect",
-		"more_new_options": "Plus d'options"
+		"more_new_options": "Plus d'options",
+		"consultant_onboarding": "Onboarding Consultant"
 	},
 	"chat": {
 		"title": "Conversations",
