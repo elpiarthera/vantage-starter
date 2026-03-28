@@ -343,8 +343,8 @@ function ConfirmConfigBar({
 	};
 
 	return (
-		<div className="border-t border-border px-4 py-3 bg-muted/30">
-			<div className="flex items-center justify-between gap-4">
+		<div className="border-t border-border py-3 bg-muted/30">
+			<div className="flex items-center justify-between gap-4 px-4 md:px-6 max-w-3xl mx-auto">
 				<div>
 					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
 						{t("configReady")}
@@ -541,42 +541,44 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 				aria-label={t("title")}
 			>
 				{/* Header */}
-				<div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border shrink-0">
-					<div className="flex items-center gap-3">
-						<button
-							type="button"
-							onClick={() =>
-								router.push(`/${locale}/dashboard/consultant/onboard`)
-							}
-							className="flex items-center justify-center min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-2"
-							aria-label={t("back")}
-						>
-							<svg
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="1.5"
-								aria-hidden="true"
+				<div className="border-b border-border shrink-0">
+					<div className="flex items-center justify-between px-4 md:px-6 py-4 max-w-3xl mx-auto">
+						<div className="flex items-center gap-3">
+							<button
+								type="button"
+								onClick={() =>
+									router.push(`/${locale}/dashboard/consultant/onboard`)
+								}
+								className="flex items-center justify-center min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-2"
+								aria-label={t("back")}
 							>
-								<path d="M19 12H5M12 5l-7 7 7 7" />
-							</svg>
-						</button>
-						<div>
-							<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
-								{project.name}
-							</h1>
-							<p className="text-xs text-muted-foreground">
-								{project.clientName}
-							</p>
+								<svg
+									width="16"
+									height="16"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="1.5"
+									aria-hidden="true"
+								>
+									<path d="M19 12H5M12 5l-7 7 7 7" />
+								</svg>
+							</button>
+							<div>
+								<h1 className="font-heading text-sm font-semibold text-foreground tracking-[-0.03em]">
+									{project.name}
+								</h1>
+								<p className="text-xs text-muted-foreground">
+									{project.clientName}
+								</p>
+							</div>
 						</div>
-					</div>
 
-					{/* Status badge */}
-					<span className="text-xs px-2.5 py-1 rounded-full border border-[oklch(0.62_0.18_240)]/50 text-[oklch(0.62_0.18_240)] uppercase tracking-wider">
-						{project.sector}
-					</span>
+						{/* Status badge */}
+						<span className="text-xs px-2.5 py-1 rounded-full border border-[oklch(0.62_0.18_240)]/50 text-[oklch(0.62_0.18_240)] uppercase tracking-wider">
+							{project.sector}
+						</span>
+					</div>
 				</div>
 
 				{/* Messages */}
@@ -616,9 +618,9 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 
 				{/* Error display */}
 				{error && (
-					<div className="px-4 py-2 border-t border-border bg-[oklch(0.65_0.2_25)]/10">
+					<div className="py-2 border-t border-border bg-[oklch(0.65_0.2_25)]/10">
 						<p
-							className="text-xs"
+							className="text-xs px-4 md:px-6 max-w-3xl mx-auto"
 							style={{ color: "oklch(0.65 0.2 25)" }}
 							role="alert"
 						>
@@ -640,13 +642,13 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 				)}
 
 				{/* Input */}
-				<div className="border-t border-border px-4 md:px-6 py-4">
+				<div className="border-t border-border py-4">
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();
 							submitMessage();
 						}}
-						className="flex items-end gap-3"
+						className="flex items-end gap-3 px-4 md:px-6 max-w-3xl mx-auto"
 					>
 						<textarea
 							ref={textareaRef}

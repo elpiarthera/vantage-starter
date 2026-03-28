@@ -15,12 +15,12 @@
  * Context: project brandKit + competitors from Convex + registry teams
  */
 
-import { openai } from "@ai-sdk/openai";
 import { auth } from "@clerk/nextjs/server";
 import { streamText } from "ai";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { getModelFromGateway } from "@/lib/ai/providers";
 import { onboardingPrompt } from "@/lib/consultant/prompts";
 import type { OnboardingContext } from "@/lib/consultant/types";
 
@@ -204,9 +204,26 @@ export async function POST(req: Request) {
 			});
 		}
 
-		// 13. Stream
+		// 13. Resolve model via Vercel AI Gateway
+		const selectedModel = "claude-sonnet-4-5";
+		let aiModel: { provider: string; gatewayModel: string } | null = null;
+		try {
+			aiModel = await fetchQuery(
+				api.aiModels.getByModelId,
+				{ modelId: selectedModel },
+				{ token: convexToken },
+			);
+		} catch (e) {
+			console.warn(
+				"[consultant/onboard] Model lookup failed, using fallback:",
+				e,
+			);
+		}
+		const model = getModelFromGateway(selectedModel, aiModel?.gatewayModel);
+
+		// 14. Stream
 		const result = streamText({
-			model: openai("gpt-4o"),
+			model,
 			system: systemPrompt,
 			prompt: message,
 		});

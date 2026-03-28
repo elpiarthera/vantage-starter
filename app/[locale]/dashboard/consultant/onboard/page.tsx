@@ -60,6 +60,33 @@ const SECTORS = [
 	"other",
 ] as const;
 
+type Sector = (typeof SECTORS)[number];
+
+// Explicit map from sector value → i18n key — avoids dynamic key generation
+// which can silently fall back to EN when the generated key doesn't type-check.
+const SECTOR_I18N_KEYS: Record<Sector, string> = {
+	technology: "sectorTechnology",
+	consulting: "sectorConsulting",
+	finance: "sectorFinance",
+	healthcare: "sectorHealthcare",
+	manufacturing: "sectorManufacturing",
+	retail: "sectorRetail",
+	education: "sectorEducation",
+	legal: "sectorLegal",
+	real_estate: "sectorReal_estate",
+	media: "sectorMedia",
+	hospitality: "sectorHospitality",
+	logistics: "sectorLogistics",
+	energy: "sectorEnergy",
+	construction: "sectorConstruction",
+	agriculture: "sectorAgriculture",
+	nonprofit: "sectorNonprofit",
+	government: "sectorGovernment",
+	marketing: "sectorMarketing",
+	sales: "sectorSales",
+	other: "sectorOther",
+};
+
 // ============================================================================
 // STEP INDICATOR
 // ============================================================================
@@ -267,11 +294,7 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 					>
 						{SECTORS.map((s) => (
 							<option key={s} value={s}>
-								{t(
-									`sector${s.charAt(0).toUpperCase()}${s.slice(1)}` as Parameters<
-										typeof t
-									>[0],
-								)}
+								{t(SECTOR_I18N_KEYS[s])}
 							</option>
 						))}
 					</select>
