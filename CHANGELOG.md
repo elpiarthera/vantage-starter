@@ -4,6 +4,9 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-04-02 — E2E CI workflow)
+- **`.github/workflows/e2e.yml`**: Rewired e2e workflow to run against Vercel preview deployments instead of a local server. Removed `pnpm build`, `pnpm start`, and `wait-on` steps that crashed in CI without Clerk keys. Workflow now triggers on `deployment_status` (Vercel webhook) in addition to `pull_request`. `PLAYWRIGHT_BASE_URL` resolves to `github.event.deployment_status.target_url` (Vercel preview URL) or falls back to the constructed branch preview URL. Removed Clerk/Convex secrets from env — not needed when testing the deployed app. Added `BB_CONTEXT_ID` secret reference. Reduced timeout from 15 to 10 minutes.
+
 ### Added (Phase 5 — Config Generation)
 - **`lib/consultant/config-generator.ts`**: `generateConfig(spec: OnboardingConfigSpec): GeneratedConfig` — takes a validated OnboardingConfig spec from json-render, generates all `.claude/` file contents as strings (no disk I/O). Outputs: `CLAUDE.md` (project bible + agent routing table), `.claude/agents/<agentId>.md` per selected agent, `.claude/skills/SKILLS.md` manifest, `hooks/session-start.py`. Returns `GeneratedConfig` with `files[]`, `summary`, `teamCount`, `agentCount`, `skillCount`.
 - **`lib/consultant/config-templates.ts`**: Four pure template functions — `agentTemplate`, `claudeMdTemplate`, `sessionStartTemplate`, `skillsManifestTemplate`. All parameterised, no side effects. Agent format mirrors existing `.claude/agents/dev-frontend.md` (frontmatter + PERSONA + ROLE + SKILLS + EXECUTION RULES + DEFINITION OF DONE).
