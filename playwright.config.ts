@@ -8,16 +8,14 @@ import { defineConfig, devices } from "@playwright/test";
  * Auth-required tests: skipped automatically when CLERK_TESTING_TOKEN is absent
  *
  * Browserbase: when BROWSERBASE_API_KEY + BROWSERBASE_PROJECT_ID are set,
- * tests connect to Browserbase cloud browsers via WebSocket instead of
- * launching a local browser. When not set, falls back to local Chromium.
+ * tests run on Browserbase cloud browsers via connectOverCDP (not connectOptions).
+ * Tests import from e2e/fixtures.ts to get the patched `browser` fixture.
+ * When env vars are absent, tests fall back to local Chromium.
  *
  * Clerk: global setup at e2e/global-setup.ts fetches Clerk testing token
  * automatically from the Clerk Backend API (requires CLERK_SECRET_KEY).
  * Skip by setting CLERK_TESTING_TOKEN directly (useful in CI).
  */
-
-const hasBrowserbase =
-	!!process.env.BROWSERBASE_API_KEY && !!process.env.BROWSERBASE_PROJECT_ID;
 
 export default defineConfig({
 	globalSetup: "./e2e/global-setup.ts",
@@ -33,17 +31,8 @@ export default defineConfig({
 		screenshot: "only-on-failure",
 		video: "off",
 		locale: "en-US",
-		// Connect to Browserbase cloud browser when credentials are provided.
-		// Falls back to local browser launch when env vars are absent.
-		...(hasBrowserbase
-			? {
-					connectOptions: {
-						wsEndpoint: `wss://connect.browserbase.com?apiKey=${process.env.BROWSERBASE_API_KEY}&projectId=${process.env.BROWSERBASE_PROJECT_ID}`,
-					},
-				}
-			: {}),
 	},
-	timeout: 30_000,
+	timeout: 60_000,
 	expect: {
 		timeout: 10_000,
 	},
