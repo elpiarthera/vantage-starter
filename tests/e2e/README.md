@@ -390,3 +390,52 @@ The script will prompt you to enter the code. Check your email and enter it in t
 - [Browserbase Docs](https://docs.browserbase.com/)
 - [Zod Schema Validation](https://zod.dev/)
 
+---
+
+## Playwright + Clerk Testing (`auth.spec.ts`, `dashboard.spec.ts`)
+
+These two spec files use `@playwright/test` with `@clerk/testing/playwright` for
+structured, assertion-based e2e tests. They complement the Stagehand AI-driven
+tests above.
+
+### Setup
+
+1. Install Playwright browsers (skip if using Browserbase):
+   ```bash
+   pnpm exec playwright install chromium
+   ```
+2. Start the dev server:
+   ```bash
+   pnpm dev
+   ```
+3. Run tests:
+   ```bash
+   pnpm test:e2e
+   ```
+
+### Clerk Testing Mode
+
+Authenticated tests require `CLERK_TESTING_TOKEN` in your environment.
+They are skipped automatically when the token is absent.
+
+| Setting | Value |
+|---------|-------|
+| Test phone | `+15555550100` |
+| OTP bypass code | `424242` |
+| Token env var | `CLERK_TESTING_TOKEN` |
+
+Generate a token from Clerk Dashboard → Testing → Testing tokens.
+
+### Browserbase cloud browsers
+
+Set `BROWSERBASE_API_KEY` and `BROWSERBASE_PROJECT_ID` to run Playwright tests
+on Browserbase's remote browsers instead of a local Chromium install. The
+`playwright.config.ts` `connectOptions.wsEndpoint` handles the switch
+automatically — no code changes needed.
+
+### CI
+
+See `.github/workflows/e2e.yml`. Required secrets: `CLERK_PUBLISHABLE_KEY`,
+`CLERK_SECRET_KEY`, `CLERK_TESTING_TOKEN`, `NEXT_PUBLIC_CONVEX_URL`.
+Optional: `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID`.
+
