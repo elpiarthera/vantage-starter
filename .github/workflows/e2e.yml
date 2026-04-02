@@ -1,8 +1,6 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches: [main]
   deployment_status:
 
 env:
@@ -12,7 +10,9 @@ env:
 
 jobs:
   e2e:
-    if: github.event_name == 'pull_request' || (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      contains(github.event.deployment_status.environment, 'Preview')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -30,15 +30,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Only install local Chromium when not using Browserbase cloud browsers.
-      # When BROWSERBASE_API_KEY is set, Playwright connects via WebSocket instead.
-      - name: Install Playwright browsers
-        if: ${{ !env.BROWSERBASE_API_KEY }}
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Run E2E tests
         env:
-          PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.target_url || format('https://vantage-starter-git-{0}-elpi-projects.vercel.app', github.head_ref) }}
+          PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.target_url }}
         run: pnpm exec playwright test
 
       - name: Upload Playwright report
