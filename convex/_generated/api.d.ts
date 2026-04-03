@@ -8,13 +8,21 @@
  * @module
  */
 
+import type * as actions_scrapeClient from "../actions/scrapeClient.js";
+import type * as actions_scrapeCompetitor from "../actions/scrapeCompetitor.js";
 import type * as adminHelpers from "../adminHelpers.js";
 import type * as agents from "../agents.js";
+import type * as aiModels from "../aiModels.js";
 import type * as architectSessions from "../architectSessions.js";
 import type * as assets from "../assets.js";
 import type * as chatMessages from "../chatMessages.js";
+import type * as chats from "../chats.js";
 import type * as checkpoints from "../checkpoints.js";
+import type * as consultantProjects from "../consultantProjects.js";
 import type * as credits from "../credits.js";
+import type * as customFrameworks from "../customFrameworks.js";
+import type * as customPersonas from "../customPersonas.js";
+import type * as customRoles from "../customRoles.js";
 import type * as email from "../email.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
@@ -27,13 +35,19 @@ import type * as lib_agentTokens from "../lib/agentTokens.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_rag from "../lib/rag.js";
 import type * as memory from "../memory.js";
+import type * as messages from "../messages.js";
 import type * as missions from "../missions.js";
 import type * as operations from "../operations.js";
 import type * as orchestration from "../orchestration.js";
 import type * as polar from "../polar.js";
+import type * as projects from "../projects.js";
 import type * as rateLimits from "../rateLimits.js";
+import type * as ratelimit from "../ratelimit.js";
+import type * as registry from "../registry.js";
 import type * as schemas_architect from "../schemas/architect.js";
 import type * as seed from "../seed.js";
+import type * as seed_seedCreditCosts from "../seed/seedCreditCosts.js";
+import type * as seed_seedRegistry from "../seed/seedRegistry.js";
 import type * as seedCredits from "../seedCredits.js";
 import type * as sharedLinks from "../sharedLinks.js";
 import type * as skills from "../skills.js";
@@ -50,13 +64,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/scrapeClient": typeof actions_scrapeClient;
+  "actions/scrapeCompetitor": typeof actions_scrapeCompetitor;
   adminHelpers: typeof adminHelpers;
   agents: typeof agents;
+  aiModels: typeof aiModels;
   architectSessions: typeof architectSessions;
   assets: typeof assets;
   chatMessages: typeof chatMessages;
+  chats: typeof chats;
   checkpoints: typeof checkpoints;
+  consultantProjects: typeof consultantProjects;
   credits: typeof credits;
+  customFrameworks: typeof customFrameworks;
+  customPersonas: typeof customPersonas;
+  customRoles: typeof customRoles;
   email: typeof email;
   files: typeof files;
   http: typeof http;
@@ -69,13 +91,19 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/rag": typeof lib_rag;
   memory: typeof memory;
+  messages: typeof messages;
   missions: typeof missions;
   operations: typeof operations;
   orchestration: typeof orchestration;
   polar: typeof polar;
+  projects: typeof projects;
   rateLimits: typeof rateLimits;
+  ratelimit: typeof ratelimit;
+  registry: typeof registry;
   "schemas/architect": typeof schemas_architect;
   seed: typeof seed;
+  "seed/seedCreditCosts": typeof seed_seedCreditCosts;
+  "seed/seedRegistry": typeof seed_seedRegistry;
   seedCredits: typeof seedCredits;
   sharedLinks: typeof sharedLinks;
   skills: typeof skills;

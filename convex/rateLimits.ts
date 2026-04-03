@@ -33,6 +33,25 @@ const rateLimiter = new RateLimiter(components.ratelimiter, {
 		rate: 20,
 		period: 60_000,
 	},
+	// 10 custom role/persona/framework creates per minute per user
+	createCustomRole: {
+		kind: "token bucket" as const,
+		rate: 10,
+		period: 60_000,
+		capacity: 10,
+	},
+	createCustomPersona: {
+		kind: "token bucket" as const,
+		rate: 10,
+		period: 60_000,
+		capacity: 10,
+	},
+	createCustomFramework: {
+		kind: "token bucket" as const,
+		rate: 10,
+		period: 60_000,
+		capacity: 10,
+	},
 });
 
 // ============================================

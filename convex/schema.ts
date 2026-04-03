@@ -732,6 +732,53 @@ export default defineSchema({
 		.index("by_existing_mission", ["existingMissionId"]),
 
 	/**
+	 * 26. Consultant Projects Table
+	 * Onboarding flow: client scrape → competitor intel → discovery chat → config generation.
+	 */
+	consultantProjects: defineTable({
+		workspaceId: v.id("workspaces"),
+		name: v.string(),
+		clientName: v.string(),
+		clientWebsiteUrl: v.string(),
+		sector: v.string(),
+		brandKit: v.optional(v.any()), // Scraped brand data: name, tagline, colors, products, tech stack
+		competitors: v.optional(
+			v.array(
+				v.object({
+					name: v.string(),
+					url: v.string(),
+					positioning: v.optional(v.string()),
+					pricing: v.optional(v.string()),
+					offers: v.optional(v.string()),
+					differentiators: v.optional(v.string()),
+					scrapedAt: v.optional(v.number()),
+					error: v.optional(v.string()),
+				}),
+			),
+		),
+		knowledgeBase: v.optional(v.any()), // Extracted content from client site
+		sessionId: v.optional(v.id("architectSessions")),
+		config: v.optional(v.any()), // Generated OnboardingConfig JSON
+		status: v.union(
+			v.literal("created"),
+			v.literal("scraping"),
+			v.literal("competitors"),
+			v.literal("discovery"),
+			v.literal("review"),
+			v.literal("deployed"),
+		),
+		selectedTeams: v.optional(v.array(v.string())),
+		selectedAgents: v.optional(v.array(v.string())),
+		selectedSkills: v.optional(v.array(v.string())),
+		createdBy: v.string(), // Clerk user ID
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		.index("by_status", ["status"]),
+
+	/**
 	 * 25. Architect Messages Table
 	 * Individual messages within an Architect session.
 	 */
@@ -744,4 +791,263 @@ export default defineSchema({
 	})
 		.index("by_session", ["sessionId"])
 		.index("by_session_created", ["sessionId", "createdAt"]),
+
+	// ============================================================================
+	// REGISTRY TABLES (Phase 1 — consultant onboarding)
+	// Stores vantage-registry component catalogue locally for fast query + fallback.
+	// ============================================================================
+
+	/**
+	 * 27. Registry Teams Table
+	 * A team is a named bundle of agents + skills organized around a business function.
+	 * category: the business domain (marketing, sales, engineering, operations, support, analytics).
+	 */
+	registryTeams: defineTable({
+		teamId: v.string(), // Stable slug, e.g. "content-marketing"
+		name: v.string(),
+		description: v.string(),
+		category: v.union(
+			v.literal("marketing"),
+			v.literal("sales"),
+			v.literal("engineering"),
+			v.literal("operations"),
+			v.literal("support"),
+			v.literal("analytics"),
+		),
+		agentIds: v.array(v.string()),
+		skillIds: v.array(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_team_id", ["teamId"])
+		.index("by_category", ["category"]),
+
+	/**
+	 * 28. Registry Agents Table
+	 * An agent is a specialist AI worker belonging to one team.
+	 */
+	registryAgents: defineTable({
+		agentId: v.string(), // Stable slug, e.g. "content-strategist"
+		name: v.string(),
+		role: v.string(),
+		description: v.string(),
+		skills: v.array(v.string()), // skill IDs
+		teamId: v.string(),
+		persona: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_agent_id", ["agentId"])
+		.index("by_team", ["teamId"]),
+
+	/**
+	 * 29. Registry Skills Table
+	 * A skill is a reusable capability that agents can execute.
+	 */
+	registrySkills: defineTable({
+		skillId: v.string(), // Stable slug, e.g. "blog-post-writing"
+		name: v.string(),
+		description: v.string(),
+		category: v.string(),
+		agentId: v.optional(v.string()),
+		teamId: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_skill_id", ["skillId"])
+		.index("by_team", ["teamId"])
+		.index("by_category", ["category"]),
+
+	// ============================================================================
+	// CHAT SYSTEM TABLES (Phase 1 — ported from vantage-studio)
+	// ============================================================================
+
+	/**
+	 * 26. Chats Table
+	 * Workspace-scoped conversation containers.
+	 * Distinct from chatMessages (table 4) — parent-scoped by workspaces._id.
+	 */
+	chats: defineTable({
+		title: v.string(),
+		workspaceId: v.id("workspaces"),
+		projectId: v.optional(v.id("projects")),
+		createdBy: v.string(), // Clerk user ID
+		visibility: v.optional(
+			v.union(v.literal("private"), v.literal("workspace")),
+		),
+		isPinned: v.optional(v.boolean()),
+		enabledToolkits: v.optional(
+			v.array(
+				v.object({
+					slug: v.string(),
+					isConnected: v.boolean(),
+				}),
+			),
+		),
+		selectedModel: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_workspace_created", ["workspaceId", "createdAt"])
+		.index("by_project", ["projectId"])
+		.index("by_creator", ["createdBy"]),
+
+	/**
+	 * 27. Projects Table
+	 * Organizes chats within a workspace.
+	 */
+	projects: defineTable({
+		name: v.string(),
+		description: v.optional(v.string()),
+		icon: v.optional(v.string()),
+		color: v.optional(v.string()),
+		workspaceId: v.id("workspaces"),
+		createdBy: v.string(), // Clerk user ID
+		settings: v.optional(
+			v.object({
+				defaultView: v.optional(
+					v.union(v.literal("board"), v.literal("list"), v.literal("timeline")),
+				),
+				color: v.optional(v.string()),
+				icon: v.optional(v.string()),
+			}),
+		),
+		orderPosition: v.optional(v.number()),
+		isArchived: v.optional(v.boolean()),
+		taskCount: v.optional(v.number()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_workspace", ["workspaceId"])
+		.index("by_creator", ["createdBy"])
+		// D3: compound index for archived filter — avoids in-memory JS filtering in list query
+		.index("by_workspace_archived", ["workspaceId", "isArchived"]),
+
+	/**
+	 * 28. Messages Table
+	 * Individual messages within a chat.
+	 * Distinct from chatMessages (table 4) — parent-scoped by chats._id.
+	 */
+	messages: defineTable({
+		chatId: v.id("chats"),
+		role: v.union(v.literal("user"), v.literal("assistant")),
+		content: v.string(),
+		// v.any() justified: AI SDK v6 `parts` shape is provider-controlled (text/tool-call/tool-result
+		// union). Typed validators planned for Phase 5 once the shape is stable across providers.
+		// TODO Phase 5: replace with v.union(v.object({type: v.literal("text"), ...}), ...)
+		parts: v.optional(v.any()),
+		// v.any() justified: attachment metadata (file URLs, mime types) comes from Convex file storage
+		// response whose shape may vary. Typed validators planned for Phase 5.
+		// TODO Phase 5: type as v.object({ url: v.string(), name: v.string(), mimeType: v.string() })
+		attachments: v.optional(v.any()),
+		toolCalls: v.optional(
+			v.array(
+				v.object({
+					id: v.string(),
+					toolName: v.string(),
+					// v.any() justified: tool args are user-defined JSON schemas — shape is controlled by the
+					// tool definition, not by Convex. Cannot type-check without generating validators per tool.
+					// TODO Phase 5: generate per-tool validators from the tool registry.
+					args: v.any(),
+					// v.any() justified: tool results are user-defined — same reasoning as args above.
+					// TODO Phase 5: generate per-tool result validators from the tool registry.
+					result: v.optional(v.any()),
+					status: v.union(
+						v.literal("pending"),
+						v.literal("success"),
+						v.literal("error"),
+					),
+				}),
+			),
+		),
+		createdAt: v.number(),
+	})
+		// D2: by_chat removed — by_chat_created (["chatId", "createdAt"]) is a superset.
+		// All queries that need chatId-only filtering can use by_chat_created with eq(chatId).
+		.index("by_chat_created", ["chatId", "createdAt"]),
+
+	// ============================================================================
+	// AI MODEL CATALOG (ported from vantage-studio)
+	// ============================================================================
+
+	/**
+	 * 29. AI Models Table
+	 * Global catalog of available AI models — admins manage, all users read.
+	 * No workspace scoping — these are platform-level settings.
+	 *
+	 * Data source: Vercel AI Gateway (https://vercel.com/ai-gateway/models)
+	 * Last updated: January 17, 2026
+	 */
+	aiModels: defineTable({
+		// === IDENTIFIERS ===
+		// Internal ID used in code and stored in chats.selectedModel
+		modelId: v.string(), // e.g., "gpt-4o", "claude-sonnet-4"
+
+		// Vercel AI Gateway model path (provider/model-name format)
+		gatewayModel: v.string(), // e.g., "openai/gpt-4o", "anthropic/claude-sonnet-4-20250514"
+
+		// === DISPLAY INFO ===
+		displayName: v.string(), // e.g., "GPT-4o", "Claude Sonnet 4"
+		description: v.string(), // e.g., "Best for tasks & tools"
+		logoUrl: v.optional(v.string()), // e.g., "https://vercel.com/.../anthropic.png"
+
+		// === PROVIDER INFO ===
+		provider: v.union(
+			v.literal("anthropic"),
+			v.literal("openai"),
+			v.literal("google"),
+			v.literal("xai"),
+			v.literal("deepseek"),
+			v.literal("meta"),
+			v.literal("mistral"),
+		),
+
+		// === CAPABILITIES ===
+		contextWindow: v.number(), // e.g., 128000, 200000, 1000000
+		maxOutput: v.number(), // e.g., 4096, 8192, 16384
+		bestAt: v.string(), // e.g., "Tool calling & tasks"
+
+		// === PRICING (per million tokens) ===
+		inputCostPerMillion: v.optional(v.number()), // e.g., 3.00 for $3.00/M
+		outputCostPerMillion: v.optional(v.number()), // e.g., 15.00 for $15.00/M
+
+		// === CACHING ===
+		supportsCache: v.optional(v.boolean()),
+		cacheReadCostPerMillion: v.optional(v.number()),
+		cacheWriteCostPerMillion: v.optional(v.number()),
+
+		// === WEB SEARCH ===
+		supportsWebSearch: v.optional(v.boolean()),
+		webSearchCostPer1K: v.optional(v.number()),
+
+		// === CATEGORIZATION ===
+		category: v.union(
+			v.literal("flagship"),
+			v.literal("balanced"),
+			v.literal("fast"),
+			v.literal("reasoning"),
+			v.literal("coding"),
+			v.literal("vision"),
+		),
+
+		// === FEATURES ===
+		supportsVision: v.optional(v.boolean()),
+		supportsTools: v.optional(v.boolean()),
+		supportsStreaming: v.optional(v.boolean()),
+		supportsReasoning: v.optional(v.boolean()),
+
+		// === AVAILABILITY ===
+		isEnabled: v.boolean(),
+		isDefault: v.optional(v.boolean()),
+		orderPosition: v.optional(v.number()),
+
+		// === TIMESTAMPS ===
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_model_id", ["modelId"])
+		.index("by_provider", ["provider"])
+		.index("by_category", ["category"])
+		.index("by_enabled", ["isEnabled"]),
 });

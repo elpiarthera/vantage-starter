@@ -48,6 +48,43 @@ const actionButtonProps = z.object({
 	variant: z.string().optional(),
 });
 
+// Onboarding components
+const onboardingConfigProps = z.object({
+	projectName: z.string(),
+	clientName: z.string(),
+	sector: z.string(),
+	summary: z.string(),
+	painPoints: z.array(z.string()).optional(),
+});
+
+const teamSelectionProps = z.object({
+	teamId: z.string(),
+	name: z.string(),
+	description: z.string(),
+	category: z.string(),
+	agentCount: z.number(),
+	selected: z.boolean(),
+	matchedPains: z.array(z.string()).optional(),
+});
+
+const agentSelectionProps = z.object({
+	agentId: z.string(),
+	name: z.string(),
+	role: z.string(),
+	description: z.string(),
+	skills: z.array(z.string()).optional(),
+	teamId: z.string(),
+	selected: z.boolean(),
+});
+
+const skillSelectionProps = z.object({
+	skillId: z.string(),
+	name: z.string(),
+	description: z.string(),
+	category: z.string(),
+	selected: z.boolean(),
+});
+
 // Cast to any to work around Zod v4 <-> @json-render/core v0.14.1 type mismatch
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const vantageOSCatalog = defineCatalog(schema, {
@@ -73,6 +110,26 @@ export const vantageOSCatalog = defineCatalog(schema, {
 		ActionButton: {
 			description: "Clickable button for user actions",
 			props: actionButtonProps as any,
+		},
+		OnboardingConfig: {
+			description:
+				"Root container for a consultant onboarding configuration with selected teams, agents, and skills",
+			props: onboardingConfigProps as any,
+		},
+		TeamSelection: {
+			description:
+				"Team card showing a selectable vantage-registry team with matched pain points",
+			props: teamSelectionProps as any,
+		},
+		AgentSelection: {
+			description:
+				"Agent row showing a selectable agent within a team with its skills",
+			props: agentSelectionProps as any,
+		},
+		SkillSelection: {
+			description:
+				"Compact skill item showing a selectable skill with category tag",
+			props: skillSelectionProps as any,
 		},
 	},
 } as any);

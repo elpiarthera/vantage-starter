@@ -15,7 +15,7 @@ Complete step-by-step guide for setting up Clerk authentication before implement
 1. Go to [clerk.com](https://clerk.com) and sign up/login
 2. Click **"Create Application"**
 3. Configure your application:
-   - **Application Name**: MyShortReel (or your app name)
+   - **Application Name**: VantageStarter (or your app name)
    - **Authentication Methods**: Enable:
      - ✅ Email
      - ✅ Password

@@ -6,11 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { MessageList } from "./MessageList";
+import { ModelSelector } from "./ModelSelector";
 
-export function ChatPage() {
+interface ChatPageProps {
+	chatId?: string;
+}
+
+export function ChatPage({ chatId }: ChatPageProps) {
+	const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
+
 	// v6 useChat: sendMessage replaces handleSubmit+handleInputChange
 	// transport defaults to DefaultChatTransport → /api/chat
-	const { messages, sendMessage, stop, status, error } = useChat();
+	// id namespaces the client-side message store per chat session
+	const { messages, sendMessage, stop, status, error } = useChat({
+		id: chatId,
+	});
 
 	const isStreaming = status === "streaming" || status === "submitted";
 
@@ -54,7 +64,9 @@ export function ChatPage() {
 			textareaRef.current.style.height = "44px";
 			setTextareaHeight(44);
 		}
-		await sendMessage({ text });
+		// Pass selectedModel per-request via ChatRequestOptions.body
+		// so the route can read body.selectedModel without a static transport
+		await sendMessage({ text }, { body: { selectedModel } });
 	};
 
 	const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -67,9 +79,9 @@ export function ChatPage() {
 			{/* Page header */}
 			<div className="border-b border-border px-4 md:px-6 py-4 shrink-0">
 				<div className="flex items-center gap-3">
-					<div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center">
+					<div className="size-8 rounded-xl bg-muted flex items-center justify-center">
 						<svg
-							className="size-4 text-primary"
+							className="size-4 text-muted-foreground"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
@@ -92,14 +104,19 @@ export function ChatPage() {
 						</p>
 					</div>
 
+					<ModelSelector
+						selectedModelId={selectedModel}
+						onModelChange={setSelectedModel}
+					/>
+
 					{/* Live indicator */}
 					{isStreaming && (
 						<output
-							className="ml-auto flex items-center gap-1.5 text-xs text-primary"
+							className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground"
 							aria-live="polite"
 						>
 							<span
-								className="size-2 rounded-full bg-primary animate-pulse"
+								className="size-2 rounded-full bg-muted-foreground animate-pulse"
 								aria-hidden="true"
 							/>
 							Generating
@@ -129,72 +146,74 @@ export function ChatPage() {
 			)}
 
 			{/* Input area */}
-			<div className="shrink-0 border-t border-border px-4 md:px-6 py-3">
-				<form
-					onSubmit={handleFormSubmit}
-					className="flex items-end gap-2"
-					aria-label="Send a message"
-				>
-					<div className="flex-1 relative">
-						<Textarea
-							ref={textareaRef}
-							value={input}
-							onChange={handleTextareaChange}
-							onKeyDown={handleKeyDown}
-							placeholder="Ask the agent anything..."
-							rows={1}
-							disabled={isStreaming}
-							aria-label="Message input"
-							className={cn(
-								"resize-none overflow-hidden pr-2 min-h-[44px] py-2.5",
-								"leading-relaxed transition-none",
-							)}
-							style={{ height: textareaHeight }}
-						/>
-					</div>
+			<div className="shrink-0 px-4 md:px-6 py-4">
+				<div className="bg-card border border-border rounded-xl p-3">
+					<form
+						onSubmit={handleFormSubmit}
+						className="flex items-end gap-2"
+						aria-label="Send a message"
+					>
+						<div className="flex-1 relative">
+							<Textarea
+								ref={textareaRef}
+								value={input}
+								onChange={handleTextareaChange}
+								onKeyDown={handleKeyDown}
+								placeholder="Ask the agent anything..."
+								rows={1}
+								disabled={isStreaming}
+								aria-label="Message input"
+								className={cn(
+									"resize-none overflow-hidden pr-2 min-h-[44px] py-2.5",
+									"leading-relaxed transition-none",
+								)}
+								style={{ height: textareaHeight }}
+							/>
+						</div>
 
-					{/* Stop / Send button */}
-					{isStreaming ? (
-						<Button
-							type="button"
-							variant="outline"
-							size="icon"
-							onClick={stop}
-							className="shrink-0 size-11 rounded-xl"
-							aria-label="Stop generating"
-						>
-							<svg
-								className="size-4"
-								viewBox="0 0 16 16"
-								fill="currentColor"
-								aria-hidden="true"
+						{/* Stop / Send button */}
+						{isStreaming ? (
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								onClick={stop}
+								className="shrink-0 size-11 rounded-xl"
+								aria-label="Stop generating"
 							>
-								<rect x="3" y="3" width="10" height="10" rx="1" />
-							</svg>
-						</Button>
-					) : (
-						<Button
-							type="submit"
-							size="icon"
-							disabled={!input.trim()}
-							className="shrink-0 size-11 rounded-xl"
-							aria-label="Send message"
-						>
-							<svg
-								className="size-4"
-								viewBox="0 0 16 16"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								aria-hidden="true"
+								<svg
+									className="size-4"
+									viewBox="0 0 16 16"
+									fill="currentColor"
+									aria-hidden="true"
+								>
+									<rect x="3" y="3" width="10" height="10" rx="1" />
+								</svg>
+							</Button>
+						) : (
+							<Button
+								type="submit"
+								size="icon"
+								disabled={!input.trim()}
+								className="shrink-0 size-11 rounded-xl"
+								aria-label="Send message"
 							>
-								<path d="M14 8H2M14 8L8 2M14 8L8 14" />
-							</svg>
-						</Button>
-					)}
-				</form>
+								<svg
+									className="size-4"
+									viewBox="0 0 16 16"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M14 8H2M14 8L8 2M14 8L8 14" />
+								</svg>
+							</Button>
+						)}
+					</form>
+				</div>
 
 				<p className="text-[11px] text-muted-foreground mt-2 text-center">
 					Press Enter to send · Shift+Enter for new line

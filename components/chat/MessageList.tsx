@@ -150,7 +150,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 	if (messages.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-4 px-4 text-center">
-				<div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+				<div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
 					<svg
 						className="size-6 text-primary"
 						viewBox="0 0 24 24"

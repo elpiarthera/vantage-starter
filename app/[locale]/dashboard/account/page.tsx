@@ -12,20 +12,18 @@ export default function AccountPage() {
 
 	if (!isLoaded) {
 		return (
-			<div className="min-h-screen bg-background animate-in fade-in duration-300">
+			<div className="animate-in fade-in duration-300">
 				{/* Page Header Skeleton */}
-				<div className="border-b border-border bg-card">
-					<div className="container mx-auto px-4 py-6 md:px-6 md:py-8">
-						<div className="max-w-6xl mx-auto space-y-2">
-							<div className="animate-pulse bg-muted rounded h-8 w-48" />
-							<div className="animate-pulse bg-muted rounded h-4 w-64" />
-						</div>
+				<div className="border-b border-border px-4 md:px-6 py-4">
+					<div className="space-y-1.5">
+						<div className="animate-pulse bg-muted rounded h-5 w-36" />
+						<div className="animate-pulse bg-muted rounded h-3 w-56" />
 					</div>
 				</div>
 
 				{/* Tabs Skeleton */}
-				<div className="container mx-auto px-4 py-6 md:px-6 md:py-8 space-y-6">
-					<div className="animate-pulse bg-muted rounded h-12 w-full" />
+				<div className="px-4 md:px-6 py-6 space-y-6">
+					<div className="animate-pulse bg-muted rounded h-9 w-64" />
 					<div className="animate-pulse bg-muted rounded h-64 w-full" />
 				</div>
 			</div>
@@ -34,15 +32,13 @@ export default function AccountPage() {
 
 	if (!user) {
 		return (
-			<div className="min-h-screen bg-background animate-in fade-in duration-300">
-				<div className="border-b border-border bg-card">
-					<div className="container mx-auto px-4 py-6 md:px-6 md:py-8">
-						<h1 className="text-2xl md:text-3xl font-bold text-foreground">
-							{t("title")}
-						</h1>
-					</div>
+			<div className="animate-in fade-in duration-300">
+				<div className="border-b border-border px-4 md:px-6 py-4">
+					<h1 className="text-base font-semibold text-foreground">
+						{t("title")}
+					</h1>
 				</div>
-				<div className="container mx-auto px-4 py-6 md:px-6 md:py-8">
+				<div className="px-4 md:px-6 py-6">
 					<ErrorState
 						title={t("error_title")}
 						description={t("error_description")}
@@ -57,25 +53,19 @@ export default function AccountPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-background animate-in fade-in duration-300">
+		<div className="animate-in fade-in duration-300">
 			{/* Page Header */}
-			<div className="border-b border-border bg-card">
-				<div className="container mx-auto px-4 py-6 md:px-6 md:py-8">
-					<h1 className="text-2xl md:text-3xl font-bold text-foreground">
-						{t("title")}
-					</h1>
-					<p className="text-sm md:text-base text-muted-foreground mt-2">
-						{t("subtitle")}
-					</p>
-				</div>
+			<div className="border-b border-border px-4 md:px-6 py-4">
+				<h1 className="text-base font-semibold text-foreground">
+					{t("title")}
+				</h1>
+				<p className="text-xs text-muted-foreground mt-0.5">{t("subtitle")}</p>
 			</div>
 
 			{/* Account Tabs */}
-			<div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
-				<Suspense fallback={null}>
-					<AccountTabs user={user} />
-				</Suspense>
-			</div>
+			<Suspense fallback={null}>
+				<AccountTabs user={user} />
+			</Suspense>
 		</div>
 	);
 }

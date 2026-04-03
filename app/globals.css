@@ -3,11 +3,12 @@
    Default preset: Monochrome Grayscale (zero chroma)
    Loaded via @import before @tailwind base (SSR-safe static default)
    Runtime preset switching: <link href> swap via PresetLoader component
-   Fonts: Space Grotesk (headings) + Inter (body) + Geist Mono (code)
+   Fonts: Geist (headings + body) + Geist Mono (code)
    ============================================================================ */
 
-/* Default preset — Monochrome Grayscale. Must be before @tailwind directives. */
-@import "../styles/presets/dark-electric-blue.css";
+/* Default preset — v0 Base. Must be before @tailwind directives. */
+@import "../styles/presets/base.css";
+
 
 @tailwind base;
 @tailwind components;
@@ -15,93 +16,7 @@
 
 @layer base {
   :root {
-    /* Tokens not covered by presets — stable across all presets */
-
-    /* Easing functions — LitUI tokens */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-
-    /* Secondary — tinted to active hue */
-    --secondary: oklch(0.96 0 0);
-    --secondary-foreground: oklch(0.20 0 0);
-
-    /* Destructive — red-orange, universal */
-    --destructive: oklch(0.55 0.22 25);
-    --destructive-foreground: oklch(0.99 0 0);
-
-    /* Input */
-    --input: oklch(0.88 0 0);
-
-    /* Border radius — 0 for cards/inputs, pill for buttons/badges */
-    --radius: 0rem;
-
-    /* Hover state tokens — defined per-preset in preset files */
-
-    /* Status colors */
-    --success: oklch(0.55 0.18 145);
-    --warning: oklch(0.72 0.18 65);
-
-    /* Sidebar tokens — Monochrome Grayscale preset */
-    --sidebar-background: oklch(0.97 0 0);
-    --sidebar-foreground: oklch(0.25 0 0);
-    --sidebar-primary: oklch(0.22 0 0);
-    --sidebar-primary-foreground: oklch(0.99 0 0);
-    --sidebar-accent: oklch(0.96 0 0);
-    --sidebar-accent-foreground: oklch(0.20 0 0);
-    --sidebar-border: oklch(0.88 0 0);
-    --sidebar-ring: oklch(0.22 0 0);
-
-    /* Data visualization */
-    --chart-1: oklch(0.22 0 0);
-    --chart-2: oklch(0.40 0 0);
-    --chart-3: oklch(0.55 0 0);
-    --chart-4: oklch(0.70 0 0);
-    --chart-5: oklch(0.85 0 0);
-
-    /* Safe-area & layout variables (preserved from MSR) */
-    --ig-prompt-bar-min-height: 116px;
-    --ig-action-bar-height: 56px;
-    --ig-floating-panel-top: 96px;
-    --ig-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --ig-margin-sm: 16px;
-    --ig-margin-md: 24px;
-    --ig-prompt-bar-total: calc(var(--ig-prompt-bar-min-height) + var(--ig-safe-area-bottom) + var(--ig-margin-md));
-    --ig-action-bar-total: calc(var(--ig-action-bar-height) + var(--ig-margin-sm));
-    --ig-canvas-bottom-offset: calc(var(--ig-prompt-bar-total) + var(--ig-action-bar-total));
-    --ig-mobile-button-offset: calc(var(--ig-prompt-bar-total) + var(--ig-margin-md));
-  }
-
-  .dark {
-    /* Secondary */
-    --secondary: oklch(0.20 0 0);
-    --secondary-foreground: oklch(0.95 0 0);
-
-    /* Destructive */
-    --destructive: oklch(0.65 0.22 25);
-    --destructive-foreground: oklch(0.99 0 0);
-
-    /* Input */
-    --input: oklch(0.25 0 0);
-
-    /* Status */
-    --success: oklch(0.65 0.18 145);
-    --warning: oklch(0.78 0.18 65);
-
-    /* Sidebar */
-    --sidebar-background: oklch(0.12 0 0);
-    --sidebar-foreground: oklch(0.90 0 0);
-    --sidebar-primary: oklch(0.90 0 0);
-    --sidebar-primary-foreground: oklch(0.10 0 0);
-    --sidebar-accent: oklch(0.20 0 0);
-    --sidebar-accent-foreground: oklch(0.90 0 0);
-    --sidebar-border: oklch(0.25 0 0);
-    --sidebar-ring: oklch(0.90 0 0);
-
-    /* Data visualization */
-    --chart-1: oklch(0.90 0 0);
-    --chart-2: oklch(0.75 0 0);
-    --chart-3: oklch(0.60 0 0);
-    --chart-4: oklch(0.45 0 0);
-    --chart-5: oklch(0.30 0 0);
   }
 }
 
@@ -120,9 +35,9 @@
     letter-spacing: -0.01em;
   }
 
-  /* Heading font — Space Grotesk for all headings */
+  /* Heading font — Geist for all headings */
   h1, h2, h3, h4 {
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
   }
 
   /* Typography scale per design system v2 */
@@ -469,7 +384,13 @@ body::before {
 
 /* Icon container — feature grid icons, size-10, no large icon above heading */
 .icon-container {
-  @apply size-10 rounded-lg bg-muted/50 flex items-center justify-center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -662,6 +583,15 @@ body::before {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Sidebar hover-open overlay ──────────────────────────────────────────────
+   When the sidebar is hover-expanded from collapsed icon mode, keep the spacer
+   div pinned at icon width so the panel floats over content instead of pushing
+   it. Targets: the peer wrapper's first child (spacer div) via :has().
+   ──────────────────────────────────────────────────────────────────────────── */
+.peer:has([data-hover-open]) > div:first-child {
+  width: var(--sidebar-width-icon) !important;
 }
 
 .mobile-menu-enter {

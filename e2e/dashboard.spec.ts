@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 /**
  * Dashboard tests — requires authentication via CLERK_TESTING_TOKEN

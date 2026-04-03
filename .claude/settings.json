@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "*"
+      "*",
+      "mcp__convex__run",
+      "mcp__vantage-memory__create_briefing_note",
+      "Read(//root/coding/vantage-peers-site/app/**)",
+      "Read(//root/coding/vantage-peers-site/components/landing/**)"
     ]
   },
   "hooks": {

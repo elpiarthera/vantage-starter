@@ -1,7 +1,7 @@
 "use client";
 
 import type { Spec } from "@json-render/core";
-import { Renderer, useChatUI } from "@json-render/react";
+import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -107,11 +107,13 @@ function AssistantBubble({
 				)}
 				{/* Plan rendering */}
 				{spec && (
-					<Renderer
-						spec={spec}
-						registry={vantageOSRegistry}
-						loading={isStreaming}
-					/>
+					<JSONUIProvider registry={vantageOSRegistry}>
+						<Renderer
+							spec={spec}
+							registry={vantageOSRegistry}
+							loading={isStreaming}
+						/>
+					</JSONUIProvider>
 				)}
 				{/* Streaming indicator when no text yet */}
 				{!text && !spec && isStreaming && (
@@ -275,11 +277,41 @@ function ConfirmPlanBar({
 
 function ChatEmptyHint() {
 	return (
-		<div className="py-16 flex flex-col items-center justify-center text-center gap-3">
-			<p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-				Describe what you want to accomplish. I&apos;ll design an agent
-				workforce and execution plan.
-			</p>
+		<div className="flex flex-col items-center justify-center text-center gap-4 py-16">
+			<div className="size-10 rounded-full bg-muted flex items-center justify-center">
+				<svg
+					className="size-5 text-muted-foreground"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1.5"
+					aria-hidden="true"
+				>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M12 2L2 7l10 5 10-5-10-5z"
+					/>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M2 17l10 5 10-5"
+					/>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M2 12l10 5 10-5"
+					/>
+				</svg>
+			</div>
+			<div className="space-y-1">
+				<h2 className="text-sm font-semibold text-foreground">
+					Describe what you want to accomplish
+				</h2>
+				<p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+					I&apos;ll design an agent workforce and execution plan.
+				</p>
+			</div>
 		</div>
 	);
 }
@@ -394,48 +426,88 @@ export function ChatInterface({
 			)}
 
 			{/* Input */}
-			<div className="border-t border-border px-4 md:px-6 py-4">
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						submitMessage();
-					}}
-					className="flex items-end gap-3"
-				>
-					<Textarea
-						ref={textareaRef}
-						value={input}
-						onChange={(e) => {
-							setInput(e.target.value);
-							e.target.style.height = "auto";
-							const newH = Math.min(Math.max(e.target.scrollHeight, 44), 160);
-							e.target.style.height = `${newH}px`;
+			<div className="shrink-0 px-4 md:px-6 py-4">
+				<div className="bg-card border border-border rounded-xl p-3">
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							submitMessage();
 						}}
-						onKeyDown={handleKeyDown}
-						placeholder="Describe your goal..."
-						disabled={isStreaming}
-						rows={1}
-						className={cn(
-							"flex-1 resize-none min-h-[44px] max-h-[160px]",
-							"bg-muted/50 border-border rounded-[6px]",
-							"text-sm text-foreground placeholder:text-muted-foreground",
-							"focus-visible:ring-primary/50 transition-colors duration-150",
-						)}
-						aria-label="Message to Architect"
-					/>
-					<Button
-						type="submit"
-						disabled={!input.trim() || isStreaming}
-						className={cn(
-							"btn-shadow active-scale rounded-full shrink-0 h-11 px-5 font-medium",
-							"transition-[box-shadow,transform,opacity] duration-150",
-						)}
-						style={{ transitionTimingFunction: "var(--ease-out-expo)" }}
-						aria-label="Send message"
+						className="flex items-end gap-2"
+						aria-label="Send a message"
 					>
-						{isStreaming ? "Thinking..." : "Send"}
-					</Button>
-				</form>
+						<div className="flex-1 relative">
+							<Textarea
+								ref={textareaRef}
+								value={input}
+								onChange={(e) => {
+									setInput(e.target.value);
+									e.target.style.height = "auto";
+									const newH = Math.min(
+										Math.max(e.target.scrollHeight, 44),
+										160,
+									);
+									e.target.style.height = `${newH}px`;
+								}}
+								onKeyDown={handleKeyDown}
+								placeholder="Ask the architect anything..."
+								disabled={isStreaming}
+								rows={1}
+								className={cn(
+									"resize-none overflow-hidden pr-2 min-h-[44px] py-2.5",
+									"leading-relaxed transition-none",
+								)}
+								aria-label="Message to Architect"
+							/>
+						</div>
+
+						{/* Stop / Send button */}
+						{isStreaming ? (
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								className="shrink-0 size-11 rounded-xl"
+								aria-label="Thinking..."
+								disabled
+							>
+								<svg
+									className="size-4"
+									viewBox="0 0 16 16"
+									fill="currentColor"
+									aria-hidden="true"
+								>
+									<rect x="3" y="3" width="10" height="10" rx="1" />
+								</svg>
+							</Button>
+						) : (
+							<Button
+								type="submit"
+								size="icon"
+								disabled={!input.trim()}
+								className="shrink-0 size-11 rounded-xl"
+								aria-label="Send message"
+							>
+								<svg
+									className="size-4"
+									viewBox="0 0 16 16"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M14 8H2M14 8L8 2M14 8L8 14" />
+								</svg>
+							</Button>
+						)}
+					</form>
+				</div>
+
+				<p className="text-[11px] text-muted-foreground mt-2 text-center">
+					Press Enter to send · Shift+Enter for new line
+				</p>
 			</div>
 		</div>
 	);

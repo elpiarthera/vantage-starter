@@ -4,6 +4,68 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-04-02 — E2E CI workflow)
+- **`.github/workflows/e2e.yml`**: Rewired e2e workflow to run against Vercel preview deployments instead of a local server. Removed `pnpm build`, `pnpm start`, and `wait-on` steps that crashed in CI without Clerk keys. Workflow now triggers on `deployment_status` (Vercel webhook) in addition to `pull_request`. `PLAYWRIGHT_BASE_URL` resolves to `github.event.deployment_status.target_url` (Vercel preview URL) or falls back to the constructed branch preview URL. Removed Clerk/Convex secrets from env — not needed when testing the deployed app. Added `BB_CONTEXT_ID` secret reference. Reduced timeout from 15 to 10 minutes.
+
+### Added (Phase 5 — Config Generation)
+- **`lib/consultant/config-generator.ts`**: `generateConfig(spec: OnboardingConfigSpec): GeneratedConfig` — takes a validated OnboardingConfig spec from json-render, generates all `.claude/` file contents as strings (no disk I/O). Outputs: `CLAUDE.md` (project bible + agent routing table), `.claude/agents/<agentId>.md` per selected agent, `.claude/skills/SKILLS.md` manifest, `hooks/session-start.py`. Returns `GeneratedConfig` with `files[]`, `summary`, `teamCount`, `agentCount`, `skillCount`.
+- **`lib/consultant/config-templates.ts`**: Four pure template functions — `agentTemplate`, `claudeMdTemplate`, `sessionStartTemplate`, `skillsManifestTemplate`. All parameterised, no side effects. Agent format mirrors existing `.claude/agents/dev-frontend.md` (frontmatter + PERSONA + ROLE + SKILLS + EXECUTION RULES + DEFINITION OF DONE).
+- **`convex/seed/seedCreditCosts.ts`**: Idempotent `seedCreditCosts` internalMutation — seeds 6 credit action types: `chat_message` (1cr), `architect_chat` (2cr), `mission_create` (3cr), `competitor_analysis` (3cr), `brand_kit_extraction` (2cr), `consultant_onboard` (5cr). Run via `npx convex run seed/seedCreditCosts:seedCreditCosts`.
+
+### Added (Phase 1 — Registry Integration)
+- **`lib/registry/types.ts`**: TypeScript types for `RegistryTeam`, `RegistryAgent`, `RegistrySkill`, `RegistryHook`, `PainMapping`, `RegistryRecommendation`. Includes `PAIN_MAPPINGS` constant — 10 pain→team mappings covering prospecting, content marketing, SEO, client retention, social media, email campaigns, analytics, developer productivity, competitive intelligence, and internal operations.
+- **`convex/schema.ts`**: Added 3 new tables — `registryTeams` (27), `registryAgents` (28), `registrySkills` (29) — with stable slug IDs, category indexes, and team-scoped indexes.
+- **`convex/registry.ts`**: Five authenticated queries — `listTeams` (optional category filter), `getTeam`, `listAgentsByTeam`, `listSkillsByTeam`, `listSkills`, and `getRecommendationsForPains` (maps pain IDs through `PAIN_MAPPINGS`, loads teams+agents+skills, sorts by priority).
+- **`convex/seed/seedRegistry.ts`**: Idempotent `seedRegistry` internalMutation — seeds 15 teams, 28 agents, 76 skills across marketing, sales, support, analytics, operations, and engineering. Run via `npx convex run seed/seedRegistry:seedRegistry`.
+### Added (Day-19 migration — model selector UI)
+- **components/chat/ModelSelector.tsx**: Dropdown model selector with provider badges, grouped by category (flagship/balanced/fast/reasoning/coding), outside-click close, OKLCH tokens
+- **components/chat/ChatPage.tsx**: Wired model selector into chat header, passes `selectedModel` via `sendMessage` body option (AI SDK v6 per-request pattern)
+
+### Added (Day 19 — dynamic AI model system via Vercel AI Gateway)
+- **convex/schema.ts**: Added `aiModels` table with indexes (by_model_id, by_provider, by_category, by_enabled)
+- **convex/aiModels.ts**: Full CRUD API (list, listAll, getByModelId, getDefault, create, update, toggle, setDefault, remove) + seed with 24 models across 6 providers (Anthropic, OpenAI, Google, xAI, DeepSeek, Mistral)
+- **lib/ai/providers.ts**: Created `getModelFromGateway()` bridge — resolves model IDs to Vercel AI Gateway paths with fallback map
+- **app/api/chat/route.ts**: Replaced hardcoded `openai("gpt-4o")` with dynamic gateway lookup via `api.aiModels.getByModelId` + `getModelFromGateway()`. Removed OPENAI_API_KEY dependency.
+- **app/api/architect/chat/route.ts**: Same — defaults to `claude-sonnet-4-5` via gateway
+- Adding a model is now table-based (insert a row in Convex), not code-based
+
+### Fixed (Day 19 — credit system + action types)
+- **convex/seed/seedCreditCosts.ts**: Created idempotent seed for 7 credit action types (chat_message, architect_message, image_generation, image_edit, video_generation, video_assembly, audio_narration)
+- **app/api/chat/route.ts**: Renamed `step2_chat_message` → `chat_message`, `step2_conversation` → `chat_conversation`
+- **convex/http/ai.ts, convex/http/agent.ts**: Normalized `CREDIT_COST_ACTION_TYPE` from `"chat"` → `"chat_message"`
+- **app/api/architect/chat/route.ts**: Added missing credit deduction (actionType: `architect_message`) with refund on error
+
+### Fixed (Day 19 — org access + project filter)
+- **convex/chats.ts, projects.ts, customRoles.ts, customPersonas.ts, customFrameworks.ts**: Fixed workspace resolution to support org members — all list/get queries now check both `workspace.ownerId` AND `workspace.organizationId` for access, not just owner
+- **app/[locale]/dashboard/chat/page.tsx**: Added project selector/filter dropdown (Task 2.4) — filters chats by project, responsive, OKLCH tokens, new chats inherit selected project
+
+### Changed (Day 19 — cleanup + Phase 4)
+- **app/[locale]/dashboard/chat/page.tsx**: Replaced makeFunctionReference bridge with proper `api.chats.*` generated imports
+- **convex/messages.ts**: Added AI SDK v6 field mapping documentation on toolCallSchema (toolCalls already implemented in Phase 1)
+- **Convex AI files**: Added Convex AI guidelines to AGENTS.md and CLAUDE.md (auto-generated by `npx convex dev`)
+
+### Added (Day 19 — Phase 2: Chat List UI)
+- **app/[locale]/dashboard/chat/page.tsx**: Rebuilt as chat list page — search, pinned sorting, skeleton loading, empty state, "New chat" button
+- **app/[locale]/dashboard/chat/[chatId]/page.tsx**: New session shell page (Server Component, Next.js 15 async params)
+- **components/chat/ChatPage.tsx**: Added optional `chatId` prop, passed to `useChat({ id: chatId })` for session isolation
+- **convex/workspaces.ts**: Added `getDefault` query — returns user's default workspace ID
+- **messages/en.json + fr.json**: Added `chat` i18n namespace (10 keys each)
+
+### Added (Day 19 — vantage-studio migration Phase 1 + Phase 3)
+- **hooks/block-orchestrator-code-edits.py**: Replaced broken symlink with actual hook script — enforces orchestrator delegation rules
+- **Schema**: Added `chats` (table 26), `projects` (table 27), `messages` (table 28) tables to Convex schema
+- **convex/chats.ts**: 8 functions (list, getById, listRecent, create, update, remove + 2 internal) — workspace-scoped chat sessions
+- **convex/projects.ts**: 6 functions (list, get, create, update, archive, assignTask) — organizational folders for chats
+- **convex/messages.ts**: 6 functions (list, getById, save, update, deleteAfterTimestamp + saveSystem internal) — chat messages with tool call support
+- **convex/customRoles.ts**: 5 functions (list, get, create, update, remove) — 4-Pillars agent role CRUD
+- **convex/customPersonas.ts**: 5 functions (list, get, create, update, remove) — 4-Pillars persona CRUD
+- **convex/customFrameworks.ts**: 5 functions (list, get, create, update, remove) — 4-Pillars framework CRUD
+- **convex/rateLimits.ts**: Added `createCustomRole`, `createCustomPersona`, `createCustomFramework` token bucket rate limits (10/min)
+- All functions use `requireAuth`/`requireAuthWithWorkspace` from `convex/lib/auth.ts`
+- All mutations have ownership checks (`createdBy !== user.clerkUserId` → "Forbidden")
+- Phase 3 files enforce S1 (system entities readable by all) and S3 (system entities non-deletable by non-admins) guards
+- All functions have typed `returns` validators; `v.any()` only where justified (AI SDK fields) with `// TODO Phase 5` comments
+
 ### Changed (copy-source pass)
 - **FeaturesSection**: Copied litui.dev Features.tsx structure — uniform card grid, gray-*/dark: classes, hover gradient overlay, icon inversion, reveal animation
 - **CTASection**: Copied litui.dev Cta.tsx — inline command block, native anchor CTAs, floating circles, reveal with staggered delays
