@@ -9,6 +9,13 @@
 /* Default preset — v0 Base. Must be before @tailwind directives. */
 @import "../styles/presets/base.css";
 
+/* Design system styles — applied via body class (style-vega, style-nova, etc.) */
+@import "../styles/style-vega.css";
+@import "../styles/style-nova.css";
+@import "../styles/style-lyra.css";
+@import "../styles/style-maia.css";
+@import "../styles/style-mira.css";
+@import "../styles/style-luma.css";
 
 @tailwind base;
 @tailwind components;
