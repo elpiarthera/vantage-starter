@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../vantage-peers-site"
+		},
+		{
+			"path": "../vantageos-team"
 		}
 	],
 	"settings": {
