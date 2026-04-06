@@ -77,3 +77,6 @@ playwright-report/
 # Turbo
 .turbo
 package-lock.json
+
+# clerk configuration (can include secrets)
+/.clerk/
