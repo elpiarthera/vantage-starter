@@ -80,3 +80,13 @@ package-lock.json
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Claude Code orchestration
+.claude/
+
+# Debug screenshots
+*.png
+!public/**/*.png
+
+# Clerk keyless mode
+.clerk/
