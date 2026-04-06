@@ -1,12 +1,15 @@
 /* ============================================================================
    VANTAGE STARTER DESIGN SYSTEM — OKLCH Color Space
    Default preset: Monochrome Grayscale (zero chroma)
-   Loaded via @import before @tailwind base (SSR-safe static default)
    Runtime preset switching: <link href> swap via PresetLoader component
    Fonts: Geist (headings + body) + Geist Mono (code)
    ============================================================================ */
 
-/* Default preset — v0 Base. Must be before @tailwind directives. */
+/* All @import statements must precede all other rules (CSS spec) */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Default preset — v0 Base. */
 @import "../styles/presets/base.css";
 
 /* Design system styles — applied via body class (style-vega, style-nova, etc.) */
@@ -17,9 +20,159 @@
 @import "../styles/style-mira.css";
 @import "../styles/style-luma.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ── Custom variants ──────────────────────────────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Data shorthand variants — used by style-*.css design system files */
+@custom-variant data-open (&[data-state="open"]);
+@custom-variant data-closed (&[data-state="closed"]);
+@custom-variant data-checked (&[data-state="checked"]);
+@custom-variant data-unchecked (&[data-state="unchecked"]);
+@custom-variant data-selected (&[data-state="selected"]);
+@custom-variant data-active (&[data-active]);
+@custom-variant data-disabled (&[data-disabled]);
+@custom-variant data-highlighted (&[data-highlighted]);
+@custom-variant data-placeholder (&[data-placeholder]);
+@custom-variant data-horizontal (&[data-orientation="horizontal"]);
+@custom-variant data-vertical (&[data-orientation="vertical"]);
+@custom-variant data-inset (&[data-inset]);
+@custom-variant data-empty (&[data-empty]);
+
+/* ── Custom utilities — required for @apply in style-*.css files ──────────── */
+
+/* Scrollbar hide — used by style-*.css for overflow containers */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   @THEME — Tailwind v4 CSS-first configuration
+   Maps all tokens from tailwind.config.ts into CSS.
+   Colors reference CSS variables defined in styles/presets/*.css.
+   ============================================================================ */
+
+@theme inline {
+  /* ── Semantic colors ──────────────────────────────────────────────────────── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-hover: var(--card-hover);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-warm: var(--accent-warm);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Sidebar ──────────────────────────────────────────────────────────────── */
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-background: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ── Chart colors ─────────────────────────────────────────────────────────── */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ── Gray scale (OKLCH, zero chroma) ──────────────────────────────────────── */
+  --color-white: oklch(1 0 0);
+  --color-gray-50: oklch(0.98 0 0);
+  --color-gray-100: oklch(0.95 0 0);
+  --color-gray-200: oklch(0.88 0 0);
+  --color-gray-300: oklch(0.78 0 0);
+  --color-gray-400: oklch(0.62 0 0);
+  --color-gray-500: oklch(0.50 0 0);
+  --color-gray-600: oklch(0.40 0 0);
+  --color-gray-700: oklch(0.28 0 0);
+  --color-gray-800: oklch(0.20 0 0);
+  --color-gray-850: oklch(0.16 0 0);
+  --color-gray-900: oklch(0.12 0 0);
+  --color-gray-950: oklch(0.08 0 0);
+}
+
+@theme {
+  /* ── Fonts ────────────────────────────────────────────────────────────────── */
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* ── Breakpoints — only xs is custom; sm–2xl are Tailwind defaults ────────── */
+  --breakpoint-xs: 480px;
+
+  /* ── Border radius — relative to --radius CSS var ────────────────────────── */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Shadows ──────────────────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 5%);
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 8%), 0 1px 2px oklch(0 0 0 / 5%);
+  --shadow-md: 0 4px 8px oklch(0 0 0 / 8%), 0 2px 4px oklch(0 0 0 / 5%);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 10%), 0 4px 8px oklch(0 0 0 / 6%);
+  --shadow-xl: 0 16px 48px oklch(0 0 0 / 12%), 0 8px 16px oklch(0 0 0 / 8%);
+  --shadow-amber-sm: 0 2px 8px oklch(0.62 0.16 44 / 25%);
+  --shadow-amber-md: 0 4px 16px oklch(0.62 0.16 44 / 20%);
+  --shadow-amber-lg: 0 8px 32px oklch(0.62 0.16 44 / 25%);
+  --shadow-amber-dark-sm: 0 2px 8px oklch(0.72 0.16 44 / 15%);
+  --shadow-amber-dark-lg: 0 8px 32px oklch(0.72 0.16 44 / 12%);
+
+  /* ── Animations ───────────────────────────────────────────────────────────── */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  /* ── Easing ───────────────────────────────────────────────────────────────── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Accordion keyframes ──────────────────────────────────────────────────── */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
 
 @layer base {
   :root {
@@ -178,16 +331,16 @@
   *[class^="text-"] {
     color: transparent;
     @apply rounded-md select-none animate-pulse;
-    background-color: oklch(var(--foreground) / 0.15);
+    background-color: color-mix(in oklch, var(--foreground) 15%, transparent);
   }
 
   .skeleton-bg {
-    background-color: oklch(var(--foreground) / 0.08);
+    background-color: color-mix(in oklch, var(--foreground) 8%, transparent);
   }
 
   .skeleton-div {
     @apply animate-pulse;
-    background-color: oklch(var(--foreground) / 0.15);
+    background-color: color-mix(in oklch, var(--foreground) 15%, transparent);
   }
 }
 
