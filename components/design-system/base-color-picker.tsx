@@ -4,6 +4,7 @@ import * as React from "react";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import type { BaseColorName } from "@/lib/design-system/config";
 import { BASE_COLORS } from "@/lib/design-system/config";
+import { LockButton } from "./lock-button";
 import {
 	Picker,
 	PickerContent,
@@ -21,41 +22,48 @@ export function BaseColorPicker() {
 	);
 
 	return (
-		<Picker>
-			<PickerTrigger>
-				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Base Color</div>
-					<div className="text-sm font-medium text-foreground">
-						{currentBaseColor?.title}
+		<div className="group/picker relative">
+			<Picker>
+				<PickerTrigger>
+					<div className="flex flex-col justify-start text-left">
+						<div className="text-xs text-muted-foreground">Base Color</div>
+						<div className="text-sm font-medium text-foreground">
+							{currentBaseColor?.title}
+						</div>
 					</div>
-				</div>
-				{currentBaseColor && (
-					<div
-						style={
-							{
-								"--color": currentBaseColor.cssVars?.dark?.["muted-foreground"],
-							} as React.CSSProperties
+					{currentBaseColor && (
+						<div
+							style={
+								{
+									"--color":
+										currentBaseColor.cssVars?.dark?.["muted-foreground"],
+								} as React.CSSProperties
+							}
+							className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 rounded-full bg-(--color) select-none md:right-2.5"
+						/>
+					)}
+				</PickerTrigger>
+				<PickerContent>
+					<PickerRadioGroup
+						value={currentBaseColor?.name}
+						onValueChange={(value) =>
+							setParams({ baseColor: value as BaseColorName })
 						}
-						className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 rounded-full bg-(--color) select-none md:right-2.5"
-					/>
-				)}
-			</PickerTrigger>
-			<PickerContent>
-				<PickerRadioGroup
-					value={currentBaseColor?.name}
-					onValueChange={(value) =>
-						setParams({ baseColor: value as BaseColorName })
-					}
-				>
-					<PickerGroup>
-						{BASE_COLORS.map((baseColor) => (
-							<PickerRadioItem key={baseColor.name} value={baseColor.name}>
-								{baseColor.title}
-							</PickerRadioItem>
-						))}
-					</PickerGroup>
-				</PickerRadioGroup>
-			</PickerContent>
-		</Picker>
+					>
+						<PickerGroup>
+							{BASE_COLORS.map((baseColor) => (
+								<PickerRadioItem key={baseColor.name} value={baseColor.name}>
+									{baseColor.title}
+								</PickerRadioItem>
+							))}
+						</PickerGroup>
+					</PickerRadioGroup>
+				</PickerContent>
+			</Picker>
+			<LockButton
+				param="baseColor"
+				className="absolute top-1/2 right-8 -translate-y-1/2"
+			/>
+		</div>
 	);
 }

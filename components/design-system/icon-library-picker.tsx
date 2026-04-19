@@ -6,6 +6,7 @@ import {
 	ICON_LIBRARIES,
 	type IconLibraryName,
 } from "@/lib/design-system/config";
+import { LockButton } from "./lock-button";
 import {
 	Picker,
 	PickerContent,
@@ -109,34 +110,40 @@ export function IconLibraryPicker() {
 		ICON_LIBRARIES.lucide;
 
 	return (
-		<Picker>
-			<PickerTrigger>
-				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Icon Library</div>
-					<div className="text-sm font-medium text-foreground">
-						{current.title}
+		<div className="group/picker relative">
+			<Picker>
+				<PickerTrigger>
+					<div className="flex flex-col justify-start text-left">
+						<div className="text-xs text-muted-foreground">Icon Library</div>
+						<div className="text-sm font-medium text-foreground">
+							{current.title}
+						</div>
 					</div>
-				</div>
-				<div className="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-foreground select-none md:right-2.5">
-					{logos[current.name]}
-				</div>
-			</PickerTrigger>
-			<PickerContent>
-				<PickerRadioGroup
-					value={current.name}
-					onValueChange={(value) =>
-						setParams({ iconLibrary: value as IconLibraryName })
-					}
-				>
-					<PickerGroup>
-						{Object.values(ICON_LIBRARIES).map((lib) => (
-							<PickerRadioItem key={lib.name} value={lib.name}>
-								{lib.title}
-							</PickerRadioItem>
-						))}
-					</PickerGroup>
-				</PickerRadioGroup>
-			</PickerContent>
-		</Picker>
+					<div className="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-foreground select-none md:right-2.5">
+						{logos[current.name]}
+					</div>
+				</PickerTrigger>
+				<PickerContent>
+					<PickerRadioGroup
+						value={current.name}
+						onValueChange={(value) =>
+							setParams({ iconLibrary: value as IconLibraryName })
+						}
+					>
+						<PickerGroup>
+							{Object.values(ICON_LIBRARIES).map((lib) => (
+								<PickerRadioItem key={lib.name} value={lib.name}>
+									{lib.title}
+								</PickerRadioItem>
+							))}
+						</PickerGroup>
+					</PickerRadioGroup>
+				</PickerContent>
+			</Picker>
+			<LockButton
+				param="iconLibrary"
+				className="absolute top-1/2 right-8 -translate-y-1/2"
+			/>
+		</div>
 	);
 }

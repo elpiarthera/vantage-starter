@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import { FONT_HEADING_OPTIONS, FONTS } from "@/lib/design-system/fonts";
+import { LockButton } from "./lock-button";
 import {
 	Picker,
 	PickerContent,
@@ -51,48 +52,54 @@ export function FontPicker({
 	}, [param]);
 
 	return (
-		<Picker>
-			<PickerTrigger>
-				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">{label}</div>
-					<div className="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">
-						{displayName}
+		<div className="group/picker relative">
+			<Picker>
+				<PickerTrigger>
+					<div className="flex flex-col justify-start text-left">
+						<div className="text-xs text-muted-foreground">{label}</div>
+						<div className="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">
+							{displayName}
+						</div>
 					</div>
-				</div>
-				<div
-					className="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5"
-					style={{ fontFamily: displayFamily }}
-				>
-					Aa
-				</div>
-			</PickerTrigger>
-			<PickerContent className="max-h-96">
-				<PickerRadioGroup
-					value={currentValue}
-					onValueChange={(value) => setParams({ [param]: value })}
-				>
-					{param === "fontHeading" && (
-						<>
-							<PickerGroup>
-								<PickerRadioItem value="inherit">
-									{currentBodyFont?.name ?? "Body font"}
-								</PickerRadioItem>
+					<div
+						className="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5"
+						style={{ fontFamily: displayFamily }}
+					>
+						Aa
+					</div>
+				</PickerTrigger>
+				<PickerContent className="max-h-96">
+					<PickerRadioGroup
+						value={currentValue}
+						onValueChange={(value) => setParams({ [param]: value })}
+					>
+						{param === "fontHeading" && (
+							<>
+								<PickerGroup>
+									<PickerRadioItem value="inherit">
+										{currentBodyFont?.name ?? "Body font"}
+									</PickerRadioItem>
+								</PickerGroup>
+								<PickerSeparator />
+							</>
+						)}
+						{groups.map((group) => (
+							<PickerGroup key={group.type}>
+								<PickerLabel>{group.label}</PickerLabel>
+								{group.items.map((font) => (
+									<PickerRadioItem key={font.value} value={font.value}>
+										{font.name}
+									</PickerRadioItem>
+								))}
 							</PickerGroup>
-							<PickerSeparator />
-						</>
-					)}
-					{groups.map((group) => (
-						<PickerGroup key={group.type}>
-							<PickerLabel>{group.label}</PickerLabel>
-							{group.items.map((font) => (
-								<PickerRadioItem key={font.value} value={font.value}>
-									{font.name}
-								</PickerRadioItem>
-							))}
-						</PickerGroup>
-					))}
-				</PickerRadioGroup>
-			</PickerContent>
-		</Picker>
+						))}
+					</PickerRadioGroup>
+				</PickerContent>
+			</Picker>
+			<LockButton
+				param={param}
+				className="absolute top-1/2 right-8 -translate-y-1/2"
+			/>
+		</div>
 	);
 }

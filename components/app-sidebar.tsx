@@ -404,6 +404,34 @@ export function AppSidebar() {
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 
+								{/* Design */}
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										asChild
+										isActive={pathname.includes("/dashboard/design")}
+										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
+									>
+										<Link href="/dashboard/design" onClick={handleNavClick}>
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
+												aria-hidden="true"
+											>
+												<circle cx="12" cy="12" r="3" />
+												<path d="M19.07 4.93A10 10 0 0 0 12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a10 10 0 0 0 7.07-2.93" />
+												<path d="M22 12a10 10 0 0 0-2.93-7.07" />
+											</svg>
+											<span>Design</span>
+										</Link>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+
 								{/* Consultant Onboarding */}
 								<SidebarMenuItem>
 									<SidebarMenuButton

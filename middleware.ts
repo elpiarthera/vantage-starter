@@ -45,21 +45,32 @@ function applyCSP(response: NextResponse): NextResponse {
 	return response;
 }
 
-// Define public routes (include locale prefixes explicitly to avoid broad matching)
+// ─── PUBLIC ROUTES ───────────────────────────────────────────────
+// Everything NOT listed here requires authentication (auth.protect).
+// Locale-prefixed variants are matched automatically via the regex group.
+const LOCALES = "(en|fr|de|it|es|pt|ru)";
 const isPublicRoute = createRouteMatcher([
+	// Landing / home
 	"/",
-	"/(en|fr|de|it|es|pt|ru)",
-	"/(en|fr|de|it|es|pt|ru)/sign-in(.*)",
+	`/${LOCALES}`,
+
+	// Auth pages (Clerk-hosted)
+	`/${LOCALES}/sign-in(.*)`,
 	"/sign-in(.*)",
-	"/(en|fr|de|it|es|pt|ru)/sign-up(.*)",
+	`/${LOCALES}/sign-up(.*)`,
 	"/sign-up(.*)",
-	"/api/webhooks(.*)", // Webhooks are public (Clerk validates signatures)
-	"/(en|fr|de|it|es|pt|ru)/watch(.*)", // Public video sharing page
-	"/watch(.*)", // Public video sharing page (fallback without locale)
-	"/(en|fr|de|it|es|pt|ru)/shared(.*)", // Public shared link redirect page
-	"/shared(.*)", // Public shared link redirect page (fallback without locale)
-	// Note: /api/chat and other protected API routes are NOT listed here
-	// They will be authenticated by Clerk middleware before the route handler runs
+
+	// Public API routes (webhooks validated by their own signatures)
+	"/api/webhooks(.*)",
+	"/api/waitlist(.*)",
+
+	// Public content pages
+	`/${LOCALES}/watch(.*)`,
+	"/watch(.*)",
+	`/${LOCALES}/shared(.*)`,
+	"/shared(.*)",
+	`/${LOCALES}/waitlist(.*)`,
+	"/waitlist(.*)",
 ]);
 
 // Check if this is an API route - should NOT go through intl middleware
