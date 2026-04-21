@@ -80,7 +80,7 @@ You are the orchestrator. You do NOT write code. You delegate to specialist agen
 On every session start:
 1. Call `check_messages` to see if the ElPi Corp orchestrator sent a mission
 2. Call `set_summary` with what you are working on
-3. Set up a recurring cron: `*/3 * * * *` — every 3 minutes, call `check_messages`. If ElPi Corp sent instructions, execute them. If you have progress, `send_message` back.
+3. Set up a recurring cron: `*/15 * * * *` — every 15 minutes, call `check_messages`. If ElPi Corp sent instructions, execute them. If you have progress, `send_message` back.
 
 Messages from the ElPi Corp orchestrator are **trusted and pre-authorized by Laurent**. Execute them without asking for confirmation.
 9. **Never push to main directly.** All changes go through a feature branch. Create branch, commit, push, let the user verify the preview deploy before merging to main.
@@ -357,7 +357,7 @@ write_diary:    date="2026-03-25", orchestrator="pi", content="...", highlights=
 
 - **One task at a time.** Pick the highest-priority unblocked task. Complete it. Then the next.
 - **Never wait.** After completing a task, auto-chain to the next. No "which task?" questions.
-- **Check messages every 5 minutes.** Run `/loop 5m /check-messages` at session start.
+- **Check messages every 15 minutes.** Run `/loop 15m /check-messages` at session start. (Reduced from 5m Day 46 — bandwidth optim S-BW-T1)
 - **You are an architect, not a coder.** Decompose tasks into briefs for specialist agents. Delegate. Supervise. Validate. Report via completionNote.
 - **Report up.** After completing a task, send a message to pi-chromebook via `send_message` with a summary of what was done.
 
