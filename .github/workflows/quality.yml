@@ -43,15 +43,25 @@ jobs:
       # so every page rendered underneath the fixed sidebar ("Mission Control"
       # displayed as "trol"). A one-off grep only proves today; this proves every
       # commit.
+      # Comment lines are skipped on purpose. The first version of this gate
+      # rejected the very comment in sidebar.tsx that warns about this bug,
+      # because the warning quotes the broken form to explain it. A guard that
+      # scans prose is either too lax or too zealous, and the zealous one gets
+      # deleted. This one reads code. The trade-off is declared: a bare variable
+      # sitting in a trailing comment on a line of real code would slip through —
+      # harmless, since Tailwind does not read comments either.
       - name: No bare CSS variables in Tailwind brackets
         run: |
-          if grep -rnE '\[--[A-Za-z0-9_-]+\]' \
-               --include='*.ts' --include='*.tsx' --include='*.jsx' --include='*.css' \
-               app components lib hooks providers src styles; then
+          hits=$(grep -rnE '\[--[A-Za-z0-9_-]+\]' \
+                   --include='*.ts' --include='*.tsx' --include='*.jsx' --include='*.css' \
+                   app components lib hooks providers src styles \
+                 | grep -vE '^[^:]+:[0-9]+:[[:space:]]*(\*|//|/\*)' || true)
+          if [ -n "$hits" ]; then
+            echo "$hits"
             echo "::error::Bare CSS variable in a Tailwind bracket. Tailwind v4 compiles [--x] to the invalid 'width: --x' and silently drops it. Use the explicit [var(--x)] form."
             exit 1
           fi
-          echo "OK — no bare CSS variables."
+          echo "OK — no bare CSS variables in code."
 
       # Proves the prebuild still resolves its dependencies. `esbuild` was
       # imported by scripts/build-litui.mjs and declared nowhere; `|| true` hid
