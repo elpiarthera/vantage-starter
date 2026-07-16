@@ -79,7 +79,12 @@ describe("LanguageSwitcher", () => {
 		mutationMock.mockClear();
 	});
 
-	test("renders without any breakpoint restriction wrapper (no hidden class on itself)", () => {
+	// Scope note: this asserts the component does not hide ITSELF. It says
+	// nothing about the wrapper that hid it in DashboardHeader — see the
+	// NOT COVERED block at the top. The name used to claim the wrapper; it
+	// does not, and a test name that overstates its assertion is read as
+	// coverage by everyone who never opens the body.
+	test("does not hide itself at any breakpoint (says nothing about its wrapper)", () => {
 		const { container } = render(<LanguageSwitcher />);
 		const button = screen.getByRole("button", { name: /change_language/i });
 		expect(button).toBeInTheDocument();
