@@ -100,7 +100,7 @@ export function AppSidebar() {
 			<Sidebar
 				collapsible="icon"
 				className="group-data-[side=left]:border-r border-sidebar-border bg-sidebar-background"
-				aria-label="Main navigation"
+				aria-label={t("nav_aria_label")}
 				data-hover-open={isHoverExpandedRef.current ? "true" : undefined}
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
@@ -110,7 +110,7 @@ export function AppSidebar() {
 					<Link
 						href="/dashboard"
 						onClick={handleNavClick}
-						aria-label="VantageStarter home"
+						aria-label={t("home_aria_label")}
 						className="font-heading font-bold tracking-[-0.03em] text-foreground hover:opacity-80 transition-opacity group-data-[collapsible=icon]:hidden"
 					>
 						VantageStarter
@@ -283,7 +283,7 @@ export function AppSidebar() {
 					{/* ─── OVERVIEW ─── */}
 					<SidebarGroup>
 						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
-							Overview
+							{t("overview_label")}
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
@@ -445,7 +445,7 @@ export function AppSidebar() {
 					{/* ─── WORKSPACE ─── */}
 					<SidebarGroup>
 						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
-							Workspace
+							{t("workspace_label")}
 						</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>

@@ -59,7 +59,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 				<Button
 					variant="ghost"
 					className="gap-2 px-2 min-h-[44px] min-w-[44px] active:scale-95"
-					aria-label="User menu"
+					aria-label={t("user_menu_aria")}
 				>
 					<Avatar className="h-8 w-8">
 						<AvatarImage src={userImage} alt={userName} />
@@ -170,7 +170,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 				<Button
 					variant="ghost"
 					className="gap-2 px-2 min-h-[44px] hover:bg-accent"
-					aria-label="User menu"
+					aria-label={t("user_menu_aria")}
 				>
 					<Avatar className="h-8 w-8">
 						<AvatarImage src={userImage} alt={userName} />
@@ -338,7 +338,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							variant="ghost"
 							size="icon"
 							className={`relative min-h-[44px] min-w-[44px] ${isMobile ? "active:scale-95" : "hover:bg-accent"}`}
-							aria-label="Notifications"
+							aria-label={t("notifications_aria")}
 						>
 							<svg
 								width="20"

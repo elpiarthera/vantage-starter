@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +12,7 @@ interface SearchModalProps {
 
 const quickLinks = [
 	{
-		label: "Dashboard",
+		labelKey: "nav_dashboard" as const,
 		href: "/dashboard",
 		icon: (
 			<svg
@@ -31,7 +32,7 @@ const quickLinks = [
 		),
 	},
 	{
-		label: "Chat",
+		labelKey: "nav_chat" as const,
 		href: "/dashboard/chat",
 		icon: (
 			<svg
@@ -48,7 +49,7 @@ const quickLinks = [
 		),
 	},
 	{
-		label: "Missions",
+		labelKey: "nav_missions" as const,
 		href: "/dashboard/missions",
 		icon: (
 			<svg
@@ -70,7 +71,7 @@ const quickLinks = [
 		),
 	},
 	{
-		label: "Architect",
+		labelKey: "nav_architect" as const,
 		href: "/dashboard/architect",
 		icon: (
 			<svg
@@ -89,7 +90,7 @@ const quickLinks = [
 		),
 	},
 	{
-		label: "Settings",
+		labelKey: "nav_settings" as const,
 		href: "/dashboard/account",
 		icon: (
 			<svg
@@ -110,6 +111,9 @@ const quickLinks = [
 
 export function SearchModal({ open, onClose }: SearchModalProps) {
 	const router = useRouter();
+	const t = useTranslations("search_modal");
+	const tNav = useTranslations("app_sidebar");
+	const locale = useLocale();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const [query, setQuery] = React.useState("");
 
@@ -150,11 +154,22 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 		onClose();
 	};
 
+	const resolvedLinks = React.useMemo(
+		() =>
+			quickLinks.map((l) => ({
+				...l,
+				label: tNav(l.labelKey),
+			})),
+		[tNav],
+	);
+
 	const filteredLinks = query
-		? quickLinks.filter((l) =>
-				l.label.toLowerCase().includes(query.toLowerCase()),
+		? resolvedLinks.filter((l) =>
+				l.label
+					.toLocaleLowerCase(locale)
+					.includes(query.toLocaleLowerCase(locale)),
 			)
-		: quickLinks;
+		: resolvedLinks;
 
 	if (!open) return null;
 
@@ -163,7 +178,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 			className="fixed inset-0 z-50 flex items-start justify-center"
 			role="dialog"
 			aria-modal="true"
-			aria-label="Search"
+			aria-label={t("aria_label")}
 		>
 			{/* Backdrop */}
 			<div
@@ -199,16 +214,16 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 						type="text"
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Search pages, sessions, missions..."
+						placeholder={t("placeholder")}
 						className="flex-1 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-						aria-label="Search"
+						aria-label={t("aria_label")}
 					/>
 					{query && (
 						<button
 							type="button"
 							onClick={() => setQuery("")}
 							className="text-muted-foreground hover:text-foreground transition-colors"
-							aria-label="Clear search"
+							aria-label={t("clear_search")}
 						>
 							<svg
 								width="14"
@@ -224,7 +239,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 						</button>
 					)}
 					<kbd className="hidden sm:inline-flex items-center gap-0.5 text-[11px] text-muted-foreground border border-border rounded px-1.5 py-0.5 font-mono">
-						Esc
+						{t("key_esc")}
 					</kbd>
 				</div>
 
@@ -232,12 +247,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 				<div className="py-2">
 					{filteredLinks.length === 0 ? (
 						<p className="px-4 py-3 text-sm text-muted-foreground">
-							No results for &quot;{query}&quot;
+							{t("no_results", { query })}
 						</p>
 					) : (
 						<>
 							<p className="px-4 pt-1 pb-1 text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
-								{query ? "Results" : "Quick access"}
+								{query ? t("results") : t("quick_access")}
 							</p>
 							{filteredLinks.map((link) => (
 								<button
@@ -263,19 +278,19 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 						<kbd className="font-mono border border-border rounded px-1 py-0.5">
 							↑↓
 						</kbd>
-						navigate
+						{t("hint_navigate")}
 					</span>
 					<span className="flex items-center gap-1">
 						<kbd className="font-mono border border-border rounded px-1 py-0.5">
 							↵
 						</kbd>
-						open
+						{t("hint_open")}
 					</span>
 					<span className="flex items-center gap-1">
 						<kbd className="font-mono border border-border rounded px-1 py-0.5">
-							Esc
+							{t("key_esc")}
 						</kbd>
-						close
+						{t("hint_close")}
 					</span>
 				</div>
 			</div>

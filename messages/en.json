@@ -49,6 +49,7 @@
 		"something_went_wrong": "Something went wrong",
 		"loading_error_description": "We encountered an error while loading this content. Please try again.",
 		"try_again_button": "Try Again",
+		"admin_panel_title": "Admin panel error",
 		"insufficient_credits_title": "Insufficient Credits",
 		"insufficient_credits_description": "You don't have enough credits for {actionName}",
 		"project_load_failed_title": "Failed to Load Project",
@@ -318,7 +319,9 @@
 		"profile": "Profile",
 		"settings": "Settings",
 		"log_out": "Log out",
-		"credits": "Credits"
+		"credits": "Credits",
+		"user_menu_aria": "User menu",
+		"notifications_aria": "Notifications"
 	},
 	"projects_page": {
 		"title": "My Projects",
@@ -349,14 +352,16 @@
 			"create_project": "Create New Project",
 			"browse_templates": "Browse Templates",
 			"view_projects": "View All Projects",
-			"manage_account": "Manage Account"
+			"manage_account": "Manage Account",
+			"empty": "No actions configured yet."
 		},
 		"recent_projects": {
 			"title": "Recent Projects",
 			"description": "Your latest video projects",
 			"view_all": "View All",
 			"empty_title": "No projects yet",
-			"empty_description": "Create your first video project to get started"
+			"empty_description": "Create your first video project to get started",
+			"empty": "No items yet."
 		},
 		"activity_feed": {
 			"title": "Recent Activity",
@@ -365,7 +370,8 @@
 			"empty_description": "Your recent actions will appear here",
 			"created_project": "Created project \"{name}\"",
 			"video_completed": "Video completed for \"{name}\"",
-			"just_now": "Just now"
+			"just_now": "Just now",
+			"empty": "No recent activity."
 		},
 		"error_title": "Failed to Load Dashboard",
 		"error_description": "Unable to load dashboard data. Please try again.",
@@ -384,7 +390,9 @@
 		"error_boundary_title": "Dashboard error",
 		"error_boundary_generic": "An unexpected error occurred loading the dashboard.",
 		"try_again": "Try again",
-		"go_to_dashboard": "Go to dashboard"
+		"go_to_dashboard": "Go to dashboard",
+		"credits_remaining": "{count} credits remaining",
+		"storage_used": "{gb} GB used"
 	},
 	"account": {
 		"title": "Account Settings",
@@ -500,7 +508,11 @@
 		"security_alerts_desc": "Important security updates and account activity (always enabled)",
 		"security_tooltip": "Security alerts cannot be disabled to protect your account",
 		"save_preferences": "Save Preferences",
-		"saving": "Saving..."
+		"saving": "Saving...",
+		"toggle_email_aria": "Toggle email notifications",
+		"toggle_push_aria": "Toggle push notifications",
+		"toggle_marketing_aria": "Toggle marketing emails",
+		"security_alerts_aria": "Security alerts (always enabled)"
 	},
 	"project_card": {
 		"edit": "Edit Project",
@@ -2764,7 +2776,28 @@
 		"nav_chat": "Chat",
 		"nav_missions": "Missions",
 		"nav_architect": "Architect",
-		"nav_settings": "Settings"
+		"nav_settings": "Settings",
+		"nav_aria_label": "Main navigation",
+		"home_aria_label": "VantageStarter home",
+		"overview_label": "Overview",
+		"workspace_label": "Workspace"
+	},
+	"sidebar_user_nav": {
+		"account_menu": "User account menu",
+		"toggle_theme": "{mode, select, dark {Toggle dark mode} light {Toggle light mode} other {Toggle theme}}",
+		"sign_out": "Sign out"
+	},
+	"search_modal": {
+		"aria_label": "Search",
+		"placeholder": "Search pages, sessions, missions...",
+		"clear_search": "Clear search",
+		"key_esc": "Esc",
+		"results": "Results",
+		"quick_access": "Quick access",
+		"no_results": "No results for \"{query}\"",
+		"hint_navigate": "navigate",
+		"hint_open": "open",
+		"hint_close": "close"
 	},
 	"chat": {
 		"title": "Chats",
@@ -3200,5 +3233,43 @@
 		"light_mode": "Light mode",
 		"switch_to_light": "Switch to light mode",
 		"switch_to_dark": "Switch to dark mode"
+	},
+	"dashboard_nav": {
+		"dashboard_crumb": "Dashboard",
+		"breadcrumb_aria": "Breadcrumb"
+	},
+	"purchase_credits_modal": {
+		"loading_packages": "Loading packages…",
+		"popular_badge": "Popular",
+		"credits_unit": "credits",
+		"bonus_amount": "+{count} bonus",
+		"selected_label": "Selected",
+		"payment_method_label": "Payment Method",
+		"payment_redirect_notice": "You will be redirected to our secure payment processor to complete your purchase.",
+		"cancel": "Cancel",
+		"purchase_credits_cta": "Purchase Credits"
+	},
+	"design_system": {
+		"menu_accent": "Menu Accent",
+		"base_color": "Base Color",
+		"chart_color": "Chart Color",
+		"customizer_title": "Customizer",
+		"font_sample": "Aa",
+		"body_font": "Body font",
+		"icon_library": "Icon Library",
+		"menu": "Menu",
+		"color": "Color",
+		"default": "Default",
+		"inverted": "Inverted",
+		"appearance": "Appearance",
+		"solid": "Solid",
+		"translucent": "Translucent",
+		"menu_option_default_solid": "Default / Solid",
+		"menu_option_default_translucent": "Default / Translucent",
+		"menu_option_inverted_solid": "Inverted / Solid",
+		"menu_option_inverted_translucent": "Inverted / Translucent",
+		"radius": "Radius",
+		"style": "Style",
+		"theme": "Theme"
 	}
 }

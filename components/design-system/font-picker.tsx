@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import { FONT_HEADING_OPTIONS, FONTS } from "@/lib/design-system/fonts";
@@ -23,6 +24,7 @@ export function FontPicker({
 	label: string;
 	param: FontParam;
 }) {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();
 	const currentValue = param === "font" ? params.font : params.fontHeading;
 	const fonts = param === "fontHeading" ? FONT_HEADING_OPTIONS : FONTS;
@@ -63,7 +65,7 @@ export function FontPicker({
 					className="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-base text-foreground select-none md:right-2.5"
 					style={{ fontFamily: displayFamily }}
 				>
-					Aa
+					{t("font_sample")}
 				</div>
 			</PickerTrigger>
 			<PickerContent className="max-h-96">
@@ -75,7 +77,7 @@ export function FontPicker({
 						<>
 							<PickerGroup>
 								<PickerRadioItem value="inherit">
-									{currentBodyFont?.name ?? "Body font"}
+									{currentBodyFont?.name ?? t("body_font")}
 								</PickerRadioItem>
 							</PickerGroup>
 							<PickerSeparator />

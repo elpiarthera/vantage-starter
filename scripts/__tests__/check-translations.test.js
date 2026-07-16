@@ -19,6 +19,8 @@ const {
 	runControl2KeyParity,
 	runControl3FrEqualsEn,
 	runControl4CalledButUndefined,
+	isLocaleSensitiveDateFnsPattern,
+	detectDateFnsFormatImportNames,
 } = require("../check-translations.js");
 
 const ROOT = path.join(__dirname, "..", "..");
@@ -374,6 +376,390 @@ describe("check-translations — Control 1d (module-level constant label maps)",
 	});
 });
 
+describe("check-translations — Control 1e (JSX expression container child literals)", () => {
+	// MUST_BLOCK #1 — foreign material: components/theme-toggle.tsx. Injects a
+	// ternary `{cond ? "English A" : "English B"}` directly in JSX child
+	// position — the exact shape that shipped "Results" / "Quick access" to
+	// French users at components/search-modal.tsx:242, invisible to both the
+	// jsx-text check (not `ts.JsxText`) and the attr check (not an attribute).
+	test("MUST_BLOCK: a ternary of two English string literals in JSX child position on foreign material (theme-toggle.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "components/theme-toggle.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_JSXEXPR_TERNARY_PROBE_MARKER___";
+		const mutated = original.replace(
+			/(\t\t\t<\/svg>\n)(\t\t<\/button>)/,
+			(_m, svgClose, buttonClose) =>
+				`${svgClose}\t\t\t{isDark ? "Dark mode is now active ${marker}" : "Light mode is now active"}\n${buttonClose}`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) => v.kind === "jsx-expression" && v.text.includes(marker),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_BLOCK #2 — foreign material: app/[locale]/dashboard/error.tsx. A
+	// different file, a different injected shape: a bare `{"English"}` literal
+	// directly in JSX child position (no ternary, no logical operator).
+	test("MUST_BLOCK: a bare English string literal in JSX child position on foreign material (dashboard/error.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "app/[locale]/dashboard/error.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_JSXEXPR_BARE_PROBE_MARKER___";
+		const mutated = original.replace(
+			/(<CardContent className="text-center pb-2">\n)/,
+			(m) => `${m}\t\t\t\t\t{"Totally hardcoded probe copy ${marker}"}\n`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) => v.kind === "jsx-expression" && v.text.includes(marker),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_BLOCK #3 — foreign material: app/[locale]/error.tsx. This test used
+	// to pin the real `{error.message || "An unexpected error occurred..."}`
+	// defect that shipped at this exact file/line as a MUST_PASS-direction
+	// fixture, with zero injection. That defect was fixed on 2026-07-16
+	// (replaced with `{error.message || t("loading_error_description")}`),
+	// which correctly turned this test red: a probe that depends on a real
+	// bug staying unfixed is backwards — it rewards the bug's existence and
+	// punishes its repair. The fix is coverage-preserving injection: this
+	// test now injects the exact same AST shape this control exists to catch
+	// — a logical-OR fallback with a hardcoded English string in JSX child
+	// position (`{expr || "English literal"}`) — a shape no other MUST_BLOCK
+	// test in this file exercises (the others cover ternary and bare
+	// literal). It targets `app/[locale]/error.tsx` again, but via a fresh
+	// mutation on the `error.digest` block, never by reading the (now fixed)
+	// original defect.
+	test("MUST_BLOCK: an injected logical-OR English fallback ({expr || \"English\"}) in JSX child position on foreign material (error.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "app/[locale]/error.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_JSXEXPR_LOGICALOR_PROBE_MARKER___";
+		const mutated = original.replace(
+			/(\{error\.digest && \(\n)/,
+			(m) =>
+				`${m}\t\t\t\t\t\t<p>{error.digest || "No digest available ${marker}"}</p>\n`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) => v.kind === "jsx-expression" && v.text.includes(marker),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_PASS — zero false positives on `{t("key")}` calls (a CallExpression,
+	// never a StringLiteral leaf) and on `className={cn(...)}` (the
+	// JsxExpression's parent is JsxAttribute, not JsxElement/JsxFragment, so
+	// the position check excludes it before any string is inspected).
+	test("MUST_PASS: {t(...)} calls and className={cn(...)} conditional class strings are never flagged — zero false positives", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(
+				require("node:os").tmpdir(),
+				"check-translations-jsxexpr-probe-",
+			),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		const probeSource = [
+			'import { useTranslations } from "next-intl";',
+			'function cn(...args) { return args.filter(Boolean).join(" "); }',
+			"export function Probe({ isOpen, query }) {",
+			'\tconst t = useTranslations("probe");',
+			"\treturn (",
+			"\t\t<div>",
+			'\t\t\t<p className={cn("flex", isOpen && "hidden", query ? "border" : "no-border")}>',
+			'\t\t\t\t{t(query ? "results_key" : "quick_access_key")}',
+			"\t\t\t</p>",
+			"\t\t</div>",
+			"\t);",
+			"}",
+			"",
+		].join("\n");
+		fs.writeFileSync(tmpFile, probeSource);
+		try {
+			const violations = scanFile(tmpFile);
+			const jsxExprViolations = violations.filter(
+				(v) => v.kind === "jsx-expression",
+			);
+			expect(jsxExprViolations).toEqual([]);
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+});
+
+describe("check-translations — Control 1f (array-of-objects copy tables)", () => {
+	// MUST_BLOCK #1 — foreign material: components/theme-toggle.tsx. Injects a
+	// brand-new module-level array-of-objects (`const PROBE_OPTIONS = [{ id,
+	// label: "..." }, ...]`, no type annotation — a different AST shape than
+	// Control 1c/1d's `Record<K, string>`), rendered via `{o.label}` inside a
+	// `.map()` in JSX. This is the exact shape that shipped
+	// `quickLinks[].label` ("Dashboard", "Chat", ...) at
+	// components/search-modal.tsx before this control existed (that file has
+	// since been fixed by concurrent work to `labelKey` + `t()`, so the proof
+	// here is injection on foreign material never selected to build this
+	// matcher around).
+	test("MUST_BLOCK: a new English array-of-objects label table reached via JSX .map() on foreign material (theme-toggle.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "components/theme-toggle.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_ARRAYCOPY_PROBE_MARKER___";
+		const injectedDecl = `\nconst PROBE_OPTIONS = [\n\t{ id: "opt1", label: "Totally Hardcoded Probe Option ${marker}" },\n\t{ id: "opt2", label: "Second Probe Option" },\n];\n`;
+		let mutated = original.replace(
+			'import { useTheme } from "next-themes";\n',
+			(m) => `${m}${injectedDecl}`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			"{/* Sun icon */}",
+			"{PROBE_OPTIONS.map((o) => (\n\t\t\t\t<span key={o.id}>{o.label}</span>\n\t\t\t))}\n\t\t\t{/* Sun icon */}",
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		// Assert the mutation actually landed before reading any verdict.
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+		const jsxRefLanded = execSync(`grep -c "o.label" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(jsxRefLanded)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "object-copy:PROBE_OPTIONS[0].label" &&
+					v.text.includes(marker),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_BLOCK #2 — foreign material: app/[locale]/dashboard/error.tsx. A
+	// different file, a different injected shape: the copy-bearing property is
+	// `name` (not `label`), and the render reads it via optional chaining
+	// (`chip?.name`) through an intermediate `.find()` — the exact indirection
+	// depth that defeated `isReferencedInJsx` on
+	// `components/design-system/menu-picker.tsx` `MENU_OPTIONS` (`currentMenu
+	// = MENU_OPTIONS.find(...)`, then `currentMenu?.label` in JSX). Proves
+	// `isPropertyNameReferencedInJsx` generalizes past a fixed indirection
+	// depth, not merely past the one file it was measured on.
+	test("MUST_BLOCK: a new English array-of-objects table read through an indirect .find() + optional-chained JSX property access on foreign material (dashboard/error.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "app/[locale]/dashboard/error.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_ARRAYCOPY_INDIRECT_PROBE_MARKER___";
+		const injectedDecl = `\nconst PROBE_CHIPS = [\n\t{ code: "probe", name: "Totally Hardcoded Probe Chip Name ${marker}" },\n];\n`;
+		let mutated = original.replace(
+			"export default function DashboardError({\n",
+			(m) => `${injectedDecl}${m}`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			'\tconst t = useTranslations("dashboard");\n',
+			(m) =>
+				`${m}\tconst probeChip = PROBE_CHIPS.find((c) => c.code === "probe");\n`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			'{t("error_boundary_title")}',
+			'{t("error_boundary_title")}\n\t\t\t\t\t\t{probeChip?.name}',
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+		const jsxRefLanded = execSync(`grep -c "probeChip?.name" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(jsxRefLanded)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "object-copy:PROBE_CHIPS[0].name" &&
+					v.text.includes(marker),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_PASS — the real, currently-shipping locale-display tables
+	// (`SUPPORTED_LANGUAGES` in ProfileTab.tsx, keyed by `code`) must NEVER be
+	// flagged: a language picker always renders each language's own name in
+	// that language ("Deutsch", "Français", ...) — translating those would be
+	// the defect. The exemption is derived from `i18n/routing.ts`'s locale
+	// list, not a hardcoded filename.
+	test("MUST_PASS: SUPPORTED_LANGUAGES (ProfileTab.tsx) locale-display table is never flagged — zero false positives", () => {
+		const result = runControl1LiteralScan();
+		const falsePositives = result.violations.filter((v) =>
+			v.kind.startsWith("object-copy:SUPPORTED_LANGUAGES"),
+		);
+		expect(falsePositives).toEqual([]);
+	});
+
+	// MUST_PASS — `TECH_STACK[].name` (Next.js, Convex, Clerk, Polar, Vercel AI
+	// SDK, fal.ai, Firecrawl) are declared product/brand proper nouns
+	// (`ALLOWLIST_TOKENS`, reused unchanged via the shared `report()` helper),
+	// never translation candidates.
+	test("MUST_PASS: TECH_STACK product/brand names (TechStackSection.tsx) are never flagged — zero false positives", () => {
+		const result = runControl1LiteralScan();
+		const falsePositives = result.violations.filter((v) =>
+			v.kind.startsWith("object-copy:TECH_STACK"),
+		);
+		expect(falsePositives).toEqual([]);
+	});
+
+	// MUST_PASS — a locale-keyed array where the copy property sits ALONGSIDE
+	// the locale-code field (not the property being tested for translation) is
+	// still exempt in full, proven directly against a controlled fixture so
+	// this does not depend on the shape of any one real file surviving future
+	// edits.
+	test("MUST_PASS: a synthetic locale-keyed array-of-objects table produces zero object-copy findings", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(
+				require("node:os").tmpdir(),
+				"check-translations-localearray-probe-",
+			),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		fs.writeFileSync(
+			tmpFile,
+			[
+				'import { useTranslations } from "next-intl";',
+				"const LANGS = [",
+				'\t{ code: "en", label: "English" },',
+				'\t{ code: "fr", label: "Français" },',
+				'\t{ code: "de", label: "Deutsch" },',
+				"];",
+				"export function Probe() {",
+				"\treturn (",
+				"\t\t<div>",
+				"\t\t\t{LANGS.map((l) => (",
+				"\t\t\t\t<span key={l.code}>{l.label}</span>",
+				"\t\t\t))}",
+				"\t\t</div>",
+				"\t);",
+				"}",
+				"",
+			].join("\n"),
+		);
+		try {
+			const violations = scanFile(tmpFile);
+			const objectCopyViolations = violations.filter((v) =>
+				v.kind.startsWith("object-copy"),
+			);
+			expect(objectCopyViolations).toEqual([]);
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+
+	// MUST_PASS — an array-of-objects whose copy-bearing property is declared
+	// but never actually read via JSX property access anywhere in the file
+	// (condition (c) fails) must not be flagged — zero false positives on
+	// internal-only data.
+	test("MUST_PASS: an array-of-objects never read via a JSX property access is never flagged (condition (c) not proven)", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(
+				require("node:os").tmpdir(),
+				"check-translations-unreferenced-probe-",
+			),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		fs.writeFileSync(
+			tmpFile,
+			[
+				"const INTERNAL_ONLY = [",
+				'\t{ id: "a", label: "Never Rendered Anywhere" },',
+				"];",
+				"export function computeSomething() {",
+				"\treturn INTERNAL_ONLY.length;",
+				"}",
+				"export function Probe() {",
+				"\treturn <div>static</div>;",
+				"}",
+				"",
+			].join("\n"),
+		);
+		try {
+			const violations = scanFile(tmpFile);
+			const objectCopyViolations = violations.filter((v) =>
+				v.kind.startsWith("object-copy"),
+			);
+			expect(objectCopyViolations).toEqual([]);
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+});
+
 describe("check-translations — Control 2 (key parity across all locales)", () => {
 	test("MUST_BLOCK: deleting a key from one locale turns Control 2 RED, naming the key and the locale", () => {
 		const target = path.join(ROOT, "messages", "de.json");
@@ -425,8 +811,12 @@ describe("check-translations — Control 2 (key parity across all locales)", () 
 	});
 });
 
-describe("check-translations — Control 3 (fr value byte-identical to en)", () => {
-	test("MUST_BLOCK: copying the en value into fr for a real, currently-distinct key turns Control 3 RED", () => {
+describe("check-translations — Control 3 (fr value byte-identical to en) — SIGNAL, not a gate", () => {
+	// MUST_BLOCK — a real, multi-word English sentence copy-pasted into fr
+	// for a currently-distinct key must still be REPORTED by Control 3 (its
+	// `ok` field goes false and the key is named), even though this finding
+	// no longer fails the build (see the gating probe below for that half).
+	test("MUST_BLOCK: copying a real multi-word en sentence into fr for a currently-distinct key still turns Control 3.ok RED and is named", () => {
 		const target = path.join(ROOT, "messages", "fr.json");
 		const original = fs.readFileSync(target, "utf8");
 		const parsed = JSON.parse(original);
@@ -435,7 +825,11 @@ describe("check-translations — Control 3 (fr value byte-identical to en)", () 
 			fs.readFileSync(path.join(ROOT, "messages", "en.json"), "utf8"),
 		);
 
+		// Use a real key whose en value is genuine multi-word prose (not a
+		// single cognate token, not ICU, not a URL) so none of the three
+		// derived exclusion layers could mask this as a false negative.
 		expect(parsed.common.close).toBeDefined();
+		expect(enParsed.common.close).toMatch(/[a-z]{3,}/);
 		expect(parsed.common.close).not.toBe(enParsed.common.close);
 
 		parsed.common.close = enParsed.common.close;
@@ -457,17 +851,164 @@ describe("check-translations — Control 3 (fr value byte-identical to en)", () 
 		}
 	});
 
-	test("MUST_PASS: a declared FR_EN_IDENTICAL_ALLOW key is never flagged even when byte-identical", () => {
-		// Structural test of the allow-list mechanism, in-memory only —
-		// never mutates real messages files for this assertion.
-		const en = { proper_noun: "Vercel" };
-		const fr = { proper_noun: "Vercel" };
-		const allow = { proper_noun: "declared proper noun, no translation" };
-		const violations = [];
-		for (const [key, enValue] of Object.entries(en)) {
-			if (fr[key] === enValue && !allow[key]) violations.push(key);
+	test("MUST_PASS: every declared FR_EN_IDENTICAL_ALLOW value, plus the ICU and technical-identifier derived rules, produce zero findings on the real tree", () => {
+		// Full-tree run: proves the derived rules (ICU/format strip,
+		// technical-identifier detection) and the declared value allowlist
+		// together close every measured false positive — not merely an
+		// in-memory toy case.
+		const result = runControl3FrEqualsEn();
+		expect(result.violations).toEqual([]);
+	});
+
+	test("MUST_PASS: a declared cognate value ('Description') across many unrelated keys, plus an ICU plural and a URL placeholder, produce zero findings via a real subprocess run against an isolated fixture", () => {
+		const dir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "control3-cognate-probe-"),
+		);
+		try {
+			fs.mkdirSync(path.join(dir, "i18n"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "messages"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "app"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "components"), { recursive: true });
+			// >0 files required — 0 files scanned is FATAL, not a pass.
+			fs.writeFileSync(
+				path.join(dir, "components", "Probe.tsx"),
+				"export function Probe() {\n\treturn <span />;\n}\n",
+			);
+			fs.writeFileSync(
+				path.join(dir, "i18n", "routing.ts"),
+				'export const routing = { locales: ["en", "fr"] };\n',
+			);
+			const shared = {
+				field_a: { description: "Description" },
+				field_b: { description: "Description" },
+				count_unit: "{count, plural, one {item} other {items}}",
+				placeholder_url: "https://example.com/...",
+			};
+			fs.writeFileSync(
+				path.join(dir, "messages", "en.json"),
+				JSON.stringify(shared, null, "\t"),
+			);
+			fs.writeFileSync(
+				path.join(dir, "messages", "fr.json"),
+				JSON.stringify(shared, null, "\t"),
+			);
+
+			const out = execSync(
+				`node "${path.join(ROOT, "scripts", "check-translations.js")}" --json`,
+				{
+					cwd: ROOT,
+					encoding: "utf8",
+					env: { ...process.env, CHECK_TRANSLATIONS_ROOT: dir },
+				},
+			);
+			const parsed = JSON.parse(out);
+			expect(parsed.control3.violations).toEqual([]);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
 		}
-		expect(violations).toEqual([]);
+	});
+});
+
+describe("check-translations — Control 3 does not gate the build (main() exit-code probe)", () => {
+	// GATING PROBE — the entire point of this fix, proved via the REAL exit
+	// code of a REAL subprocess invocation of scripts/check-translations.js,
+	// not a simulated formula. Uses an isolated fixture tree
+	// (CHECK_TRANSLATIONS_ROOT override, added to check-translations.js
+	// solely for this test's isolation) so the ambient repo's unrelated,
+	// pre-existing Control 1/2/4 dirty-tree failures cannot contaminate
+	// either direction of the proof.
+	function buildFixtureRoot() {
+		const dir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "check-translations-gating-"),
+		);
+		fs.mkdirSync(path.join(dir, "i18n"), { recursive: true });
+		fs.mkdirSync(path.join(dir, "messages"), { recursive: true });
+		fs.mkdirSync(path.join(dir, "app"), { recursive: true });
+		fs.mkdirSync(path.join(dir, "components"), { recursive: true });
+		// A single clean, English-literal-free component so Controls 1/4 have
+		// >0 files to scan (0 files scanned is treated as a FATAL scan-root
+		// misconfiguration by both controls, not a pass) while still resolving
+		// with zero violations.
+		fs.writeFileSync(
+			path.join(dir, "components", "Probe.tsx"),
+			[
+				'import { useTranslations } from "next-intl";',
+				"export function Probe() {",
+				'\tconst t = useTranslations("common");',
+				'\treturn <span>{t("close")}</span>;',
+				"}",
+				"",
+			].join("\n"),
+		);
+		fs.writeFileSync(
+			path.join(dir, "i18n", "routing.ts"),
+			'export const routing = { locales: ["en", "fr"] };\n',
+		);
+		const en = { common: { close: "Close the current dialog window" } };
+		const fr = { common: { close: "Fermer la fenêtre de dialogue actuelle" } };
+		fs.writeFileSync(
+			path.join(dir, "messages", "en.json"),
+			JSON.stringify(en, null, "\t"),
+		);
+		fs.writeFileSync(
+			path.join(dir, "messages", "fr.json"),
+			JSON.stringify(fr, null, "\t"),
+		);
+		return { dir, en, fr };
+	}
+
+	function runScript(dir) {
+		try {
+			execSync(
+				`node "${path.join(ROOT, "scripts", "check-translations.js")}"`,
+				{
+					cwd: ROOT,
+					encoding: "utf8",
+					stdio: "pipe",
+					env: { ...process.env, CHECK_TRANSLATIONS_ROOT: dir },
+				},
+			);
+			return 0;
+		} catch (err) {
+			return err.status;
+		}
+	}
+
+	test("MUST_PASS direction: Control 3 reporting a finding, with Controls 1/2/4 clean, exits 0", () => {
+		const { dir, en } = buildFixtureRoot();
+		try {
+			// Force an fr===en Control 3 finding by overwriting fr with en.
+			fs.writeFileSync(
+				path.join(dir, "messages", "fr.json"),
+				JSON.stringify(en, null, "\t"),
+			);
+			const landed = JSON.parse(
+				fs.readFileSync(path.join(dir, "messages", "fr.json"), "utf8"),
+			);
+			expect(landed.common.close).toBe(en.common.close); // mutation landed
+
+			const exitCode = runScript(dir);
+			expect(exitCode).toBe(0);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	test("MUST_BLOCK direction: a real Control 2 failure (key missing from one locale) exits 1, even with Control 3 clean", () => {
+		const { dir } = buildFixtureRoot();
+		try {
+			const frPath = path.join(dir, "messages", "fr.json");
+			const fr = JSON.parse(fs.readFileSync(frPath, "utf8"));
+			delete fr.common.close;
+			fs.writeFileSync(frPath, JSON.stringify(fr, null, "\t"));
+			const landed = JSON.parse(fs.readFileSync(frPath, "utf8"));
+			expect(landed.common.close).toBeUndefined(); // mutation landed
+
+			const exitCode = runScript(dir);
+			expect(exitCode).toBe(1);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });
 
@@ -592,6 +1133,347 @@ describe("check-translations — Control 4 (called but undefined)", () => {
 			expect(u.reason.length).toBeGreaterThan(0);
 		}
 	});
+
+	test("the unresolvable count DROPS once static-map/array-property resolution is applied, and the split is reported", () => {
+		// Regression proof for the Control 4 static-map erosion fix: before this
+		// fix, `t(CATEGORY_LABEL_KEYS[cat])`, `t(SECTOR_I18N_KEYS[s])`,
+		// `t(currentMenu.labelKey)`, `t(link.labelKey)` all landed in
+		// `unresolved`, merely counted, never verified. This asserts the
+		// resolved-from-static-map count is > 0 and the remaining unresolved
+		// count is strictly smaller than the pre-fix baseline of 33.
+		const result = runControl4CalledButUndefined();
+		expect(result.resolvedFromStaticMap).toBeGreaterThan(0);
+		expect(result.unresolved.length).toBeLessThan(33);
+		expect(
+			result.resolvedFromStaticMap + result.unresolved.length,
+		).toBeGreaterThanOrEqual(result.resolvedFromStaticMap);
+	});
+});
+
+describe("check-translations — Control 4 static-map resolution (shape A: t(MAP[k]))", () => {
+	// MUST_BLOCK — foreign material: components/chat/ModelSelector.tsx. Before
+	// this fix, `t(CATEGORY_LABEL_KEYS[cat])` was dumped into `unresolved` and
+	// never actually checked against the locale files — a static map missing
+	// a key in even one locale would ship silently. This injects a brand-new
+	// entry into the REAL, already-consumed CATEGORY_LABEL_KEYS map whose
+	// value resolves to a key present in NO locale.
+	test("MUST_BLOCK: a new entry in CATEGORY_LABEL_KEYS (foreign material, real t(MAP[k]) site) resolving to a key absent from all locales turns Control 4 RED, naming the static map", () => {
+		const target = path.join(ROOT, "components/chat/ModelSelector.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "probeCategoryKeyNeverDefinedAnywhere";
+		const mutated = original.replace(
+			/(const CATEGORY_LABEL_KEYS: Record<ModelCategory, string> = \{)/,
+			(m) =>
+				`${m}\n\t// biome-ignore lint: probe injection\n\tprobeCategory: "${marker}",`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl4CalledButUndefined();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find((v) => v.path === `chat.${marker}`);
+			expect(hit).toBeDefined();
+			expect(hit.resolvedFrom).toBe("static map CATEGORY_LABEL_KEYS");
+			expect(hit.missingLocales).toEqual(
+				expect.arrayContaining(["en", "fr", "de", "it", "es", "pt", "ru"]),
+			);
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_BLOCK #2 — a different foreign file, a different real static map:
+	// app/[locale]/dashboard/consultant/onboard/page.tsx SECTOR_I18N_KEYS.
+	test("MUST_BLOCK: a new entry in SECTOR_I18N_KEYS (foreign material, second real t(MAP[k]) site) resolving to a key absent from all locales turns Control 4 RED", () => {
+		const target = path.join(
+			ROOT,
+			"app/[locale]/dashboard/consultant/onboard/page.tsx",
+		);
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "probeSectorKeyNeverDefinedAnywhere";
+		const mutated = original.replace(
+			/(const SECTOR_I18N_KEYS: Record<Sector, string> = \{)/,
+			(m) =>
+				`${m}\n\t// biome-ignore lint: probe injection\n\tprobeSector: "${marker}",`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl4CalledButUndefined();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) => v.path === `consultant.${marker}`,
+			);
+			expect(hit).toBeDefined();
+			expect(hit.resolvedFrom).toBe("static map SECTOR_I18N_KEYS");
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	test("MUST_PASS: the real, currently-shipping CATEGORY_LABEL_KEYS / SECTOR_I18N_KEYS values are fully defined in all 7 locales — zero false positives", () => {
+		const result = runControl4CalledButUndefined();
+		const falsePositives = result.violations.filter(
+			(v) =>
+				v.resolvedFrom === "static map CATEGORY_LABEL_KEYS" ||
+				v.resolvedFrom === "static map SECTOR_I18N_KEYS",
+		);
+		expect(falsePositives).toEqual([]);
+	});
+});
+
+describe("check-translations — Control 4 static-map resolution (shape B: t(item.propName))", () => {
+	// MUST_BLOCK — foreign material: components/landing/LandingNav.tsx. Before
+	// this fix, `t(link.labelKey)` was dumped into `unresolved`. This injects
+	// a brand-new entry into the REAL NAV_LINKS array whose `labelKey` value
+	// resolves to a key present in NO locale — the property-name invariant
+	// (`.labelKey`) is what Control 4 now resolves against, regardless of the
+	// `.find()`/`.map()` indirection between the array and the read site.
+	test("MUST_BLOCK: a new NAV_LINKS entry (foreign material, real t(item.labelKey) site) resolving to a key absent from all locales turns Control 4 RED, naming the array property", () => {
+		const target = path.join(ROOT, "components/landing/LandingNav.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "probe_nav_link_key_never_defined_anywhere";
+		const mutated = original.replace(
+			/(const NAV_LINKS = \[)/,
+			(m) => `${m}\n\t{ href: "#probe", labelKey: "${marker}" as const },`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl4CalledButUndefined();
+			expect(result.ok).toBe(false);
+			// LandingNav has no explicit useTranslations namespace binding for
+			// `link.labelKey` reads other than the file's own `t`; resolve
+			// generically by scanning for the marker regardless of namespace.
+			const hit = result.violations.find((v) => v.path.endsWith(marker));
+			expect(hit).toBeDefined();
+			expect(hit.resolvedFrom).toBe("array property .labelKey");
+			expect(hit.missingLocales).toEqual(
+				expect.arrayContaining(["en", "fr", "de", "it", "es", "pt", "ru"]),
+			);
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_BLOCK #2 — a different foreign file, a different real array-of-
+	// objects table reached via a different indirection depth:
+	// components/design-system/menu-picker.tsx MENU_OPTIONS ->
+	// `currentMenu.labelKey` (via `.find()`, not `.map()`).
+	test("MUST_BLOCK: a new MENU_OPTIONS entry (foreign material, real t(currentMenu.labelKey) via .find() indirection) resolving to a key absent from all locales turns Control 4 RED", () => {
+		const target = path.join(ROOT, "components/design-system/menu-picker.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "probe_menu_option_key_never_defined_anywhere";
+		const mutated = original.replace(
+			/(const MENU_OPTIONS = \[)/,
+			(m) =>
+				`${m}\n\t{ value: "probe" as MenuColorValue, labelKey: "${marker}" },`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl4CalledButUndefined();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find((v) => v.path.endsWith(marker));
+			expect(hit).toBeDefined();
+			expect(hit.resolvedFrom).toBe("array property .labelKey");
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	test("MUST_PASS: the real, currently-shipping NAV_LINKS / MENU_OPTIONS labelKey values are fully defined in all 7 locales — zero false positives", () => {
+		const result = runControl4CalledButUndefined();
+		const falsePositives = result.violations.filter(
+			(v) => v.resolvedFrom === "array property .labelKey",
+		);
+		expect(falsePositives).toEqual([]);
+	});
+});
+
+describe("check-translations — date-fns format() implicit-locale detector", () => {
+	// MUST_BLOCK — foreign material: components/missions/create-mission-modal.tsx.
+	// This test used to pin the real, currently-shipping
+	// `format(targetDate, "PPP")` call (no `{ locale }` option) at line 463 as
+	// a MUST_PASS-direction fixture, with zero injection. That call site was
+	// fixed on 2026-07-16 (replaced with next-intl `formatter.dateTime(...)`),
+	// which correctly turned this test red — the same "pins a live bug"
+	// defect as the jsx-expression test above. The file still imports
+	// `format` from date-fns (it's used elsewhere for ISO `"yyyy-MM-dd"`
+	// form values, a pattern this control must NOT flag — see the
+	// false-positive test below), so the fix here is to inject a fresh
+	// `format(d, "PPP")` call using that same real import binding, proving
+	// the detector still bites on this exact pattern without depending on
+	// the (now-fixed) original call site.
+	test('MUST_BLOCK: an injected format(d, "PPP") with no locale option, using the real date-fns import binding, turns Control 1 RED as implicit-locale', () => {
+		const target = path.join(
+			ROOT,
+			"components/missions/create-mission-modal.tsx",
+		);
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_DATEFNS_PPP_PROBE_MARKER___";
+		const mutated = original.replace(
+			/(import \{ format \} from "date-fns";\n)/,
+			(m) =>
+				`${m}const __probeFormatPPP = (d) => format(d, "PPP"); // ${marker}\n`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.file === "components/missions/create-mission-modal.tsx" &&
+					v.kind === "implicit-locale" &&
+					v.text.includes("PPP"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// MUST_BLOCK — foreign material: components/missions/mission-card.tsx — a
+	// different file that, since 2026-07-16, imports no date-fns symbol at
+	// all (migrated to next-intl `useFormatter()`; it used to import
+	// `formatDistanceToNow`, the anchor this test previously mutated against
+	// — that anchor no longer exists, which is exactly the "pins a live
+	// defect's shape" failure mode this whole rewrite fixes: the anchor
+	// disappeared because the file got fixed, not because the test broke).
+	// This version injects BOTH a fresh `import { format } from "date-fns"`
+	// binding (anchored on the stable `import { useFormatter, useTranslations }
+	// from "next-intl";` line, which is unrelated to date-fns and won't rot
+	// the same way) and a fresh `format(d, "PPPP")` call with no locale
+	// option — proving the detector fires on the import-derived binding
+	// name, not a hardcoded "format" string match, and proving it fires on a
+	// different pattern token ("PPPP") than the "PPP" site covered above.
+	test('MUST_BLOCK: an injected format(d, "PPPP") with no locale option, on foreign material with a freshly-injected date-fns import, turns Control 1 RED as implicit-locale', () => {
+		const target = path.join(ROOT, "components/missions/mission-card.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_DATEFNS_PROBE_MARKER___";
+		let mutated = original.replace(
+			/(import \{ useFormatter, useTranslations \} from "next-intl";\n)/,
+			(m) => `${m}import { format } from "date-fns";\n`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			/(export function MissionCard\([^)]*\)[^{]*\{)/,
+			(m) =>
+				`${m}\n\tconst __probeDate = format(new Date(), "PPPP"); // ${marker}`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) => v.kind === "implicit-locale" && v.text.includes("PPPP"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	test('MUST_PASS: format(d, "yyyy-MM-dd") (ISO form-value dates, create-mission-modal.tsx:414/471) are never flagged — zero false positives', () => {
+		const result = runControl1LiteralScan();
+		const falsePositives = result.violations.filter(
+			(v) =>
+				v.file === "components/missions/create-mission-modal.tsx" &&
+				v.kind === "implicit-locale" &&
+				v.text.includes("yyyy-MM-dd"),
+		);
+		expect(falsePositives).toEqual([]);
+	});
+
+	test("isLocaleSensitiveDateFnsPattern: unit-level discrimination — name/preset/ordinal patterns are locale-sensitive, fixed-width numeric patterns are not", () => {
+		expect(isLocaleSensitiveDateFnsPattern("PPP")).toBe(true);
+		expect(isLocaleSensitiveDateFnsPattern("PPPP")).toBe(true);
+		expect(isLocaleSensitiveDateFnsPattern("MMMM d, yyyy")).toBe(true);
+		expect(isLocaleSensitiveDateFnsPattern("EEEE")).toBe(true);
+		expect(isLocaleSensitiveDateFnsPattern("do MMMM")).toBe(true);
+		expect(isLocaleSensitiveDateFnsPattern("yyyy-MM-dd")).toBe(false);
+		expect(isLocaleSensitiveDateFnsPattern("HH:mm:ss")).toBe(false);
+		expect(isLocaleSensitiveDateFnsPattern("MM/dd/yyyy")).toBe(false);
+	});
+
+	test("detectDateFnsFormatImportNames: only matches the local binding actually imported from date-fns, never an unrelated same-named local helper", () => {
+		const ts = require("typescript");
+		const src1 = 'import { format } from "date-fns";\n';
+		const sf1 = ts.createSourceFile(
+			"probe1.ts",
+			src1,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		expect(Array.from(detectDateFnsFormatImportNames(sf1))).toEqual(["format"]);
+
+		const src2 = "function format(x) { return String(x); }\n";
+		const sf2 = ts.createSourceFile(
+			"probe2.ts",
+			src2,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		expect(Array.from(detectDateFnsFormatImportNames(sf2))).toEqual([]);
+	});
 });
 
 describe("check-translations — derived inventory", () => {
@@ -606,5 +1488,490 @@ describe("check-translations — derived inventory", () => {
 			path.relative(ROOT, f).startsWith(`components${path.sep}ui${path.sep}`),
 		);
 		expect(uiFiles.length).toBe(0);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Bipolar probe — date-fns prose functions (Control 1, implicit-locale kind)
+//
+// MUST_BLOCK: >=3 distinct foreign sites with landing assertions and
+// byte-for-byte restoration proof.
+// MUST_PASS: 0 false positives, each case cited by name.
+// ---------------------------------------------------------------------------
+
+const {
+	detectDateFnsProseImportNames,
+	detectDateFnsNamespaceImports,
+	ALWAYS_PROSE_DATE_FNS_FUNS,
+	callHasLocaleOption,
+} = require("../check-translations.js");
+const ts = require("typescript");
+
+describe("check-translations — date-fns prose function implicit-locale guard", () => {
+	// -------------------------------------------------------------------------
+	// MUST_BLOCK #1 — foreign material: components/missions/create-mission-modal.tsx
+	// This file already has `import { format } from "date-fns"`. We extend the
+	// import and inject a formatDistanceToNow call with no { locale } option.
+	// -------------------------------------------------------------------------
+	test("MUST_BLOCK #1: formatDistanceToNow(d, { addSuffix: true }) on foreign material (create-mission-modal.tsx) turns Control 1 RED", () => {
+		const target = path.join(
+			ROOT,
+			"components/missions/create-mission-modal.tsx",
+		);
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_PROSE_PROBE1_MARKER___";
+		// Extend the existing date-fns import and inject a call that returns
+		// "3 days ago" in English without a locale — the exact defect class.
+		let mutated = original.replace(
+			/import \{ format \} from "date-fns";/,
+			`import { format, formatDistanceToNow } from "date-fns";`,
+		);
+		expect(mutated).not.toBe(original);
+		// Inject a call after the first `const ` variable declaration in the component.
+		mutated = mutated.replace(
+			/(export (default )?function \w[^{]*\{)/,
+			`$1\n  const _probe1_${marker} = formatDistanceToNow(new Date(), { addSuffix: true });`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		// Assert mutation landed before reading any verdict.
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "implicit-locale" &&
+					v.file === path.relative(ROOT, target) &&
+					v.text.includes("formatDistanceToNow"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// -------------------------------------------------------------------------
+	// MUST_BLOCK #2 — foreign material: components/missions/mission-card.tsx
+	// Injects formatDistance(a, b) with no { locale } option.
+	// -------------------------------------------------------------------------
+	test("MUST_BLOCK #2: formatDistance(a, b) with no locale on foreign material (mission-card.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "components/missions/mission-card.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_PROSE_PROBE2_MARKER___";
+		let mutated = original.replace(
+			/^("use client";\n)/,
+			`$1import { formatDistance } from "date-fns";\n`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			/(export (default )?function \w[^{]*\{)/,
+			`$1\n  const _probe2_${marker} = formatDistance(new Date(), new Date());`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "implicit-locale" &&
+					v.file === path.relative(ROOT, target) &&
+					v.text.includes("formatDistance"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// -------------------------------------------------------------------------
+	// MUST_BLOCK #3 — foreign material: components/missions/mission-stats.tsx
+	// Injects formatDuration({ months: 1 }) with no { locale } option.
+	// -------------------------------------------------------------------------
+	test("MUST_BLOCK #3: formatDuration({ months: 1 }) with no locale on foreign material (mission-stats.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "components/missions/mission-stats.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_PROSE_PROBE3_MARKER___";
+		let mutated = original.replace(
+			/^("use client";\n)/,
+			`$1import { formatDuration } from "date-fns";\n`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			/(export (default )?function \w[^{]*\{)/,
+			`$1\n  const _probe3_${marker} = formatDuration({ months: 1 });`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "implicit-locale" &&
+					v.file === path.relative(ROOT, target) &&
+					v.text.includes("formatDuration"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// -------------------------------------------------------------------------
+	// MUST_BLOCK #4 (regression): format(d, "PPP") still flagged after the
+	// refactor — derives from the existing import, no regression.
+	// -------------------------------------------------------------------------
+	test('MUST_BLOCK #4 (regression): format(d, "PPP") on foreign material still turns Control 1 RED', () => {
+		const target = path.join(ROOT, "components/missions/mission-stats.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_PPP_REGRESSION_PROBE___";
+		let mutated = original.replace(
+			/^("use client";\n)/,
+			`$1import { format } from "date-fns";\n`,
+		);
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			/(export (default )?function \w[^{]*\{)/,
+			`$1\n  const _ppp_${marker} = format(new Date(), "PPP");`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "implicit-locale" &&
+					v.file === path.relative(ROOT, target) &&
+					v.text.includes("format"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	// -------------------------------------------------------------------------
+	// MUST_PASS — zero false positives, each case cited by name.
+	// -------------------------------------------------------------------------
+	test("MUST_PASS: format(d, 'yyyy-MM-dd') — machine-readable ISO pattern, NOT flagged", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "cti18n-prose-"),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		fs.writeFileSync(
+			tmpFile,
+			`import { format } from "date-fns";\nexport function P() { return <span>{format(new Date(), "yyyy-MM-dd")}</span>; }\n`,
+		);
+		try {
+			const violations = scanFile(tmpFile).filter(
+				(v) => v.kind === "implicit-locale",
+			);
+			expect(violations).toEqual([]); // "yyyy-MM-dd" is a numeric ISO pattern — never locale-sensitive
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+
+	test("MUST_PASS: formatDistanceToNow WITH { locale } — opted in, NOT flagged", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "cti18n-prose-"),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		fs.writeFileSync(
+			tmpFile,
+			`import { formatDistanceToNow } from "date-fns";\nimport { fr } from "date-fns/locale";\nexport function P() { return <span>{formatDistanceToNow(new Date(), { addSuffix: true, locale: fr })}</span>; }\n`,
+		);
+		try {
+			const violations = scanFile(tmpFile).filter(
+				(v) => v.kind === "implicit-locale",
+			);
+			expect(violations).toEqual([]); // { locale: fr } is explicitly passed
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+
+	test("MUST_PASS: a non-date-fns local function named formatDistanceToNow — NOT flagged (import-binding logic, not name matching)", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "cti18n-prose-"),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		fs.writeFileSync(
+			tmpFile,
+			`function formatDistanceToNow(d) { return String(d); }\nexport function P() { return <span>{formatDistanceToNow(new Date())}</span>; }\n`,
+		);
+		try {
+			const violations = scanFile(tmpFile).filter(
+				(v) => v.kind === "implicit-locale",
+			);
+			expect(violations).toEqual([]); // local function, NOT a date-fns import — binding check protects this
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+
+	test("MUST_PASS: addDays / isAfter / differenceInDays — return Date/boolean/number, NOT locale-sensitive, NOT flagged", () => {
+		const tmpDir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "cti18n-prose-"),
+		);
+		const tmpFile = path.join(tmpDir, "probe.tsx");
+		fs.writeFileSync(
+			tmpFile,
+			`import { addDays, isAfter, differenceInDays } from "date-fns";\nexport function P() { const d = addDays(new Date(), 1); const b = isAfter(d, new Date()); const n = differenceInDays(d, new Date()); return <span>{n}</span>; }\n`,
+		);
+		try {
+			const violations = scanFile(tmpFile).filter(
+				(v) => v.kind === "implicit-locale",
+			);
+			expect(violations).toEqual([]); // none of these are in ALWAYS_PROSE_DATE_FNS_FUNS
+		} finally {
+			fs.rmSync(tmpDir, { recursive: true, force: true });
+		}
+	});
+
+	// -------------------------------------------------------------------------
+	// Unit tests for detectDateFnsProseImportNames and ALWAYS_PROSE_DATE_FNS_FUNS
+	// -------------------------------------------------------------------------
+	test("detectDateFnsProseImportNames: named import from date-fns is detected with canonical name", () => {
+		const src = `import { formatDistanceToNow, formatDistance } from "date-fns";\n`;
+		const sf = ts.createSourceFile(
+			"probe.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		const result = detectDateFnsProseImportNames(sf);
+		expect(result.get("formatDistanceToNow")).toBe("formatDistanceToNow");
+		expect(result.get("formatDistance")).toBe("formatDistance");
+	});
+
+	test("detectDateFnsProseImportNames: aliased import is detected by local name with canonical name", () => {
+		const src = `import { formatDistanceToNow as dist } from "date-fns";\n`;
+		const sf = ts.createSourceFile(
+			"probe.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		const result = detectDateFnsProseImportNames(sf);
+		expect(result.get("dist")).toBe("formatDistanceToNow");
+		expect(result.has("formatDistanceToNow")).toBe(false);
+	});
+
+	test("detectDateFnsProseImportNames: subpath import is detected", () => {
+		const src = `import formatDistanceToNow from "date-fns/formatDistanceToNow";\n`;
+		const sf = ts.createSourceFile(
+			"probe.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		const result = detectDateFnsProseImportNames(sf);
+		expect(result.get("formatDistanceToNow")).toBe("formatDistanceToNow");
+	});
+
+	test("detectDateFnsProseImportNames: non-prose date-fns imports (addDays, format) are NOT detected", () => {
+		const src = `import { addDays, format } from "date-fns";\n`;
+		const sf = ts.createSourceFile(
+			"probe.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		const result = detectDateFnsProseImportNames(sf);
+		expect(result.size).toBe(0);
+	});
+
+	test("ALWAYS_PROSE_DATE_FNS_FUNS does NOT include lightFormat (locale-safe by design — numeric-only tokens)", () => {
+		expect(ALWAYS_PROSE_DATE_FNS_FUNS.has("lightFormat")).toBe(false);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Bipolar probe — `import * as dateFns from "date-fns"` NAMESPACE import
+// shape (the `3d` call-site check). Neither the named-import binding maps
+// (3b/3c) nor a bare-identifier spelling match ever see `dateFns.format(...)`
+// / `dateFns.formatDistanceToNow(...)` — the callee is a
+// PropertyAccessExpression, never a plain Identifier.
+// ---------------------------------------------------------------------------
+
+describe("check-translations — date-fns NAMESPACE import (`import * as dateFns`) implicit-locale guard", () => {
+	test('detectDateFnsNamespaceImports: resolves the local binding of `import * as dateFns from "date-fns"`', () => {
+		const src = 'import * as dateFns from "date-fns";\n';
+		const sf = ts.createSourceFile(
+			"probe-ns1.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		expect(Array.from(detectDateFnsNamespaceImports(sf))).toEqual(["dateFns"]);
+	});
+
+	test("detectDateFnsNamespaceImports: a named import (not a namespace import) is NOT detected", () => {
+		const src = 'import { format } from "date-fns";\n';
+		const sf = ts.createSourceFile(
+			"probe-ns2.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		expect(Array.from(detectDateFnsNamespaceImports(sf))).toEqual([]);
+	});
+
+	test("MUST_BLOCK: dateFns.formatDistanceToNow(d, { addSuffix: true }) via namespace import, no locale, on foreign material (theme-toggle.tsx) turns Control 1 RED", () => {
+		const target = path.join(ROOT, "components/theme-toggle.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_DATEFNS_NS_PROBE_MARKER___";
+		let mutated = `import * as dateFns from "date-fns";\n${original}`;
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			/(export function ThemeToggle\([^)]*\)[^{]*\{)/,
+			(m) =>
+				`${m}\n\tconst __probeDist = dateFns.formatDistanceToNow(new Date(), { addSuffix: true }); // ${marker}`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "implicit-locale" &&
+					v.file === "components/theme-toggle.tsx" &&
+					v.text.includes("dateFns.formatDistanceToNow"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	test('MUST_BLOCK: dateFns.format(d, "PPP") via namespace import, no locale, on foreign material (theme-toggle.tsx) turns Control 1 RED', () => {
+		const target = path.join(ROOT, "components/theme-toggle.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		const marker = "___I18N_DATEFNS_NS_FORMAT_PROBE_MARKER___";
+		let mutated = `import * as dateFns from "date-fns";\n${original}`;
+		expect(mutated).not.toBe(original);
+		mutated = mutated.replace(
+			/(export function ThemeToggle\([^)]*\)[^{]*\{)/,
+			(m) =>
+				`${m}\n\tconst __probeFmt = dateFns.format(new Date(), "PPP"); // ${marker}`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			expect(result.ok).toBe(false);
+			const hit = result.violations.find(
+				(v) =>
+					v.kind === "implicit-locale" &&
+					v.file === "components/theme-toggle.tsx" &&
+					v.text.includes("dateFns.format"),
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	test("MUST_PASS: dateFns.formatDistanceToNow(d, { locale: fr }) via namespace import — opted in, NOT flagged", () => {
+		const target = path.join(ROOT, "components/theme-toggle.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		let mutated = `import * as dateFns from "date-fns";\nimport { fr } from "date-fns/locale";\n${original}`;
+		mutated = mutated.replace(
+			/(export function ThemeToggle\([^)]*\)[^{]*\{)/,
+			(m) =>
+				`${m}\n\tconst __probeOk = dateFns.formatDistanceToNow(new Date(), { addSuffix: true, locale: fr });`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+		try {
+			const result = runControl1LiteralScan();
+			const falsePositives = result.violations.filter(
+				(v) =>
+					v.file === "components/theme-toggle.tsx" &&
+					v.kind === "implicit-locale" &&
+					v.text.includes("dateFns.formatDistanceToNow"),
+			);
+			expect(falsePositives).toEqual([]);
+		} finally {
+			assertRestored(target, original);
+		}
+	});
+
+	test('MUST_PASS: a namespace import from an unrelated module (not "date-fns") is NOT resolved as a date-fns namespace', () => {
+		const src = 'import * as dateFns from "some-other-lib";\n';
+		const sf = ts.createSourceFile(
+			"probe-ns3.ts",
+			src,
+			ts.ScriptTarget.Latest,
+			true,
+			ts.ScriptKind.TS,
+		);
+		expect(Array.from(detectDateFnsNamespaceImports(sf))).toEqual([]);
 	});
 });

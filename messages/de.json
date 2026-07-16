@@ -49,6 +49,7 @@
 		"something_went_wrong": "Etwas ist schiefgelaufen",
 		"loading_error_description": "Beim Laden dieses Inhalts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
 		"try_again_button": "Erneut versuchen",
+		"admin_panel_title": "Admin-Panel-Fehler",
 		"insufficient_credits_title": "Unzureichende Credits",
 		"insufficient_credits_description": "Sie haben nicht genügend Credits für {actionName}",
 		"project_load_failed_title": "Projekt konnte nicht geladen werden",
@@ -318,7 +319,9 @@
 		"profile": "Profil",
 		"settings": "Einstellungen",
 		"log_out": "Abmelden",
-		"credits": "Guthaben"
+		"credits": "Guthaben",
+		"user_menu_aria": "Benutzermenü",
+		"notifications_aria": "Benachrichtigungen"
 	},
 	"projects_page": {
 		"title": "Meine Projekte",
@@ -349,14 +352,16 @@
 			"create_project": "Neues Projekt erstellen",
 			"browse_templates": "Vorlagen durchsuchen",
 			"view_projects": "Alle Projekte anzeigen",
-			"manage_account": "Konto verwalten"
+			"manage_account": "Konto verwalten",
+			"empty": "Noch keine Aktionen konfiguriert."
 		},
 		"recent_projects": {
 			"title": "Aktuelle Projekte",
 			"description": "Ihre neuesten Videoprojekte",
 			"view_all": "Alle anzeigen",
 			"empty_title": "Noch keine Projekte",
-			"empty_description": "Erstellen Sie Ihr erstes Videoprojekt, um zu beginnen"
+			"empty_description": "Erstellen Sie Ihr erstes Videoprojekt, um zu beginnen",
+			"empty": "Noch keine Einträge."
 		},
 		"activity_feed": {
 			"title": "Aktuelle Aktivitäten",
@@ -365,7 +370,8 @@
 			"empty_description": "Ihre letzten Aktionen werden hier angezeigt",
 			"created_project": "Projekt \"{name}\" erstellt",
 			"video_completed": "Video für \"{name}\" abgeschlossen",
-			"just_now": "Gerade eben"
+			"just_now": "Gerade eben",
+			"empty": "Keine kürzliche Aktivität."
 		},
 		"error_title": "Dashboard konnte nicht geladen werden",
 		"error_description": "Dashboard-Daten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
@@ -384,7 +390,9 @@
 		"error_boundary_title": "Dashboard-Fehler",
 		"error_boundary_generic": "Beim Laden des Dashboards ist ein unerwarteter Fehler aufgetreten.",
 		"try_again": "Erneut versuchen",
-		"go_to_dashboard": "Zum Dashboard"
+		"go_to_dashboard": "Zum Dashboard",
+		"credits_remaining": "{count} Guthaben verbleibend",
+		"storage_used": "{gb} GB verwendet"
 	},
 	"account": {
 		"title": "Kontoeinstellungen",
@@ -500,7 +508,11 @@
 		"security_alerts_desc": "Wichtige Sicherheitsupdates und Kontoaktivitäten (immer aktiviert)",
 		"security_tooltip": "Sicherheitswarnungen können nicht deaktiviert werden, um Ihr Konto zu schützen",
 		"save_preferences": "Einstellungen speichern",
-		"saving": "Speichern..."
+		"saving": "Speichern...",
+		"toggle_email_aria": "E-Mail-Benachrichtigungen umschalten",
+		"toggle_push_aria": "Push-Benachrichtigungen umschalten",
+		"toggle_marketing_aria": "Marketing-E-Mails umschalten",
+		"security_alerts_aria": "Sicherheitswarnungen (immer aktiviert)"
 	},
 	"project_card": {
 		"edit": "Projekt bearbeiten",
@@ -2760,7 +2772,28 @@
 		"nav_chat": "Chat",
 		"nav_missions": "Missionen",
 		"nav_architect": "Architect",
-		"nav_settings": "Einstellungen"
+		"nav_settings": "Einstellungen",
+		"nav_aria_label": "Hauptnavigation",
+		"home_aria_label": "VantageStarter Startseite",
+		"overview_label": "Übersicht",
+		"workspace_label": "Arbeitsbereich"
+	},
+	"sidebar_user_nav": {
+		"account_menu": "Benutzerkontomenü",
+		"toggle_theme": "{mode, select, dark {Dunklen Modus aktivieren} light {Hellen Modus aktivieren} other {Design wechseln}}",
+		"sign_out": "Abmelden"
+	},
+	"search_modal": {
+		"aria_label": "Suche",
+		"placeholder": "Seiten, Sitzungen, Missionen durchsuchen...",
+		"clear_search": "Suche löschen",
+		"key_esc": "Esc",
+		"results": "Ergebnisse",
+		"quick_access": "Schnellzugriff",
+		"no_results": "Keine Ergebnisse für „{query}“",
+		"hint_navigate": "navigieren",
+		"hint_open": "öffnen",
+		"hint_close": "schließen"
 	},
 	"architect": {
 		"thinking": "Denkt nach",
@@ -3193,5 +3226,43 @@
 		"light_mode": "Heller Modus",
 		"switch_to_light": "Zum hellen Modus wechseln",
 		"switch_to_dark": "Zum dunklen Modus wechseln"
+	},
+	"dashboard_nav": {
+		"dashboard_crumb": "Dashboard",
+		"breadcrumb_aria": "Breadcrumb-Navigation"
+	},
+	"purchase_credits_modal": {
+		"loading_packages": "Pakete werden geladen…",
+		"popular_badge": "Beliebt",
+		"credits_unit": "Guthaben",
+		"bonus_amount": "+{count} Bonus",
+		"selected_label": "Ausgewählt",
+		"payment_method_label": "Zahlungsmethode",
+		"payment_redirect_notice": "Sie werden zu unserem sicheren Zahlungsdienstleister weitergeleitet, um Ihren Kauf abzuschließen.",
+		"cancel": "Abbrechen",
+		"purchase_credits_cta": "Guthaben kaufen"
+	},
+	"design_system": {
+		"menu_accent": "Menü-Akzent",
+		"base_color": "Basisfarbe",
+		"chart_color": "Diagrammfarbe",
+		"customizer_title": "Anpassung",
+		"font_sample": "Aa",
+		"body_font": "Fließtextschrift",
+		"icon_library": "Icon-Bibliothek",
+		"menu": "Menü",
+		"color": "Farbe",
+		"default": "Standard",
+		"inverted": "Invertiert",
+		"appearance": "Erscheinungsbild",
+		"solid": "Deckend",
+		"translucent": "Durchscheinend",
+		"menu_option_default_solid": "Standard / Deckend",
+		"menu_option_default_translucent": "Standard / Durchscheinend",
+		"menu_option_inverted_solid": "Invertiert / Deckend",
+		"menu_option_inverted_translucent": "Invertiert / Durchscheinend",
+		"radius": "Radius",
+		"style": "Stil",
+		"theme": "Thema"
 	}
 }

@@ -12,7 +12,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import {
 	cloneElement,
 	isValidElement,
@@ -53,6 +53,7 @@ export function CreateMissionModal({
 	onSuccess,
 }: CreateMissionModalProps) {
 	const t = useTranslations("missions.create_modal");
+	const formatter = useFormatter();
 	const [open, setOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -403,7 +404,11 @@ export function CreateMissionModal({
 													<line x1="8" y1="2" x2="8" y2="6" />
 													<line x1="3" y1="10" x2="21" y2="10" />
 												</svg>
-												{startDate ? format(startDate, "PPP") : t("pick_date")}
+												{startDate
+													? formatter.dateTime(startDate, {
+															dateStyle: "long",
+														})
+													: t("pick_date")}
 											</button>
 											{showStartPicker && (
 												<div className="absolute top-full left-0 z-20 mt-1">
@@ -460,7 +465,11 @@ export function CreateMissionModal({
 													<line x1="8" y1="2" x2="8" y2="6" />
 													<line x1="3" y1="10" x2="21" y2="10" />
 												</svg>
-												{targetDate ? format(targetDate, "PPP") : "Pick a date"}
+												{targetDate
+													? formatter.dateTime(targetDate, {
+															dateStyle: "long",
+														})
+													: t("pick_date")}
 											</button>
 											{showTargetPicker && (
 												<div className="absolute top-full left-0 z-20 mt-1">

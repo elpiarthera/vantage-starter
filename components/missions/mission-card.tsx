@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -228,9 +227,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 						</svg>
 						<span className="text-xs">{t("due")}</span>
 						<span className="text-xs text-foreground">
-							{formatDistanceToNow(new Date(mission.targetDate), {
-								addSuffix: true,
-							})}
+							{format.relativeTime(new Date(mission.targetDate))}
 						</span>
 					</div>
 				)}

@@ -79,7 +79,7 @@ export function NotificationsTab({ user: _user }: NotificationsTabProps) {
 								checked={emailNotifications}
 								onCheckedChange={setEmailNotifications}
 								className="flex-shrink-0"
-								aria-label="Toggle email notifications"
+								aria-label={t("toggle_email_aria")}
 							/>
 						</div>
 					</CardHeader>
@@ -109,7 +109,7 @@ export function NotificationsTab({ user: _user }: NotificationsTabProps) {
 								checked={pushNotifications}
 								onCheckedChange={setPushNotifications}
 								className="flex-shrink-0"
-								aria-label="Toggle push notifications"
+								aria-label={t("toggle_push_aria")}
 							/>
 						</div>
 					</CardHeader>
@@ -139,7 +139,7 @@ export function NotificationsTab({ user: _user }: NotificationsTabProps) {
 								checked={marketingEmails}
 								onCheckedChange={setMarketingEmails}
 								className="flex-shrink-0"
-								aria-label="Toggle marketing emails"
+								aria-label={t("toggle_marketing_aria")}
 							/>
 						</div>
 					</CardHeader>
@@ -186,7 +186,7 @@ export function NotificationsTab({ user: _user }: NotificationsTabProps) {
 								checked={securityAlerts}
 								disabled
 								className="flex-shrink-0 opacity-50 cursor-not-allowed"
-								aria-label="Security alerts (always enabled)"
+								aria-label={t("security_alerts_aria")}
 							/>
 						</div>
 					</CardHeader>

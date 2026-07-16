@@ -12,7 +12,7 @@ export function QuickActions() {
 			</h3>
 			{/* TODO: Add product-specific quick actions */}
 			<p className="text-sm text-muted-foreground">
-				No actions configured yet.
+				{t("quick_actions.empty")}
 			</p>
 		</div>
 	);

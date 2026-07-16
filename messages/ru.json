@@ -49,6 +49,7 @@
 		"something_went_wrong": "Что-то пошло не так",
 		"loading_error_description": "Произошла ошибка при загрузке этого контента. Пожалуйста, попробуйте снова.",
 		"try_again_button": "Попробовать снова",
+		"admin_panel_title": "Ошибка панели администратора",
 		"insufficient_credits_title": "Недостаточно кредитов",
 		"insufficient_credits_description": "У вас недостаточно кредитов для {actionName}",
 		"project_load_failed_title": "Не удалось загрузить проект",
@@ -318,7 +319,9 @@
 		"profile": "Профиль",
 		"settings": "Настройки",
 		"log_out": "Выйти",
-		"credits": "Кредиты"
+		"credits": "Кредиты",
+		"user_menu_aria": "Меню пользователя",
+		"notifications_aria": "Уведомления"
 	},
 	"projects_page": {
 		"title": "Мои проекты",
@@ -349,14 +352,16 @@
 			"create_project": "Создать новый проект",
 			"browse_templates": "Просмотреть шаблоны",
 			"view_projects": "Просмотреть все проекты",
-			"manage_account": "Управление аккаунтом"
+			"manage_account": "Управление аккаунтом",
+			"empty": "Действия ещё не настроены."
 		},
 		"recent_projects": {
 			"title": "Недавние проекты",
 			"description": "Ваши последние видеопроекты",
 			"view_all": "Просмотреть все",
 			"empty_title": "Пока нет проектов",
-			"empty_description": "Создайте свой первый видеопроект, чтобы начать"
+			"empty_description": "Создайте свой первый видеопроект, чтобы начать",
+			"empty": "Пока нет элементов."
 		},
 		"activity_feed": {
 			"title": "Недавняя активность",
@@ -365,7 +370,8 @@
 			"empty_description": "Ваши недавние действия появятся здесь",
 			"created_project": "Создан проект \"{name}\"",
 			"video_completed": "Видео завершено для \"{name}\"",
-			"just_now": "Только что"
+			"just_now": "Только что",
+			"empty": "Нет недавней активности."
 		},
 		"error_title": "Не удалось загрузить панель управления",
 		"error_description": "Не удалось загрузить данные панели управления. Пожалуйста, попробуйте снова.",
@@ -384,7 +390,9 @@
 		"error_boundary_title": "Ошибка панели управления",
 		"error_boundary_generic": "Произошла непредвиденная ошибка при загрузке панели управления.",
 		"try_again": "Повторить попытку",
-		"go_to_dashboard": "Перейти в панель управления"
+		"go_to_dashboard": "Перейти в панель управления",
+		"credits_remaining": "Осталось кредитов: {count}",
+		"storage_used": "Использовано {gb} ГБ"
 	},
 	"account": {
 		"title": "Настройки аккаунта",
@@ -500,7 +508,11 @@
 		"security_alerts_desc": "Важные обновления безопасности и активность аккаунта (всегда включены)",
 		"security_tooltip": "Оповещения безопасности нельзя отключить для защиты вашего аккаунта",
 		"save_preferences": "Сохранить предпочтения",
-		"saving": "Сохранение..."
+		"saving": "Сохранение...",
+		"toggle_email_aria": "Переключить уведомления по эл. почте",
+		"toggle_push_aria": "Переключить push-уведомления",
+		"toggle_marketing_aria": "Переключить маркетинговые письма",
+		"security_alerts_aria": "Оповещения безопасности (всегда включены)"
 	},
 	"project_card": {
 		"edit": "Редактировать проект",
@@ -2760,7 +2772,28 @@
 		"nav_chat": "Чат",
 		"nav_missions": "Миссии",
 		"nav_architect": "Architect",
-		"nav_settings": "Настройки"
+		"nav_settings": "Настройки",
+		"nav_aria_label": "Основная навигация",
+		"home_aria_label": "Главная VantageStarter",
+		"overview_label": "Обзор",
+		"workspace_label": "Рабочее пространство"
+	},
+	"sidebar_user_nav": {
+		"account_menu": "Меню учётной записи пользователя",
+		"toggle_theme": "{mode, select, dark {Включить тёмную тему} light {Включить светлую тему} other {Переключить тему}}",
+		"sign_out": "Выйти"
+	},
+	"search_modal": {
+		"aria_label": "Поиск",
+		"placeholder": "Поиск страниц, сессий, миссий...",
+		"clear_search": "Очистить поиск",
+		"key_esc": "Esc",
+		"results": "Результаты",
+		"quick_access": "Быстрый доступ",
+		"no_results": "Нет результатов для «{query}»",
+		"hint_navigate": "навигация",
+		"hint_open": "открыть",
+		"hint_close": "закрыть"
 	},
 	"architect": {
 		"thinking": "Думаю",
@@ -3193,5 +3226,43 @@
 		"light_mode": "Светлый режим",
 		"switch_to_light": "Переключить на светлый режим",
 		"switch_to_dark": "Переключить на тёмный режим"
+	},
+	"dashboard_nav": {
+		"dashboard_crumb": "Панель управления",
+		"breadcrumb_aria": "Хлебные крошки"
+	},
+	"purchase_credits_modal": {
+		"loading_packages": "Загрузка пакетов…",
+		"popular_badge": "Популярный",
+		"credits_unit": "кредитов",
+		"bonus_amount": "+{count} бонус",
+		"selected_label": "Выбрано",
+		"payment_method_label": "Способ оплаты",
+		"payment_redirect_notice": "Вы будете перенаправлены к нашему защищённому платёжному сервису для завершения покупки.",
+		"cancel": "Отмена",
+		"purchase_credits_cta": "Купить кредиты"
+	},
+	"design_system": {
+		"menu_accent": "Акцент меню",
+		"base_color": "Базовый цвет",
+		"chart_color": "Цвет диаграммы",
+		"customizer_title": "Настройщик",
+		"font_sample": "Aa",
+		"body_font": "Шрифт текста",
+		"icon_library": "Библиотека иконок",
+		"menu": "Меню",
+		"color": "Цвет",
+		"default": "По умолчанию",
+		"inverted": "Инвертированный",
+		"appearance": "Внешний вид",
+		"solid": "Сплошной",
+		"translucent": "Полупрозрачный",
+		"menu_option_default_solid": "По умолчанию / Сплошной",
+		"menu_option_default_translucent": "По умолчанию / Полупрозрачный",
+		"menu_option_inverted_solid": "Инвертированный / Сплошной",
+		"menu_option_inverted_translucent": "Инвертированный / Полупрозрачный",
+		"radius": "Радиус",
+		"style": "Стиль",
+		"theme": "Тема"
 	}
 }

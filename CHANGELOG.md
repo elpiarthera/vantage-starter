@@ -4,6 +4,39 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-16 — the dashboard surface is localized; eight guard blind spots closed, none found by design)
+
+**LIVRABLE 2 done, measured with the guard at its strongest:** Control 1 reports **0** hardcoded literals across the whole dashboard surface — `app/[locale]/dashboard/**`, `components/{missions,chat,dashboard,design-system,create}`, `app-sidebar`, `sidebar-user-nav`, `search-modal`, `theme-toggle` — and **0** on both error pages, which were telling French users "An unexpected error occurred. Please try again." Control 4 (called but undefined) PASSes at 0. Cross-locale parity 519 -> 39. Every count here is derived by the script; none is typed.
+
+**Eight blind spots, and the guard reported ZERO on every one of them before it was taught to look.** Not one was found by designing the guard — all eight came from using it against real code, and five were named by agents told to report their own gaps:
+1. **template literals** — `title={`Target: ${...}`}` : it checked `title` only when the value was a plain string literal.
+2. **`toLocaleDateString()` with no argument** — silently renders in the SERVER's locale, never the user's; it only knew typed tags like `"en-US"`.
+3. **label maps** — `const STATUS_LABELS: Record<K,string> = { pending: "Pending" }` reaching the DOM as a JSX expression, never as JSX text.
+4. **called but undefined** — a key the CODE calls that NO locale defines. Cross-locale parity is structurally blind to it: with all seven locales missing the same key there is no asymmetry to see. **All seven agree — on nothing — and next-intl throws.** It found **91**, sixty on `/fr/dashboard/consultant/onboard`.
+5. **JSX expression containers** — `{query ? "Results" : "Quick access"}`. Discriminated by POSITION (is the parent a rendered JSX child slot?), never by spelling, which structurally exempts `t("key")` and `className={cn(...)}`.
+6. **arrays of objects** — `quickLinks = [{ label: "Dashboard" }]` rendered `{link.label}`: the label-map detector only knew `Record<...>`.
+7. **date-fns `format(d,"PPP")` without `{ locale }`** — renders en-US in silence.
+8. **the rest of the date-fns prose family** — `formatDistanceToNow` ("3 days ago", in English) walked past a detector that had been told about `format`. The fix derives the locale-sensitive surface from the actual import binding plus a documented prose-returns list, so a local helper named `format` is not flagged and `addDays` (returns data, not prose) never is.
+
+**The search filter trap.** `search-modal.tsx` matched the user's query against the ENGLISH label. Translating the labels naively would have left a French user typing "Réglages", seeing "Réglages" on screen, and matching nothing — a fix quietly worse than the bug. The filter now resolves translations first and compares with `.toLocaleLowerCase(locale)`.
+
+**The erosion, named before it could lie.** Converting `label: "Dashboard"` into `labelKey` + `t(map[k].labelKey)` is correct code — and it moves the key OUT of Control 4's static reach. Unresolvable calls climbed 31 -> 33 in one session while "PASS — 0" printed. Fix enough maps and the PASS becomes decoration: progress that buys green by selling coverage. Control 4 now enumerates static maps (they ARE derivable constants) and prints the split honestly: **16 resolved from static maps, 17 still unresolvable — verify by hand**. The 17 are counted and named, never dropped.
+
+**Two guard-design defects fixed, both of the kind that get a guard deleted:**
+- **Control 3 was hard-failing CI on 161 findings of which essentially none were real** (151 one/two-word cognates; the ten longer ones were ICU patterns, `{current} / {total}` formats, product names like "Qwen 3 TTS", and `Aa` — a font sample). The specification always said controls 1 and 2 are RED and control 3 is *signalée*; an agent promoted a signal into a gate. Permanent red = the script gets deleted in a week = the guard protects nothing. Control 3 now reports without touching the exit code (`allOk = control1.ok && control2.ok && control4.ok`), and its noise is removed by DERIVED structural rules (strip ICU/placeholders, exclude acronyms/hex/URLs) plus a declared list of 17 proper nouns and cognates, each with a written reason.
+- **Three probes pinned LIVE PRODUCTION DEFECTS as fixtures** — "the real, currently-shipping defect is found without any injection". They were green because the app was broken; fixing "Pick a date" and the error pages turned them red. A suite that rewards a bug's existence and punishes its repair is worse than none. Each now injects what it asserts — including its own `import` — and asserts the injection LANDED before reading any verdict. (MUST_PASS tests that pin real *correct* code are kept: that dependency is inverted and legitimate — break the product and they rightly fail.)
+
+**Proof, on foreign material chosen by the reviewer, not by the matchers' authors:** eight classes injected into one component plus a locale file — every one RED; `format(d,"yyyy-MM-dd")` (a machine-readable form value, locale-independent by design) and `addDays` stay GREEN; false positives 0; both files restored byte-identical. Suite: 66 tests, 72 landing assertions, 28 restoration assertions. A deleted key was caught TWICE — Control 2 saw it missing, Control 4 saw the code calling it — defense in depth nobody designed.
+
+### Known gaps, named rather than left silent
+
+- **Control 1: 129 literals remain, all OUTSIDE the dashboard surface**: `app/[locale]` accessibility/legal/privacy pages (108), `components/landing` (15), `not-found.tsx` (3), `opengraph-image.tsx` (2), `components/shared` (1). The guard scans the whole product (128 files) — wider than this task's scope — so it stays RED until they are closed. That is the instrument being honest, not a regression.
+- **Control 2: 39 key-parity violations** (`landing.footer.*`, `chat.*`).
+- **17 dynamic `t()` calls** still not statically resolvable — counted and named in the output. The `components/missions/**` ones were hand-audited against their TypeScript union types: 0 missing keys.
+- **`lucide-react` is imported in 34 files** while the convention says inline SVG only. Measured, named, not this PR.
+- **16 `tsc` errors**, including `ModelSelector.tsx` `useOptimistic` — derived cause: `package.json` declares `react: ^19` against `@types/react: ^18`. Owned by the tsc-zero task. Not "pre-existing": ours, and a declared debt beats a disowned one.
+
+
 ### Fixed (2026-07-16 — 91 translation keys the code called and no locale defined; the missions surface localized)
 
 - **91 runtime breaks closed. Control 4 now PASSes at 0.** Every one was a `t()` call resolving to a key absent from at least one locale — next-intl throws or renders the raw key path. 60 were on `/fr/dashboard/consultant/onboard`, one of the four pages screenshotted as English in prod. **The old guard reported zero.** Cross-locale parity cannot see a key missing from all seven; that is what Control 4 exists for.

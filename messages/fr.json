@@ -49,6 +49,7 @@
 		"something_went_wrong": "Quelque chose s'est mal passé",
 		"loading_error_description": "Nous avons rencontré une erreur lors du chargement de ce contenu. Veuillez réessayer.",
 		"try_again_button": "Réessayer",
+		"admin_panel_title": "Erreur du panneau d'administration",
 		"insufficient_credits_title": "Crédits insuffisants",
 		"insufficient_credits_description": "Vous n'avez pas assez de crédits pour {actionName}",
 		"project_load_failed_title": "Échec du chargement du projet",
@@ -318,7 +319,9 @@
 		"profile": "Profil",
 		"settings": "Paramètres",
 		"log_out": "Déconnexion",
-		"credits": "Crédits"
+		"credits": "Crédits",
+		"user_menu_aria": "Menu utilisateur",
+		"notifications_aria": "Notifications"
 	},
 	"projects_page": {
 		"title": "Mes Projets",
@@ -349,14 +352,16 @@
 			"create_project": "Créer un nouveau projet",
 			"browse_templates": "Parcourir les modèles",
 			"view_projects": "Voir tous les projets",
-			"manage_account": "Gérer le compte"
+			"manage_account": "Gérer le compte",
+			"empty": "Aucune action configurée pour le moment."
 		},
 		"recent_projects": {
 			"title": "Projets récents",
 			"description": "Vos derniers projets vidéo",
 			"view_all": "Voir tout",
 			"empty_title": "Pas encore de projets",
-			"empty_description": "Créez votre premier projet vidéo pour commencer"
+			"empty_description": "Créez votre premier projet vidéo pour commencer",
+			"empty": "Aucun élément pour le moment."
 		},
 		"activity_feed": {
 			"title": "Activité récente",
@@ -365,7 +370,8 @@
 			"empty_description": "Vos actions récentes apparaîtront ici",
 			"created_project": "Projet créé \"{name}\"",
 			"video_completed": "Vidéo terminée pour \"{name}\"",
-			"just_now": "À l'instant"
+			"just_now": "À l'instant",
+			"empty": "Aucune activité récente."
 		},
 		"error_title": "Échec du chargement du tableau de bord",
 		"error_description": "Impossible de charger les données du tableau de bord. Veuillez réessayer.",
@@ -384,7 +390,9 @@
 		"error_boundary_title": "Erreur du tableau de bord",
 		"error_boundary_generic": "Une erreur inattendue est survenue lors du chargement du tableau de bord.",
 		"try_again": "Réessayer",
-		"go_to_dashboard": "Aller au tableau de bord"
+		"go_to_dashboard": "Aller au tableau de bord",
+		"credits_remaining": "{count} crédits restants",
+		"storage_used": "{gb} Go utilisés"
 	},
 	"account": {
 		"title": "Paramètres du compte",
@@ -500,7 +508,11 @@
 		"security_alerts_desc": "Mises à jour de sécurité importantes et activité du compte (toujours activé)",
 		"security_tooltip": "Les alertes de sécurité ne peuvent pas être désactivées pour protéger votre compte",
 		"save_preferences": "Enregistrer les préférences",
-		"saving": "Enregistrement..."
+		"saving": "Enregistrement...",
+		"toggle_email_aria": "Activer/désactiver les notifications par e-mail",
+		"toggle_push_aria": "Activer/désactiver les notifications push",
+		"toggle_marketing_aria": "Activer/désactiver les e-mails marketing",
+		"security_alerts_aria": "Alertes de sécurité (toujours activées)"
 	},
 	"project_card": {
 		"edit": "Modifier le projet",
@@ -2760,7 +2772,28 @@
 		"nav_chat": "Discussion",
 		"nav_missions": "Missions",
 		"nav_architect": "Architect",
-		"nav_settings": "Paramètres"
+		"nav_settings": "Paramètres",
+		"nav_aria_label": "Navigation principale",
+		"home_aria_label": "Accueil VantageStarter",
+		"overview_label": "Aperçu",
+		"workspace_label": "Espace de travail"
+	},
+	"sidebar_user_nav": {
+		"account_menu": "Menu du compte utilisateur",
+		"toggle_theme": "{mode, select, dark {Activer le mode sombre} light {Activer le mode clair} other {Changer de thème}}",
+		"sign_out": "Se déconnecter"
+	},
+	"search_modal": {
+		"aria_label": "Recherche",
+		"placeholder": "Rechercher pages, sessions, missions...",
+		"clear_search": "Effacer la recherche",
+		"key_esc": "Échap",
+		"results": "Résultats",
+		"quick_access": "Accès rapide",
+		"no_results": "Aucun résultat pour « {query} »",
+		"hint_navigate": "naviguer",
+		"hint_open": "ouvrir",
+		"hint_close": "fermer"
 	},
 	"chat": {
 		"title": "Conversations",
@@ -3196,5 +3229,43 @@
 		"light_mode": "Mode clair",
 		"switch_to_light": "Passer en mode clair",
 		"switch_to_dark": "Passer en mode sombre"
+	},
+	"dashboard_nav": {
+		"dashboard_crumb": "Tableau de bord",
+		"breadcrumb_aria": "Fil d'Ariane"
+	},
+	"purchase_credits_modal": {
+		"loading_packages": "Chargement des forfaits…",
+		"popular_badge": "Populaire",
+		"credits_unit": "crédits",
+		"bonus_amount": "+{count} bonus",
+		"selected_label": "Sélectionné",
+		"payment_method_label": "Moyen de paiement",
+		"payment_redirect_notice": "Vous serez redirigé vers notre processeur de paiement sécurisé pour finaliser votre achat.",
+		"cancel": "Annuler",
+		"purchase_credits_cta": "Acheter des crédits"
+	},
+	"design_system": {
+		"menu_accent": "Accent du menu",
+		"base_color": "Couleur de base",
+		"chart_color": "Couleur des graphiques",
+		"customizer_title": "Personnalisation",
+		"font_sample": "Aa",
+		"body_font": "Police du texte",
+		"icon_library": "Bibliothèque d'icônes",
+		"menu": "Menu",
+		"color": "Couleur",
+		"default": "Par défaut",
+		"inverted": "Inversé",
+		"appearance": "Apparence",
+		"solid": "Opaque",
+		"translucent": "Translucide",
+		"menu_option_default_solid": "Par défaut / Opaque",
+		"menu_option_default_translucent": "Par défaut / Translucide",
+		"menu_option_inverted_solid": "Inversé / Opaque",
+		"menu_option_inverted_translucent": "Inversé / Translucide",
+		"radius": "Rayon",
+		"style": "Style",
+		"theme": "Thème"
 	}
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import { MENU_ACCENTS, type MenuAccentValue } from "@/lib/design-system/config";
 import {
@@ -12,6 +13,7 @@ import {
 } from "./picker";
 
 export function MenuAccentPicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();
 	const current = MENU_ACCENTS.find((a) => a.value === params.menuAccent);
 
@@ -19,7 +21,9 @@ export function MenuAccentPicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Menu Accent</div>
+					<div className="text-xs text-muted-foreground">
+						{t("menu_accent")}
+					</div>
 					<div className="text-sm font-medium text-foreground">
 						{current?.label}
 					</div>

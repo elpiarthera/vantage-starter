@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
 	Picker,
 	PickerContent,
@@ -13,6 +14,7 @@ import { RADII, type RadiusValue } from "@/lib/create/config";
 import { useDesignSystemSearchParams } from "@/lib/create/search-params";
 
 export function RadiusPicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystemSearchParams();
 	const isRadiusLocked = params.style === "lyra";
 	const selectedRadiusName = isRadiusLocked ? "none" : params.radius;
@@ -25,7 +27,7 @@ export function RadiusPicker() {
 		<Picker>
 			<PickerTrigger disabled={isRadiusLocked}>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Radius</div>
+					<div className="text-xs text-muted-foreground">{t("radius")}</div>
 					<div className="text-sm font-medium text-foreground">
 						{currentRadius?.label}
 					</div>

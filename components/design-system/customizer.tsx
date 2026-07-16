@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { MenuAccentPicker } from "./accent-picker";
 import { BaseColorPicker } from "./base-color-picker";
@@ -16,6 +17,7 @@ function FieldSeparator({ className }: { className?: string }) {
 }
 
 export function Customizer({ className }: { className?: string }) {
+	const t = useTranslations("design_system");
 	return (
 		<aside
 			className={cn(
@@ -44,7 +46,9 @@ export function Customizer({ className }: { className?: string }) {
 					<path d="M19.07 4.93A10 10 0 0 0 12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a10 10 0 0 0 7.07-2.93" />
 					<path d="M22 12a10 10 0 0 0-2.93-7.07" />
 				</svg>
-				<span className="text-sm font-medium text-foreground">Customizer</span>
+				<span className="text-sm font-medium text-foreground">
+					{t("customizer_title")}
+				</span>
 			</div>
 
 			{/* Pickers */}

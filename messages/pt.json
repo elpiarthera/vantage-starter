@@ -49,6 +49,7 @@
 		"something_went_wrong": "Algo deu errado",
 		"loading_error_description": "Encontramos um erro ao carregar este conteúdo. Por favor, tente novamente.",
 		"try_again_button": "Tentar Novamente",
+		"admin_panel_title": "Erro no painel de administração",
 		"insufficient_credits_title": "Créditos Insuficientes",
 		"insufficient_credits_description": "Você não tem créditos suficientes para {actionName}",
 		"project_load_failed_title": "Falha ao Carregar Projeto",
@@ -318,7 +319,9 @@
 		"profile": "Perfil",
 		"settings": "Configurações",
 		"log_out": "Sair",
-		"credits": "Créditos"
+		"credits": "Créditos",
+		"user_menu_aria": "Menu do usuário",
+		"notifications_aria": "Notificações"
 	},
 	"projects_page": {
 		"title": "Meus Projetos",
@@ -349,14 +352,16 @@
 			"create_project": "Criar Novo Projeto",
 			"browse_templates": "Explorar Modelos",
 			"view_projects": "Ver Todos os Projetos",
-			"manage_account": "Gerenciar Conta"
+			"manage_account": "Gerenciar Conta",
+			"empty": "Ainda não há ações configuradas."
 		},
 		"recent_projects": {
 			"title": "Projetos Recentes",
 			"description": "Seus projetos de vídeo mais recentes",
 			"view_all": "Ver Todos",
 			"empty_title": "Nenhum projeto ainda",
-			"empty_description": "Crie seu primeiro projeto de vídeo para começar"
+			"empty_description": "Crie seu primeiro projeto de vídeo para começar",
+			"empty": "Ainda não há itens."
 		},
 		"activity_feed": {
 			"title": "Atividade Recente",
@@ -365,7 +370,8 @@
 			"empty_description": "Suas ações recentes aparecerão aqui",
 			"created_project": "Projeto criado \"{name}\"",
 			"video_completed": "Vídeo concluído para \"{name}\"",
-			"just_now": "Agora mesmo"
+			"just_now": "Agora mesmo",
+			"empty": "Nenhuma atividade recente."
 		},
 		"error_title": "Falha ao Carregar o Painel",
 		"error_description": "Não foi possível carregar os dados do painel. Por favor, tente novamente.",
@@ -384,7 +390,9 @@
 		"error_boundary_title": "Erro do painel",
 		"error_boundary_generic": "Ocorreu um erro inesperado ao carregar o painel.",
 		"try_again": "Tentar novamente",
-		"go_to_dashboard": "Ir para o painel"
+		"go_to_dashboard": "Ir para o painel",
+		"credits_remaining": "{count} créditos restantes",
+		"storage_used": "{gb} GB usados"
 	},
 	"account": {
 		"title": "Configurações da Conta",
@@ -500,7 +508,11 @@
 		"security_alerts_desc": "Atualizações importantes de segurança e atividades da conta (sempre ativado)",
 		"security_tooltip": "Alertas de segurança não podem ser desativados para proteger sua conta",
 		"save_preferences": "Salvar Preferências",
-		"saving": "Salvando..."
+		"saving": "Salvando...",
+		"toggle_email_aria": "Alternar notificações por e-mail",
+		"toggle_push_aria": "Alternar notificações push",
+		"toggle_marketing_aria": "Alternar e-mails de marketing",
+		"security_alerts_aria": "Alertas de segurança (sempre ativos)"
 	},
 	"project_card": {
 		"edit": "Editar Projeto",
@@ -2760,7 +2772,28 @@
 		"nav_chat": "Chat",
 		"nav_missions": "Missões",
 		"nav_architect": "Architect",
-		"nav_settings": "Configurações"
+		"nav_settings": "Configurações",
+		"nav_aria_label": "Navegação principal",
+		"home_aria_label": "Início do VantageStarter",
+		"overview_label": "Visão geral",
+		"workspace_label": "Espaço de trabalho"
+	},
+	"sidebar_user_nav": {
+		"account_menu": "Menu da conta do usuário",
+		"toggle_theme": "{mode, select, dark {Ativar modo escuro} light {Ativar modo claro} other {Alternar tema}}",
+		"sign_out": "Sair"
+	},
+	"search_modal": {
+		"aria_label": "Pesquisar",
+		"placeholder": "Pesquisar páginas, sessões, missões...",
+		"clear_search": "Limpar pesquisa",
+		"key_esc": "Esc",
+		"results": "Resultados",
+		"quick_access": "Acesso rápido",
+		"no_results": "Nenhum resultado para \"{query}\"",
+		"hint_navigate": "navegar",
+		"hint_open": "abrir",
+		"hint_close": "fechar"
 	},
 	"architect": {
 		"thinking": "A pensar",
@@ -3193,5 +3226,43 @@
 		"light_mode": "Modo claro",
 		"switch_to_light": "Mudar para modo claro",
 		"switch_to_dark": "Mudar para modo escuro"
+	},
+	"dashboard_nav": {
+		"dashboard_crumb": "Painel",
+		"breadcrumb_aria": "Trilha de navegação"
+	},
+	"purchase_credits_modal": {
+		"loading_packages": "Carregando pacotes…",
+		"popular_badge": "Popular",
+		"credits_unit": "créditos",
+		"bonus_amount": "+{count} de bônus",
+		"selected_label": "Selecionado",
+		"payment_method_label": "Método de pagamento",
+		"payment_redirect_notice": "Você será redirecionado para o nosso processador de pagamento seguro para concluir a sua compra.",
+		"cancel": "Cancelar",
+		"purchase_credits_cta": "Comprar créditos"
+	},
+	"design_system": {
+		"menu_accent": "Destaque do menu",
+		"base_color": "Cor base",
+		"chart_color": "Cor do gráfico",
+		"customizer_title": "Personalizador",
+		"font_sample": "Aa",
+		"body_font": "Fonte do corpo",
+		"icon_library": "Biblioteca de ícones",
+		"menu": "Menu",
+		"color": "Cor",
+		"default": "Padrão",
+		"inverted": "Invertido",
+		"appearance": "Aparência",
+		"solid": "Sólido",
+		"translucent": "Translúcido",
+		"menu_option_default_solid": "Padrão / Sólido",
+		"menu_option_default_translucent": "Padrão / Translúcido",
+		"menu_option_inverted_solid": "Invertido / Sólido",
+		"menu_option_inverted_translucent": "Invertido / Translúcido",
+		"radius": "Raio",
+		"style": "Estilo",
+		"theme": "Tema"
 	}
 }

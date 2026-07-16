@@ -1,8 +1,7 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import type { MissionFilterState } from "./mission-filters";
@@ -126,6 +125,7 @@ export function MissionListView({
 	onMissionClick,
 }: MissionListViewProps) {
 	const t = useTranslations("missions.list_view");
+	const format = useFormatter();
 	const router = useRouter();
 
 	// Apply filters
@@ -216,9 +216,7 @@ export function MissionListView({
 								<div className="hidden md:flex items-center gap-1 text-xs text-muted-foreground">
 									<IconCalendar className="size-4" />
 									<span>
-										{formatDistanceToNow(new Date(mission.targetDate), {
-											addSuffix: true,
-										})}
+										{format.relativeTime(new Date(mission.targetDate))}
 									</span>
 								</div>
 							)}

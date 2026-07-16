@@ -49,6 +49,7 @@
 		"something_went_wrong": "Algo salió mal",
 		"loading_error_description": "Encontramos un error al cargar este contenido. Por favor, inténtalo de nuevo.",
 		"try_again_button": "Intentar de Nuevo",
+		"admin_panel_title": "Error del panel de administración",
 		"insufficient_credits_title": "Créditos Insuficientes",
 		"insufficient_credits_description": "No tienes suficientes créditos para {actionName}",
 		"project_load_failed_title": "Error al Cargar el Proyecto",
@@ -318,7 +319,9 @@
 		"profile": "Perfil",
 		"settings": "Configuración",
 		"log_out": "Cerrar sesión",
-		"credits": "Créditos"
+		"credits": "Créditos",
+		"user_menu_aria": "Menú de usuario",
+		"notifications_aria": "Notificaciones"
 	},
 	"projects_page": {
 		"title": "Mis Proyectos",
@@ -349,14 +352,16 @@
 			"create_project": "Crear Nuevo Proyecto",
 			"browse_templates": "Explorar Plantillas",
 			"view_projects": "Ver Todos los Proyectos",
-			"manage_account": "Gestionar Cuenta"
+			"manage_account": "Gestionar Cuenta",
+			"empty": "Aún no hay acciones configuradas."
 		},
 		"recent_projects": {
 			"title": "Proyectos Recientes",
 			"description": "Tus últimos proyectos de video",
 			"view_all": "Ver Todos",
 			"empty_title": "Aún no hay proyectos",
-			"empty_description": "Crea tu primer proyecto de vídeo para comenzar"
+			"empty_description": "Crea tu primer proyecto de vídeo para comenzar",
+			"empty": "Aún no hay elementos."
 		},
 		"activity_feed": {
 			"title": "Actividad Reciente",
@@ -365,7 +370,8 @@
 			"empty_description": "Tus acciones recientes aparecerán aquí",
 			"created_project": "Proyecto creado \"{name}\"",
 			"video_completed": "Vídeo completado para \"{name}\"",
-			"just_now": "Justo ahora"
+			"just_now": "Justo ahora",
+			"empty": "Sin actividad reciente."
 		},
 		"error_title": "Error al Cargar el Tablero",
 		"error_description": "No se pueden cargar los datos del tablero. Por favor, inténtalo de nuevo.",
@@ -384,7 +390,9 @@
 		"error_boundary_title": "Error del panel",
 		"error_boundary_generic": "Se produjo un error inesperado al cargar el panel.",
 		"try_again": "Intentar de nuevo",
-		"go_to_dashboard": "Ir al panel"
+		"go_to_dashboard": "Ir al panel",
+		"credits_remaining": "{count} créditos restantes",
+		"storage_used": "{gb} GB usados"
 	},
 	"account": {
 		"title": "Configuración de la Cuenta",
@@ -500,7 +508,11 @@
 		"security_alerts_desc": "Actualizaciones importantes de seguridad y actividad de cuenta (siempre habilitado)",
 		"security_tooltip": "Las alertas de seguridad no se pueden desactivar para proteger tu cuenta",
 		"save_preferences": "Guardar Preferencias",
-		"saving": "Guardando..."
+		"saving": "Guardando...",
+		"toggle_email_aria": "Alternar notificaciones por correo electrónico",
+		"toggle_push_aria": "Alternar notificaciones push",
+		"toggle_marketing_aria": "Alternar correos de marketing",
+		"security_alerts_aria": "Alertas de seguridad (siempre activadas)"
 	},
 	"project_card": {
 		"edit": "Editar Proyecto",
@@ -2760,7 +2772,28 @@
 		"nav_chat": "Chat",
 		"nav_missions": "Misiones",
 		"nav_architect": "Architect",
-		"nav_settings": "Configuración"
+		"nav_settings": "Configuración",
+		"nav_aria_label": "Navegación principal",
+		"home_aria_label": "Inicio de VantageStarter",
+		"overview_label": "Resumen",
+		"workspace_label": "Espacio de trabajo"
+	},
+	"sidebar_user_nav": {
+		"account_menu": "Menú de la cuenta de usuario",
+		"toggle_theme": "{mode, select, dark {Activar modo oscuro} light {Activar modo claro} other {Cambiar tema}}",
+		"sign_out": "Cerrar sesión"
+	},
+	"search_modal": {
+		"aria_label": "Buscar",
+		"placeholder": "Buscar páginas, sesiones, misiones...",
+		"clear_search": "Borrar búsqueda",
+		"key_esc": "Esc",
+		"results": "Resultados",
+		"quick_access": "Acceso rápido",
+		"no_results": "Sin resultados para \"{query}\"",
+		"hint_navigate": "navegar",
+		"hint_open": "abrir",
+		"hint_close": "cerrar"
 	},
 	"architect": {
 		"thinking": "Pensando",
@@ -3193,5 +3226,43 @@
 		"light_mode": "Modo claro",
 		"switch_to_light": "Cambiar a modo claro",
 		"switch_to_dark": "Cambiar a modo oscuro"
+	},
+	"dashboard_nav": {
+		"dashboard_crumb": "Panel",
+		"breadcrumb_aria": "Ruta de navegación"
+	},
+	"purchase_credits_modal": {
+		"loading_packages": "Cargando paquetes…",
+		"popular_badge": "Popular",
+		"credits_unit": "créditos",
+		"bonus_amount": "+{count} de bono",
+		"selected_label": "Seleccionado",
+		"payment_method_label": "Método de pago",
+		"payment_redirect_notice": "Serás redirigido a nuestro procesador de pagos seguro para completar tu compra.",
+		"cancel": "Cancelar",
+		"purchase_credits_cta": "Comprar créditos"
+	},
+	"design_system": {
+		"menu_accent": "Acento del menú",
+		"base_color": "Color base",
+		"chart_color": "Color del gráfico",
+		"customizer_title": "Personalizador",
+		"font_sample": "Aa",
+		"body_font": "Fuente del texto",
+		"icon_library": "Biblioteca de iconos",
+		"menu": "Menú",
+		"color": "Color",
+		"default": "Predeterminado",
+		"inverted": "Invertido",
+		"appearance": "Apariencia",
+		"solid": "Sólido",
+		"translucent": "Translúcido",
+		"menu_option_default_solid": "Predeterminado / Sólido",
+		"menu_option_default_translucent": "Predeterminado / Translúcido",
+		"menu_option_inverted_solid": "Invertido / Sólido",
+		"menu_option_inverted_translucent": "Invertido / Translúcido",
+		"radius": "Radio",
+		"style": "Estilo",
+		"theme": "Tema"
 	}
 }

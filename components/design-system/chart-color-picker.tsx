@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import {
@@ -18,6 +19,7 @@ import {
 } from "./picker";
 
 export function ChartColorPicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();
 	const available = React.useMemo(
 		() => getThemesForBaseColor(params.baseColor),
@@ -49,7 +51,9 @@ export function ChartColorPicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Chart Color</div>
+					<div className="text-xs text-muted-foreground">
+						{t("chart_color")}
+					</div>
 					<div className="text-sm font-medium text-foreground">
 						{current?.title}
 					</div>

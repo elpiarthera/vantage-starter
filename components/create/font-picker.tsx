@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import {
@@ -33,6 +34,7 @@ export function FontPicker({
 	label: string;
 	param: "font" | "fontHeading";
 }) {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystemSearchParams();
 	const currentValue = param === "font" ? params.font : params.fontHeading;
 
@@ -59,7 +61,9 @@ export function FontPicker({
 	const displayFontName = inheritsBodyFont
 		? currentBodyFont?.name
 		: currentFont?.name;
-	const inheritFontLabel = currentBodyFont ? currentBodyFont.name : "Body font";
+	const inheritFontLabel = currentBodyFont
+		? currentBodyFont.name
+		: t("body_font");
 
 	const groupedFonts = React.useMemo(() => {
 		const pickerFonts =
@@ -80,11 +84,11 @@ export function FontPicker({
 			type,
 			label:
 				type === "default"
-					? "Default"
+					? t("default")
 					: `${type.charAt(0).toUpperCase()}${type.slice(1)}`,
 			items,
 		}));
-	}, [fonts, param]);
+	}, [fonts, param, t]);
 
 	return (
 		<Picker>
@@ -103,7 +107,7 @@ export function FontPicker({
 							currentBodyFont?.font.style.fontFamily,
 					}}
 				>
-					Aa
+					{t("font_sample")}
 				</div>
 			</PickerTrigger>
 			<PickerContent

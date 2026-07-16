@@ -2,6 +2,7 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import {
 	DropdownMenu,
@@ -20,6 +21,7 @@ export function SidebarUserNav() {
 	const { user, isLoaded } = useUser();
 	const { signOut } = useClerk();
 	const { setTheme, resolvedTheme } = useTheme();
+	const t = useTranslations("sidebar_user_nav");
 
 	if (!isLoaded) {
 		return (
@@ -51,7 +53,7 @@ export function SidebarUserNav() {
 					<DropdownMenuTrigger asChild>
 						<SidebarMenuButton
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-10 min-h-[44px]"
-							aria-label="User account menu"
+							aria-label={t("account_menu")}
 						>
 							<Image
 								src={avatarUrl}
@@ -85,7 +87,9 @@ export function SidebarUserNav() {
 								setTheme(resolvedTheme === "dark" ? "light" : "dark")
 							}
 						>
-							{`Toggle ${resolvedTheme === "light" ? "dark" : "light"} mode`}
+							{t("toggle_theme", {
+								mode: resolvedTheme === "light" ? "dark" : "light",
+							})}
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem asChild>
@@ -94,7 +98,7 @@ export function SidebarUserNav() {
 								className="w-full cursor-pointer text-destructive focus:text-destructive"
 								onClick={() => signOut({ redirectUrl: "/" })}
 							>
-								Sign out
+								{t("sign_out")}
 							</button>
 						</DropdownMenuItem>
 					</DropdownMenuContent>

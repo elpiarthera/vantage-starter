@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { formatDistanceToNow } from "date-fns";
 import {
 	AlertTriangle,
 	ArrowLeft,
@@ -16,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
 	AlertDialog,
@@ -239,6 +238,7 @@ interface CheckpointGateProps {
 
 function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 	const t = useTranslations("missions.detail");
+	const format = useFormatter();
 	const approve = useMutation(api.checkpoints.approve);
 	const reject = useMutation(api.checkpoints.reject);
 	const [rejectReason, setRejectReason] = useState("");
@@ -309,8 +309,7 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 					</p>
 					{checkpoint.approvedAt && (
 						<p className="text-xs text-muted-foreground">
-							{t("approved")}{" "}
-							{formatDistanceToNow(checkpoint.approvedAt, { addSuffix: true })}
+							{t("approved")} {format.relativeTime(checkpoint.approvedAt)}
 						</p>
 					)}
 					{checkpoint.rejectionReason && (
@@ -436,6 +435,7 @@ interface MissionDetailProps {
 
 function MissionDetail({ missionId, locale }: MissionDetailProps) {
 	const t = useTranslations("missions.detail");
+	const format = useFormatter();
 	const missionStatusConfig = useMissionStatusConfig();
 	const mission = useQuery(api.missions.get, { id: missionId });
 	const operations = useQuery(api.operations.listByMission, { missionId });
@@ -623,8 +623,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 
 			{/* Created timestamp */}
 			<footer className="text-xs text-muted-foreground">
-				{t("created")}{" "}
-				{formatDistanceToNow(mission.createdAt, { addSuffix: true })}
+				{t("created")} {format.relativeTime(mission.createdAt)}
 			</footer>
 		</div>
 	);

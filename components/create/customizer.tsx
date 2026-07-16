@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { BaseColorPicker } from "@/components/create/base-color-picker";
 import { FontPicker } from "@/components/create/font-picker";
 import { RadiusPicker } from "@/components/create/radius-picker";
@@ -7,12 +8,13 @@ import { StylePicker } from "@/components/create/style-picker";
 import { ThemePicker } from "@/components/create/theme-picker";
 
 export function Customizer() {
+	const t = useTranslations("design_system");
 	return (
 		<div className="sticky top-6 isolate z-10 w-full self-start overflow-hidden rounded-2xl border border-border bg-card/90 shadow-xl backdrop-blur-xl md:w-64">
 			{/* Header */}
 			<div className="flex items-center justify-between border-b border-border px-4 py-3">
 				<span className="text-sm font-semibold text-foreground">
-					Design System
+					{t("customizer_title")}
 				</span>
 			</div>
 

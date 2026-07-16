@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import {
@@ -14,6 +15,7 @@ import { useDesignSystemSearchParams } from "@/lib/create/search-params";
 import { BASE_COLORS, type BaseColorName } from "@/lib/create/themes";
 
 export function BaseColorPicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystemSearchParams();
 
 	const currentBaseColor = React.useMemo(
@@ -25,7 +27,7 @@ export function BaseColorPicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Base Color</div>
+					<div className="text-xs text-muted-foreground">{t("base_color")}</div>
 					<div className="text-sm font-medium text-foreground">
 						{currentBaseColor?.title}
 					</div>
