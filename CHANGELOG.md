@@ -4,6 +4,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-16 — sign-in and sign-up were black in light theme, task k17bgg3cvy0sps55j543dvtkrn8amqgq)
+- **`app/[locale]/sign-in/[[...sign-in]]/page.tsx`, `app/[locale]/sign-up/[[...sign-up]]/page.tsx`**: replaced three hardcoded Tailwind colors per page with OKLCH tokens (`bg-gray-950` → `bg-background`, `text-gray-100` → `text-foreground`, `text-gray-400` → `text-muted-foreground`). None carried a `dark:` variant, so both screens rendered black in light theme — the first thing a visitor sees. `CLAUDE.md` bans hardcoded colors outright.
+- **`app/ClientProviders.tsx`**: the Clerk widget was pinned to `baseTheme: dark` unconditionally, so fixing the page wrappers alone would have produced a light page with a black widget floating in it — worse than the bug. The provider now reads `resolvedTheme` from next-themes and switches between a dark and a light hex palette. The dark path is value-identical: all 15 pre-existing hex survive, verified by diffing the extracted colour set before and after.
+- Clerk's appearance API rejects `oklch()` (documented at `ClientProviders.tsx:9`), so both palettes stay hex. The light values are true OKLCH→sRGB conversions derived from `dark-electric-blue.css` `:root`; the pre-existing dark values are `round(L×255)` approximations (`oklch(0.08 0 0)` is documented as `#141414`, which is `round(0.08×255)`, not the true conversion `#020202`). The two palettes therefore rest on different conventions. Left as-is deliberately: the dark UI is visually validated and this PR is not the place to shift it.
+
+### Known gap (declared, not fixed here)
+- The repo ships 7 runtime-switchable colour presets; Clerk hex can only encode one, so the widget stays on the default electric-blue accents under any other preset. This gap already existed in dark and is not widened here. Closing it needs Clerk's CSS-variable surface instead of hex — out of scope for these three files.
+
 ### Fixed (2026-07-16 — dashboard crash + broken layout, task k174bc5tnxyv1b4m531kckwks18amxhq)
 
 Four defects of a single family: a value the toolchain could have checked, never checked — each failing silently.

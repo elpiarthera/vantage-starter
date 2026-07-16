@@ -1,5 +1,8 @@
+"use client";
+
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 import { clerkLocalizations } from "@/i18n/clerk-localization";
@@ -24,6 +27,58 @@ const CLERK_TEXT = "#f0f0f0"; // oklch(0.95 0 0) — near white
 const CLERK_TEXT_MUTED = "#a3a3a3"; // oklch(0.65 0 0) — gray-400
 const CLERK_DANGER = "#c0392b"; // keep red for danger
 
+// Light-theme counterparts. Same constraint as above: Clerk's appearance API does
+// not accept oklch(), so these are hex. Unlike the dark palette (authored as an
+// achromatic approximation), these are exact sRGB conversions of the light tokens
+// in public/styles/presets/dark-electric-blue.css `:root` — derived, not chosen,
+// so the widget lands on the same colors the page itself paints.
+// oklch(0.99 0 0)      → #fcfcfc (--background)
+// oklch(0.97 0.01 232) → #eff6fb (--card)
+// oklch(0.96 0 0)      → #f2f2f2 (--muted — input surface)
+// oklch(0.88 0.02 232) → #cbdae3 (--border)
+// oklch(0.10 0.01 232) → #020405 (--foreground)
+// oklch(0.52 0 0)      → #696969 (--muted-foreground)
+// oklch(0.50 0.22 232) → #006ec8 (--primary)
+
+const CLERK_LIGHT_PRIMARY = "#006ec8"; // oklch(0.50 0.22 232) — --primary
+const CLERK_LIGHT_BG = "#fcfcfc"; // oklch(0.99 0 0) — --background
+const CLERK_LIGHT_CARD = "#eff6fb"; // oklch(0.97 0.01 232) — --card
+const CLERK_LIGHT_INPUT_BG = "#f2f2f2"; // oklch(0.96 0 0) — --muted
+const CLERK_LIGHT_BORDER = "#cbdae3"; // oklch(0.88 0.02 232) — --border
+const CLERK_LIGHT_TEXT = "#020405"; // oklch(0.10 0.01 232) — --foreground
+const CLERK_LIGHT_TEXT_MUTED = "#696969"; // oklch(0.52 0 0) — --muted-foreground
+const CLERK_LIGHT_DANGER = "#c0392b"; // keep red for danger
+
+const DARK_PALETTE = {
+	primary: CLERK_PRIMARY,
+	bg: CLERK_BG,
+	card: CLERK_CARD,
+	inputBg: CLERK_INPUT_BG,
+	border: CLERK_BORDER,
+	text: CLERK_TEXT,
+	textMuted: CLERK_TEXT_MUTED,
+	danger: CLERK_DANGER,
+	cardShadow: "0 8px 24px rgba(0,0,0,0.5)",
+	modalShadow: "0 16px 48px rgba(0,0,0,0.7)",
+	modalBackdrop: "rgba(0,0,0,0.75)",
+};
+
+// Same keys, light values. Shadows are lightened too: the dark palette's
+// rgba(0,0,0,0.5) reads as a black halo on a near-white surface.
+const LIGHT_PALETTE: typeof DARK_PALETTE = {
+	primary: CLERK_LIGHT_PRIMARY,
+	bg: CLERK_LIGHT_BG,
+	card: CLERK_LIGHT_CARD,
+	inputBg: CLERK_LIGHT_INPUT_BG,
+	border: CLERK_LIGHT_BORDER,
+	text: CLERK_LIGHT_TEXT,
+	textMuted: CLERK_LIGHT_TEXT_MUTED,
+	danger: CLERK_LIGHT_DANGER,
+	cardShadow: "0 8px 24px rgba(0,0,0,0.10)",
+	modalShadow: "0 16px 48px rgba(0,0,0,0.14)",
+	modalBackdrop: "rgba(0,0,0,0.40)",
+};
+
 // ClerkProvider in @clerk/nextjs v6 is typed as an async Server Component
 // (Promise<React.JSX.Element>), which is incompatible with @types/react 18.0.x JSX.
 // This is a known TS compatibility gap — the runtime behavior is correct.
@@ -40,6 +95,14 @@ export function ClientProviders({
 }) {
 	const localization = clerkLocalizations[locale] || {};
 
+	const { resolvedTheme } = useTheme();
+	// `resolvedTheme` is undefined on the server and on the first client render, so it
+	// falls back to the dark palette — identical to what this file rendered before, which
+	// keeps SSR and first client paint byte-for-byte in agreement (no hydration mismatch).
+	// next-themes then re-renders with the real value on mount.
+	const isLight = resolvedTheme === "light";
+	const c = isLight ? LIGHT_PALETTE : DARK_PALETTE;
+
 	return (
 		<ClerkProviderCompat
 			dynamic
@@ -48,15 +111,15 @@ export function ClientProviders({
 			signUpFallbackRedirectUrl="/dashboard"
 			localization={localization}
 			appearance={{
-				baseTheme: dark,
+				...(isLight ? {} : { baseTheme: dark }),
 				variables: {
-					colorPrimary: CLERK_PRIMARY,
-					colorBackground: CLERK_BG,
-					colorInputBackground: CLERK_INPUT_BG,
-					colorInputText: CLERK_TEXT,
-					colorText: CLERK_TEXT,
-					colorTextSecondary: CLERK_TEXT_MUTED,
-					colorDanger: CLERK_DANGER,
+					colorPrimary: c.primary,
+					colorBackground: c.bg,
+					colorInputBackground: c.inputBg,
+					colorInputText: c.text,
+					colorText: c.text,
+					colorTextSecondary: c.textMuted,
+					colorDanger: c.danger,
 
 					// Space Grotesk — inherits from page CSS via "inherit"
 					fontFamily: '"Space Grotesk", system-ui, sans-serif',
@@ -75,176 +138,176 @@ export function ClientProviders({
 						margin: "0",
 					},
 					card: {
-						backgroundColor: CLERK_CARD,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.card,
+						borderColor: c.border,
 						borderWidth: "1px",
 						borderStyle: "solid",
 						borderRadius: "16px",
-						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+						boxShadow: c.cardShadow,
 					},
 
 					// --- OrganizationSwitcher popover ---
 					organizationSwitcherPopoverCard: {
-						backgroundColor: CLERK_CARD,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.card,
+						borderColor: c.border,
 						borderWidth: "1px",
 						borderStyle: "solid",
 						borderRadius: "16px",
-						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+						boxShadow: c.cardShadow,
 					},
 					organizationSwitcherPopoverActionButton: {
-						color: CLERK_TEXT,
+						color: c.text,
 						borderRadius: "16px",
 					},
 					organizationSwitcherPopoverActionButton__createOrganization: {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					organizationSwitcherPopoverActionButton__manageOrganization: {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					organizationPreviewMainIdentifier: {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					organizationPreviewSecondaryIdentifier: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					// Trigger button — styled in DashboardHeader; keep minimal here
 					organizationSwitcherTrigger: {
 						borderRadius: "16px",
 					},
 					organizationSwitcherTriggerIcon: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 
 					// --- UserButton / UserProfile popover ---
 					userButtonPopoverCard: {
-						backgroundColor: CLERK_CARD,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.card,
+						borderColor: c.border,
 						borderWidth: "1px",
 						borderStyle: "solid",
 						borderRadius: "16px",
-						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+						boxShadow: c.cardShadow,
 					},
 					userButtonPopoverActionButton: {
-						color: CLERK_TEXT,
+						color: c.text,
 						borderRadius: "16px",
 					},
 					userPreviewMainIdentifier: {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					userPreviewSecondaryIdentifier: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 
 					// --- Create Organization / profile modals ---
 					modalContent: {
-						backgroundColor: CLERK_CARD,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.card,
+						borderColor: c.border,
 						borderWidth: "1px",
 						borderStyle: "solid",
 						borderRadius: "16px",
-						boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
+						boxShadow: c.modalShadow,
 					},
 					modalBackdrop: {
-						backgroundColor: "rgba(0,0,0,0.75)",
+						backgroundColor: c.modalBackdrop,
 						backdropFilter: "blur(4px)",
 					},
 					// CreateOrganization modal specifically
 					createOrganizationBox: {
-						backgroundColor: CLERK_CARD,
+						backgroundColor: c.card,
 					},
 					profileSection: {
-						backgroundColor: CLERK_CARD,
+						backgroundColor: c.card,
 					},
 					profileSectionTitle: {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					profileSectionContent: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					navbar: {
-						backgroundColor: CLERK_BG,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.bg,
+						borderColor: c.border,
 					},
 					navbarButton: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					navbarButtonIcon: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					// Active nav item
 					"navbarButton:focus": {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 
 					// --- Form elements ---
 					headerTitle: {
-						color: CLERK_TEXT,
+						color: c.text,
 						fontWeight: "700",
 					},
 					headerSubtitle: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					socialButtonsBlockButton: {
 						minHeight: "44px",
-						backgroundColor: CLERK_INPUT_BG,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.inputBg,
+						borderColor: c.border,
 						borderRadius: "16px",
-						color: CLERK_TEXT,
+						color: c.text,
 						fontWeight: "500",
 					},
 					formButtonPrimary: {
 						minHeight: "44px",
-						backgroundColor: CLERK_TEXT,
+						backgroundColor: c.text,
 						borderRadius: "16px",
-						color: CLERK_BG,
+						color: c.bg,
 						fontWeight: "600",
 					},
 					formButtonReset: {
 						borderRadius: "16px",
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					formFieldInput: {
 						minHeight: "48px",
-						backgroundColor: CLERK_INPUT_BG,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.inputBg,
+						borderColor: c.border,
 						borderRadius: "16px",
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					formFieldLabel: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					footerActionLink: {
-						color: CLERK_PRIMARY,
+						color: c.primary,
 					},
 					footerActionText: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					identityPreviewText: {
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					identityPreviewEditButton: {
-						color: CLERK_PRIMARY,
+						color: c.primary,
 					},
 					otpCodeFieldInput: {
-						backgroundColor: CLERK_INPUT_BG,
-						borderColor: CLERK_BORDER,
+						backgroundColor: c.inputBg,
+						borderColor: c.border,
 						borderRadius: "16px",
-						color: CLERK_TEXT,
+						color: c.text,
 					},
 					alternativeMethodsBlockButton: {
-						borderColor: CLERK_BORDER,
+						borderColor: c.border,
 						borderRadius: "16px",
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 					formResendCodeLink: {
-						color: CLERK_PRIMARY,
+						color: c.primary,
 					},
 					dividerLine: {
-						backgroundColor: CLERK_BORDER,
+						backgroundColor: c.border,
 					},
 					dividerText: {
-						color: CLERK_TEXT_MUTED,
+						color: c.textMuted,
 					},
 
 					// --- Hide Clerk branding only ---
