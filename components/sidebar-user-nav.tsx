@@ -77,7 +77,7 @@ export function SidebarUserNav() {
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
 						side="top"
-						className="w-[--radix-popper-anchor-width]"
+						className="w-[var(--radix-popper-anchor-width)]"
 					>
 						<DropdownMenuItem
 							className="cursor-pointer"

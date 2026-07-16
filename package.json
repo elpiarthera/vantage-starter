@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"build": "next build",
-		"prebuild": "node scripts/build-litui.mjs && npx convex codegen || true",
+		"prebuild": "node scripts/build-litui.mjs",
+		"codegen": "convex codegen",
 		"build:litui": "node scripts/build-litui.mjs",
 		"dev": "next dev",
 		"lint": "next lint",
@@ -30,6 +31,7 @@
 	},
 	"dependencies": {
 		"@ai-sdk/anthropic": "^3.0.58",
+		"@ai-sdk/gateway": "^3.0.66",
 		"@ai-sdk/google": "^3.0.43",
 		"@ai-sdk/openai": "^3.0.41",
 		"@ai-sdk/react": "latest",
@@ -130,6 +132,7 @@
 		"@types/react-dom": "^18",
 		"convex-test": "^0.0.38",
 		"dotenv": "^17.2.3",
+		"esbuild": "^0.28.1",
 		"eslint-plugin-i18n-json": "^4.0.1",
 		"fast-glob": "^3.3.3",
 		"glob": "^13.0.0",

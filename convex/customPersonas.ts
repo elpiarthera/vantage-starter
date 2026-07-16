@@ -77,10 +77,11 @@ export const list = query({
 		}
 
 		if (!workspace) return systemPersonas;
+		const ws = workspace;
 
 		const workspacePersonas = await ctx.db
 			.query("customPersonas")
-			.withIndex("by_workspace", (q) => q.eq("workspaceId", workspace._id))
+			.withIndex("by_workspace", (q) => q.eq("workspaceId", ws._id))
 			.collect();
 
 		// Combine and deduplicate (system personas may appear in both lists)
