@@ -815,6 +815,13 @@ export const addMonthlyRenewalCreditsFixed = internalMutation({
 			return { success: false, reason: "tier_not_found" as const };
 		}
 
+		if (!tier.isActive) {
+			console.error(
+				`Tier ${tier.tierKey} is disabled (isActive: false) — refusing to grant renewal credits for ${polarOrderId}`,
+			);
+			return { success: false, reason: "tier_disabled" as const };
+		}
+
 		if (!tier.monthlyCredits) {
 			console.error(
 				`Tier ${tier.tierKey} has no monthlyCredits defined — skipping renewal ${polarOrderId}`,

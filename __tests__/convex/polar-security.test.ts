@@ -287,8 +287,7 @@ describe("Security: subscription renewal grant path for disabled offer", () => {
 			},
 		);
 
-		// Current buggy behavior: succeeds and grants monthlyCredits despite isActive:false.
-		expect(result).toMatchObject({ success: false });
+		expect(result).toMatchObject({ success: false, reason: "tier_disabled" });
 
 		const credits = await t.run(async (ctx) =>
 			ctx.db
