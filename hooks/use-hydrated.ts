@@ -3,8 +3,15 @@
 /**
  * useHydrated — canonical hydration-safe primitive.
  *
- * Replaces every ad-hoc `const [mounted, setMounted] = useState(false)` +
+ * Provided as the canonical replacement for the ad-hoc
+ * `const [mounted, setMounted] = useState(false)` +
  * `useEffect(() => setMounted(true), [])` guard.
+ *
+ * "Provided", not "replaces": as of this commit it has 0 importers
+ * (`grep -rl use-hydrated app components lib providers` -> 0) and replaced
+ * 0 existing guards. Shipping the primitive in a boilerplate is the point —
+ * claiming a migration that never happened is not. The verb follows the
+ * artifact.
  *
  * WHY useSyncExternalStore instead of useState+useEffect:
  *  - The useState/useEffect mount guard triggers TWO renders: one with false

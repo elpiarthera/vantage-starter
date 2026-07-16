@@ -10,9 +10,24 @@
  *     drop it from the switcher.
  * (b) switching locale preserves the current route via
  *     `router.replace(pathname, { locale })`.
- * (c) the switcher renders without any breakpoint restriction (no
- *     `md:hidden` / `hidden md:*` wrapper needed around it here — that
- *     restriction now lives, correctly removed, only in DashboardHeader).
+ *
+ * NOT COVERED — the wrapper, which is where the bug actually was.
+ * This file mounts LanguageSwitcher in isolation. The defect this PR fixes
+ * never lived in LanguageSwitcher: it was the `<div className="md:hidden">`
+ * wrapping it in DashboardHeader.tsx, which hid a working component on
+ * desktop. So these tests stay green if that wrapper comes back — proven by
+ * the reviewer, who restored the exact defect and watched all of them pass.
+ * An earlier revision of this docstring claimed the opposite. It named
+ * DashboardHeader as the place the restriction lives while never rendering
+ * it: a fear named without a test, which is worse than an untested boundary,
+ * because it reads as coverage.
+ *
+ * Covering it means mounting DashboardHeader with its 14 imports (Clerk
+ * useUser/OrganizationSwitcher, useCredits, useDevice, PurchaseCreditsModal,
+ * next-intl). That is not free, and it is deliberately not paid here: the
+ * jest harness itself is broken (jest.config.ts:17 sweeps vitest's territory,
+ * so 90 of 93 suites never start while `Tests: 16 passed` prints green).
+ * Wrapper coverage lands with that fix — task k178sp7bswnqb6qpetpbvmq1ds8ammqw.
  */
 
 import { render, screen } from "@testing-library/react";
