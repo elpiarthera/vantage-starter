@@ -77,11 +77,12 @@ export const list = query({
 		}
 
 		if (!workspace) return systemFrameworks;
+		const ws = workspace;
 
 		// Workspace-specific frameworks
 		const workspaceFrameworks = await ctx.db
 			.query("customFrameworks")
-			.withIndex("by_workspace", (q) => q.eq("workspaceId", workspace._id))
+			.withIndex("by_workspace", (q) => q.eq("workspaceId", ws._id))
 			.collect();
 
 		// Combine and deduplicate by _id

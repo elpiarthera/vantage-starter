@@ -4,6 +4,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-16 — dashboard crash + broken layout, task k175bjacbeppt9zcc9ej1vx0s189fxbe)
+
+Four defects of a single family: a value the toolchain could have checked, never checked — each failing silently.
+
+- **`package.json`**: declared `@ai-sdk/gateway@^3.0.66`, imported by `convex/http/agent.ts`, `convex/http/ai.ts`, `lib/ai/agents.ts` and `lib/ai/providers.ts` but never declared. `convex deploy` failed at bundling, so the backend had **never** been deployed: `npx convex function-spec` returned 3 functions belonging to an unrelated project (`diagnostic.js`, `notifications.js`), and `users:syncUser` did not exist — the dashboard threw a client-side exception on every load. Pinned to 3.x deliberately: `ai@6.0.116` bundles gateway 3.0.66, and 4.0.21 pulls `@ai-sdk/provider` v4 against the v3 the AI SDK expects. The Vercel build passed throughout, since Next.js does not compile Convex functions.
+- **`convex/{chats,customFrameworks,customPersonas,customRoles}.ts`**: fixed 5× TS18047 blocking `convex dev --once`. `workspace` is a `let` narrowed by an existing guard, then read inside a `.withIndex()` closure, where TypeScript drops the narrowing — the callback could run after a reassignment. Bound the narrowed value to a `const` after each guard. No `!`, no `as`, no `any`.
+- **`components/ui/sidebar.tsx`, `components/sidebar-user-nav.tsx`**: fixed 8 Tailwind v3 bare-CSS-variable brackets left behind by the v4 migration (`w-[--sidebar-width]` → `w-[var(--sidebar-width)]`). Under v4 these compile to the invalid `width: --sidebar-width` and are dropped — the sidebar spacer collapsed to zero, so every dashboard page rendered at x=0 under the fixed sidebar ("Mission Control" displayed as "trol"). Proof in the shipped CSS: `.w-\[--sidebar-width\]{width:--sidebar-width}` next to the working `.w-\[var\(--sidebar-width\)\]{width:var(--sidebar-width)}`. Repo-wide scan now returns zero bare-variable brackets.
+- **`package.json`**: removed `|| true` from `prebuild`. It swallowed the exit code: `node scripts/build-litui.mjs` exited 1 while the prebuild step exited 0, so the lit-ui bundle silently failed to build on every deployment once `esbuild` left the dependency tree, and Vercel reported Ready. Declared `esbuild@0.28.1` as a devDependency (imported by `scripts/build-litui.mjs:19`, never declared). Bite-probe: prebuild exits 0 nominally, **1** with `esbuild` removed, 0 again once restored — the step now fails closed.
+
+### Documented (2026-07-16 — declared divergence)
+- **`components/ui/sidebar.tsx`**: header comment recording that this file is shadcn/ui, which `CLAUDE.md` bans in favour of lit-ui. Divergence arbitrated and kept by Pi on Day 133 — the starter is the fleet's visual reference and a port would be churn; the component's fate is deferred to the Mosaic migration plan (Gamma audit `k173rtfwwh4t14fvbn0t5q2r6s8an17x`). Per `.claude/rules/derive-never-type.md`, a declared divergence is a decision; a silent one is debt.
+
 ### Fixed (2026-04-02 — E2E CI workflow)
 - **`.github/workflows/e2e.yml`**: Rewired e2e workflow to run against Vercel preview deployments instead of a local server. Removed `pnpm build`, `pnpm start`, and `wait-on` steps that crashed in CI without Clerk keys. Workflow now triggers on `deployment_status` (Vercel webhook) in addition to `pull_request`. `PLAYWRIGHT_BASE_URL` resolves to `github.event.deployment_status.target_url` (Vercel preview URL) or falls back to the constructed branch preview URL. Removed Clerk/Convex secrets from env — not needed when testing the deployed app. Added `BB_CONTEXT_ID` secret reference. Reduced timeout from 15 to 10 minutes.
 

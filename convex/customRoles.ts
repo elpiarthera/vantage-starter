@@ -76,11 +76,12 @@ export const list = query({
 		}
 
 		if (!workspace) return systemRoles;
+		const ws = workspace;
 
 		// Get workspace-specific (user-created) roles
 		const workspaceRoles = await ctx.db
 			.query("customRoles")
-			.withIndex("by_workspace", (q) => q.eq("workspaceId", workspace._id))
+			.withIndex("by_workspace", (q) => q.eq("workspaceId", ws._id))
 			.collect();
 
 		// Combine and deduplicate by _id

@@ -83,12 +83,11 @@ export const list = query({
 		}
 
 		if (!workspace) return { chats: [], hasMore: false };
+		const ws = workspace;
 
 		const chats = await ctx.db
 			.query("chats")
-			.withIndex("by_workspace_created", (q) =>
-				q.eq("workspaceId", workspace._id),
-			)
+			.withIndex("by_workspace_created", (q) => q.eq("workspaceId", ws._id))
 			.order("desc")
 			.take(limit + 1);
 
@@ -129,12 +128,11 @@ export const getForCurrentWorkspace = query({
 		}
 
 		if (!workspace) return [];
+		const ws = workspace;
 
 		return await ctx.db
 			.query("chats")
-			.withIndex("by_workspace_created", (q) =>
-				q.eq("workspaceId", workspace._id),
-			)
+			.withIndex("by_workspace_created", (q) => q.eq("workspaceId", ws._id))
 			.order("desc")
 			.collect();
 	},

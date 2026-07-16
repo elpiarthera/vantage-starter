@@ -1,3 +1,21 @@
+/**
+ * DECLARED DIVERGENCE — shadcn/ui in a lit-ui codebase.
+ *
+ * CLAUDE.md bans shadcn/ui and Radix imports in favour of lit-ui components.
+ * This file is shadcn/ui. That is deliberate and on the record — not an oversight.
+ *
+ * Decided by Pi on Day 133 (2026-07-16): the starter is now the fleet's visual
+ * reference, and porting this component to lit-ui today would be churn with no
+ * user-facing gain. The component's fate is deferred to the Mosaic migration
+ * plan (Gamma audit, task k173rtfwwh4t14fvbn0t5q2r6s8an17x).
+ *
+ * WARNING for whoever edits this file next — this component was only partially
+ * migrated to Tailwind v4 once and shipped a broken dashboard layout. Bare
+ * CSS-variable brackets (`w-[--sidebar-width]`) compile under Tailwind v4 to the
+ * invalid declaration `width: --sidebar-width` and are silently dropped: the
+ * spacer collapsed and the fixed sidebar covered every page's content. Always
+ * use the explicit `[var(--x)]` form here.
+ */
 "use client";
 
 import { Slot } from "@radix-ui/react-slot";
@@ -197,7 +215,7 @@ const Sidebar = React.forwardRef<
 			return (
 				<div
 					className={cn(
-						"flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+						"flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar text-sidebar-foreground",
 						className,
 					)}
 					ref={ref}
@@ -214,7 +232,7 @@ const Sidebar = React.forwardRef<
 					<SheetContent
 						data-sidebar="sidebar"
 						data-mobile="true"
-						className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+						className="w-[var(--sidebar-width)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
 						style={
 							{
 								"--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -244,24 +262,24 @@ const Sidebar = React.forwardRef<
 				{/* This is what handles the sidebar gap on desktop */}
 				<div
 					className={cn(
-						"relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
+						"relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear",
 						"group-data-[collapsible=offcanvas]:w-0",
 						"group-data-[side=right]:rotate-180",
 						variant === "floating" || variant === "inset"
 							? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-							: "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+							: "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]",
 					)}
 				/>
 				<div
 					className={cn(
-						"fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
+						"fixed inset-y-0 z-10 hidden h-svh w-[var(--sidebar-width)] transition-[left,right,width] duration-200 ease-linear md:flex",
 						side === "left"
 							? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
 							: "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
 						// Adjust the padding for floating and inset variants.
 						variant === "floating" || variant === "inset"
 							? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-							: "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+							: "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[side=left]:border-r group-data-[side=right]:border-l",
 						className,
 					)}
 					{...props}
@@ -689,7 +707,7 @@ const SidebarMenuSkeleton = React.forwardRef<
 				/>
 			)}
 			<Skeleton
-				className="h-4 max-w-[--skeleton-width] flex-1"
+				className="h-4 max-w-[var(--skeleton-width)] flex-1"
 				data-sidebar="menu-skeleton-text"
 				style={
 					{
