@@ -81,6 +81,42 @@ jobs:
           fi
           echo "OK — scanned$( for d in $roots; do printf ' %s' "$d"; done ) — no bare CSS variables in code."
 
+      # A literal hex inside a Tailwind bracket (`bg-[#0d7ff2]`) is a colour that
+      # cannot follow the theme: it renders identically in dark and light, so the
+      # screen ships a single variant. That is what `vantage-design-system` §3
+      # forbids — "Every new screen ships both a dark and a light variant.
+      # Neither is optional." It shipped anyway: the error boundary
+      # (`bg-[#101a23]`), the adaptive nav (`bg-[#223649]`) and both auth screens
+      # carried zero `dark:` between them.
+      # This gate is green on the commit that introduces it — the whole class is
+      # at zero repo-wide right now, so it guards a regression rather than
+      # announcing a debt. Scope is deliberately narrow for that reason: see the
+      # declared-absent list at the bottom for the bare `bg-gray-*` family, which
+      # cannot be gated today without arriving red.
+      # Three outcomes, never two — same rule as the gate above.
+      - name: No literal hex colours in Tailwind brackets
+        run: |
+          roots="app components lib hooks providers"
+          missing=""
+          for d in $roots; do
+            [ -d "$d" ] || missing="$missing $d"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Gate cannot measure — directory not found:$missing. Refusing to report clean on unscanned ground."
+            exit 2
+          fi
+          hits=$(grep -rnE '\b(bg|text|border|fill|stroke|ring|shadow|from|to|via)-\[#[0-9a-fA-F]{3,8}\]' \
+                   --include='*.ts' --include='*.tsx' --include='*.jsx' \
+                   $roots \
+                 | grep -vE '^(lib/design-system|lib/create)/' \
+                 | grep -vE '^[^:]+:[0-9]+:[[:space:]]*(\*|//|/\*)' || true)
+          if [ -n "$hits" ]; then
+            echo "$hits"
+            echo "::error::Literal hex colour in a Tailwind bracket. It cannot follow the theme, so the screen ships one variant only — vantage-design-system §3. Use a semantic token (bg-background, bg-card, bg-primary, border-border, text-muted-foreground)."
+            exit 1
+          fi
+          echo "OK — scanned$( for d in $roots; do printf ' %s' "$d"; done ) — no literal hex colours in Tailwind brackets."
+
       # Proves the prebuild still resolves its dependencies. `esbuild` was
       # imported by scripts/build-litui.mjs and declared nowhere; `|| true` hid
       # the resulting failure on every single deployment.
@@ -123,3 +159,13 @@ jobs:
 # 4. undeclared imports — nothing checks that an imported package is declared in
 #    package.json. `@ai-sdk/gateway` (4 importers) and `esbuild` both were not,
 #    which is the root of this whole batch. A depcheck/knip gate closes the class.
+#
+# 5. bare `bg-gray-*` / `text-gray-*` / `border-gray-*` Tailwind colour classes —
+#    `vantage-design-system` §3 prefers semantic tokens, and the hex-bracket gate
+#    above only closes the sibling class. 71 legitimate occurrences remain today:
+#    each carries a `dark:` counterpart, renders correctly in both themes, and is
+#    a token-preference violation rather than a rendering bug. Gating them now
+#    would make this workflow red on arrival — and a gate that is red on day one
+#    gets disabled by the end of the week, taking the four working gates with it.
+#    Tracked in docs/audits/t0bis-hardcoded-colors.md (severity NORM), which lists
+#    every occurrence file:line. Declared here rather than silently omitted.
