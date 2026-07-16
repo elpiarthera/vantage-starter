@@ -1,6 +1,7 @@
 "use client";
 
 import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ToolCallIndicator } from "./ToolCallIndicator";
 
@@ -147,6 +148,8 @@ function MessageBubble({
 }
 
 export function MessageList({ messages, isStreaming }: MessageListProps) {
+	const t = useTranslations("chat");
+
 	if (messages.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-4 px-4 text-center">
@@ -168,10 +171,10 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 				</div>
 				<div>
 					<p className="text-base font-medium text-foreground">
-						Start a conversation
+						{t("messageList.emptyTitle")}
 					</p>
 					<p className="text-sm text-muted-foreground mt-1">
-						The agent has access to your knowledge base and can use tools.
+						{t("messageList.emptyDescription")}
 					</p>
 				</div>
 			</div>
@@ -181,7 +184,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 	return (
 		<div
 			role="log"
-			aria-label="Chat messages"
+			aria-label={t("messageList.ariaLabel")}
 			aria-live="polite"
 			className="flex flex-col gap-4 px-4 py-4"
 		>

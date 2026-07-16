@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -24,6 +25,7 @@ function WorkspaceLoading() {
 }
 
 function NoWorkspace() {
+	const t = useTranslations("architect");
 	return (
 		<div className="flex items-center justify-center h-full px-4">
 			<div className="flex flex-col items-center gap-4 text-center max-w-xs">
@@ -45,10 +47,10 @@ function NoWorkspace() {
 				</div>
 				<div className="space-y-1">
 					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
-						No workspace found
+						{t("no_workspace_found")}
 					</p>
 					<p className="text-xs text-muted-foreground leading-relaxed">
-						Create a workspace to use the Architect.
+						{t("create_workspace_to_use_architect")}
 					</p>
 				</div>
 			</div>
@@ -57,6 +59,7 @@ function NoWorkspace() {
 }
 
 function EmptyState({ onNew }: { onNew: () => void }) {
+	const t = useTranslations("architect");
 	return (
 		<div className="flex items-center justify-center h-full">
 			<div className="flex flex-col items-center gap-4 text-center max-w-xs mx-auto py-12">
@@ -81,17 +84,17 @@ function EmptyState({ onNew }: { onNew: () => void }) {
 						Architect
 					</h2>
 					<p className="text-sm text-muted-foreground leading-relaxed">
-						Describe what you want to accomplish. I&apos;ll design an agent
-						workforce and execution plan.
+						{t("describe_what_you_want_to_accomplish")}.{" "}
+						{t("ai_will_design_workforce")}
 					</p>
 				</div>
 				<button
 					type="button"
 					onClick={onNew}
 					className="btn-shadow rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					aria-label="Start a new planning session"
+					aria-label={t("start_new_planning_session_aria")}
 				>
-					Start planning
+					{t("start_planning")}
 				</button>
 			</div>
 		</div>
@@ -103,6 +106,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
 // ============================================================================
 
 export default function ArchitectPage() {
+	const t = useTranslations("architect");
 	const router = useRouter();
 	const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
@@ -177,7 +181,7 @@ export default function ArchitectPage() {
 							Architect
 						</h1>
 						<p className="text-xs text-muted-foreground">
-							Describe what you want to build
+							{t("describe_what_you_want_to_build")}
 						</p>
 					</div>
 
@@ -187,7 +191,7 @@ export default function ArchitectPage() {
 						onClick={handleNewSession}
 						className="ml-auto text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
 					>
-						New session
+						{t("new_session")}
 					</button>
 				</div>
 			</div>

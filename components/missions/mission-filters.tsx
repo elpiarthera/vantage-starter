@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -23,28 +24,19 @@ interface MissionFiltersProps {
 	onFiltersChange: (filters: MissionFilterState) => void;
 }
 
-const STATUS_OPTIONS: { value: MissionStatus; label: string; color: string }[] =
-	[
-		{ value: "pending", label: "Pending", color: "bg-muted-foreground" },
-		{ value: "executing", label: "Executing", color: "bg-warning" },
-		{
-			value: "awaiting_checkpoint",
-			label: "Awaiting Checkpoint",
-			color: "bg-primary",
-		},
-		{ value: "completed", label: "Completed", color: "bg-success" },
-		{ value: "failed", label: "Failed", color: "bg-destructive" },
-	];
+const STATUS_OPTIONS: { value: MissionStatus; color: string }[] = [
+	{ value: "pending", color: "bg-muted-foreground" },
+	{ value: "executing", color: "bg-warning" },
+	{ value: "awaiting_checkpoint", color: "bg-primary" },
+	{ value: "completed", color: "bg-success" },
+	{ value: "failed", color: "bg-destructive" },
+];
 
-const PRIORITY_OPTIONS: {
-	value: MissionPriority;
-	label: string;
-	color: string;
-}[] = [
-	{ value: "urgent", label: "Urgent", color: "bg-destructive" },
-	{ value: "high", label: "High", color: "bg-warning" },
-	{ value: "medium", label: "Medium", color: "bg-warning" },
-	{ value: "low", label: "Low", color: "bg-muted-foreground" },
+const PRIORITY_OPTIONS: { value: MissionPriority; color: string }[] = [
+	{ value: "urgent", color: "bg-destructive" },
+	{ value: "high", color: "bg-warning" },
+	{ value: "medium", color: "bg-warning" },
+	{ value: "low", color: "bg-muted-foreground" },
 ];
 
 // Inline SVG replacing lucide-react Filter icon
@@ -125,6 +117,7 @@ export function MissionFilters({
 	filters,
 	onFiltersChange,
 }: MissionFiltersProps) {
+	const t = useTranslations("missions.filters");
 	const [open, setOpen] = useState(false);
 
 	const hasStatusFilter = filters.statuses.length > 0;
@@ -136,12 +129,15 @@ export function MissionFilters({
 
 	const getFilterLabel = () => {
 		if (!hasStatusFilter && !hasPriorityFilter && !filters.showArchived) {
-			return "All Active";
+			return t("all_active");
 		}
 		if (activeFilterCount === 1 && filters.showArchived) {
-			return "Archived";
+			return t("archived");
 		}
-		return `${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""}`;
+		return t("filtered_count", {
+			count: activeFilterCount,
+			plural: activeFilterCount > 1 ? "s" : "",
+		});
 	};
 
 	const toggleStatus = (status: MissionStatus) => {
@@ -196,7 +192,9 @@ export function MissionFilters({
 						<div className="space-y-4">
 							{/* Header */}
 							<div className="flex items-center justify-between">
-								<h4 className="text-sm font-medium text-foreground">Filters</h4>
+								<h4 className="text-sm font-medium text-foreground">
+									{t("label")}
+								</h4>
 								{activeFilterCount > 0 && (
 									<button
 										type="button"
@@ -204,7 +202,7 @@ export function MissionFilters({
 										className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
 									>
 										<IconX className="size-3" />
-										Show All
+										{t("show_all")}
 									</button>
 								)}
 							</div>
@@ -212,12 +210,12 @@ export function MissionFilters({
 							{/* Current state summary */}
 							<div className="rounded bg-muted/50 px-2 py-1.5 text-xs text-muted-foreground">
 								{!hasStatusFilter && !hasPriorityFilter && !filters.showArchived
-									? "Showing all active missions"
+									? t("showing_all_active")
 									: filters.showArchived &&
 											!hasStatusFilter &&
 											!hasPriorityFilter
-										? "Showing archived missions only"
-										: `Filtered: ${activeFilterCount} active`}
+										? t("showing_archived_only")
+										: t("filtered_active", { count: activeFilterCount })}
 							</div>
 
 							<hr className="border-border" />
@@ -225,7 +223,7 @@ export function MissionFilters({
 							{/* Status */}
 							<div className="space-y-3">
 								<h5 className="text-sm font-medium text-muted-foreground">
-									Status
+									{t("status")}
 								</h5>
 								<div className="space-y-2">
 									{STATUS_OPTIONS.map((option) => (
@@ -235,7 +233,7 @@ export function MissionFilters({
 											checked={filters.statuses.includes(option.value)}
 											onChange={() => toggleStatus(option.value)}
 											dotColor={option.color}
-											label={option.label}
+											label={t(`status_${option.value}`)}
 										/>
 									))}
 								</div>
@@ -246,7 +244,7 @@ export function MissionFilters({
 							{/* Priority */}
 							<div className="space-y-3">
 								<h5 className="text-sm font-medium text-muted-foreground">
-									Priority
+									{t("priority")}
 								</h5>
 								<div className="space-y-2">
 									{PRIORITY_OPTIONS.map((option) => (
@@ -256,7 +254,7 @@ export function MissionFilters({
 											checked={filters.priorities.includes(option.value)}
 											onChange={() => togglePriority(option.value)}
 											dotColor={option.color}
-											label={option.label}
+											label={t(`priority_${option.value}`)}
 										/>
 									))}
 								</div>
@@ -267,14 +265,14 @@ export function MissionFilters({
 							{/* Archived */}
 							<div className="space-y-3">
 								<h5 className="text-sm font-medium text-muted-foreground">
-									Archived
+									{t("archived")}
 								</h5>
 								<CheckboxRow
 									id="show-archived"
 									checked={filters.showArchived}
 									onChange={toggleShowArchived}
 									dotColor="bg-muted-foreground"
-									label="Show Archived"
+									label={t("show_archived")}
 								/>
 							</div>
 						</div>

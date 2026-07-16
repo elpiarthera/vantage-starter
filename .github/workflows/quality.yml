@@ -135,6 +135,18 @@ jobs:
           fi
           echo "OK — prebuild leaves the tree clean."
 
+      # Three controls, all derived from the artifacts they measure: hardcoded
+      # English literals across the whole app/+components/ surface (not a
+      # hand-picked subset of directories), key parity across every locale in
+      # i18n/routing.ts (not an en/fr-only check — that shape is exactly what
+      # let the `chat` namespace ship in only 2 of 7 locales for weeks), and
+      # fr values byte-identical to en (forgotten translation / copy-paste).
+      # See scripts/check-translations.js for the full contract and README.md
+      # "Translation QA" for usage. Intentionally NOT gated with `|| true`:
+      # a permanent QA script that never turns red protects nothing.
+      - name: Translation QA — check-translations
+        run: node scripts/check-translations.js
+
 # Gates deliberately NOT here yet — declared, not hidden
 # -----------------------------------------------------
 # Each is a tracked root-fix, not a "later". Adding them today would make this

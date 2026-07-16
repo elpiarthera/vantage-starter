@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -98,14 +99,13 @@ function IconBarChart({ className }: { className?: string }) {
 
 type ViewConfig = {
 	id: ViewType;
-	label: string;
 	Icon: (props: { className?: string }) => React.ReactElement;
 };
 
 const VIEW_TYPES: ViewConfig[] = [
-	{ id: "board", label: "Board", Icon: IconLayoutGrid },
-	{ id: "list", label: "List", Icon: IconList },
-	{ id: "timeline", label: "Timeline", Icon: IconBarChart },
+	{ id: "board", Icon: IconLayoutGrid },
+	{ id: "list", Icon: IconList },
+	{ id: "timeline", Icon: IconBarChart },
 ];
 
 export function ViewOptions({
@@ -113,6 +113,7 @@ export function ViewOptions({
 	onChange,
 	allowedViews,
 }: ViewOptionsProps) {
+	const t = useTranslations("missions.view_options");
 	const [open, setOpen] = useState(false);
 
 	const availableViews = VIEW_TYPES.filter(
@@ -127,7 +128,7 @@ export function ViewOptions({
 				className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted min-h-[44px]"
 			>
 				<IconSettings className="size-4" />
-				<span className="hidden sm:inline">View</span>
+				<span className="hidden sm:inline">{t("view")}</span>
 			</button>
 
 			{open && (
@@ -158,7 +159,7 @@ export function ViewOptions({
 									)}
 								>
 									<type.Icon className="size-5" />
-									{type.label}
+									{t(type.id)}
 								</button>
 							))}
 						</div>

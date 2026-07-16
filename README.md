@@ -66,6 +66,20 @@ ELEVENLABS_NARRATOR_VOICE_ID=
 NEXT_PUBLIC_ELEVENLABS_ENABLED=false
 ```
 
+## Translation QA
+
+```bash
+node scripts/check-translations.js
+```
+
+Runs three controls against the whole `app/` + `components/` surface and every locale in `i18n/routing.ts` — never a hand-typed subset:
+
+1. **Hardcoded literal scan** — generic TypeScript-AST pass flagging English JSX text, `aria-label`/`placeholder`/`title`/`alt` string attributes, and hardcoded locale tags (`toLocaleDateString("en-US", ...)`) anywhere in the derived file inventory.
+2. **Key parity across all 7 locales** — every key in every `messages/<locale>.json` must exist in all 7 locale files. Locales are parsed out of `i18n/routing.ts`, not retyped, so a namespace that only ships in `en`/`fr` (and silently ships nowhere else) cannot hide behind an en/fr-only check.
+3. **fr === en byte-identical** — flags any key whose French value is a byte-for-byte copy of the English value (forgotten translation or copy-paste). Legitimate exceptions (proper nouns, product names) are declared explicitly in `FR_EN_IDENTICAL_ALLOW` inside the script — never silently skipped.
+
+Exit 0 only when all three controls pass. Wired into CI (`.github/workflows/quality.yml`) and covered by a bipolar probe (`scripts/__tests__/check-translations.test.js`).
+
 ## Project structure
 
 ```

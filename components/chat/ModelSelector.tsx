@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { useTranslations } from "next-intl";
 import {
 	startTransition,
 	useEffect,
@@ -52,13 +53,13 @@ const CATEGORY_ORDER: ModelCategory[] = [
 	"vision",
 ];
 
-const CATEGORY_LABELS: Record<ModelCategory, string> = {
-	flagship: "Flagship",
-	balanced: "Balanced",
-	fast: "Fast",
-	reasoning: "Reasoning",
-	coding: "Coding",
-	vision: "Vision",
+const CATEGORY_LABEL_KEYS: Record<ModelCategory, string> = {
+	flagship: "modelSelector.categories.flagship",
+	balanced: "modelSelector.categories.balanced",
+	fast: "modelSelector.categories.fast",
+	reasoning: "modelSelector.categories.reasoning",
+	coding: "modelSelector.categories.coding",
+	vision: "modelSelector.categories.vision",
 };
 
 // Provider badge — Tailwind color classes (standard, not custom tokens)
@@ -164,6 +165,7 @@ export function ModelSelector({
 	onModelChange,
 	className,
 }: ModelSelectorProps) {
+	const t = useTranslations("chat");
 	const [open, setOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -240,7 +242,7 @@ export function ModelSelector({
 					<ProviderBadge provider={selectedModel.provider} />
 				) : null}
 				<span className="truncate max-w-[120px] text-foreground">
-					{selectedModel?.displayName ?? "Select model"}
+					{selectedModel?.displayName ?? t("modelSelector.selectPlaceholder")}
 				</span>
 				<ChevronIcon open={open} />
 			</button>
@@ -249,7 +251,7 @@ export function ModelSelector({
 			{open && (
 				<div
 					role="listbox"
-					aria-label="Select AI model"
+					aria-label={t("modelSelector.ariaLabel")}
 					className="absolute top-full left-0 mt-1.5 z-50 min-w-[320px] max-h-[400px] overflow-y-auto rounded-xl border border-border bg-card shadow-lg"
 				>
 					{CATEGORY_ORDER.map((cat, catIdx) => {
@@ -264,7 +266,7 @@ export function ModelSelector({
 								)}
 								{/* Category label */}
 								<div className="text-xs text-muted-foreground font-medium uppercase tracking-wider px-3 py-1.5">
-									{CATEGORY_LABELS[cat]}
+									{t(CATEGORY_LABEL_KEYS[cat])}
 								</div>
 								{/* Models */}
 								{group.map((model) => {
@@ -305,7 +307,7 @@ export function ModelSelector({
 					{/* Empty state */}
 					{models.length === 0 && (
 						<div className="px-3 py-4 text-sm text-muted-foreground text-center">
-							Loading models...
+							{t("modelSelector.loading")}
 						</div>
 					)}
 				</div>

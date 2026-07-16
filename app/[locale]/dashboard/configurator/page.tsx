@@ -1,21 +1,22 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Customizer } from "@/components/design-system/customizer";
 import { DesignSystemProvider } from "@/providers/DesignSystemProvider";
 
 export default function ConfiguratorPage() {
+	const t = useTranslations("configurator");
 	return (
 		<NuqsAdapter>
 			<DesignSystemProvider>
 				<div className="flex min-h-screen flex-col gap-8 p-6 md:p-10">
 					<header>
 						<h1 className="text-2xl font-semibold tracking-tight text-foreground">
-							Design Configurator
+							{t("title")}
 						</h1>
 						<p className="mt-1 text-sm text-muted-foreground">
-							Customize the look and feel of your application. Changes are
-							reflected in real time.
+							{t("description")}
 						</p>
 					</header>
 
@@ -27,11 +28,10 @@ export default function ConfiguratorPage() {
 						<div className="flex flex-1 flex-col gap-4">
 							<div className="rounded-xl border border-border bg-card p-6">
 								<h2 className="mb-3 text-lg font-medium text-foreground">
-									Preview
+									{t("preview_heading")}
 								</h2>
 								<p className="text-sm text-muted-foreground">
-									Your design system tokens are applied live. Switch style, base
-									color, font, and radius to see changes across all components.
+									{t("preview_description")}
 								</p>
 							</div>
 
@@ -39,16 +39,19 @@ export default function ConfiguratorPage() {
 							<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 								{[
 									{
-										label: "Background",
+										label: t("swatch_background"),
 										cls: "bg-background border border-border",
 									},
-									{ label: "Card", cls: "bg-card border border-border" },
-									{ label: "Primary", cls: "bg-primary" },
-									{ label: "Secondary", cls: "bg-secondary" },
-									{ label: "Muted", cls: "bg-muted" },
-									{ label: "Accent", cls: "bg-accent" },
-									{ label: "Chart 1", cls: "bg-chart-1" },
-									{ label: "Chart 2", cls: "bg-chart-2" },
+									{
+										label: t("swatch_card"),
+										cls: "bg-card border border-border",
+									},
+									{ label: t("swatch_primary"), cls: "bg-primary" },
+									{ label: t("swatch_secondary"), cls: "bg-secondary" },
+									{ label: t("swatch_muted"), cls: "bg-muted" },
+									{ label: t("swatch_accent"), cls: "bg-accent" },
+									{ label: t("swatch_chart1"), cls: "bg-chart-1" },
+									{ label: t("swatch_chart2"), cls: "bg-chart-2" },
 								].map(({ label, cls }) => (
 									<div key={label} className="flex flex-col gap-1.5">
 										<div className={`h-12 rounded-lg ${cls}`} />
@@ -65,25 +68,25 @@ export default function ConfiguratorPage() {
 									type="button"
 									className="rounded-[var(--radius)] bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
 								>
-									Primary
+									{t("button_primary")}
 								</button>
 								<button
 									type="button"
 									className="rounded-[var(--radius)] bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:opacity-90 transition-opacity"
 								>
-									Secondary
+									{t("button_secondary")}
 								</button>
 								<button
 									type="button"
 									className="rounded-[var(--radius)] border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
 								>
-									Outline
+									{t("button_outline")}
 								</button>
 								<button
 									type="button"
 									className="rounded-[var(--radius)] bg-muted px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/80 transition-colors"
 								>
-									Ghost
+									{t("button_ghost")}
 								</button>
 							</div>
 						</div>

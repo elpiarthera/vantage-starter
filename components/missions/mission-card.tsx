@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
@@ -23,6 +24,8 @@ interface MissionCardProps {
 }
 
 export function MissionCard({ mission, onClick }: MissionCardProps) {
+	const t = useTranslations("missions.card");
+	const format = useFormatter();
 	const router = useRouter();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -98,7 +101,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 							e.stopPropagation();
 							setMenuOpen((prev) => !prev);
 						}}
-						aria-label="Mission actions"
+						aria-label={t("actions_aria")}
 						aria-expanded={menuOpen}
 						aria-haspopup="menu"
 					>
@@ -136,7 +139,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 									handleViewDetails();
 								}}
 							>
-								View Details
+								{t("view_details")}
 							</button>
 							<div className="h-px bg-border my-1" />
 							<button
@@ -148,7 +151,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 									handleArchive();
 								}}
 							>
-								Archive
+								{t("archive")}
 							</button>
 						</div>
 					)}
@@ -197,7 +200,13 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 				{mission.targetDate && (
 					<div
 						className="flex items-center gap-1.5"
-						title={`Target: ${new Date(mission.targetDate).toLocaleDateString()}`}
+						title={t("target_title", {
+							date: format.dateTime(new Date(mission.targetDate), {
+								day: "numeric",
+								month: "short",
+								year: "numeric",
+							}),
+						})}
 					>
 						{/* Calendar icon */}
 						<svg
@@ -217,7 +226,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 							<line x1="8" x2="8" y1="2" y2="6" />
 							<line x1="3" x2="21" y1="10" y2="10" />
 						</svg>
-						<span className="text-xs">Due:</span>
+						<span className="text-xs">{t("due")}</span>
 						<span className="text-xs text-foreground">
 							{formatDistanceToNow(new Date(mission.targetDate), {
 								addSuffix: true,
@@ -229,7 +238,10 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 				{operationStats && operationStats.total > 0 && (
 					<div
 						className="flex items-center gap-1.5"
-						title={`${operationStats.completed} of ${operationStats.total} operations complete`}
+						title={t("operations_complete", {
+							completed: operationStats.completed,
+							total: operationStats.total,
+						})}
 					>
 						{/* Target icon */}
 						<svg
@@ -268,7 +280,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 				{/* AI Agent avatar placeholder */}
 				<div
 					className="size-6 rounded-full bg-primary/20 border-2 border-card flex items-center justify-center"
-					title="AI Agent"
+					title={t("ai_agent")}
 				>
 					<span className="text-[8px] font-medium text-primary">A</span>
 				</div>

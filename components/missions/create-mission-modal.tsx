@@ -12,6 +12,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 import {
 	cloneElement,
 	isValidElement,
@@ -22,40 +23,23 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 
 // Status options — vantage-starter 5-stage pipeline
-const STATUS_OPTIONS = [
-	{ value: "pending", label: "Pending" },
-	{ value: "executing", label: "Executing" },
-	{ value: "awaiting_checkpoint", label: "Awaiting Checkpoint" },
-	{ value: "completed", label: "Completed" },
-	{ value: "failed", label: "Failed" },
+const STATUS_VALUES = [
+	"pending",
+	"executing",
+	"awaiting_checkpoint",
+	"completed",
+	"failed",
 ] as const;
 
-type MissionStatus = (typeof STATUS_OPTIONS)[number]["value"];
+type MissionStatus = (typeof STATUS_VALUES)[number];
 
-const PRIORITY_OPTIONS = [
-	{ value: "urgent", label: "Urgent" },
-	{ value: "high", label: "High" },
-	{ value: "medium", label: "Medium" },
-	{ value: "low", label: "Low" },
-] as const;
+const PRIORITY_VALUES = ["urgent", "high", "medium", "low"] as const;
 
-type MissionPriority = (typeof PRIORITY_OPTIONS)[number]["value"];
+type MissionPriority = (typeof PRIORITY_VALUES)[number];
 
-const INTENT_OPTIONS = [
-	{
-		value: "delivery",
-		label: "Delivery",
-		description: "Ship a feature or product",
-	},
-	{
-		value: "experiment",
-		label: "Experiment",
-		description: "Test a hypothesis",
-	},
-	{ value: "internal", label: "Internal", description: "Improve processes" },
-] as const;
+const INTENT_VALUES = ["delivery", "experiment", "internal"] as const;
 
-type MissionIntent = (typeof INTENT_OPTIONS)[number]["value"];
+type MissionIntent = (typeof INTENT_VALUES)[number];
 
 interface CreateMissionModalProps {
 	trigger?: React.ReactNode;
@@ -68,6 +52,7 @@ export function CreateMissionModal({
 	defaultStatus = "pending",
 	onSuccess,
 }: CreateMissionModalProps) {
+	const t = useTranslations("missions.create_modal");
 	const [open, setOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -104,11 +89,11 @@ export function CreateMissionModal({
 
 	const handleSubmit = async () => {
 		if (!name.trim()) {
-			toast.error("Mission name is required");
+			toast.error(t("toast_name_required"));
 			return;
 		}
 		if (!workspaceId) {
-			toast.error("No workspace found");
+			toast.error(t("toast_no_workspace"));
 			return;
 		}
 
@@ -126,11 +111,11 @@ export function CreateMissionModal({
 				targetDate: targetDate ? targetDate.getTime() : undefined,
 			});
 
-			toast.success("Mission created successfully");
+			toast.success(t("toast_success"));
 			handleClose();
 			onSuccess?.();
 		} catch (error) {
-			toast.error("Failed to create mission");
+			toast.error(t("toast_error"));
 			console.error(error);
 		} finally {
 			setIsSubmitting(false);
@@ -176,7 +161,7 @@ export function CreateMissionModal({
 				<path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
 				<path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
 			</svg>
-			<span>New Mission</span>
+			<span>{t("trigger")}</span>
 		</button>
 	);
 
@@ -196,6 +181,7 @@ export function CreateMissionModal({
 					aria-modal="true"
 					role="dialog"
 					aria-labelledby="create-mission-title"
+					onKeyDown={handleKeyDown}
 				>
 					{/* Backdrop */}
 					<div
@@ -205,10 +191,7 @@ export function CreateMissionModal({
 					/>
 
 					{/* Card */}
-					<div
-						className="relative z-10 w-full max-w-[600px] max-h-[90vh] overflow-y-auto bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg"
-						onKeyDown={handleKeyDown}
-					>
+					<div className="relative z-10 w-full max-w-[600px] max-h-[90vh] overflow-y-auto bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg">
 						<div className="p-6">
 							{/* Header */}
 							<div className="flex items-start justify-between mb-6">
@@ -217,17 +200,17 @@ export function CreateMissionModal({
 										id="create-mission-title"
 										className="text-lg font-semibold text-[var(--foreground)]"
 									>
-										Create New Mission
+										{t("title")}
 									</h2>
 									<p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-										Missions are goal-driven containers for AI-powered work.
+										{t("subtitle")}
 									</p>
 								</div>
 								<button
 									type="button"
 									onClick={handleClose}
 									className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-									aria-label="Close"
+									aria-label={t("close_aria")}
 								>
 									<svg
 										width="20"
@@ -249,7 +232,7 @@ export function CreateMissionModal({
 								{/* Name */}
 								<div>
 									<label htmlFor="mission-name" className={labelClass}>
-										Name{" "}
+										{t("name_label")}{" "}
 										<span className="text-destructive" aria-hidden="true">
 											*
 										</span>
@@ -259,7 +242,7 @@ export function CreateMissionModal({
 										type="text"
 										value={name}
 										onChange={(e) => setName(e.target.value)}
-										placeholder="Enter mission name..."
+										placeholder={t("name_placeholder")}
 										className={inputClass}
 										aria-required="true"
 									/>
@@ -272,17 +255,17 @@ export function CreateMissionModal({
 											htmlFor="mission-brief"
 											className="text-sm font-medium text-[var(--foreground)]"
 										>
-											Brief
+											{t("brief_label")}
 										</label>
 										<span className="text-xs text-warning bg-warning/10 px-1.5 py-0.5 rounded">
-											AI Context
+											{t("ai_context_badge")}
 										</span>
 									</div>
 									<textarea
 										id="mission-brief"
 										value={brief}
 										onChange={(e) => setBrief(e.target.value)}
-										placeholder="Describe the goal, constraints, and success criteria. This context is shared with all assigned AI agents."
+										placeholder={t("brief_placeholder")}
 										rows={3}
 										className="w-full bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-base text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-colors resize-none"
 									/>
@@ -302,21 +285,20 @@ export function CreateMissionModal({
 											<path d="M9 18h6" />
 											<path d="M10 22h4" />
 										</svg>
-										The brief provides shared context for all AI agents working
-										on this mission.
+										{t("brief_hint")}
 									</p>
 								</div>
 
 								{/* Description */}
 								<div>
 									<label htmlFor="mission-description" className={labelClass}>
-										Description
+										{t("description_label")}
 									</label>
 									<textarea
 										id="mission-description"
 										value={description}
 										onChange={(e) => setDescription(e.target.value)}
-										placeholder="Additional details for human collaborators..."
+										placeholder={t("description_placeholder")}
 										rows={2}
 										className="w-full bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-base text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-colors resize-none"
 									/>
@@ -326,7 +308,7 @@ export function CreateMissionModal({
 								<div className="grid sm:grid-cols-2 gap-4">
 									<div>
 										<label htmlFor="mission-status" className={labelClass}>
-											Status
+											{t("status_label")}
 										</label>
 										<select
 											id="mission-status"
@@ -336,16 +318,16 @@ export function CreateMissionModal({
 											}
 											className={selectClass}
 										>
-											{STATUS_OPTIONS.map((opt) => (
-												<option key={opt.value} value={opt.value}>
-													{opt.label}
+											{STATUS_VALUES.map((value) => (
+												<option key={value} value={value}>
+													{t(`status_${value}`)}
 												</option>
 											))}
 										</select>
 									</div>
 									<div>
 										<label htmlFor="mission-priority" className={labelClass}>
-											Priority
+											{t("priority_label")}
 										</label>
 										<select
 											id="mission-priority"
@@ -355,9 +337,9 @@ export function CreateMissionModal({
 											}
 											className={selectClass}
 										>
-											{PRIORITY_OPTIONS.map((opt) => (
-												<option key={opt.value} value={opt.value}>
-													{opt.label}
+											{PRIORITY_VALUES.map((value) => (
+												<option key={value} value={value}>
+													{t(`priority_${value}`)}
 												</option>
 											))}
 										</select>
@@ -367,7 +349,7 @@ export function CreateMissionModal({
 								{/* Intent */}
 								<div>
 									<label htmlFor="mission-intent" className={labelClass}>
-										Intent
+										{t("intent_label")}
 									</label>
 									<select
 										id="mission-intent"
@@ -375,9 +357,9 @@ export function CreateMissionModal({
 										onChange={(e) => setIntent(e.target.value as MissionIntent)}
 										className={selectClass}
 									>
-										{INTENT_OPTIONS.map((opt) => (
-											<option key={opt.value} value={opt.value}>
-												{opt.label} — {opt.description}
+										{INTENT_VALUES.map((value) => (
+											<option key={value} value={value}>
+												{t(`intent_${value}`)} — {t(`intent_${value}_desc`)}
 											</option>
 										))}
 									</select>
@@ -388,7 +370,7 @@ export function CreateMissionModal({
 									{/* Start Date */}
 									<div>
 										<label htmlFor="mission-start-date" className={labelClass}>
-											Start Date
+											{t("start_date_label")}
 										</label>
 										<div className="relative">
 											<button
@@ -421,7 +403,7 @@ export function CreateMissionModal({
 													<line x1="8" y1="2" x2="8" y2="6" />
 													<line x1="3" y1="10" x2="21" y2="10" />
 												</svg>
-												{startDate ? format(startDate, "PPP") : "Pick a date"}
+												{startDate ? format(startDate, "PPP") : t("pick_date")}
 											</button>
 											{showStartPicker && (
 												<div className="absolute top-full left-0 z-20 mt-1">
@@ -445,7 +427,7 @@ export function CreateMissionModal({
 									{/* Target Date */}
 									<div>
 										<label htmlFor="mission-target-date" className={labelClass}>
-											Target Date
+											{t("target_date_label")}
 										</label>
 										<div className="relative">
 											<button
@@ -509,7 +491,7 @@ export function CreateMissionModal({
 									disabled={isSubmitting}
 									className="flex-1 sm:flex-none px-6 py-2.5 text-sm rounded-lg border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50"
 								>
-									Cancel
+									{t("cancel")}
 								</button>
 								<button
 									type="button"
@@ -517,20 +499,20 @@ export function CreateMissionModal({
 									disabled={isSubmitting || !name.trim()}
 									className="flex-1 px-6 py-2.5 text-sm rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
 								>
-									{isSubmitting ? "Creating..." : "Create Mission"}
+									{isSubmitting ? t("creating") : t("create")}
 								</button>
 							</div>
 
 							{/* Keyboard hint */}
 							<p className="text-[10px] text-center text-[var(--muted-foreground)] mt-3">
-								Press{" "}
+								{t("keyboard_press")}{" "}
 								<kbd className="px-1 py-0.5 rounded bg-[var(--muted)] text-[10px]">
 									⌘
 								</kbd>
 								<kbd className="px-1 py-0.5 rounded bg-[var(--muted)] text-[10px] ml-0.5">
-									Enter
+									{t("keyboard_enter")}
 								</kbd>{" "}
-								to create
+								{t("keyboard_to_create")}
 							</p>
 						</div>
 					</div>

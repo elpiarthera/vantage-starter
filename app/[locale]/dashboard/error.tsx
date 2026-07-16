@@ -2,6 +2,7 @@
 
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,7 @@ export default function DashboardError({
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
+	const t = useTranslations("dashboard");
 	useEffect(() => {
 		console.error(error);
 	}, [error]);
@@ -33,14 +35,13 @@ export default function DashboardError({
 						/>
 					</div>
 					<h1 className="text-xl font-semibold text-foreground text-center">
-						Dashboard error
+						{t("error_boundary_title")}
 					</h1>
 				</CardHeader>
 
 				<CardContent className="text-center pb-2">
 					<p className="text-sm text-muted-foreground leading-relaxed">
-						{error.message ||
-							"An unexpected error occurred loading the dashboard."}
+						{error.message || t("error_boundary_generic")}
 					</p>
 					{error.digest && (
 						<p className="mt-2 text-xs text-muted-foreground/60 font-mono">
@@ -54,10 +55,10 @@ export default function DashboardError({
 						onClick={reset}
 						className="w-full bg-[oklch(0.72_0.16_75)] hover:bg-[oklch(0.65_0.16_75)] text-white"
 					>
-						Try again
+						{t("try_again")}
 					</Button>
 					<Button variant="ghost" className="w-full" asChild>
-						<Link href="/dashboard">Go to dashboard</Link>
+						<Link href="/dashboard">{t("go_to_dashboard")}</Link>
 					</Button>
 				</CardFooter>
 			</Card>

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
 	AlertDialog,
@@ -56,67 +57,73 @@ type OperationStatus =
 
 type CheckpointStatus = "pending" | "approved" | "rejected";
 
-const MISSION_STATUS: Record<
+function useMissionStatusConfig(): Record<
 	MissionStatus,
 	{ label: string; className: string }
-> = {
-	pending: {
-		label: "Pending",
-		className: "border-transparent bg-muted text-muted-foreground",
-	},
-	executing: {
-		label: "Executing",
-		className: "border-transparent bg-blue-500/15 text-blue-400",
-	},
-	awaiting_checkpoint: {
-		label: "Awaiting checkpoint",
-		className: "border-transparent bg-amber-500/15 text-amber-400",
-	},
-	completed: {
-		label: "Completed",
-		className: "border-transparent bg-green-500/15 text-green-400",
-	},
-	failed: {
-		label: "Failed",
-		className: "border-transparent bg-red-500/15 text-red-400",
-	},
-};
+> {
+	const t = useTranslations("missions.detail");
+	return {
+		pending: {
+			label: t("status_pending"),
+			className: "border-transparent bg-muted text-muted-foreground",
+		},
+		executing: {
+			label: t("status_executing"),
+			className: "border-transparent bg-blue-500/15 text-blue-400",
+		},
+		awaiting_checkpoint: {
+			label: t("status_awaiting_checkpoint"),
+			className: "border-transparent bg-amber-500/15 text-amber-400",
+		},
+		completed: {
+			label: t("status_completed"),
+			className: "border-transparent bg-green-500/15 text-green-400",
+		},
+		failed: {
+			label: t("status_failed"),
+			className: "border-transparent bg-red-500/15 text-red-400",
+		},
+	};
+}
 
-const OPERATION_STATUS: Record<
+function useOperationStatusConfig(): Record<
 	OperationStatus,
 	{ label: string; className: string; icon: React.FC<{ className?: string }> }
-> = {
-	pending: {
-		label: "Pending",
-		className: "bg-muted text-muted-foreground border-transparent",
-		icon: Circle,
-	},
-	blocked: {
-		label: "Blocked",
-		className: "bg-amber-500/15 text-amber-400 border-transparent",
-		icon: Clock,
-	},
-	in_progress: {
-		label: "In progress",
-		className: "bg-blue-500/15 text-blue-400 border-transparent",
-		icon: Loader2,
-	},
-	awaiting_review: {
-		label: "Awaiting review",
-		className: "bg-purple-500/15 text-purple-400 border-transparent",
-		icon: Flag,
-	},
-	completed: {
-		label: "Completed",
-		className: "bg-green-500/15 text-green-400 border-transparent",
-		icon: CheckCircle2,
-	},
-	failed: {
-		label: "Failed",
-		className: "bg-red-500/15 text-red-400 border-transparent",
-		icon: XCircle,
-	},
-};
+> {
+	const t = useTranslations("missions.detail");
+	return {
+		pending: {
+			label: t("status_pending"),
+			className: "bg-muted text-muted-foreground border-transparent",
+			icon: Circle,
+		},
+		blocked: {
+			label: t("status_blocked"),
+			className: "bg-amber-500/15 text-amber-400 border-transparent",
+			icon: Clock,
+		},
+		in_progress: {
+			label: t("status_in_progress"),
+			className: "bg-blue-500/15 text-blue-400 border-transparent",
+			icon: Loader2,
+		},
+		awaiting_review: {
+			label: t("status_awaiting_review"),
+			className: "bg-purple-500/15 text-purple-400 border-transparent",
+			icon: Flag,
+		},
+		completed: {
+			label: t("status_completed"),
+			className: "bg-green-500/15 text-green-400 border-transparent",
+			icon: CheckCircle2,
+		},
+		failed: {
+			label: t("status_failed"),
+			className: "bg-red-500/15 text-red-400 border-transparent",
+			icon: XCircle,
+		},
+	};
+}
 
 // ── Operation item ─────────────────────────────────────────────────────────────
 
@@ -140,8 +147,10 @@ function OperationItem({
 	agentName,
 	dependencyNames,
 }: OperationItemProps) {
+	const t = useTranslations("missions.detail");
+	const operationStatus = useOperationStatusConfig();
 	const statusConfig =
-		OPERATION_STATUS[operation.status] ?? OPERATION_STATUS.pending;
+		operationStatus[operation.status] ?? operationStatus.pending;
 	const StatusIcon = statusConfig.icon;
 	const isCompleted = operation.status === "completed";
 
@@ -185,13 +194,15 @@ function OperationItem({
 
 				{/* Assigned agent */}
 				{agentName && (
-					<p className="text-xs text-muted-foreground">Assigned: {agentName}</p>
+					<p className="text-xs text-muted-foreground">
+						{t("assigned")} {agentName}
+					</p>
 				)}
 
 				{/* Dependencies */}
 				{dependencyNames.length > 0 && (
 					<p className="text-xs text-muted-foreground">
-						Waiting on:{" "}
+						{t("waiting_on")}{" "}
 						{dependencyNames.map((name, i) => (
 							<span key={name}>
 								{i > 0 && ", "}
@@ -227,6 +238,7 @@ interface CheckpointGateProps {
 }
 
 function CheckpointGate({ checkpoint }: CheckpointGateProps) {
+	const t = useTranslations("missions.detail");
 	const approve = useMutation(api.checkpoints.approve);
 	const reject = useMutation(api.checkpoints.reject);
 	const [rejectReason, setRejectReason] = useState("");
@@ -266,7 +278,7 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 				"mx-4 my-2 border px-4 py-3 rounded-none",
 				statusColors[checkpoint.status],
 			)}
-			aria-label={`Checkpoint: ${checkpoint.description}`}
+			aria-label={`${t("checkpoint")}: ${checkpoint.description}`}
 		>
 			<div className="flex items-start justify-between gap-3 flex-wrap">
 				<div className="space-y-0.5 min-w-0">
@@ -276,7 +288,7 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 							aria-hidden="true"
 						/>
 						<span className="text-xs font-semibold text-foreground uppercase tracking-wide">
-							Checkpoint
+							{t("checkpoint")}
 						</span>
 						<Badge
 							className={cn(
@@ -297,13 +309,13 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 					</p>
 					{checkpoint.approvedAt && (
 						<p className="text-xs text-muted-foreground">
-							Approved{" "}
+							{t("approved")}{" "}
 							{formatDistanceToNow(checkpoint.approvedAt, { addSuffix: true })}
 						</p>
 					)}
 					{checkpoint.rejectionReason && (
 						<p className="text-xs text-red-400">
-							Reason: {checkpoint.rejectionReason}
+							{t("reason")} {checkpoint.rejectionReason}
 						</p>
 					)}
 				</div>
@@ -324,7 +336,7 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 							) : (
 								<CheckCircle2 className="size-3 mr-1.5" aria-hidden="true" />
 							)}
-							Approve
+							{t("approve")}
 						</Button>
 
 						<AlertDialog>
@@ -343,17 +355,16 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 									) : (
 										<XCircle className="size-3 mr-1.5" aria-hidden="true" />
 									)}
-									Reject
+									{t("reject")}
 								</Button>
 							</AlertDialogTrigger>
 							<AlertDialogContent>
 								<AlertDialogHeader>
 									<AlertDialogTitle className="font-[Space_Grotesk,sans-serif]">
-										Reject this checkpoint?
+										{t("reject_confirm_title")}
 									</AlertDialogTitle>
 									<AlertDialogDescription>
-										This will permanently fail the mission. There is no undo.
-										All downstream operations will be cancelled.
+										{t("reject_confirm_description")}
 									</AlertDialogDescription>
 								</AlertDialogHeader>
 								<div className="px-6 pb-4">
@@ -361,25 +372,25 @@ function CheckpointGate({ checkpoint }: CheckpointGateProps) {
 										className="text-xs text-muted-foreground block mb-1.5"
 										htmlFor="reject-reason"
 									>
-										Reason (optional)
+										{t("reject_reason_label")}
 									</label>
 									<textarea
 										id="reject-reason"
 										className="w-full text-sm bg-muted border border-border rounded-md px-3 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none h-20"
-										placeholder="Why are you rejecting this checkpoint?"
+										placeholder={t("reject_reason_placeholder")}
 										value={rejectReason}
 										onChange={(e) => setRejectReason(e.target.value)}
 									/>
 								</div>
 								<AlertDialogFooter>
 									<AlertDialogCancel className="rounded-full">
-										Cancel
+										{t("cancel")}
 									</AlertDialogCancel>
 									<AlertDialogAction
 										onClick={handleReject}
 										className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
 									>
-										Permanently fail mission
+										{t("permanently_fail")}
 									</AlertDialogAction>
 								</AlertDialogFooter>
 							</AlertDialogContent>
@@ -424,6 +435,8 @@ interface MissionDetailProps {
 }
 
 function MissionDetail({ missionId, locale }: MissionDetailProps) {
+	const t = useTranslations("missions.detail");
+	const missionStatusConfig = useMissionStatusConfig();
 	const mission = useQuery(api.missions.get, { id: missionId });
 	const operations = useQuery(api.operations.listByMission, { missionId });
 	const checkpoints = useQuery(api.checkpoints.listByMission, { missionId });
@@ -446,13 +459,15 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 						aria-hidden="true"
 					/>
 					<h1 className="text-lg font-semibold text-foreground font-[Space_Grotesk,sans-serif] mb-2">
-						Mission not found
+						{t("not_found_title")}
 					</h1>
 					<p className="text-sm text-muted-foreground mb-6">
-						This mission may have been deleted or you don't have access.
+						{t("not_found_description")}
 					</p>
 					<Button asChild variant="outline" className="rounded-full">
-						<Link href={`/${locale}/dashboard/missions`}>Back to missions</Link>
+						<Link href={`/${locale}/dashboard/missions`}>
+							{t("back_to_missions")}
+						</Link>
 					</Button>
 				</div>
 			</div>
@@ -460,7 +475,8 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 	}
 
 	const missionStatus = mission.status as MissionStatus;
-	const statusConfig = MISSION_STATUS[missionStatus] ?? MISSION_STATUS.pending;
+	const statusConfig =
+		missionStatusConfig[missionStatus] ?? missionStatusConfig.pending;
 	const progress = stats?.progress ?? mission.progress ?? 0;
 
 	// Build a map of operationId → operation name for dependency display
@@ -486,7 +502,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 				className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
 			>
 				<ArrowLeft className="size-3.5" aria-hidden="true" />
-				All missions
+				{t("all_missions")}
 			</Link>
 
 			{/* Mission header */}
@@ -509,7 +525,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 				<div className="space-y-1.5">
 					<div className="flex items-center justify-between text-xs text-muted-foreground">
 						<span>
-							{stats.completed}/{stats.total} operations completed
+							{stats.completed}/{stats.total} {t("operations_completed")}
 						</span>
 						<span>{progress}%</span>
 					</div>
@@ -526,7 +542,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 						)}
 						{mission.objective && (
 							<p className="text-sm text-foreground/70 italic">
-								Objective: {mission.objective}
+								{t("objective")} {mission.objective}
 							</p>
 						)}
 					</div>
@@ -536,7 +552,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 				{mission.successCriteria && mission.successCriteria.length > 0 && (
 					<div className="space-y-1.5 pt-1">
 						<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-							Success criteria
+							{t("success_criteria")}
 						</p>
 						<ul className="space-y-1">
 							{mission.successCriteria.map((criterion) => (
@@ -557,14 +573,14 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 			</header>
 
 			{/* Operations + checkpoints */}
-			<section aria-label="Operations">
+			<section aria-label={t("operations_aria")}>
 				<h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-					Operations
+					{t("operations_title")}
 				</h2>
 
 				{operations.length === 0 ? (
 					<div className="py-8 text-center text-sm text-muted-foreground border border-border">
-						No operations in this mission.
+						{t("no_operations")}
 					</div>
 				) : (
 					<div className="border border-border divide-y divide-border">
@@ -607,7 +623,8 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 
 			{/* Created timestamp */}
 			<footer className="text-xs text-muted-foreground">
-				Created {formatDistanceToNow(mission.createdAt, { addSuffix: true })}
+				{t("created")}{" "}
+				{formatDistanceToNow(mission.createdAt, { addSuffix: true })}
 			</footer>
 		</div>
 	);

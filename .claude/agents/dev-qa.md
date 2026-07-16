@@ -127,12 +127,25 @@ npx @biomejs/biome check --no-errors-on-unmatched <files>
 # 2. Types
 npx tsc --noEmit
 
-# 3. Build
+# 3. Translation QA (all 3 controls must pass — see below)
+node scripts/check-translations.js
+
+# 4. Build
 pnpm build
 
-# 4. e2e (creates /tmp/.quality-gate-passed on full pass)
+# 5. e2e (creates /tmp/.quality-gate-passed on full pass)
 pnpm test:e2e
 ```
+
+## Translation QA — `scripts/check-translations.js`
+
+Permanent gate, not a throwaway. Three controls, derived from the artifacts they measure — never a hand-typed inventory or locale list:
+
+1. **Hardcoded literal scan** — TypeScript-AST scan of every `.tsx`/`.ts` under `app/` and `components/` (minus `components/ui/`, the lit-ui source library, minus `__tests__`). Flags English JSX text, `aria-label`/`placeholder`/`title`/`alt` string attributes, and hardcoded locale tags passed to `toLocaleDateString`/`Intl.DateTimeFormat`.
+2. **Key parity across all 7 locales** — locale list parsed out of `i18n/routing.ts`. Any key missing or orphaned in ANY of the 7 locales is RED, naming the key and the locale. This is what caught the `chat` namespace shipping in only `en`/`fr`.
+3. **fr === en byte-identical** — flags a French value that is a byte-for-byte copy of the English value. Declared exceptions (proper nouns, product names) live in `FR_EN_IDENTICAL_ALLOW` inside the script.
+
+Bipolar probe at `scripts/__tests__/check-translations.test.js` — every MUST_BLOCK case mutates real repo material (not a scanner-authored fixture), asserts the mutation landed, asserts the control goes RED, then restores and asserts byte-for-byte restoration. Never trust a green run of this probe without checking it also has a red MUST_BLOCK case per control.
 
 ## Visual checks
 

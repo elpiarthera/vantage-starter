@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { MissionBoard } from "@/components/missions/mission-board";
 import {
@@ -15,6 +16,7 @@ import { ViewOptions, type ViewType } from "@/components/missions/view-options";
 import { api } from "@/convex/_generated/api";
 
 export default function MissionsPage() {
+	const t = useTranslations("missions.page");
 	const [filters, setFilters] = useState<MissionFilterState>({
 		statuses: [],
 		priorities: [],
@@ -55,7 +57,7 @@ export default function MissionsPage() {
 							fill="none"
 							viewBox="0 0 24 24"
 							role="img"
-							aria-label="Loading missions"
+							aria-label={t("loading_aria")}
 						>
 							<circle
 								className="opacity-25"

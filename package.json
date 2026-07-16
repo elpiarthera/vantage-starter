@@ -21,7 +21,7 @@
 		"test:image-generator:watch": "vitest watch __tests__/components/image-generator",
 		"translate": "node scripts/translate.js",
 		"i18n:verify": "node scripts/verify-translations.js",
-		"i18n:guard": "node scripts/i18n-guard.js",
+		"check-translations": "node scripts/check-translations.js",
 		"test:lang:text": "tsx tests/ai-language-support/test-text-generation.ts",
 		"test:lang:image": "tsx tests/ai-language-support/test-image-generation.ts",
 		"test:lang:video": "tsx tests/ai-language-support/test-video-generation.ts",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -13,17 +13,28 @@ interface SessionListProps {
 	onNewSession: () => void;
 }
 
-export function formatRelativeTime(timestamp: number, locale: string): string {
+type RelativeTimeMessages = {
+	justNow: string;
+	minutesAgo: (minutes: number) => string;
+	hoursAgo: (hours: number) => string;
+	daysAgo: (days: number) => string;
+};
+
+export function formatRelativeTime(
+	timestamp: number,
+	locale: string,
+	messages: RelativeTimeMessages,
+): string {
 	const now = Date.now();
 	const diff = now - timestamp;
 	const minutes = Math.floor(diff / 60_000);
 	const hours = Math.floor(diff / 3_600_000);
 	const days = Math.floor(diff / 86_400_000);
 
-	if (minutes < 1) return "Just now";
-	if (minutes < 60) return `${minutes}m ago`;
-	if (hours < 24) return `${hours}h ago`;
-	if (days < 7) return `${days}d ago`;
+	if (minutes < 1) return messages.justNow;
+	if (minutes < 60) return messages.minutesAgo(minutes);
+	if (hours < 24) return messages.hoursAgo(hours);
+	if (days < 7) return messages.daysAgo(days);
 	return new Intl.DateTimeFormat(locale, {
 		month: "short",
 		day: "numeric",
@@ -46,6 +57,7 @@ function StatusDot({ status }: { status: string }) {
 }
 
 function SessionsEmptyState() {
+	const t = useTranslations("architect");
 	return (
 		<div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
 			<div className="icon-container" aria-hidden="true">
@@ -64,9 +76,9 @@ function SessionsEmptyState() {
 				</svg>
 			</div>
 			<p className="text-xs text-muted-foreground leading-relaxed">
-				No sessions yet.
+				{t("no_sessions_yet")}
 				<br />
-				Start one above.
+				{t("start_one_above")}
 			</p>
 		</div>
 	);
@@ -79,22 +91,32 @@ export function SessionList({
 	onNewSession,
 }: SessionListProps) {
 	const locale = useLocale();
+	const t = useTranslations("architect");
 	const result = useQuery(api.architectSessions.listRecent, { workspaceId });
 	const sessions = result?.sessions ?? [];
 	const loading = result === undefined;
+
+	const relativeTimeMessages = {
+		justNow: t("just_now"),
+		minutesAgo: (minutes: number) => t("minutes_ago", { minutes }),
+		hoursAgo: (hours: number) => t("hours_ago", { hours }),
+		daysAgo: (days: number) => t("days_ago", { days }),
+	};
 
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Header */}
 			<div className="space-y-3">
-				<p className="text-xs font-medium text-muted-foreground">Sessions</p>
+				<p className="text-xs font-medium text-muted-foreground">
+					{t("sessions_title")}
+				</p>
 				<button
 					type="button"
 					onClick={onNewSession}
 					className="btn-shadow w-full rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					aria-label="Start a new Architect session"
+					aria-label={t("start_new_session_aria")}
 				>
-					New session
+					{t("new_session")}
 				</button>
 			</div>
 
@@ -119,8 +141,10 @@ export function SessionList({
 							const title =
 								session.title ??
 								(session.missionContext?.missionName
-									? `Plan: ${session.missionContext.missionName}`
-									: "New session");
+									? t("plan_prefix", {
+											name: session.missionContext.missionName,
+										})
+									: t("new_session"));
 
 							return (
 								<li key={session._id}>
@@ -146,7 +170,11 @@ export function SessionList({
 												{title}
 											</p>
 											<p className="text-xs text-muted-foreground tabular-nums mt-0.5">
-												{formatRelativeTime(session.createdAt, locale)}
+												{formatRelativeTime(
+													session.createdAt,
+													locale,
+													relativeTimeMessages,
+												)}
 											</p>
 										</div>
 									</button>

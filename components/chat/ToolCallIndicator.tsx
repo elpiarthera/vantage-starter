@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export type ToolCallState = "streaming" | "call" | "result" | "partial-call";
@@ -10,42 +11,45 @@ interface ToolCallIndicatorProps {
 	className?: string;
 }
 
-const TOOL_LABELS: Record<string, { active: string; done: string }> = {
+const TOOL_LABEL_KEYS: Record<string, { active: string; done: string }> = {
 	searchKB: {
-		active: "Searching knowledge base...",
-		done: "Knowledge base searched",
+		active: "tools.searchKB.active",
+		done: "tools.searchKB.done",
 	},
 	searchUserData: {
-		active: "Searching your data...",
-		done: "Data retrieved",
+		active: "tools.searchUserData.active",
+		done: "tools.searchUserData.done",
 	},
 	memory: {
-		active: "Accessing memory...",
-		done: "Memory updated",
+		active: "tools.memory.active",
+		done: "tools.memory.done",
 	},
 	analyzeData: {
-		active: "Analyzing data...",
-		done: "Analysis complete",
+		active: "tools.analyzeData.active",
+		done: "tools.analyzeData.done",
 	},
 	browseWeb: {
-		active: "Browsing the web...",
-		done: "Web results ready",
+		active: "tools.browseWeb.active",
+		done: "tools.browseWeb.done",
 	},
 	generateReport: {
-		active: "Generating report...",
-		done: "Report generated",
+		active: "tools.generateReport.active",
+		done: "tools.generateReport.done",
 	},
 };
 
-function getToolLabel(toolName: string, isActive: boolean): string {
-	const label = TOOL_LABELS[toolName];
-	if (label) return isActive ? label.active : label.done;
-	// Fallback: convert camelCase to readable label
+function useToolLabel(toolName: string, isActive: boolean): string {
+	const t = useTranslations("chat");
+	const keys = TOOL_LABEL_KEYS[toolName];
+	if (keys) return isActive ? t(keys.active) : t(keys.done);
+	// Fallback: convert camelCase to readable label, tool name is dynamic content
 	const readable = toolName
 		.replace(/([A-Z])/g, " $1")
 		.toLowerCase()
 		.trim();
-	return isActive ? `Using ${readable}...` : `${readable} complete`;
+	return isActive
+		? t("tools.fallbackActive", { tool: readable })
+		: t("tools.fallbackDone", { tool: readable });
 }
 
 export function ToolCallIndicator({
@@ -56,10 +60,11 @@ export function ToolCallIndicator({
 	const isActive =
 		state === "streaming" || state === "call" || state === "partial-call";
 	const isDone = state === "result";
+	const label = useToolLabel(toolName, isActive);
 
 	return (
 		<output
-			aria-label={getToolLabel(toolName, isActive)}
+			aria-label={label}
 			className={cn(
 				"flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium w-fit",
 				isActive &&
@@ -90,7 +95,7 @@ export function ToolCallIndicator({
 					/>
 				</svg>
 			)}
-			<span>{getToolLabel(toolName, isActive)}</span>
+			<span>{label}</span>
 		</output>
 	);
 }
