@@ -303,10 +303,10 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 						/>
 					</div>
 
-					{/* Right: Language Switcher (mobile only) + Credits + Notifications + User Menu */}
+					{/* Right: Language Switcher + Credits + Notifications + User Menu */}
 					<div className="flex items-center gap-2 md:gap-4">
-						{/* Language Switcher — mobile only */}
-						<div className="md:hidden">
+						{/* Language Switcher — visible on all breakpoints */}
+						<div>
 							<LanguageSwitcher />
 						</div>
 
