@@ -50,18 +50,36 @@ jobs:
       # deleted. This one reads code. The trade-off is declared: a bare variable
       # sitting in a trailing comment on a line of real code would slip through —
       # harmless, since Tailwind does not read comments either.
+      # Three outcomes, never two. "I could not measure" must never render the
+      # same screen as "it is clean" — that equivalence is the entire disease
+      # this PR exists to fix, and the first version of this gate had it: strip a
+      # scanned directory and grep only warned on stderr while the step still
+      # exited 0, handing out a clean certificate having scanned nothing. A
+      # missing directory is an EVENT, not a rest.
+      #   exit 0 — scanned everything, found nothing
+      #   exit 1 — found a violation
+      #   exit 2 — could not scan; names what it could not read
       - name: No bare CSS variables in Tailwind brackets
         run: |
+          roots="app components lib hooks providers src styles"
+          missing=""
+          for d in $roots; do
+            [ -d "$d" ] || missing="$missing $d"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Gate cannot measure — directory not found:$missing. Refusing to report clean on unscanned ground. If a directory was intentionally removed or renamed, update the roots list in this workflow."
+            exit 2
+          fi
           hits=$(grep -rnE '\[--[A-Za-z0-9_-]+\]' \
                    --include='*.ts' --include='*.tsx' --include='*.jsx' --include='*.css' \
-                   app components lib hooks providers src styles \
+                   $roots \
                  | grep -vE '^[^:]+:[0-9]+:[[:space:]]*(\*|//|/\*)' || true)
           if [ -n "$hits" ]; then
             echo "$hits"
             echo "::error::Bare CSS variable in a Tailwind bracket. Tailwind v4 compiles [--x] to the invalid 'width: --x' and silently drops it. Use the explicit [var(--x)] form."
             exit 1
           fi
-          echo "OK — no bare CSS variables in code."
+          echo "OK — scanned$( for d in $roots; do printf ' %s' "$d"; done ) — no bare CSS variables in code."
 
       # Proves the prebuild still resolves its dependencies. `esbuild` was
       # imported by scripts/build-litui.mjs and declared nowhere; `|| true` hid
