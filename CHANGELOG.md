@@ -4,6 +4,24 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-16 — audit du plugin 36 agents : le chiffre n'a jamais existé, task k174wtt4gnf0t4ynphqjw0nnqs8amyyd)
+
+- **`docs/audits/plugin-36-agents-implementation-state-2026-07-16.md`**: audit read-only du claim FAQ *"A Claude Code plugin with 36 specialized agents"* (7 locales). Verdict **ABSENT**, et le chiffre n'est pas seulement faux aujourd'hui — **il n'a jamais été vrai**. Compte dérivé à chaque commit ayant touché `.claude/agents/` (`git ls-tree -r --name-only <sha> -- .claude/agents/ | grep -c '\.md$'`), jamais recopié :
+
+  | commit | date | agents |
+  |---|---|---|
+  | `c306c40` / `f54eb9c` | 2026-03-19 | 7 |
+  | `e928aee` | 2026-03-22 | 8 |
+  | `82c1ac3` | 2026-03-26 | 24 |
+  | `32ad46b` | 2026-04-03 | **25** ← maximum historique |
+  | `c7072ea` | 2026-04-06 | **0** |
+
+  Le maximum jamais atteint est **25**, jamais 36. `git ls-files .claude/agents/ | wc -l` → **0** : un développeur qui clone ce repo reçoit **zéro** agent. Aucun plugin produit n'existe (pas de `.claude-plugin/` à la racine ; les `plugin.json` trouvés appartiennent aux skills Clerk tierces sous `.agents/skills/`), et `npm view vantagestarter-agents` → **404**.
+- **`CLAUDE.md:265` — la démonstration parfaite de la règle-mère**: la ligne annonce *"agents/ # 7 specialist agents"*. Ce 7 **était vrai** — le 2026-03-19. Puis l'artefact a bougé (7 → 8 → 24 → 25 → 0) et la ligne, elle, n'a pas bougé. *Une valeur tapée à la main est un mensonge en sursis : elle est vraie à l'instant où on l'écrit, et le monde bouge.* Le fichier qui énonce `derive-never-type` en est l'illustration.
+- **Cause de la disparition, identifiée**: `c7072ea` (*"design configurator + Luma default + Tailwind v4 upgrade"*) a supprimé les 25 agents **en collatéral**, sans rapport avec son objet — 3 jours après le pic de 25. `git show --diff-filter=D --name-only c7072ea -- '.claude/agents/' | grep -c '\.md'` → 25.
+- **Écart nommé par nommé**: la FAQ nomme 6 spécialités (frontend dev, Convex expert, Clerk expert, security auditor, SEO specialist, product manager). Les 6 sont absentes aujourd'hui ; 5 ont existé historiquement sous de vrais fichiers avant suppression ; **"product manager" n'a jamais existé** sous ce nom — seul un `product-launcher.md`, distinct, a existé.
+- **Distinction tenue**: les 10 agents installés dans le workspace aujourd'hui sont de l'**outillage d'orchestrateur**, pas un **plugin produit livré**. Ils ne sont pas suivis par git et ne comptent pas pour la promesse client — l'audit ne confond jamais les deux.
+
 ### Added (2026-07-16 — audit Generative UI : la copie client vend une techno écartée, task k17ac7wkk8maer07re8edttw3x8an9rh)
 
 - **`docs/audits/generative-ui-implementation-state-2026-07-16.md`**: audit read-only confrontant la FAQ au code. La FAQ vend *"out of the box with **tambo** orchestration"* (`messages/en.json:2654, 2669, 2675`, traduit en **7 langues**) — or `tambo` n'est ni importé, ni une dépendance : `grep -rni 'tambo' --include='*.ts' --include='*.tsx' app components lib hooks providers convex src scripts` → **0 hit**, `grep -c 'tambo' package.json` → **0**. Pire que l'absence : l'équipe l'avait **explicitement écarté**, `docs/GENERATIVE-UI-COMPARISON.md:14` (daté 2026-03-20) tranche *"json-render (rendering) + Vercel AI SDK v6 — **skip tambo** and OpenGenerativeUI entirely"*, et `docs/ORCHESTRATION-PLAN.md:33` le range sous *"Rejected alternatives"*. La copie client vend donc la décision inverse de la décision prise. Un document de plan a le droit de discuter tambo ; une FAQ n'a pas le droit de le vendre — la distinction est faite claim par claim dans le rapport.
