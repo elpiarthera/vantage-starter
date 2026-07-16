@@ -201,3 +201,100 @@ describe("Security: order.paid with missing customer metadata userId", () => {
 		expect(credits).toBeNull();
 	});
 });
+
+// ── 6. order.paid for a disabled offer (isActive: false) → ZERO credits ───────
+describe("Security: order.paid grant path for disabled offer", () => {
+	it("grants 0 credits when the looked-up tier is disabled", async () => {
+		const t = makeT();
+		await seedUser(t);
+
+		await t.run(async (ctx) => {
+			await ctx.db.insert("subscriptionTiers", {
+				tierKey: "tier_disabled_order_paid",
+				displayName: "Disabled Offer",
+				initialCredits: 500,
+				monthlyCredits: 500,
+				sortOrder: 99,
+				isActive: false,
+				description: "Disabled — must not grant credits via order.paid",
+				polarProductId: "prod_disabled_order_paid",
+				productType: "subscription" as const,
+				priceUsd: 9,
+				createdAt: Date.now(),
+				updatedAt: Date.now(),
+			});
+		});
+
+		// Reproduce the exact order.paid grant path from convex/http.ts:
+		// look up the tier by polarProductId, then (if truthy) grant creditAmount.
+		const tier = await t.query(internal.subscriptionTiers.getByPolarProductId, {
+			polarProductId: "prod_disabled_order_paid",
+		});
+
+		if (tier) {
+			const creditAmount =
+				tier.productType === "subscription"
+					? tier.initialCredits
+					: tier.initialCredits + (tier.bonusCredits ?? 0);
+			await t.mutation(internal.credits.addPurchaseCredits, {
+				clerkUserId: TEST_USER_ID,
+				polarOrderId: "ord_disabled_offer",
+				polarProductId: "prod_disabled_order_paid",
+				creditAmount,
+			});
+		}
+
+		const credits = await t.run(async (ctx) =>
+			ctx.db
+				.query("userCredits")
+				.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", TEST_USER_ID))
+				.first(),
+		);
+		expect(credits?.balance ?? 0).toBe(0);
+	});
+});
+
+// ── 7. subscription renewal for a disabled offer (isActive: false) → ZERO credits ─
+describe("Security: subscription renewal grant path for disabled offer", () => {
+	it("grants 0 credits when the renewal tier is disabled", async () => {
+		const t = makeT();
+		await seedUser(t);
+
+		await t.run(async (ctx) => {
+			await ctx.db.insert("subscriptionTiers", {
+				tierKey: "tier_disabled_renewal",
+				displayName: "Disabled Offer",
+				initialCredits: 500,
+				monthlyCredits: 500,
+				sortOrder: 99,
+				isActive: false,
+				description: "Disabled — must not grant credits on renewal",
+				polarProductId: "prod_disabled_renewal",
+				productType: "subscription" as const,
+				priceUsd: 9,
+				createdAt: Date.now(),
+				updatedAt: Date.now(),
+			});
+		});
+
+		const result = await t.mutation(
+			internal.credits.addMonthlyRenewalCreditsFixed,
+			{
+				clerkUserId: TEST_USER_ID,
+				polarSubscriptionId: "sub_disabled_renewal",
+				polarOrderId: "ord_disabled_renewal",
+				polarProductId: "prod_disabled_renewal",
+			},
+		);
+
+		expect(result).toMatchObject({ success: false, reason: "tier_disabled" });
+
+		const credits = await t.run(async (ctx) =>
+			ctx.db
+				.query("userCredits")
+				.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", TEST_USER_ID))
+				.first(),
+		);
+		expect(credits?.balance ?? 0).toBe(0);
+	});
+});
