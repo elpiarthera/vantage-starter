@@ -81,8 +81,14 @@ package-lock.json
 # clerk configuration (can include secrets)
 /.clerk/
 
-# Claude Code orchestration
-.claude/
+# Claude Code orchestration — the config directory is code (fleet rule
+# claude-config-is-code) and ships in git. Only per-machine state and
+# runtime artifacts are ignored below.
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/agent-memory/
+.claude/settings.json.bak.*
+.claude/**/__pycache__/
 
 # Debug screenshots
 *.png
