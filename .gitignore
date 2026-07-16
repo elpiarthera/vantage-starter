@@ -90,6 +90,25 @@ package-lock.json
 .claude/**/*.bak.*
 .claude/**/__pycache__/
 
+# Orchestrator-personal config — resolved from the orchestrator workspace, NOT this repo.
+# These eleven were committed as symlinks to absolute VPS paths (/root/coding/elpi-corp/...,
+# /root/coding/vantage-memory/...). A clone anywhere else got eleven DANGLING links: the
+# clone succeeds, the links exist, only resolution fails — silent, on the wrong side.
+# Per rule claude-config-is-code, orchestrator-personal skills/hooks live in the
+# orchestrator workspace, not the product repo. Named here so the repo stops pretending
+# to carry what it does not.
+.claude/hooks/block-orchestrator-code-edits.py
+.claude/hooks/enforce-brief-template.py
+.claude/hooks/enforce-bu-routing.py
+.claude/hooks/enforce-task-quality.py
+.claude/hooks/session-start.py
+.claude/skills/check-messages/
+.claude/skills/check-tasks/
+.claude/skills/close-day/
+.claude/skills/daily-start/
+.claude/skills/standup/
+.claude/skills/write-diary/
+
 # Debug screenshots
 *.png
 !public/**/*.png

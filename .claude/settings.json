@@ -92,10 +92,6 @@
           },
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIRtrue"
-          },
-          {
-            "type": "command",
             "command": "python3 /root/coding/vantage-starter/.claude/hooks/auto-inject-signature.py",
             "timeout": 5
           },
@@ -259,20 +255,6 @@
           {
             "type": "command",
             "command": "python3 \"/root/coding/vantage-starter/.claude/hooks/enforce-evidence-bound-notify.py\""
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Bash|Glob|Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /root/coding/vantage-starter/.claude/hooks/verify-breadcrumb.py",
-            "timeout": 3
-          },
-          {
-            "type": "command",
-            "command": "python3 \"/root/coding/vantage-starter/.claude/hooks/monitor-npm-version-vs-deployed.py\""
           }
         ]
       },
