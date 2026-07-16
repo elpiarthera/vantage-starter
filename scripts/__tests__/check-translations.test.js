@@ -463,7 +463,7 @@ describe("check-translations — Control 1e (JSX expression container child lite
 	// literal). It targets `app/[locale]/error.tsx` again, but via a fresh
 	// mutation on the `error.digest` block, never by reading the (now fixed)
 	// original defect.
-	test("MUST_BLOCK: an injected logical-OR English fallback ({expr || \"English\"}) in JSX child position on foreign material (error.tsx) turns Control 1 RED", () => {
+	test('MUST_BLOCK: an injected logical-OR English fallback ({expr || "English"}) in JSX child position on foreign material (error.tsx) turns Control 1 RED', () => {
 		const target = path.join(ROOT, "app/[locale]/error.tsx");
 		const original = fs.readFileSync(target, "utf8");
 
@@ -1973,5 +1973,190 @@ describe("check-translations — date-fns NAMESPACE import (`import * as dateFns
 			ts.ScriptKind.TS,
 		);
 		expect(Array.from(detectDateFnsNamespaceImports(sf))).toEqual([]);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Control 1 RATCHET — gated scope vs. out-of-scope report
+//
+// Proves three things a ratchet must prove, or it is not a ratchet:
+//  1. A violation INSIDE a gated root fails the CI invocation (exit 1).
+//  2. The real, pre-existing out-of-scope findings do NOT fail the CI
+//     invocation, and their count is visibly printed — never silent.
+//  3. The corrected wording ("hardcoded literal", never "English") shows up
+//     verbatim on a real French finding.
+// ---------------------------------------------------------------------------
+
+describe("check-translations — Control 1 RATCHET (gated scope vs out-of-scope report)", () => {
+	const { isInGatedScope, GATED_ROOTS } = require("../check-translations.js");
+
+	test("isInGatedScope: a file under a gated directory root, and the exact gated file itself, both resolve true", () => {
+		expect(isInGatedScope("app/[locale]/dashboard/foo/page.tsx")).toBe(true);
+		expect(isInGatedScope("components/missions/mission-card.tsx")).toBe(true);
+		expect(isInGatedScope("components/theme-toggle.tsx")).toBe(true);
+		expect(isInGatedScope("app/[locale]/error.tsx")).toBe(true);
+	});
+
+	test("isInGatedScope: a file outside every gated root resolves false", () => {
+		expect(isInGatedScope("app/[locale]/accessibilite/page.tsx")).toBe(false);
+		expect(isInGatedScope("components/landing/LandingNav.tsx")).toBe(false);
+	});
+
+	test("MUST_PASS: the real tree has ZERO gating violations today — the ratchet is green on arrival", () => {
+		const result = runControl1LiteralScan();
+		expect(result.gatedViolations).toEqual([]);
+		expect(result.ok).toBe(true);
+	});
+
+	test("MUST_PASS: the real tree's pre-existing out-of-scope findings are counted and every one of them falls strictly outside GATED_ROOTS — nothing is double-counted or silently dropped", () => {
+		const result = runControl1LiteralScan();
+		expect(result.outOfScopeCount).toBe(result.outOfScopeViolations.length);
+		expect(result.outOfScopeCount).toBe(
+			result.violations.length - result.gatedViolations.length,
+		);
+		expect(result.outOfScopeCount).toBeGreaterThan(0);
+		for (const v of result.outOfScopeViolations) {
+			expect(
+				GATED_ROOTS.some(
+					(root) => v.file === root || v.file.startsWith(`${root}/`),
+				),
+			).toBe(false);
+		}
+	});
+
+	test("MUST_PASS: a real French finding (app/[locale]/accessibilite/page.tsx) is reported with the corrected, language-neutral wording — never labeled English", () => {
+		const result = runControl1LiteralScan();
+		const frHit = result.outOfScopeViolations.find(
+			(v) =>
+				v.file === "app/[locale]/accessibilite/page.tsx" &&
+				v.text.includes("Déclaration d&apos;accessibilité"),
+		);
+		expect(frHit).toBeDefined();
+		expect(frHit.kind).toBe("jsx-text");
+		// The kind/label the reporter prints carries no language claim at all —
+		// "jsx-text" (or "hardcoded literal" in prose) never says "English".
+		expect(frHit.kind.toLowerCase()).not.toContain("english");
+	});
+
+	// ---- Real subprocess exit-code proof, isolated fixture (no contamination
+	// from this repo's own ambient Control 2/4 state) ----
+
+	function buildRatchetFixtureRoot() {
+		const dir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "check-translations-ratchet-"),
+		);
+		fs.mkdirSync(path.join(dir, "i18n"), { recursive: true });
+		fs.mkdirSync(path.join(dir, "messages"), { recursive: true });
+		// Gated-root fixture directory, matching a real GATED_ROOTS prefix.
+		fs.mkdirSync(path.join(dir, "app", "[locale]", "dashboard"), {
+			recursive: true,
+		});
+		// Out-of-scope fixture directory — deliberately NOT a gated root.
+		fs.mkdirSync(path.join(dir, "components", "marketing"), {
+			recursive: true,
+		});
+		fs.writeFileSync(
+			path.join(dir, "app", "[locale]", "dashboard", "Probe.tsx"),
+			[
+				'import { useTranslations } from "next-intl";',
+				"export function Probe() {",
+				'\tconst t = useTranslations("common");',
+				'\treturn <span>{t("close")}</span>;',
+				"}",
+				"",
+			].join("\n"),
+		);
+		fs.writeFileSync(
+			path.join(dir, "components", "marketing", "OutOfScope.tsx"),
+			[
+				"export function OutOfScope() {",
+				"\treturn <div>This is an out of scope hardcoded literal</div>;",
+				"}",
+				"",
+			].join("\n"),
+		);
+		fs.writeFileSync(
+			path.join(dir, "i18n", "routing.ts"),
+			'export const routing = { locales: ["en", "fr"] };\n',
+		);
+		const en = { common: { close: "Close the current dialog window" } };
+		const fr = { common: { close: "Fermer la fenêtre de dialogue actuelle" } };
+		fs.writeFileSync(
+			path.join(dir, "messages", "en.json"),
+			JSON.stringify(en, null, "\t"),
+		);
+		fs.writeFileSync(
+			path.join(dir, "messages", "fr.json"),
+			JSON.stringify(fr, null, "\t"),
+		);
+		return dir;
+	}
+
+	function runScript(dir) {
+		try {
+			const stdout = execSync(
+				`node "${path.join(ROOT, "scripts", "check-translations.js")}" 2>&1`,
+				{
+					cwd: ROOT,
+					encoding: "utf8",
+					stdio: "pipe",
+					env: { ...process.env, CHECK_TRANSLATIONS_ROOT: dir },
+				},
+			);
+			return { code: 0, output: stdout };
+		} catch (err) {
+			return {
+				code: err.status,
+				output: `${err.stdout || ""}${err.stderr || ""}`,
+			};
+		}
+	}
+
+	test("MUST_PASS direction: fixture with only an out-of-scope literal exits 0, and prints the out-of-scope finding + count", () => {
+		const dir = buildRatchetFixtureRoot();
+		try {
+			const { code, output } = runScript(dir);
+			expect(code).toBe(0);
+			expect(output).toMatch(
+				/1 literal\(s\) outside the gated scope — reported, not gating/,
+			);
+			expect(output).toContain("components/marketing/OutOfScope.tsx");
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	test("MUST_BLOCK direction: injecting a hardcoded literal INSIDE a gated root (app/[locale]/dashboard) makes the CI invocation exit 1", () => {
+		const dir = buildRatchetFixtureRoot();
+		try {
+			const gatedFile = path.join(
+				dir,
+				"app",
+				"[locale]",
+				"dashboard",
+				"Probe.tsx",
+			);
+			const marker = "___I18N_RATCHET_GATED_PROBE_MARKER___";
+			const original = fs.readFileSync(gatedFile, "utf8");
+			const mutated = original.replace(
+				'{t("close")}',
+				`{t("close")}<div>Hardcoded gated literal ${marker}</div>`,
+			);
+			expect(mutated).not.toBe(original);
+			fs.writeFileSync(gatedFile, mutated);
+
+			// Assert the mutation actually landed before reading any verdict.
+			const landed = execSync(`grep -c "${marker}" "${gatedFile}"`, {
+				encoding: "utf8",
+			}).trim();
+			expect(Number(landed)).toBeGreaterThan(0);
+
+			const { code, output } = runScript(dir);
+			expect(code).toBe(1);
+			expect(output).toContain(marker);
+			expect(output).toContain("app/[locale]/dashboard/Probe.tsx");
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });

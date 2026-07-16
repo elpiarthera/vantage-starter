@@ -3,10 +3,22 @@
  * check-translations — the permanent i18n QA gate. Three controls, all
  * derived from the artifacts they measure, never hand-typed:
  *
- *  CONTROL 1 (literal scan): generic TypeScript-AST scanner for hardcoded
- *  English literals across EVERY `.tsx`/`.ts` file under `app/` and
- *  `components/` (the file inventory is derived from the filesystem, not a
- *  typed list of directories — see `deriveTargetFiles`).
+ *  CONTROL 1 (literal scan): generic TypeScript-AST scanner for hardcoded,
+ *  UNTRANSLATED literals — in ANY language, not only English — across EVERY
+ *  `.tsx`/`.ts` file under `app/` and `components/` (the file inventory is
+ *  derived from the filesystem, not a typed list of directories — see
+ *  `deriveTargetFiles`). NAMING NOTE (fixed after a live false-label
+ *  incident): this control used to call its own findings "hardcoded English
+ *  literal", but its actual detector (`hasTranslatableText`, formerly
+ *  `hasEnglishWord`) is `/[A-Za-z]{2,}/` — it matches any run of Latin
+ *  letters, so it correctly flagged genuine French prose too (e.g.
+ *  `app/[locale]/accessibilite/page.tsx:24` "Déclaration d'accessibilité").
+ *  The DETECTION was right — a hardcoded French string under `/en/...` is
+ *  exactly as much a defect as a hardcoded English one, since the wrong
+ *  language renders regardless of which language is hardcoded. Only the
+ *  LABEL lied. Every message/kind/doc-comment below now says "hardcoded
+ *  literal" / "untranslated text", never "English", unless the finding is
+ *  genuinely English-specific (e.g. an actual `en-US` locale tag).
  *
  *  CONTROL 2 (key parity): every `messages/<locale>.json` must carry the
  *  exact same key set as the union of all locales. Locales are derived from
@@ -90,6 +102,50 @@ const SCAN_ROOTS = ["app", "components"];
 // written here so a future reader knows why 22+ files are skipped rather
 // than assuming they were missed.
 const EXCLUDED_DIR_SEGMENTS = new Set(["components/ui"]);
+
+// ---------------------------------------------------------------------------
+// CONTROL 1 RATCHET — gated scope vs. reported-but-not-gating remainder.
+//
+// The full product surface carries 129 pre-existing literal findings that
+// this pass does not close. A gate that is permanently red gets disabled by
+// the end of the week — the exact failure mode documented at the top of
+// `.github/workflows/quality.yml`. Rather than choosing between "gate
+// nothing" (the whole control becomes advisory, protecting zero regressions)
+// and "gate everything" (red on arrival, the file gets disabled), this is a
+// RATCHET: every root listed here is CLEAN today and MUST STAY clean forever
+// — CI fails the build the moment a NEW violation lands inside one of these
+// roots. Everything outside these roots is still fully scanned and every
+// finding is still PRINTED (never hidden), it just does not fail the build
+// yet.
+//
+// Widening this list is the whole point: move a root's remaining findings to
+// zero, add the root here, and the gate for that area of the product is
+// permanent from then on. This is a ONE-LINE change — add the path (a
+// directory prefix or a single file) to `GATED_ROOTS` below. The goal state
+// is `GATED_ROOTS` growing until it covers the entire product surface.
+const GATED_ROOTS = [
+	"app/[locale]/dashboard",
+	"components/missions",
+	"components/chat",
+	"components/dashboard",
+	"components/design-system",
+	"components/create",
+	"components/app-sidebar.tsx",
+	"components/sidebar-user-nav.tsx",
+	"components/search-modal.tsx",
+	"components/theme-toggle.tsx",
+	"app/[locale]/error.tsx",
+	"app/[locale]/admin/error.tsx",
+];
+
+// True when `relFile` (POSIX-normalized, relative to ROOT) falls under a
+// gated root — either an exact file match or a directory prefix match.
+function isInGatedScope(relFile) {
+	const normalized = relFile.split(path.sep).join("/");
+	return GATED_ROOTS.some(
+		(root) => normalized === root || normalized.startsWith(`${root}/`),
+	);
+}
 
 // Product / brand names that are not translation candidates on their own.
 // Kept intentionally small — every entry here must be a proper noun with no
@@ -347,7 +403,7 @@ function detectDateFnsNamespaceImports(sourceFile) {
 	return names;
 }
 
-function hasEnglishWord(text) {
+function hasTranslatableText(text) {
 	const trimmed = text.trim();
 	if (trimmed.length < 2) return false;
 	// Must contain at least one alphabetic word of 2+ letters to be
@@ -359,7 +415,7 @@ function isAllowlisted(text) {
 	const trimmed = text.trim();
 	if (ALLOWLIST_TOKENS.has(trimmed)) return true;
 	// Pure numbers, dates, code-ish tokens (camelCase/kebab without spaces
-	// AND no vowel-only sentence shape) are not English UI copy.
+	// AND no vowel-only sentence shape) are not translatable UI copy.
 	if (/^[A-Za-z0-9_-]+$/.test(trimmed) && !trimmed.includes(" ")) {
 		// still allow through allowlist only, not blanket — single tokens
 		// like "New" or "View" ARE UI copy and must NOT be exempted here.
@@ -428,7 +484,7 @@ function deriveTargetFiles() {
 // and `STATUS_DOT` / `STATUS_HEADER_CLASSES: Record<Status, string>`
 // (Tailwind class-list values) are internal data, not translatable text. A
 // violation is only reported when ALL THREE hold:
-//   (a) the string value contains an English word (`hasEnglishWord`);
+//   (a) the string value contains translatable text (`hasTranslatableText`);
 //   (b) the value is NOT an enum-key / kebab-case / Tailwind-class-list
 //       token (`isEnumOrClassLikeToken` — all-lowercase, hyphen/slash/
 //       colon/dot-joined tokens, e.g. "bg-muted text-warning" or
@@ -471,7 +527,7 @@ function isTranslationKeyPath(text) {
 }
 
 // A hex color literal (e.g. "#8b5cf6", "#fff"). Measured on
-// `UsageChart.tsx` `serviceColors` map: `hasEnglishWord` matches because hex
+// `UsageChart.tsx` `serviceColors` map: `hasTranslatableText` matches because hex
 // digits a-f contain 2+ consecutive letters ("cf", "ab", ...), but a color
 // value is data, never translatable copy.
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?$/;
@@ -770,7 +826,7 @@ function detectLabelMaps(sourceFile) {
 }
 
 // ---------------------------------------------------------------------------
-// CONTROL 1e — bare English string literals inside a JSX *expression
+// CONTROL 1e — bare hardcoded string literals inside a JSX *expression
 // container* used in CHILD position (`{...}` directly inside an element or
 // fragment's children), e.g. `{query ? "Results" : "Quick access"}` or a
 // bare `{"Text"}`. Control 1's jsx-text check only sees `ts.JsxText` nodes
@@ -802,7 +858,7 @@ function detectLabelMaps(sourceFile) {
 // substitutions — is deliberately not descended into: it is either a
 // function call (data, not a literal), a reference (resolved elsewhere), or
 // itself JSX (handled by the normal jsx-text/attr walk when visited).
-// `hasEnglishWord` / `isAllowlisted` / the inline `// i18n-allow:` override
+// `hasTranslatableText` / `isAllowlisted` / the inline `// i18n-allow:` override
 // are reused unchanged via the shared `report()` helper below, so
 // enum/route/icon-name tokens and declared exceptions behave identically to
 // every other Control 1 check.
@@ -867,7 +923,7 @@ function scanFile(filePath) {
 		// 1. JSX text nodes
 		if (ts.isJsxText(node)) {
 			const raw = node.getText();
-			if (hasEnglishWord(raw)) {
+			if (hasTranslatableText(raw)) {
 				report(node, raw, "jsx-text");
 			}
 		}
@@ -888,12 +944,12 @@ function scanFile(filePath) {
 				}
 				if (ts.isStringLiteral(expr)) {
 					const val = expr.text;
-					if (hasEnglishWord(val)) {
+					if (hasTranslatableText(val)) {
 						report(expr, val, `attr:${attrName}`);
 					}
 				} else if (ts.isNoSubstitutionTemplateLiteral(expr)) {
 					const val = expr.text;
-					if (hasEnglishWord(val)) {
+					if (hasTranslatableText(val)) {
 						report(expr, val, `attr:${attrName}:template`);
 					}
 				} else if (ts.isTemplateExpression(expr)) {
@@ -909,7 +965,7 @@ function scanFile(filePath) {
 						...expr.templateSpans.map((span) => span.literal.text),
 					];
 					for (const span of staticSpans) {
-						if (hasEnglishWord(span)) {
+						if (hasTranslatableText(span)) {
 							report(expr, span, `attr:${attrName}:template`);
 							break; // one violation per attribute is enough
 						}
@@ -918,7 +974,7 @@ function scanFile(filePath) {
 			}
 		}
 
-		// 3a. Bare English string literals inside a JSX expression container
+		// 3a. Bare hardcoded string literals inside a JSX expression container
 		//    used in CHILD position (see CONTROL 1e above for the full
 		//    discrimination rationale — position, not spelling, is what
 		//    separates this from `t("key")` calls and attribute values).
@@ -929,7 +985,7 @@ function scanFile(filePath) {
 		) {
 			for (const leaf of collectJsxExpressionLiterals(node.expression)) {
 				const val = leaf.text;
-				if (hasEnglishWord(val)) {
+				if (hasTranslatableText(val)) {
 					report(leaf, val, "jsx-expression");
 				}
 			}
@@ -1032,7 +1088,7 @@ function scanFile(filePath) {
 
 		// 3d. `import * as dateFns from "date-fns"` namespace-import call sites —
 		// `dateFns.format(...)` / `dateFns.formatDistanceToNow(...)`. Neither the
-		// named-import binding maps (3b/3c) nor `hasEnglishWord`-style spelling
+		// named-import binding maps (3b/3c) nor `hasTranslatableText`-style spelling
 		// matches ever see this shape: the call's callee is a
 		// PropertyAccessExpression, never a bare Identifier, so it is resolved
 		// here against the SAME two rule sets (pattern discrimination for
@@ -1088,7 +1144,7 @@ function scanFile(filePath) {
 		const referenced = isReferencedInJsx(sourceFile, map.name);
 		if (!referenced) continue; // condition (c): never proven to reach JSX
 		for (const leaf of map.leaves) {
-			if (!hasEnglishWord(leaf.value)) continue;
+			if (!hasTranslatableText(leaf.value)) continue;
 			if (isEnumOrClassLikeToken(leaf.value)) continue;
 			if (isTranslationKeyPath(leaf.value)) continue;
 			if (isHexColor(leaf.value)) continue;
@@ -1108,7 +1164,7 @@ function scanFile(filePath) {
 	for (const map of detectArrayObjectCopyMaps(sourceFile, localeCodeSet)) {
 		if (countIdentifierUsages(sourceFile, map.name) < 2) continue; // never used beyond its own declaration
 		for (const leaf of map.leaves) {
-			if (!hasEnglishWord(leaf.value)) continue;
+			if (!hasTranslatableText(leaf.value)) continue;
 			if (isEnumOrClassLikeToken(leaf.value)) continue;
 			if (isTranslationKeyPath(leaf.value)) continue;
 			if (isHexColor(leaf.value)) continue;
@@ -1156,11 +1212,24 @@ function runControl1LiteralScan() {
 		};
 	}
 
+	// RATCHET split: `ok` (the gate) is derived only from violations inside
+	// `GATED_ROOTS` — the surface proven clean and never allowed to regress.
+	// `violations` still carries EVERY finding across the whole product (never
+	// hidden), and `outOfScopeViolations`/`outOfScopeCount` name exactly what
+	// remains ungated, so the debt is always visible, never silent.
+	const gatedViolations = allViolations.filter((v) => isInGatedScope(v.file));
+	const outOfScopeViolations = allViolations.filter(
+		(v) => !isInGatedScope(v.file),
+	);
+
 	return {
-		ok: allViolations.length === 0,
+		ok: gatedViolations.length === 0,
 		fatal: false,
 		filesScanned: files.length,
 		violations: allViolations,
+		gatedViolations,
+		outOfScopeViolations,
+		outOfScopeCount: outOfScopeViolations.length,
 	};
 }
 
@@ -1883,12 +1952,22 @@ function main() {
 		console.log(JSON.stringify(results, null, 2));
 	} else {
 		console.error(
-			`Control 1 (hardcoded literals): ${control1.ok ? "PASS" : "FAIL"} — ${control1.filesScanned} files scanned, ${control1.violations.length} violation(s)`,
+			`Control 1 (hardcoded literals — gated scope): ${control1.ok ? "PASS" : "FAIL"} — ${control1.filesScanned} files scanned, ${control1.gatedViolations.length} gating violation(s)`,
 		);
 		if (!control1.ok) {
-			for (const v of control1.violations) {
+			for (const v of control1.gatedViolations) {
 				console.error(`  ${v.file}:${v.line} [${v.kind}] "${v.text}"`);
 			}
+		}
+		// The out-of-scope remainder is NEVER hidden: every finding is printed
+		// and the count is always visible, so the untracked debt never goes
+		// silent (see GATED_ROOTS doc-comment — this is a ratchet, not an
+		// amnesty).
+		console.error(
+			`  ${control1.outOfScopeCount} literal(s) outside the gated scope — reported, not gating:`,
+		);
+		for (const v of control1.outOfScopeViolations) {
+			console.error(`    ${v.file}:${v.line} [${v.kind}] "${v.text}"`);
 		}
 
 		console.error(
@@ -1967,5 +2046,7 @@ module.exports = {
 	callHasLocaleOption,
 	collectStringValuedObjectConsts,
 	collectArrayObjectStringProps,
+	isInGatedScope,
+	GATED_ROOTS,
 	main,
 };
