@@ -54,11 +54,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /root/coding/vantage-starter/.claude/hooks/verify-before-claim.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
             "command": "python3 /root/coding/vantage-starter/.claude/hooks/block-task-in-message.py",
             "timeout": 5
           },
@@ -131,7 +126,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-ship-24-7.py\""
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-ship-24-7.py\""
           }
         ]
       },
@@ -140,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-ship-24-7.py\""
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-ship-24-7.py\""
           },
           {
             "type": "command",
@@ -157,7 +152,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-ship-24-7.py\""
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-ship-24-7.py\""
           },
           {
             "type": "command",
@@ -174,7 +169,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-ship-24-7.py\""
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/enforce-ship-24-7.py\""
           },
           {
             "type": "command",
@@ -261,11 +256,6 @@
       {
         "matcher": "mcp__vantage-peers__(complete_task|block_task|delete_task|bulk_complete_tasks|update_task)",
         "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /root/coding/vantage-starter/.claude/hooks/qa-breadcrumb.py",
-            "timeout": 3
-          },
           {
             "type": "command",
             "command": "python3 /root/coding/vantage-starter/.claude/hooks/irp-breadcrumb.py",
