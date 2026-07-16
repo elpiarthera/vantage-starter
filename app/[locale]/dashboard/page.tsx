@@ -2,11 +2,12 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import Link from "next/link";
+import { useFormatter, useTranslations } from "next-intl";
 import { ErrorState } from "@/components/dashboard/shared/ErrorState";
 import { useUserSync } from "@/components/UserSyncProvider";
 import { api } from "@/convex/_generated/api";
 import { useCredits } from "@/hooks/business-logic/useCredits";
+import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -35,6 +36,7 @@ function CreditCard_({
 	balance: number;
 	isLoading: boolean;
 }) {
+	const t = useTranslations("dashboard");
 	return (
 		<div className="card-elevated bg-card border border-border rounded-xl p-6 flex items-center justify-between gap-6">
 			<div className="flex items-center gap-4">
@@ -55,10 +57,10 @@ function CreditCard_({
 				</div>
 				<div>
 					<p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.06em]">
-						Credit balance
+						{t("credit_balance_label")}
 					</p>
 					<p className="text-xs text-muted-foreground/70 mt-0.5">
-						Architect sessions &amp; AI ops
+						{t("credit_balance_subtitle")}
 					</p>
 				</div>
 			</div>
@@ -76,6 +78,7 @@ function CreditCard_({
 // ── Architect CTA card ────────────────────────────────────────────────────────
 
 function ArchitectCTA() {
+	const t = useTranslations("dashboard");
 	return (
 		<div className="card-elevated bg-card border border-border rounded-xl p-6 flex items-start justify-between gap-6">
 			<div className="flex items-start gap-4">
@@ -97,11 +100,10 @@ function ArchitectCTA() {
 				</div>
 				<div className="space-y-1">
 					<h2 className="font-heading font-semibold text-foreground tracking-[-0.03em]">
-						Start with the Architect
+						{t("architect_cta_title")}
 					</h2>
 					<p className="text-sm text-muted-foreground leading-relaxed">
-						Describe what you want to build. The Architect decomposes it into
-						missions and orchestrates your agent team.
+						{t("architect_cta_description")}
 					</p>
 				</div>
 			</div>
@@ -111,7 +113,7 @@ function ArchitectCTA() {
 					size="sm"
 					class="btn-shadow active-scale rounded-full font-medium"
 				>
-					Open Architect
+					{t("open_architect")}
 				</ui-button>
 			</Link>
 		</div>
@@ -128,6 +130,8 @@ interface Session {
 }
 
 function SessionRow({ session }: { session: Session }) {
+	const t = useTranslations("dashboard");
+	const format = useFormatter();
 	return (
 		<Link
 			href={`/dashboard/architect?session=${session._id}`}
@@ -139,10 +143,10 @@ function SessionRow({ session }: { session: Session }) {
 		>
 			<div className="min-w-0 flex-1">
 				<p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors duration-150">
-					{session.title ?? "Untitled session"}
+					{session.title ?? t("untitled_session")}
 				</p>
 				<p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
-					{new Date(session._creationTime).toLocaleDateString("en-GB", {
+					{format.dateTime(new Date(session._creationTime), {
 						day: "numeric",
 						month: "short",
 						year: "numeric",
@@ -155,6 +159,7 @@ function SessionRow({ session }: { session: Session }) {
 }
 
 function SessionsEmptyState() {
+	const t = useTranslations("dashboard");
 	return (
 		<div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
 			<div className="icon-container" aria-hidden="true">
@@ -175,35 +180,36 @@ function SessionsEmptyState() {
 			</div>
 			<div className="space-y-1">
 				<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
-					No sessions yet
+					{t("no_sessions_title")}
 				</p>
 				<p className="text-xs text-muted-foreground">
-					Your Architect sessions will appear here.
+					{t("no_sessions_description")}
 				</p>
 			</div>
 			<Link
 				href="/dashboard/architect"
 				className="text-xs text-primary hover:underline underline-offset-4 transition-colors duration-150"
 			>
-				Start your first session
+				{t("start_first_session")}
 			</Link>
 		</div>
 	);
 }
 
 function RecentSessions({ sessions }: { sessions: Session[] }) {
+	const t = useTranslations("dashboard");
 	return (
 		<div className="bg-card border border-border rounded-xl overflow-hidden">
 			<div className="px-6 py-4 border-b border-border flex items-center justify-between">
 				<h2 className="font-heading font-semibold text-sm text-foreground tracking-[-0.015em]">
-					Recent sessions
+					{t("recent_sessions_title")}
 				</h2>
 				{sessions.length > 0 && (
 					<Link
 						href="/dashboard/architect"
 						className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-150"
 					>
-						View all
+						{t("recent_sessions_view_all")}
 					</Link>
 				)}
 			</div>
@@ -223,6 +229,7 @@ function RecentSessions({ sessions }: { sessions: Session[] }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+	const t = useTranslations("dashboard");
 	const { isUserSynced, isSyncing } = useUserSync();
 	const { user } = useUser();
 
@@ -274,9 +281,9 @@ export default function DashboardPage() {
 		return (
 			<div className="max-w-6xl mx-auto px-6 lg:px-12 py-8 animate-in fade-in duration-300">
 				<ErrorState
-					title="Failed to Load Dashboard"
-					description="Unable to load dashboard data. Please try again."
-					actionLabel="Retry"
+					title={t("error_title")}
+					description={t("error_description")}
+					actionLabel={t("retry")}
 					onAction={handleRetry}
 				/>
 			</div>

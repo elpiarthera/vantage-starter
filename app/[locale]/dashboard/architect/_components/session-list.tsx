@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { useLocale } from "next-intl";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,7 @@ interface SessionListProps {
 	onNewSession: () => void;
 }
 
-function formatRelativeTime(timestamp: number): string {
+export function formatRelativeTime(timestamp: number, locale: string): string {
 	const now = Date.now();
 	const diff = now - timestamp;
 	const minutes = Math.floor(diff / 60_000);
@@ -23,10 +24,10 @@ function formatRelativeTime(timestamp: number): string {
 	if (minutes < 60) return `${minutes}m ago`;
 	if (hours < 24) return `${hours}h ago`;
 	if (days < 7) return `${days}d ago`;
-	return new Date(timestamp).toLocaleDateString("en-US", {
+	return new Intl.DateTimeFormat(locale, {
 		month: "short",
 		day: "numeric",
-	});
+	}).format(new Date(timestamp));
 }
 
 function StatusDot({ status }: { status: string }) {
@@ -77,6 +78,7 @@ export function SessionList({
 	onSessionSelect,
 	onNewSession,
 }: SessionListProps) {
+	const locale = useLocale();
 	const result = useQuery(api.architectSessions.listRecent, { workspaceId });
 	const sessions = result?.sessions ?? [];
 	const loading = result === undefined;
@@ -144,7 +146,7 @@ export function SessionList({
 												{title}
 											</p>
 											<p className="text-xs text-muted-foreground tabular-nums mt-0.5">
-												{formatRelativeTime(session.createdAt)}
+												{formatRelativeTime(session.createdAt, locale)}
 											</p>
 										</div>
 									</button>

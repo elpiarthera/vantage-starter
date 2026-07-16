@@ -268,7 +268,7 @@ export function AppSidebar() {
 											<circle cx="11" cy="11" r="8" />
 											<path d="m21 21-4.35-4.35" />
 										</svg>
-										<span>Search</span>
+										<span>{t("nav_search")}</span>
 										<kbd className="ml-auto hidden text-[10px] text-muted-foreground/60 font-mono group-data-[collapsible=icon]:hidden sm:inline-flex items-center gap-0.5">
 											⌘K
 										</kbd>
@@ -314,7 +314,7 @@ export function AppSidebar() {
 												<rect x="3" y="14" width="7" height="7" rx="1" />
 												<rect x="14" y="14" width="7" height="7" rx="1" />
 											</svg>
-											<span>Dashboard</span>
+											<span>{t("nav_dashboard")}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
@@ -340,7 +340,7 @@ export function AppSidebar() {
 											>
 												<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
 											</svg>
-											<span>Chat</span>
+											<span>{t("nav_chat")}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
@@ -371,7 +371,7 @@ export function AppSidebar() {
 												<line x1="3" y1="12" x2="3.01" y2="12" />
 												<line x1="3" y1="18" x2="3.01" y2="18" />
 											</svg>
-											<span>Missions</span>
+											<span>{t("nav_missions")}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
@@ -399,7 +399,7 @@ export function AppSidebar() {
 												<path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15z" />
 												<path d="M5 3l.5 1.5L7 5l-1.5.5L5 7l-.5-1.5L3 5l1.5-.5L5 3z" />
 											</svg>
-											<span>Architect</span>
+											<span>{t("nav_architect")}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
@@ -478,7 +478,7 @@ export function AppSidebar() {
 												<circle cx="12" cy="12" r="3" />
 												<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
 											</svg>
-											<span>Settings</span>
+											<span>{t("nav_settings")}</span>
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
