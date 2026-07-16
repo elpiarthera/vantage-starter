@@ -16,6 +16,11 @@ function TerminalMockup() {
 	};
 
 	return (
+		// Terminal mockup: a code block, always dark in both themes on purpose
+		// (title bar, macOS traffic-light dots, code line). bg-gray-700 /
+		// border-gray-800 / text-gray-500 below are an intentional exception to
+		// the semantic tokens — mapping to bg-muted would theme the dots and
+		// wash the mockup out in light mode.
 		<div className="code-block overflow-hidden rounded-xl terminal-glow">
 			<div className="flex items-center gap-2 border-b border-gray-800 px-4 py-3">
 				<div className="flex gap-1.5">

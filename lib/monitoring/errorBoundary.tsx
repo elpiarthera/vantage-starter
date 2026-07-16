@@ -43,18 +43,18 @@ export class ErrorBoundary extends React.Component<
 			}
 
 			return (
-				<div className="min-h-screen bg-[#101a23] flex items-center justify-center p-4">
-					<div className="bg-[#223649] border border-[#314d68] rounded-lg p-6 max-w-md w-full text-center">
-						<h2 className="text-white text-xl font-bold mb-4">
+				<div className="min-h-screen bg-background flex items-center justify-center p-4">
+					<div className="bg-card border border-border rounded-lg p-6 max-w-md w-full text-center">
+						<h2 className="text-foreground text-xl font-bold mb-4">
 							Something went wrong
 						</h2>
-						<p className="text-gray-300 mb-4">
+						<p className="text-muted-foreground mb-4">
 							An error occurred while rendering this component. Please refresh
 							the page to try again.
 						</p>
 						<button
 							onClick={() => window.location.reload()}
-							className="bg-[#0d7ff2] hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+							className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors"
 						>
 							Refresh Page
 						</button>

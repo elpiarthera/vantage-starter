@@ -39,7 +39,7 @@ export function AdaptiveNavigation({
 				{items.map((item) => (
 					<div
 						key={item.id}
-						className="border border-gray-600 rounded-lg overflow-hidden"
+						className="border border-border rounded-lg overflow-hidden"
 					>
 						<button
 							type="button"
@@ -63,10 +63,10 @@ export function AdaptiveNavigation({
 									)}
 								</div>
 								<div>
-									<h3 className="text-white text-base font-medium">
+									<h3 className="text-foreground text-base font-medium">
 										{item.title}
 									</h3>
-									<p className="text-xs text-gray-400 mt-1">
+									<p className="text-xs text-muted-foreground mt-1">
 										{item.isComplete
 											? tStatus("complete")
 											: tStatus("in_progress")}
@@ -90,9 +90,9 @@ export function AdaptiveNavigation({
 									</span>
 								)}
 								{expandedItems?.has(item.id) ? (
-									<ChevronUp className="h-5 w-5 text-gray-400" />
+									<ChevronUp className="h-5 w-5 text-muted-foreground" />
 								) : (
-									<ChevronDown className="h-5 w-5 text-gray-400" />
+									<ChevronDown className="h-5 w-5 text-muted-foreground" />
 								)}
 							</div>
 						</button>
@@ -100,7 +100,7 @@ export function AdaptiveNavigation({
 						{expandedItems?.has(item.id) && (
 							<div
 								id={`content-${item.id}`}
-								className="p-4 border-t border-gray-600"
+								className="p-4 border-t border-border"
 							>
 								{item.children}
 							</div>
@@ -114,20 +114,20 @@ export function AdaptiveNavigation({
 	return (
 		<Tabs value={activeItem} onValueChange={onItemChange} className="w-full">
 			<TabsList
-				className="grid w-full bg-[#223649] p-1"
+				className="grid w-full bg-muted p-1"
 				style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}
 			>
 				{items.map((item) => (
 					<TabsTrigger
 						key={item.id}
 						value={item.id}
-						className="flex items-center gap-2 data-[state=active]:bg-[#0d7ff2] data-[state=active]:text-white text-gray-300"
+						className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground"
 					>
 						<div
 							className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
 								item.isComplete
 									? "bg-green-500 text-white"
-									: "bg-[#314d68] text-gray-300"
+									: "bg-muted text-muted-foreground"
 							}`}
 						>
 							{item.isComplete ? (
@@ -138,7 +138,7 @@ export function AdaptiveNavigation({
 						</div>
 						<span className="hidden sm:inline">{item.title}</span>
 						{item.duration && (
-							<span className="text-xs px-1 py-0.5 rounded bg-[#314d68] text-gray-300">
+							<span className="text-xs px-1 py-0.5 rounded bg-muted text-muted-foreground">
 								{item.duration}s
 							</span>
 						)}
