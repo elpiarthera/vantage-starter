@@ -117,6 +117,18 @@ jobs:
           fi
           echo "OK — scanned$( for d in $roots; do printf ' %s' "$d"; done ) — no literal hex colours in Tailwind brackets."
 
+      # Proves the whole program type-checks. `vite` was imported by
+      # vitest.config.ts and thirteen __tests__/convex/*.ts files (via
+      # `/// <reference types="vite/client" />`) and declared nowhere —
+      # the same author-side defect as `@ai-sdk/gateway` and `esbuild` below,
+      # a third time over. `@types/react`/`@types/react-dom` also trailed a
+      # full major behind the `react`/`react-dom` runtime (^18 vs ^19), so
+      # `useOptimistic` in components/chat/ModelSelector.tsx had no type at
+      # all. Both are fixed here; this gate is green on the commit that
+      # introduces it.
+      - name: TypeScript strict
+        run: npx tsc --noEmit
+
       # Proves the prebuild still resolves its dependencies. `esbuild` was
       # imported by scripts/build-litui.mjs and declared nowhere; `|| true` hid
       # the resulting failure on every single deployment.
@@ -140,27 +152,24 @@ jobs:
 # Each is a tracked root-fix, not a "later". Adding them today would make this
 # workflow red on arrival and get the whole file disabled.
 #
-# 1. biome — `npx biome check .` currently reports 56 pre-existing problems
-#    across app/, lib/, convex/, src/, hooks/, scripts/ and the test suites.
-#    Blocked on cleaning those; the fix is mechanical (most are FIXABLE).
+# 1. biome — `npx biome check .` currently reports 56 problems across app/,
+#    lib/, convex/, src/, hooks/, scripts/ and the test suites. Blocked on
+#    cleaning those; the fix is mechanical (most are FIXABLE).
 #
-# 2. tsc --noEmit — currently 16 pre-existing errors: missing `vite/client`
-#    types across __tests__/convex/*, `vitest.config.ts` missing `vite`, and
-#    `useOptimistic` in components/chat/ModelSelector.tsx. Until these are
-#    resolved, TypeScript is not a usable gate in this repo.
-#
-# 3. convex typecheck + codegen freshness — `convex/_generated` is committed, and
+# 2. convex typecheck + codegen freshness — `convex/_generated` is committed, and
 #    `npx convex codegen` needs a Convex access token to reach the API. The build
 #    environment deliberately has none: a preview must never touch the shared dev
 #    backend. Verifying that `_generated` is in sync therefore needs a job with
 #    credentials, which does not exist yet. This is precisely how five TS18047
 #    errors reached main.
 #
-# 4. undeclared imports — nothing checks that an imported package is declared in
-#    package.json. `@ai-sdk/gateway` (4 importers) and `esbuild` both were not,
-#    which is the root of this whole batch. A depcheck/knip gate closes the class.
+# 3. undeclared imports — nothing checks that an imported package is declared in
+#    package.json. `@ai-sdk/gateway` (4 importers), `esbuild`, and now `vite`
+#    (fixed alongside the tsc gate above) are all instances of the same
+#    author-side defect. A depcheck/knip gate would close the whole class
+#    instead of catching each instance after the fact via tsc.
 #
-# 5. bare `bg-gray-*` / `text-gray-*` / `border-gray-*` Tailwind colour classes —
+# 4. bare `bg-gray-*` / `text-gray-*` / `border-gray-*` Tailwind colour classes —
 #    `vantage-design-system` §3 prefers semantic tokens, and the hex-bracket gate
 #    above only closes the sibling class. 71 legitimate occurrences remain today:
 #    each carries a `dark:` counterpart, renders correctly in both themes, and is

@@ -12,7 +12,7 @@ type LitUIBaseProps = {
 	class?: string;
 };
 
-declare global {
+declare module "react" {
 	namespace JSX {
 		interface IntrinsicElements {
 			// ----------------------------------------------------------------
