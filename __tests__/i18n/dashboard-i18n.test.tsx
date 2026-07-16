@@ -186,3 +186,63 @@ describe("AppSidebar nav labels follow the active locale", () => {
 		).toBeInTheDocument();
 	});
 });
+
+describe("Session date rendering follows the active locale", () => {
+	// Fixed timestamp from the mocked session above -- never Date.now().
+	const FIXED_TIMESTAMP = new Date("2026-01-15T00:00:00Z").getTime();
+	const DATE_OPTS: Intl.DateTimeFormatOptions = {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+	};
+
+	beforeEach(() => {
+		activeLocale = "fr";
+	});
+
+	test("renders the session date formatted for 'fr', not hardcoded 'en-GB'", async () => {
+		const { default: DashboardPage } = await import(
+			"@/app/[locale]/dashboard/page"
+		);
+		render(<DashboardPage />);
+
+		const expectedFr = new Intl.DateTimeFormat("fr", DATE_OPTS).format(
+			new Date(FIXED_TIMESTAMP),
+		);
+		const enGbRendering = new Intl.DateTimeFormat("en-GB", DATE_OPTS).format(
+			new Date(FIXED_TIMESTAMP),
+		);
+
+		// A test that only asserts "not en-GB" would pass on any other locale,
+		// including garbage. Assert BOTH: matches fr AND differs from en-GB.
+		expect(screen.getByText(expectedFr)).toBeInTheDocument();
+		expect(enGbRendering).not.toEqual(expectedFr);
+		expect(screen.queryByText(enGbRendering)).not.toBeInTheDocument();
+	});
+});
+
+describe("formatRelativeTime's published contract (session-list.tsx)", () => {
+	// >= 7 days old to deterministically hit the absolute-date branch, which
+	// reads Intl.DateTimeFormat(locale, ...) directly -- no Date.now() involved
+	// in the assertion itself (Date.now() only decides which branch fires,
+	// and 10 days back always lands in the absolute branch regardless of when
+	// this test runs).
+	const TEN_DAYS_AGO = Date.now() - 10 * 86_400_000;
+
+	test("formats the absolute date per the given locale, 'fr' differs from 'en-GB'", async () => {
+		const { formatRelativeTime } = await import(
+			"@/app/[locale]/dashboard/architect/_components/session-list"
+		);
+
+		const fr = formatRelativeTime(TEN_DAYS_AGO, "fr");
+		const enGb = formatRelativeTime(TEN_DAYS_AGO, "en-GB");
+
+		const expectedFr = new Intl.DateTimeFormat("fr", {
+			month: "short",
+			day: "numeric",
+		}).format(new Date(TEN_DAYS_AGO));
+
+		expect(fr).toEqual(expectedFr);
+		expect(fr).not.toEqual(enGb);
+	});
+});
