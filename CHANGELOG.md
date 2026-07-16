@@ -4,7 +4,7 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
-### Fixed (2026-07-16 — dashboard crash + broken layout, task k175bjacbeppt9zcc9ej1vx0s189fxbe)
+### Fixed (2026-07-16 — dashboard crash + broken layout, task k174bc5tnxyv1b4m531kckwks18amxhq)
 
 Four defects of a single family: a value the toolchain could have checked, never checked — each failing silently.
 
