@@ -87,7 +87,7 @@ package-lock.json
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 .claude/agent-memory/
-.claude/settings.json.bak.*
+.claude/**/*.bak.*
 .claude/**/__pycache__/
 
 # Debug screenshots
