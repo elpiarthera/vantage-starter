@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"build": "next build",
-		"prebuild": "node scripts/build-litui.mjs && npx convex codegen",
+		"prebuild": "node scripts/build-litui.mjs",
+		"codegen": "convex codegen",
 		"build:litui": "node scripts/build-litui.mjs",
 		"dev": "next dev",
 		"lint": "next lint",

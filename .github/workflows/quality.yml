@@ -1,0 +1,97 @@
+name: quality
+
+# Why this file exists
+# --------------------
+# Until now this repo had exactly one workflow (e2e.yml) and no lint, typecheck
+# or build gate of any kind. That is how four defects shipped together and lived
+# for weeks: an undeclared dependency that made the Convex backend impossible to
+# deploy, five TypeScript errors nobody ran, a half-finished Tailwind v4
+# migration that broke the dashboard layout, and a `|| true` that swallowed the
+# prebuild's exit code while Vercel reported Ready. None of them ever turned
+# anything red.
+#
+# Every gate below is proven green on the commit that introduces it. A gate that
+# is red on day one gets disabled by the end of the week and protects nothing.
+# Gates that are NOT here yet are declared at the bottom of this file rather than
+# quietly omitted.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Tailwind v4 dropped the bare `[--var]` form: it compiles to the invalid
+      # declaration `width: --sidebar-width`, which the browser discards without
+      # a word. That silence shipped a dashboard whose sidebar spacer collapsed,
+      # so every page rendered underneath the fixed sidebar ("Mission Control"
+      # displayed as "trol"). A one-off grep only proves today; this proves every
+      # commit.
+      - name: No bare CSS variables in Tailwind brackets
+        run: |
+          if grep -rnE '\[--[A-Za-z0-9_-]+\]' \
+               --include='*.ts' --include='*.tsx' --include='*.jsx' --include='*.css' \
+               app components lib hooks providers src styles; then
+            echo "::error::Bare CSS variable in a Tailwind bracket. Tailwind v4 compiles [--x] to the invalid 'width: --x' and silently drops it. Use the explicit [var(--x)] form."
+            exit 1
+          fi
+          echo "OK — no bare CSS variables."
+
+      # Proves the prebuild still resolves its dependencies. `esbuild` was
+      # imported by scripts/build-litui.mjs and declared nowhere; `|| true` hid
+      # the resulting failure on every single deployment.
+      - name: Prebuild fails closed
+        run: pnpm prebuild
+
+      # The lit-ui bundle is a build artifact and must not be committed. If this
+      # step finds a diff, someone re-tracked it and every build will now dirty
+      # the working tree.
+      - name: Build artifacts stay out of git
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::prebuild dirtied the working tree — a generated artifact is tracked in git:"
+            git status --porcelain
+            exit 1
+          fi
+          echo "OK — prebuild leaves the tree clean."
+
+# Gates deliberately NOT here yet — declared, not hidden
+# -----------------------------------------------------
+# Each is a tracked root-fix, not a "later". Adding them today would make this
+# workflow red on arrival and get the whole file disabled.
+#
+# 1. biome — `npx biome check .` currently reports 56 pre-existing problems
+#    across app/, lib/, convex/, src/, hooks/, scripts/ and the test suites.
+#    Blocked on cleaning those; the fix is mechanical (most are FIXABLE).
+#
+# 2. tsc --noEmit — currently 16 pre-existing errors: missing `vite/client`
+#    types across __tests__/convex/*, `vitest.config.ts` missing `vite`, and
+#    `useOptimistic` in components/chat/ModelSelector.tsx. Until these are
+#    resolved, TypeScript is not a usable gate in this repo.
+#
+# 3. convex typecheck + codegen freshness — `convex/_generated` is committed, and
+#    `npx convex codegen` needs a Convex access token to reach the API. The build
+#    environment deliberately has none: a preview must never touch the shared dev
+#    backend. Verifying that `_generated` is in sync therefore needs a job with
+#    credentials, which does not exist yet. This is precisely how five TS18047
+#    errors reached main.
+#
+# 4. undeclared imports — nothing checks that an imported package is declared in
+#    package.json. `@ai-sdk/gateway` (4 importers) and `esbuild` both were not,
+#    which is the root of this whole batch. A depcheck/knip gate closes the class.
