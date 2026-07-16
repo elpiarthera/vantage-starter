@@ -18,10 +18,7 @@ function resolve(dict: Dict, ns: string, key: string): string {
 	const nsDict = dict[ns] as Dict | undefined;
 	const value = key
 		.split(".")
-		.reduce<unknown>(
-			(acc, part) => (acc as Dict | undefined)?.[part],
-			nsDict,
-		);
+		.reduce<unknown>((acc, part) => (acc as Dict | undefined)?.[part], nsDict);
 	return typeof value === "string" ? value : key;
 }
 
