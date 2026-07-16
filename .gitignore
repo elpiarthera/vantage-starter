@@ -102,12 +102,12 @@ package-lock.json
 .claude/hooks/enforce-bu-routing.py
 .claude/hooks/enforce-task-quality.py
 .claude/hooks/session-start.py
-.claude/skills/check-messages/
-.claude/skills/check-tasks/
-.claude/skills/close-day/
-.claude/skills/daily-start/
-.claude/skills/standup/
-.claude/skills/write-diary/
+.claude/skills/check-messages
+.claude/skills/check-tasks
+.claude/skills/close-day
+.claude/skills/daily-start
+.claude/skills/standup
+.claude/skills/write-diary
 
 # Debug screenshots
 *.png
