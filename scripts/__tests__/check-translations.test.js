@@ -21,6 +21,7 @@ const {
 	runControl4CalledButUndefined,
 	isLocaleSensitiveDateFnsPattern,
 	detectDateFnsFormatImportNames,
+	GATED_ROOTS,
 } = require("../check-translations.js");
 
 const ROOT = path.join(__dirname, "..", "..");
@@ -789,18 +790,46 @@ describe("check-translations — Control 2 (key parity across all locales)", () 
 		}
 	});
 
-	test("MUST_BLOCK (documented defect): the `chat` namespace is absent from de/it/es/pt/ru on the CURRENT tree — an en/fr-only parity check would bless this hole", () => {
-		const result = runControl2KeyParity();
-		expect(result.locales).toEqual(
-			expect.arrayContaining(["en", "fr", "de", "it", "es", "pt", "ru"]),
+	test("MUST_BLOCK: a namespace absent from de/it/es/pt/ru (present only in en/fr) turns Control 2 RED for every one of those five locales — an en/fr-only parity check would bless this hole", () => {
+		// This asserts the DEFECT CLASS, not a hole that happens to exist in
+		// production today (the `chat` namespace hole this test used to assert
+		// was fixed this morning — a probe that only goes green because a real
+		// defect got closed is backwards: it must inject the violation itself).
+		const locales = ["en", "fr", "de", "it", "es", "pt", "ru"];
+		const targets = locales.map((l) =>
+			path.join(ROOT, "messages", `${l}.json`),
 		);
-		const chatViolations = result.violations.filter((v) =>
-			v.key.startsWith("chat."),
-		);
-		expect(chatViolations.length).toBeGreaterThan(0);
-		const flaggedLocales = new Set(chatViolations.map((v) => v.locale));
-		for (const locale of ["de", "it", "es", "pt", "ru"]) {
-			expect(flaggedLocales.has(locale)).toBe(true);
+		const originals = targets.map((t) => fs.readFileSync(t, "utf8"));
+
+		try {
+			for (let i = 0; i < locales.length; i++) {
+				const parsed = JSON.parse(originals[i]);
+				if (locales[i] === "en" || locales[i] === "fr") {
+					parsed.__probeOnlyNamespace = { greeting: "hi" };
+				} else {
+					delete parsed.__probeOnlyNamespace;
+				}
+				fs.writeFileSync(targets[i], `${JSON.stringify(parsed, null, "\t")}\n`);
+			}
+			// Assert the mutation landed before reading any verdict.
+			const enReread = JSON.parse(
+				fs.readFileSync(path.join(ROOT, "messages", "en.json"), "utf8"),
+			);
+			expect(enReread.__probeOnlyNamespace).toEqual({ greeting: "hi" });
+
+			const result = runControl2KeyParity();
+			expect(result.ok).toBe(false);
+			const violations = result.violations.filter((v) =>
+				v.key.startsWith("__probeOnlyNamespace."),
+			);
+			const flaggedLocales = new Set(violations.map((v) => v.locale));
+			for (const locale of ["de", "it", "es", "pt", "ru"]) {
+				expect(flaggedLocales.has(locale)).toBe(true);
+			}
+		} finally {
+			for (let i = 0; i < locales.length; i++) {
+				assertRestored(targets[i], originals[i]);
+			}
 		}
 	});
 
@@ -1482,12 +1511,39 @@ describe("check-translations — derived inventory", () => {
 		expect(files.length).toBeGreaterThan(70);
 	});
 
-	test("components/ui/ (lit-ui source library) is excluded, and the exclusion is declared", () => {
+	test("components/ui/ (shadcn/ui, a declared divergence) is SCANNED like every other root — never invisible — but not in GATED_ROOTS", () => {
+		// `components/ui` used to be wrongly excluded from the file inventory
+		// under a claim (never verified) that it was the lit-ui source
+		// library. The real lit-ui source lives at `src/components/ui`
+		// (outside app/+components/ scan roots). `components/ui` is in fact
+		// shadcn/ui — not gating the build on it is a legitimate call, but not
+		// SCANNING it made 30 files invisible to every control. This asserts
+		// the fix: the files are present in the derived inventory, and the
+		// root is deliberately absent from GATED_ROOTS (reported, not gating).
 		const files = deriveTargetFiles();
 		const uiFiles = files.filter((f) =>
 			path.relative(ROOT, f).startsWith(`components${path.sep}ui${path.sep}`),
 		);
-		expect(uiFiles.length).toBe(0);
+		expect(uiFiles.length).toBeGreaterThan(0);
+		expect(GATED_ROOTS.some((root) => root.startsWith("components/ui"))).toBe(
+			false,
+		);
+	});
+
+	test("MUST_BLOCK: the real, live `components/ui/sidebar.tsx` hardcoded strings are reported by Control 1 but never gate the build", () => {
+		const result = runControl1LiteralScan();
+		const sidebarFindings = result.outOfScopeViolations.filter(
+			(v) => v.file === "components/ui/sidebar.tsx",
+		);
+		expect(sidebarFindings.length).toBeGreaterThan(0);
+		expect(sidebarFindings.some((v) => v.text === "Toggle Sidebar")).toBe(true);
+		// Reported-not-gating: these findings must never appear in
+		// gatedViolations, and must never flip `ok` to false on their own.
+		expect(
+			result.gatedViolations.some(
+				(v) => v.file === "components/ui/sidebar.tsx",
+			),
+		).toBe(false);
 	});
 });
 

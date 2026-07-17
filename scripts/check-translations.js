@@ -95,13 +95,27 @@ const ROOT = process.env.CHECK_TRANSLATIONS_ROOT || path.join(__dirname, "..");
 // only the two real content roots of the app.
 const SCAN_ROOTS = ["app", "components"];
 
-// Declared exclusion, not a silent one: `components/ui/` is the lit-ui
-// web-component SOURCE library (framework code, not product copy) — its
-// literals are internal component API surface (e.g. variant names), not
-// user-facing strings that need translation. Excluding it is a decision,
-// written here so a future reader knows why 22+ files are skipped rather
-// than assuming they were missed.
-const EXCLUDED_DIR_SEGMENTS = new Set(["components/ui"]);
+// NOTHING is excluded from the derived file inventory. A prior version of
+// this file declared `components/ui` excluded, claiming it was the lit-ui
+// web-component SOURCE library — that claim was WRONG and never verified:
+// the real lit-ui source lives at `src/components/ui` (outside `app/`+
+// `components/` scan roots anyway, so no exclusion was ever needed for it).
+// `components/ui/` is in fact shadcn/ui — a DECLARED DIVERGENCE recorded in
+// the files themselves (see `components/ui/sidebar.tsx` lines 1-5: "DECLARED
+// DIVERGENCE — shadcn/ui in a lit-ui codebase"). Not GATING the build on
+// upstream shadcn primitives is a legitimate call (see `GATED_ROOTS`, which
+// deliberately never lists `components/ui`) — but not SCANNING it made those
+// 30 files invisible to all four controls, including the three that render
+// live English strings on every dashboard page
+// (`components/ui/sidebar.tsx:320,336` `sr-only`/`aria-label` "Toggle
+// Sidebar"). Every root this control can reach is scanned; whether a root's
+// findings GATE the build is a separate decision, made once, in
+// `GATED_ROOTS` below. With no exclusion left, the directory-exclusion
+// mechanism itself (`isExcludedPath`) is removed rather than kept as an
+// empty set — an empty exclusion set is an invitation for the next silent
+// entry to be added without scrutiny; deleting the mechanism means the next
+// person who wants to exclude something has to re-justify it in the open,
+// in this comment, the same way this one had to be.
 
 // ---------------------------------------------------------------------------
 // CONTROL 1 RATCHET — gated scope vs. reported-but-not-gating remainder.
@@ -430,24 +444,13 @@ function hasInlineAllow(sourceFile, node) {
 	return /i18n-allow:\s*\S+/.test(lineText);
 }
 
-function isExcludedPath(relPath) {
-	const normalized = relPath.split(path.sep).join("/");
-	for (const segment of EXCLUDED_DIR_SEGMENTS) {
-		if (normalized === segment || normalized.startsWith(`${segment}/`)) {
-			return true;
-		}
-	}
-	return false;
-}
-
 function listFiles(dir) {
 	const out = [];
 	if (!fs.existsSync(dir)) return out;
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
 		const full = path.join(dir, entry.name);
-		const rel = path.relative(ROOT, full);
 		if (entry.isDirectory()) {
-			if (entry.name === "__tests__" || isExcludedPath(rel)) continue;
+			if (entry.name === "__tests__") continue;
 			out.push(...listFiles(full));
 		} else if (
 			/\.(tsx|ts)$/.test(entry.name) &&
@@ -460,7 +463,8 @@ function listFiles(dir) {
 }
 
 // Derived file inventory: every `.tsx`/`.ts` under app/ and components/,
-// minus `.d.ts`, `__tests__`, and the declared `components/ui/` exclusion.
+// minus `.d.ts` and `__tests__`. No directory is excluded — see the
+// doc-comment above (removed `EXCLUDED_DIR_SEGMENTS`/`isExcludedPath`).
 // This is never a typed count — it is measured fresh on every run.
 function deriveTargetFiles() {
 	const files = [];
@@ -1397,6 +1401,7 @@ function runControl2KeyParity() {
 const FR_EN_IDENTICAL_ALLOW = {
 	// Product / brand names — never translated in either language.
 	Convex: "product name",
+	Clerk: "product name",
 	Discord: "product name",
 	GitHub: "product name",
 	"Next.js": "product name",
