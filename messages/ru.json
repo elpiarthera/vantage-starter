@@ -2696,12 +2696,16 @@
 			"tagline": "Нативный AI SaaS-шаблон. Запустите идею за дни, а не месяцы.",
 			"col_product": "Продукт",
 			"col_legal": "Правовое",
+			"col_resources": "Ресурсы",
 			"features": "Функции",
 			"pricing": "Цены",
 			"github": "GitHub",
 			"faq": "FAQ",
+			"docs": "Документация",
 			"res_nextjs": "Next.js",
 			"res_convex": "Convex",
+			"res_clerk": "Clerk",
+			"res_litui": "lit-ui",
 			"built_with": "Создано с",
 			"mit_license": "Открытый исходный код под лицензией MIT",
 			"discord": "Discord"
@@ -3219,7 +3223,10 @@
 		"searchPlaceholder": "Поиск чатов...",
 		"allProjects": "Все проекты",
 		"filterByProject": "Фильтр по проекту",
-		"pinned": "Закреплено"
+		"pinned": "Закреплено",
+		"delete": "Удалить",
+		"rename": "Переименовать",
+		"confirmDelete": "Удалить этот чат? Это действие нельзя отменить."
 	},
 	"theme_toggle": {
 		"dark_mode": "Тёмный режим",

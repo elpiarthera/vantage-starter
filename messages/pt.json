@@ -2696,12 +2696,16 @@
 			"tagline": "O boilerplate SaaS nativo de IA. Lance sua ideia em dias, não meses.",
 			"col_product": "Produto",
 			"col_legal": "Legal",
+			"col_resources": "Recursos",
 			"features": "Funcionalidades",
 			"pricing": "Preços",
 			"github": "GitHub",
 			"faq": "FAQ",
+			"docs": "Documentação",
 			"res_nextjs": "Next.js",
 			"res_convex": "Convex",
+			"res_clerk": "Clerk",
+			"res_litui": "lit-ui",
 			"built_with": "Construído com",
 			"mit_license": "Código aberto sob licença MIT",
 			"discord": "Discord"
@@ -3219,7 +3223,10 @@
 		"searchPlaceholder": "Pesquisar conversas...",
 		"allProjects": "Todos os projetos",
 		"filterByProject": "Filtrar por projeto",
-		"pinned": "Fixado"
+		"pinned": "Fixado",
+		"delete": "Excluir",
+		"rename": "Renomear",
+		"confirmDelete": "Excluir esta conversa? Esta ação não pode ser desfeita."
 	},
 	"theme_toggle": {
 		"dark_mode": "Modo escuro",

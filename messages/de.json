@@ -2696,12 +2696,16 @@
 			"tagline": "Das KI-native SaaS-Boilerplate. Starten Sie Ihre Idee in Tagen, nicht Monaten.",
 			"col_product": "Produkt",
 			"col_legal": "Rechtliches",
+			"col_resources": "Ressourcen",
 			"features": "Funktionen",
 			"pricing": "Preise",
 			"github": "GitHub",
 			"faq": "FAQ",
+			"docs": "Dokumentation",
 			"res_nextjs": "Next.js",
 			"res_convex": "Convex",
+			"res_clerk": "Clerk",
+			"res_litui": "lit-ui",
 			"built_with": "Gebaut mit",
 			"mit_license": "Open Source unter MIT-Lizenz",
 			"discord": "Discord"
@@ -3219,7 +3223,10 @@
 		"searchPlaceholder": "Chats durchsuchen...",
 		"allProjects": "Alle Projekte",
 		"filterByProject": "Nach Projekt filtern",
-		"pinned": "Angeheftet"
+		"pinned": "Angeheftet",
+		"delete": "Löschen",
+		"rename": "Umbenennen",
+		"confirmDelete": "Diesen Chat löschen? Dies kann nicht rückgängig gemacht werden."
 	},
 	"theme_toggle": {
 		"dark_mode": "Dunkler Modus",
