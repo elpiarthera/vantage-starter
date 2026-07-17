@@ -81,14 +81,6 @@ export const listByWorkspace = query({
 export const listByStatus = query({
 	args: { workspaceId: v.id("workspaces") },
 	handler: async (ctx, args) => {
-		const empty = {
-			pending: [] as typeof missions,
-			executing: [] as typeof missions,
-			awaiting_checkpoint: [] as typeof missions,
-			completed: [] as typeof missions,
-			failed: [] as typeof missions,
-		};
-
 		const { user } = await requireAuthWithWorkspace(ctx, args.workspaceId);
 		void user;
 
@@ -108,8 +100,6 @@ export const listByStatus = query({
 			completed: active.filter((m) => m.status === "completed"),
 			failed: active.filter((m) => m.status === "failed"),
 		};
-
-		return empty; // unreachable — satisfies TS narrowing
 	},
 });
 

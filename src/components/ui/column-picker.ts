@@ -5,10 +5,10 @@
  * Exported as a function to allow flexible placement in different toolbar layouts.
  */
 
-import { html, css, type TemplateResult } from 'lit';
-import type { Table, RowData, Column } from '@tanstack/lit-table';
-import '@lit-ui/popover';
-import '@lit-ui/checkbox';
+import type { Column, RowData, Table } from "@tanstack/lit-table";
+import { css, html, type TemplateResult } from "lit";
+import "@lit-ui/popover";
+import "@lit-ui/checkbox";
 
 /**
  * Render column picker dropdown for toggling column visibility.
@@ -18,15 +18,15 @@ import '@lit-ui/checkbox';
  * @returns TemplateResult for the column picker
  */
 export function renderColumnPicker<TData extends RowData>(
-  table: Table<TData>
+	table: Table<TData>,
 ): TemplateResult {
-  const columns = table.getAllLeafColumns().filter((col) => col.getCanHide());
+	const columns = table.getAllLeafColumns().filter((col) => col.getCanHide());
 
-  if (columns.length === 0) {
-    return html``;
-  }
+	if (columns.length === 0) {
+		return html``;
+	}
 
-  return html`
+	return html`
     <lui-popover placement="bottom-end" class="column-picker-popover">
       <button
         slot="trigger"
@@ -61,14 +61,14 @@ export function renderColumnPicker<TData extends RowData>(
  * Render a single column picker item with checkbox toggle.
  */
 function renderColumnPickerItem<TData extends RowData>(
-  column: Column<TData, unknown>
+	column: Column<TData, unknown>,
 ): TemplateResult {
-  const label =
-    typeof column.columnDef.header === 'string'
-      ? column.columnDef.header
-      : column.id;
+	const label =
+		typeof column.columnDef.header === "string"
+			? column.columnDef.header
+			: column.id;
 
-  return html`
+	return html`
     <label class="column-picker-item">
       <lui-checkbox
         .checked=${column.getIsVisible()}

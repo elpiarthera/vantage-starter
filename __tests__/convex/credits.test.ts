@@ -27,8 +27,8 @@ describe("Credits System Functions", () => {
 			// The anyApi proxy used in test environments returns a value for any property access,
 			// so we cannot use api.credits.addCredits to check visibility.
 			// Instead, we assert on the source file directly.
-			const fs = await import("fs");
-			const path = await import("path");
+			const fs = await import("node:fs");
+			const path = await import("node:path");
 			const creditsSource = fs.readFileSync(
 				path.resolve(process.cwd(), "convex/credits.ts"),
 				"utf-8",

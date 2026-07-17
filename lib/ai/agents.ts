@@ -11,8 +11,8 @@
  * abortSignal is always propagated for clean cancellation.
  */
 
-import { ToolLoopAgent, stepCountIs, tool } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { stepCountIs, ToolLoopAgent, tool } from "ai";
 import { z } from "zod";
 
 // ============================================================================
@@ -128,7 +128,7 @@ export const delegateToContentWriter = tool({
 export function createOrchestratorAgent(
 	extraTools: Record<string, ReturnType<typeof tool>> = {},
 	instructions?: string,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): ToolLoopAgent<any, any, any> {
 	const baseInstructions = `You are a capable AI assistant with access to specialist subagents.
 

@@ -173,9 +173,7 @@ async function translate() {
 		if (missingCount === 0) {
 			// No translations needed, just save cleaned data
 			fs.writeFileSync(targetPath, JSON.stringify(cleanedData, null, 2));
-			console.log(
-				`Saved ${lang}.json (${countKeys(cleanedData)} total keys)`,
-			);
+			console.log(`Saved ${lang}.json (${countKeys(cleanedData)} total keys)`);
 			continue;
 		}
 
@@ -207,7 +205,10 @@ Target language: ${LANG_NAMES[lang]} (code: ${lang})`;
 			});
 
 			// Strip markdown code fences if the model wrapped the output
-			const cleaned = text.trim().replace(/^```json\s*/i, "").replace(/```\s*$/, "");
+			const cleaned = text
+				.trim()
+				.replace(/^```json\s*/i, "")
+				.replace(/```\s*$/, "");
 			const translatedData = JSON.parse(cleaned);
 
 			// Deep merge cleaned data with new translations

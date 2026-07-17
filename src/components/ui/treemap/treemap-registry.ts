@@ -15,16 +15,16 @@
 let _treemapRegistered = false;
 
 export async function registerTreemapModules(): Promise<void> {
-  if (_treemapRegistered) return;
-  _treemapRegistered = true;
+	if (_treemapRegistered) return;
+	_treemapRegistered = true;
 
-  const { registerCanvasCore } = await import('../registry/canvas-core.js');
-  await registerCanvasCore();
+	const { registerCanvasCore } = await import("../registry/canvas-core.js");
+	await registerCanvasCore();
 
-  const [{ TreemapChart }, { use }] = await Promise.all([
-    import('echarts/charts'),
-    import('echarts/core'),
-  ]);
+	const [{ TreemapChart }, { use }] = await Promise.all([
+		import("echarts/charts"),
+		import("echarts/core"),
+	]);
 
-  use([TreemapChart]);
+	use([TreemapChart]);
 }

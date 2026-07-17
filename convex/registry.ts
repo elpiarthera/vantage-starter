@@ -11,9 +11,9 @@
  */
 
 import { v } from "convex/values";
+import { PAIN_MAPPINGS } from "../lib/registry/types";
 import { query } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
-import { PAIN_MAPPINGS } from "../lib/registry/types";
 
 // ============================================================================
 // RETURN TYPE VALIDATORS
@@ -199,7 +199,9 @@ export const getRecommendationsForPains = query({
 				} else {
 					existing.matchedPains.push(painId);
 					// Upgrade priority if this mapping has a higher one
-					if (priorityRank[mapping.priority] > priorityRank[existing.priority]) {
+					if (
+						priorityRank[mapping.priority] > priorityRank[existing.priority]
+					) {
 						existing.priority = mapping.priority;
 					}
 				}

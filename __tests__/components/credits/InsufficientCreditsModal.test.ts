@@ -19,25 +19,21 @@ import path from "node:path";
 import { describe, expect, test } from "vitest";
 
 const modalSource = fs.readFileSync(
-	path.join(
-		process.cwd(),
-		"components/credits/InsufficientCreditsModal.tsx",
-	),
+	path.join(process.cwd(), "components/credits/InsufficientCreditsModal.tsx"),
 	"utf-8",
 );
 
 const videoGeneratorSource = fs.readFileSync(
-	path.join(
-		process.cwd(),
-		"components/video-generation/VideoGenerator.tsx",
-	),
+	path.join(process.cwd(), "components/video-generation/VideoGenerator.tsx"),
 	"utf-8",
 );
 
 describe("Issue #186 — InsufficientCreditsModal negative creditsNeeded fix", () => {
 	test("creditsNeeded uses Math.max(0, ...) to prevent negative display", () => {
 		expect(modalSource).toContain("Math.max(0, required - available)");
-		expect(modalSource).not.toMatch(/creditsNeeded\s*=\s*required\s*-\s*available(?!\s*\))/);
+		expect(modalSource).not.toMatch(
+			/creditsNeeded\s*=\s*required\s*-\s*available(?!\s*\))/,
+		);
 	});
 
 	test("modal does not use hardcoded slate/gray colors (containers/text)", () => {
@@ -65,7 +61,8 @@ describe("Issue #186 — VideoGenerator modal trigger fix", () => {
 
 	test("raw !deductResult.success no longer unconditionally opens the modal", () => {
 		// Count occurrences of the old unsafe pattern
-		const unsafePattern = /if\s*\(!deductResult\.success\)\s*\{\s*setShowInsufficientCreditsModal\(true\)/g;
+		const unsafePattern =
+			/if\s*\(!deductResult\.success\)\s*\{\s*setShowInsufficientCreditsModal\(true\)/g;
 		const matches = videoGeneratorSource.match(unsafePattern);
 		expect(matches).toBeNull();
 	});

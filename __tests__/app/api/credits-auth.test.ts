@@ -143,9 +143,7 @@ describe("convex/credits.ts: refundCreditsPublic ownership check", () => {
 	});
 
 	it("throws Unauthorized when subject does not match transaction owner", () => {
-		expect(creditsSource).toMatch(
-			/transaction belongs to a different user/,
-		);
+		expect(creditsSource).toMatch(/transaction belongs to a different user/);
 	});
 });
 

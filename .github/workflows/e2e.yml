@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # This job never installed its own browser binary — Playwright's Chromium
+      # is not part of the base runner image, so a missing binary here reads as
+      # a product defect ("tests fail") when it is actually a missing instrument.
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Run E2E tests
         env:
           PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.target_url }}

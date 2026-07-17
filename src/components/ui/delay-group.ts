@@ -15,44 +15,44 @@
  * in the delay group's active instance tracking.
  */
 export interface TooltipInstance {
-  hide(): void;
+	hide(): void;
 }
 
 class TooltipDelayGroup {
-  /** Timestamp of the last tooltip close event */
-  private lastCloseTimestamp = 0;
+	/** Timestamp of the last tooltip close event */
+	private lastCloseTimestamp = 0;
 
-  /** Currently-open tooltip instance (for force-close on new open) */
-  private activeInstance: TooltipInstance | null = null;
+	/** Currently-open tooltip instance (for force-close on new open) */
+	private activeInstance: TooltipInstance | null = null;
 
-  /** Time window in ms for skip-delay behavior */
-  private windowMs = 300;
+	/** Time window in ms for skip-delay behavior */
+	private windowMs = 300;
 
-  /** Record that a tooltip just closed */
-  notifyClosed(): void {
-    this.lastCloseTimestamp = Date.now();
-    this.activeInstance = null;
-  }
+	/** Record that a tooltip just closed */
+	notifyClosed(): void {
+		this.lastCloseTimestamp = Date.now();
+		this.activeInstance = null;
+	}
 
-  /** Check if we're within the delay group window */
-  isInGroupWindow(): boolean {
-    return Date.now() - this.lastCloseTimestamp < this.windowMs;
-  }
+	/** Check if we're within the delay group window */
+	isInGroupWindow(): boolean {
+		return Date.now() - this.lastCloseTimestamp < this.windowMs;
+	}
 
-  /** Set the currently-active tooltip, force-closing the previous one if different */
-  setActive(instance: TooltipInstance): void {
-    if (this.activeInstance && this.activeInstance !== instance) {
-      this.activeInstance.hide();
-    }
-    this.activeInstance = instance;
-  }
+	/** Set the currently-active tooltip, force-closing the previous one if different */
+	setActive(instance: TooltipInstance): void {
+		if (this.activeInstance && this.activeInstance !== instance) {
+			this.activeInstance.hide();
+		}
+		this.activeInstance = instance;
+	}
 
-  /** Clear active instance if it matches the given instance */
-  clearActive(instance: TooltipInstance): void {
-    if (this.activeInstance === instance) {
-      this.activeInstance = null;
-    }
-  }
+	/** Clear active instance if it matches the given instance */
+	clearActive(instance: TooltipInstance): void {
+		if (this.activeInstance === instance) {
+			this.activeInstance = null;
+		}
+	}
 }
 
 /** Singleton shared across all tooltip instances on the page */

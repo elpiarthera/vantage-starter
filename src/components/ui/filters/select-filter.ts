@@ -18,18 +18,19 @@
  * ></lui-column-select-filter>
  * ```
  */
-import { html, css, isServer } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
+
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, isServer } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
 /**
  * Option type for select filter.
  */
 export interface SelectFilterOption {
-  /** The value to filter by */
-  value: string;
-  /** Display label for the option */
-  label: string;
+	/** The value to filter by */
+	value: string;
+	/** Display label for the option */
+	label: string;
 }
 
 /**
@@ -38,36 +39,36 @@ export interface SelectFilterOption {
  * Emits:
  * - `filter-change` - When filter value changes (detail: { columnId, value })
  */
-@customElement('lui-column-select-filter')
+@customElement("lui-column-select-filter")
 export class ColumnSelectFilter extends TailwindElement {
-  /**
-   * Currently selected filter values.
-   */
-  @property({ type: Array })
-  value: string[] = [];
+	/**
+	 * Currently selected filter values.
+	 */
+	@property({ type: Array })
+	value: string[] = [];
 
-  /**
-   * Available options to select from.
-   */
-  @property({ type: Array })
-  options: SelectFilterOption[] = [];
+	/**
+	 * Available options to select from.
+	 */
+	@property({ type: Array })
+	options: SelectFilterOption[] = [];
 
-  /**
-   * Column ID this filter is associated with.
-   * Used in the filter-change event detail.
-   */
-  @property({ type: String, attribute: 'column-id' })
-  columnId = '';
+	/**
+	 * Column ID this filter is associated with.
+	 * Used in the filter-change event detail.
+	 */
+	@property({ type: String, attribute: "column-id" })
+	columnId = "";
 
-  /**
-   * Placeholder text when no selection.
-   */
-  @property({ type: String })
-  placeholder = 'Select...';
+	/**
+	 * Placeholder text when no selection.
+	 */
+	@property({ type: String })
+	placeholder = "Select...";
 
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
         min-width: 180px;
@@ -77,26 +78,26 @@ export class ColumnSelectFilter extends TailwindElement {
         width: 100%;
       }
     `,
-  ];
+	];
 
-  private handleChange(e: CustomEvent): void {
-    const selectedValues = e.detail.value as string[];
-    this.value = selectedValues;
+	private handleChange(e: CustomEvent): void {
+		const selectedValues = e.detail.value as string[];
+		this.value = selectedValues;
 
-    this.dispatchEvent(
-      new CustomEvent('filter-change', {
-        detail: {
-          columnId: this.columnId,
-          value: selectedValues.length > 0 ? selectedValues : undefined,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
+		this.dispatchEvent(
+			new CustomEvent("filter-change", {
+				detail: {
+					columnId: this.columnId,
+					value: selectedValues.length > 0 ? selectedValues : undefined,
+				},
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <lui-select
         multiple
         size="sm"
@@ -105,16 +106,17 @@ export class ColumnSelectFilter extends TailwindElement {
         @ui-change=${this.handleChange}
       >
         ${this.options.map(
-          (opt) => html` <lui-option value=${opt.value}>${opt.label}</lui-option> `
-        )}
+					(opt) =>
+						html` <lui-option value=${opt.value}>${opt.label}</lui-option> `,
+				)}
       </lui-select>
     `;
-  }
+	}
 }
 
 // JSX type declaration
 declare global {
-  interface HTMLElementTagNameMap {
-    'lui-column-select-filter': ColumnSelectFilter;
-  }
+	interface HTMLElementTagNameMap {
+		"lui-column-select-filter": ColumnSelectFilter;
+	}
 }

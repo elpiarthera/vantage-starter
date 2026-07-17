@@ -18,16 +18,14 @@
 let _candlestickRegistered = false;
 
 export async function registerCandlestickModules(): Promise<void> {
-  if (_candlestickRegistered) return;
-  _candlestickRegistered = true;
+	if (_candlestickRegistered) return;
+	_candlestickRegistered = true;
 
-  const { registerCanvasCore } = await import('../registry/canvas-core.js');
-  await registerCanvasCore();
+	const { registerCanvasCore } = await import("../registry/canvas-core.js");
+	await registerCanvasCore();
 
-  const [{ CandlestickChart, BarChart, LineChart }, { use }] = await Promise.all([
-    import('echarts/charts'),
-    import('echarts/core'),
-  ]);
+	const [{ CandlestickChart, BarChart, LineChart }, { use }] =
+		await Promise.all([import("echarts/charts"), import("echarts/core")]);
 
-  use([CandlestickChart, BarChart, LineChart]);
+	use([CandlestickChart, BarChart, LineChart]);
 }

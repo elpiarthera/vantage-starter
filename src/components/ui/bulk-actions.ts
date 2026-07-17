@@ -10,8 +10,8 @@
  * for maintainability, following the inline-editing.ts and row-actions.ts pattern.
  */
 
-import { html, css, nothing, type TemplateResult } from 'lit';
-import type { BulkAction } from './types.js';
+import { css, html, nothing, type TemplateResult } from "lit";
+import type { BulkAction } from "./types.js";
 
 // =============================================================================
 // Helper Functions
@@ -25,11 +25,14 @@ import type { BulkAction } from './types.js';
  * @returns Resolved message string
  */
 function resolveMessage(
-  msg: string | ((count: number) => string) | undefined,
-  count: number
+	msg: string | ((count: number) => string) | undefined,
+	count: number,
 ): string {
-  if (typeof msg === 'function') return msg(count);
-  return msg ?? `Are you sure? This will affect ${count} item${count !== 1 ? 's' : ''}.`;
+	if (typeof msg === "function") return msg(count);
+	return (
+		msg ??
+		`Are you sure? This will affect ${count} item${count !== 1 ? "s" : ""}.`
+	);
 }
 
 // =============================================================================
@@ -54,18 +57,19 @@ function resolveMessage(
  * @returns Lit TemplateResult for the toolbar
  */
 export function renderBulkActionsToolbar(
-  selectedCount: number,
-  bulkActions: BulkAction[],
-  onAction: (action: BulkAction) => void,
-  onClear: () => void,
-  selectAllText?: string,
-  onSelectAll?: () => void
+	selectedCount: number,
+	bulkActions: BulkAction[],
+	onAction: (action: BulkAction) => void,
+	onClear: () => void,
+	selectAllText?: string,
+	onSelectAll?: () => void,
 ): TemplateResult {
-  return html`
+	return html`
     <div class="bulk-actions-toolbar" role="toolbar" aria-label="Bulk actions">
       <span class="bulk-actions-count">${selectedCount} selected</span>
-      ${selectAllText && onSelectAll
-        ? html`
+      ${
+				selectAllText && onSelectAll
+					? html`
             <button
               type="button"
               class="bulk-actions-select-all"
@@ -74,23 +78,26 @@ export function renderBulkActionsToolbar(
               ${selectAllText}
             </button>
           `
-        : nothing}
+					: nothing
+			}
       ${bulkActions.map(
-        (action) => html`
+				(action) => html`
           <button
             type="button"
-            class="bulk-action-btn${action.variant === 'destructive'
-              ? ' destructive'
-              : ''}"
+            class="bulk-action-btn${
+							action.variant === "destructive" ? " destructive" : ""
+						}"
             @click=${() => onAction(action)}
           >
-            ${action.icon
-              ? html`<span class="bulk-action-icon">${action.icon}</span>`
-              : nothing}
+            ${
+							action.icon
+								? html`<span class="bulk-action-icon">${action.icon}</span>`
+								: nothing
+						}
             ${action.label}
           </button>
-        `
-      )}
+        `,
+			)}
       <button
         type="button"
         class="bulk-action-clear"
@@ -123,14 +130,14 @@ export function renderBulkActionsToolbar(
  * @returns Lit TemplateResult (or nothing if no action pending)
  */
 export function renderConfirmationDialog(
-  action: BulkAction | null,
-  selectedCount: number,
-  onConfirm: () => void,
-  onCancel: () => void
+	action: BulkAction | null,
+	selectedCount: number,
+	onConfirm: () => void,
+	onCancel: () => void,
 ): TemplateResult | typeof nothing {
-  if (!action) return nothing;
+	if (!action) return nothing;
 
-  return html`
+	return html`
     <div class="bulk-confirm-overlay" @click=${onCancel}>
       <div
         class="bulk-confirm-dialog"
@@ -140,7 +147,7 @@ export function renderConfirmationDialog(
         @click=${(e: Event) => e.stopPropagation()}
       >
         <h3 id="bulk-confirm-title" class="bulk-confirm-title">
-          ${action.confirmTitle ?? 'Confirm Action'}
+          ${action.confirmTitle ?? "Confirm Action"}
         </h3>
         <p class="bulk-confirm-message">
           ${resolveMessage(action.confirmMessage, selectedCount)}
@@ -158,7 +165,7 @@ export function renderConfirmationDialog(
             class="bulk-confirm-action"
             @click=${onConfirm}
           >
-            ${action.confirmLabel ?? 'Confirm'}
+            ${action.confirmLabel ?? "Confirm"}
           </button>
         </div>
       </div>

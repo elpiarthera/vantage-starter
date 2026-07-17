@@ -9,8 +9,8 @@
  * DataTable component, following the pattern of bulk-actions.ts and row-actions.ts.
  */
 
-import type { Table, RowData } from '@tanstack/lit-table';
-import type { ExportCsvOptions } from './types.js';
+import type { RowData, Table } from "@tanstack/lit-table";
+import type { ExportCsvOptions } from "./types.js";
 
 // =============================================================================
 // CSV Field Escaping (RFC 4180)
@@ -29,10 +29,15 @@ import type { ExportCsvOptions } from './types.js';
  * @returns RFC 4180 compliant escaped field
  */
 export function escapeCsvField(field: string): string {
-  if (field.includes(',') || field.includes('"') || field.includes('\n') || field.includes('\r')) {
-    return `"${field.replace(/"/g, '""')}"`;
-  }
-  return field;
+	if (
+		field.includes(",") ||
+		field.includes('"') ||
+		field.includes("\n") ||
+		field.includes("\r")
+	) {
+		return `"${field.replace(/"/g, '""')}"`;
+	}
+	return field;
 }
 
 // =============================================================================
@@ -50,17 +55,17 @@ export function escapeCsvField(field: string): string {
  * @param filename - The filename for the download
  */
 export function triggerDownload(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = filename;
+	a.style.display = "none";
+	document.body.appendChild(a);
+	a.click();
+	setTimeout(() => {
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}, 100);
 }
 
 // =============================================================================
@@ -97,60 +102,66 @@ export function triggerDownload(blob: Blob, filename: string): void {
  * ```
  */
 export function exportToCsv<TData extends RowData>(
-  table: Table<TData>,
-  options: ExportCsvOptions = {}
+	table: Table<TData>,
+	options: ExportCsvOptions = {},
 ): void {
-  const {
-    filename = 'export.csv',
-    selectedOnly = false,
-    includeBom = true,
-    headers,
-  } = options;
+	const {
+		filename = "export.csv",
+		selectedOnly = false,
+		includeBom = true,
+		headers,
+	} = options;
 
-  // Determine rows to export (EXP-01, EXP-02)
-  let rows = selectedOnly
-    ? table.getSelectedRowModel().rows
-    : table.getFilteredRowModel().rows;
+	// Determine rows to export (EXP-01, EXP-02)
+	let rows = selectedOnly
+		? table.getSelectedRowModel().rows
+		: table.getFilteredRowModel().rows;
 
-  // EXP-02 fallback: if selectedOnly but no rows selected, export all filtered rows
-  if (selectedOnly && rows.length === 0) {
-    rows = table.getFilteredRowModel().rows;
-  }
+	// EXP-02 fallback: if selectedOnly but no rows selected, export all filtered rows
+	if (selectedOnly && rows.length === 0) {
+		rows = table.getFilteredRowModel().rows;
+	}
 
-  // Get visible columns, excluding utility columns (EXP-03)
-  // Utility columns: _selection, _actions, _expand
-  const columns = table.getVisibleLeafColumns().filter(col => !col.id.startsWith('_'));
+	// Get visible columns, excluding utility columns (EXP-03)
+	// Utility columns: _selection, _actions, _expand
+	const columns = table
+		.getVisibleLeafColumns()
+		.filter((col) => !col.id.startsWith("_"));
 
-  // Build header row
-  const headerRow = columns.map(col => {
-    // Priority: custom header label > column header string > column ID
-    if (headers?.[col.id]) {
-      return escapeCsvField(headers[col.id]);
-    }
-    if (typeof col.columnDef.header === 'string') {
-      return escapeCsvField(col.columnDef.header);
-    }
-    return escapeCsvField(col.id);
-  }).join(',');
+	// Build header row
+	const headerRow = columns
+		.map((col) => {
+			// Priority: custom header label > column header string > column ID
+			if (headers?.[col.id]) {
+				return escapeCsvField(headers[col.id]);
+			}
+			if (typeof col.columnDef.header === "string") {
+				return escapeCsvField(col.columnDef.header);
+			}
+			return escapeCsvField(col.id);
+		})
+		.join(",");
 
-  // Build data rows
-  const dataRows = rows.map(row => {
-    return columns.map(col => {
-      const value = row.getValue(col.id);
-      if (value === null || value === undefined) {
-        return '';
-      }
-      return escapeCsvField(String(value));
-    }).join(',');
-  });
+	// Build data rows
+	const dataRows = rows.map((row) => {
+		return columns
+			.map((col) => {
+				const value = row.getValue(col.id);
+				if (value === null || value === undefined) {
+					return "";
+				}
+				return escapeCsvField(String(value));
+			})
+			.join(",");
+	});
 
-  // Assemble CSV content with CRLF line endings (RFC 4180)
-  const csv = [headerRow, ...dataRows].join('\r\n');
+	// Assemble CSV content with CRLF line endings (RFC 4180)
+	const csv = [headerRow, ...dataRows].join("\r\n");
 
-  // Create Blob with optional UTF-8 BOM for Excel compatibility
-  const bom = includeBom ? '\uFEFF' : '';
-  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
+	// Create Blob with optional UTF-8 BOM for Excel compatibility
+	const bom = includeBom ? "\uFEFF" : "";
+	const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8" });
 
-  // Trigger browser download
-  triggerDownload(blob, filename);
+	// Trigger browser download
+	triggerDownload(blob, filename);
 }

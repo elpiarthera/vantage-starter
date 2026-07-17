@@ -7,9 +7,9 @@
  * and kept separate for maintainability.
  */
 
-import { html, css, nothing, type TemplateResult } from 'lit';
-import { ref } from 'lit/directives/ref.js';
-import type { RowData, LitUIColumnMeta, EditType } from './types.js';
+import { css, html, nothing, type TemplateResult } from "lit";
+import { ref } from "lit/directives/ref.js";
+import type { EditType, LitUIColumnMeta, RowData } from "./types.js";
 
 // =============================================================================
 // Helper Functions
@@ -26,12 +26,12 @@ import type { RowData, LitUIColumnMeta, EditType } from './types.js';
  * @returns Whether the column is editable for this row
  */
 export function isColumnEditable<TData extends RowData>(
-  meta: LitUIColumnMeta<TData> | undefined,
-  row: TData
+	meta: LitUIColumnMeta<TData> | undefined,
+	row: TData,
 ): boolean {
-  if (!meta?.editable) return false;
-  if (typeof meta.editable === 'function') return meta.editable(row);
-  return meta.editable === true;
+	if (!meta?.editable) return false;
+	if (typeof meta.editable === "function") return meta.editable(row);
+	return meta.editable === true;
 }
 
 // =============================================================================
@@ -43,20 +43,20 @@ export function isColumnEditable<TData extends RowData>(
  * Provided by the DataTable component to handle commit/cancel flow.
  */
 export interface EditInputHandlers {
-  /** Commit the edit with the new value */
-  onCommit: (value: unknown) => void;
-  /** Cancel the edit and restore original value */
-  onCancel: () => void;
+	/** Commit the edit with the new value */
+	onCommit: (value: unknown) => void;
+	/** Cancel the edit and restore original value */
+	onCancel: () => void;
 }
 
 /**
  * Options for rendering an edit input.
  */
 export interface EditInputOptions {
-  /** Options for select-type inputs */
-  editOptions?: Array<{ label: string; value: string }>;
-  /** Current validation error message (null if no error) */
-  validationError?: string | null;
+	/** Options for select-type inputs */
+	editOptions?: Array<{ label: string; value: string }>;
+	/** Current validation error message (null if no error) */
+	validationError?: string | null;
 }
 
 // =============================================================================
@@ -69,16 +69,19 @@ export interface EditInputOptions {
  * before attempting focus.
  */
 const autoFocus = (el: Element | undefined) => {
-  if (el instanceof HTMLElement) {
-    // Use rAF to ensure element is laid out before focusing.
-    // Select text content for text/number inputs for easy replacement.
-    requestAnimationFrame(() => {
-      el.focus();
-      if (el instanceof HTMLInputElement && (el.type === 'text' || el.type === 'number' || el.type === 'date')) {
-        el.select();
-      }
-    });
-  }
+	if (el instanceof HTMLElement) {
+		// Use rAF to ensure element is laid out before focusing.
+		// Select text content for text/number inputs for easy replacement.
+		requestAnimationFrame(() => {
+			el.focus();
+			if (
+				el instanceof HTMLInputElement &&
+				(el.type === "text" || el.type === "number" || el.type === "date")
+			) {
+				el.select();
+			}
+		});
+	}
 };
 
 // =============================================================================
@@ -96,16 +99,18 @@ let _isCommitting = false;
  * Create a guarded commit function that prevents double-commit.
  * After committing via Enter key, blur fires but should not commit again.
  */
-function createGuardedCommit(handlers: EditInputHandlers): (value: unknown) => void {
-  return (value: unknown) => {
-    if (_isCommitting) return;
-    _isCommitting = true;
-    handlers.onCommit(value);
-    // Reset after microtask to allow next edit cycle
-    requestAnimationFrame(() => {
-      _isCommitting = false;
-    });
-  };
+function createGuardedCommit(
+	handlers: EditInputHandlers,
+): (value: unknown) => void {
+	return (value: unknown) => {
+		if (_isCommitting) return;
+		_isCommitting = true;
+		handlers.onCommit(value);
+		// Reset after microtask to allow next edit cycle
+		requestAnimationFrame(() => {
+			_isCommitting = false;
+		});
+	};
 }
 
 /**
@@ -125,138 +130,138 @@ function createGuardedCommit(handlers: EditInputHandlers): (value: unknown) => v
  * @returns Lit TemplateResult for the edit input
  */
 export function renderEditInput(
-  editType: EditType,
-  value: unknown,
-  options: EditInputOptions,
-  handlers: EditInputHandlers
+	editType: EditType,
+	value: unknown,
+	options: EditInputOptions,
+	handlers: EditInputHandlers,
 ): TemplateResult {
-  const guardedCommit = createGuardedCommit(handlers);
-  const errorClass = options.validationError ? ' has-error' : '';
+	const guardedCommit = createGuardedCommit(handlers);
+	const errorClass = options.validationError ? " has-error" : "";
 
-  switch (editType) {
-    case 'text':
-      return html`
+	switch (editType) {
+		case "text":
+			return html`
         <input
           type="text"
           class="cell-edit-input${errorClass}"
-          .value=${String(value ?? '')}
+          .value=${String(value ?? "")}
           ${ref(autoFocus)}
           @keydown=${(e: KeyboardEvent) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') {
-              guardedCommit((e.target as HTMLInputElement).value);
-            }
-            if (e.key === 'Escape') {
-              handlers.onCancel();
-            }
-          }}
+						e.stopPropagation();
+						if (e.key === "Enter") {
+							guardedCommit((e.target as HTMLInputElement).value);
+						}
+						if (e.key === "Escape") {
+							handlers.onCancel();
+						}
+					}}
           @blur=${(e: FocusEvent) => {
-            guardedCommit((e.target as HTMLInputElement).value);
-          }}
+						guardedCommit((e.target as HTMLInputElement).value);
+					}}
         />
         ${options.validationError ? html`<span class="cell-edit-error">${options.validationError}</span>` : nothing}
       `;
 
-    case 'number':
-      return html`
+		case "number":
+			return html`
         <input
           type="number"
           class="cell-edit-input${errorClass}"
-          .value=${String(value ?? '')}
+          .value=${String(value ?? "")}
           ${ref(autoFocus)}
           @keydown=${(e: KeyboardEvent) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') {
-              const numValue = (e.target as HTMLInputElement).valueAsNumber;
-              guardedCommit(Number.isNaN(numValue) ? null : numValue);
-            }
-            if (e.key === 'Escape') {
-              handlers.onCancel();
-            }
-          }}
+						e.stopPropagation();
+						if (e.key === "Enter") {
+							const numValue = (e.target as HTMLInputElement).valueAsNumber;
+							guardedCommit(Number.isNaN(numValue) ? null : numValue);
+						}
+						if (e.key === "Escape") {
+							handlers.onCancel();
+						}
+					}}
           @blur=${(e: FocusEvent) => {
-            const numValue = (e.target as HTMLInputElement).valueAsNumber;
-            guardedCommit(Number.isNaN(numValue) ? null : numValue);
-          }}
+						const numValue = (e.target as HTMLInputElement).valueAsNumber;
+						guardedCommit(Number.isNaN(numValue) ? null : numValue);
+					}}
         />
         ${options.validationError ? html`<span class="cell-edit-error">${options.validationError}</span>` : nothing}
       `;
 
-    case 'select':
-      return html`
+		case "select":
+			return html`
         <select
           class="cell-edit-select${errorClass}"
           ${ref(autoFocus)}
           @keydown=${(e: KeyboardEvent) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') {
-              guardedCommit((e.target as HTMLSelectElement).value);
-            }
-            if (e.key === 'Escape') {
-              handlers.onCancel();
-            }
-          }}
+						e.stopPropagation();
+						if (e.key === "Enter") {
+							guardedCommit((e.target as HTMLSelectElement).value);
+						}
+						if (e.key === "Escape") {
+							handlers.onCancel();
+						}
+					}}
           @change=${(e: Event) => {
-            guardedCommit((e.target as HTMLSelectElement).value);
-          }}
+						guardedCommit((e.target as HTMLSelectElement).value);
+					}}
           @blur=${(e: FocusEvent) => {
-            guardedCommit((e.target as HTMLSelectElement).value);
-          }}
+						guardedCommit((e.target as HTMLSelectElement).value);
+					}}
         >
           ${options.editOptions?.map(
-            (opt) => html`
+						(opt) => html`
               <option value=${opt.value} ?selected=${opt.value === String(value)}>
                 ${opt.label}
               </option>
-            `
-          )}
+            `,
+					)}
         </select>
         ${options.validationError ? html`<span class="cell-edit-error">${options.validationError}</span>` : nothing}
       `;
 
-    case 'date':
-      return html`
+		case "date":
+			return html`
         <input
           type="date"
           class="cell-edit-input${errorClass}"
-          .value=${String(value ?? '')}
+          .value=${String(value ?? "")}
           ${ref(autoFocus)}
           @keydown=${(e: KeyboardEvent) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') {
-              guardedCommit((e.target as HTMLInputElement).value);
-            }
-            if (e.key === 'Escape') {
-              handlers.onCancel();
-            }
-          }}
+						e.stopPropagation();
+						if (e.key === "Enter") {
+							guardedCommit((e.target as HTMLInputElement).value);
+						}
+						if (e.key === "Escape") {
+							handlers.onCancel();
+						}
+					}}
           @blur=${(e: FocusEvent) => {
-            guardedCommit((e.target as HTMLInputElement).value);
-          }}
+						guardedCommit((e.target as HTMLInputElement).value);
+					}}
         />
         ${options.validationError ? html`<span class="cell-edit-error">${options.validationError}</span>` : nothing}
       `;
 
-    case 'checkbox':
-      return html`
+		case "checkbox":
+			return html`
         <input
           type="checkbox"
           class="cell-edit-checkbox"
           .checked=${Boolean(value)}
           ${ref(autoFocus)}
           @keydown=${(e: KeyboardEvent) => {
-            e.stopPropagation();
-            if (e.key === 'Escape') {
-              handlers.onCancel();
-            }
-            // Checkbox commits on change, not Enter
-          }}
+						e.stopPropagation();
+						if (e.key === "Escape") {
+							handlers.onCancel();
+						}
+						// Checkbox commits on change, not Enter
+					}}
           @change=${(e: Event) => {
-            guardedCommit((e.target as HTMLInputElement).checked);
-          }}
+						guardedCommit((e.target as HTMLInputElement).checked);
+					}}
         />
       `;
-  }
+	}
 }
 
 // =============================================================================
@@ -268,12 +273,12 @@ export function renderEditInput(
  * Provided by the DataTable component to handle row edit lifecycle.
  */
 export interface RowEditActionHandlers {
-  /** Enter row edit mode */
-  onEdit: () => void;
-  /** Save all pending row changes (validates first) */
-  onSave: () => void;
-  /** Cancel row editing and revert all changes */
-  onCancel: () => void;
+	/** Enter row edit mode */
+	onEdit: () => void;
+	/** Save all pending row changes (validates first) */
+	onSave: () => void;
+	/** Cancel row editing and revert all changes */
+	onCancel: () => void;
 }
 
 /**
@@ -289,16 +294,19 @@ export interface RowEditActionHandlers {
  * @returns Lit TemplateResult with appropriate action buttons
  */
 export function renderRowEditActions(
-  isEditing: boolean,
-  handlers: RowEditActionHandlers
+	isEditing: boolean,
+	handlers: RowEditActionHandlers,
 ): TemplateResult {
-  if (isEditing) {
-    return html`
+	if (isEditing) {
+		return html`
       <div class="row-edit-actions">
         <button
           type="button"
           class="row-edit-save"
-          @click=${(e: MouseEvent) => { e.stopPropagation(); handlers.onSave(); }}
+          @click=${(e: MouseEvent) => {
+						e.stopPropagation();
+						handlers.onSave();
+					}}
           aria-label="Save row changes"
           title="Save"
         >
@@ -309,7 +317,10 @@ export function renderRowEditActions(
         <button
           type="button"
           class="row-edit-cancel"
-          @click=${(e: MouseEvent) => { e.stopPropagation(); handlers.onCancel(); }}
+          @click=${(e: MouseEvent) => {
+						e.stopPropagation();
+						handlers.onCancel();
+					}}
           aria-label="Cancel row editing"
           title="Cancel"
         >
@@ -320,13 +331,16 @@ export function renderRowEditActions(
         </button>
       </div>
     `;
-  }
+	}
 
-  return html`
+	return html`
     <button
       type="button"
       class="row-edit-trigger"
-      @click=${(e: MouseEvent) => { e.stopPropagation(); handlers.onEdit(); }}
+      @click=${(e: MouseEvent) => {
+				e.stopPropagation();
+				handlers.onEdit();
+			}}
       aria-label="Edit this row"
       title="Edit row"
     >
@@ -348,7 +362,7 @@ export function renderRowEditActions(
  * @returns Lit TemplateResult with pencil SVG icon
  */
 export function renderEditableIndicator(): TemplateResult {
-  return html`
+	return html`
     <span class="editable-indicator" aria-hidden="true">
       <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
         <path d="M12.1 1.9a1.5 1.5 0 0 1 2.1 2.1L5.6 12.6l-3.2.8.8-3.2L12.1 1.9z"/>

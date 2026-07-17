@@ -4,9 +4,10 @@
  * Provides page navigation (first, prev, next, last), page size selector,
  * and page info display ("Showing 1-25 of 1,000").
  */
-import { html, css, nothing, isServer } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
+
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, isServer, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
 /**
  * Pagination controls component for data tables.
@@ -27,55 +28,55 @@ import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
  * ></lui-pagination-controls>
  * ```
  */
-@customElement('lui-pagination-controls')
+@customElement("lui-pagination-controls")
 export class PaginationControls extends TailwindElement {
-  /**
-   * Current page index (0-based).
-   */
-  @property({ type: Number, attribute: 'page-index' })
-  pageIndex = 0;
+	/**
+	 * Current page index (0-based).
+	 */
+	@property({ type: Number, attribute: "page-index" })
+	pageIndex = 0;
 
-  /**
-   * Total number of pages.
-   */
-  @property({ type: Number, attribute: 'page-count' })
-  pageCount = 1;
+	/**
+	 * Total number of pages.
+	 */
+	@property({ type: Number, attribute: "page-count" })
+	pageCount = 1;
 
-  /**
-   * Current page size (rows per page).
-   */
-  @property({ type: Number, attribute: 'page-size' })
-  pageSize = 25;
+	/**
+	 * Current page size (rows per page).
+	 */
+	@property({ type: Number, attribute: "page-size" })
+	pageSize = 25;
 
-  /**
-   * Available page size options.
-   */
-  @property({ type: Array, attribute: false })
-  pageSizeOptions: number[] = [10, 25, 50, 100];
+	/**
+	 * Available page size options.
+	 */
+	@property({ type: Array, attribute: false })
+	pageSizeOptions: number[] = [10, 25, 50, 100];
 
-  /**
-   * Total number of rows across all pages.
-   */
-  @property({ type: Number, attribute: 'total-rows' })
-  totalRows = 0;
+	/**
+	 * Total number of rows across all pages.
+	 */
+	@property({ type: Number, attribute: "total-rows" })
+	totalRows = 0;
 
-  /**
-   * Whether to show the page size selector.
-   */
-  @property({ type: Boolean, attribute: 'show-page-size-selector' })
-  showPageSizeSelector = true;
+	/**
+	 * Whether to show the page size selector.
+	 */
+	@property({ type: Boolean, attribute: "show-page-size-selector" })
+	showPageSizeSelector = true;
 
-  private get canPrevious(): boolean {
-    return this.pageIndex > 0;
-  }
+	private get canPrevious(): boolean {
+		return this.pageIndex > 0;
+	}
 
-  private get canNext(): boolean {
-    return this.pageIndex < this.pageCount - 1;
-  }
+	private get canNext(): boolean {
+		return this.pageIndex < this.pageCount - 1;
+	}
 
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: flex;
         align-items: center;
@@ -180,70 +181,73 @@ export class PaginationControls extends TailwindElement {
         }
       }
     `,
-  ];
+	];
 
-  private handleFirst(): void {
-    this.dispatchPageChange(0);
-  }
+	private handleFirst(): void {
+		this.dispatchPageChange(0);
+	}
 
-  private handlePrevious(): void {
-    if (this.canPrevious) {
-      this.dispatchPageChange(this.pageIndex - 1);
-    }
-  }
+	private handlePrevious(): void {
+		if (this.canPrevious) {
+			this.dispatchPageChange(this.pageIndex - 1);
+		}
+	}
 
-  private handleNext(): void {
-    if (this.canNext) {
-      this.dispatchPageChange(this.pageIndex + 1);
-    }
-  }
+	private handleNext(): void {
+		if (this.canNext) {
+			this.dispatchPageChange(this.pageIndex + 1);
+		}
+	}
 
-  private handleLast(): void {
-    this.dispatchPageChange(this.pageCount - 1);
-  }
+	private handleLast(): void {
+		this.dispatchPageChange(this.pageCount - 1);
+	}
 
-  private handlePageSizeChange(e: Event): void {
-    const select = e.target as HTMLSelectElement;
-    const newSize = parseInt(select.value, 10);
-    this.dispatchEvent(
-      new CustomEvent('page-size-change', {
-        detail: { pageSize: newSize },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
+	private handlePageSizeChange(e: Event): void {
+		const select = e.target as HTMLSelectElement;
+		const newSize = parseInt(select.value, 10);
+		this.dispatchEvent(
+			new CustomEvent("page-size-change", {
+				detail: { pageSize: newSize },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	}
 
-  private dispatchPageChange(pageIndex: number): void {
-    this.dispatchEvent(
-      new CustomEvent('page-change', {
-        detail: { pageIndex },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
+	private dispatchPageChange(pageIndex: number): void {
+		this.dispatchEvent(
+			new CustomEvent("page-change", {
+				detail: { pageIndex },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	}
 
-  private renderPageInfo() {
-    if (this.totalRows === 0) {
-      return html`<div class="page-info">No results</div>`;
-    }
+	private renderPageInfo() {
+		if (this.totalRows === 0) {
+			return html`<div class="page-info">No results</div>`;
+		}
 
-    const startRow = this.pageIndex * this.pageSize + 1;
-    const endRow = Math.min((this.pageIndex + 1) * this.pageSize, this.totalRows);
+		const startRow = this.pageIndex * this.pageSize + 1;
+		const endRow = Math.min(
+			(this.pageIndex + 1) * this.pageSize,
+			this.totalRows,
+		);
 
-    return html`
+		return html`
       <div class="page-info">
         Showing ${startRow.toLocaleString()}-${endRow.toLocaleString()} of
         ${this.totalRows.toLocaleString()}
       </div>
     `;
-  }
+	}
 
-  private renderPageSizeSelector() {
-    if (!this.showPageSizeSelector) return nothing;
+	private renderPageSizeSelector() {
+		if (!this.showPageSizeSelector) return nothing;
 
-    return html`
+		return html`
       <div class="page-size-selector">
         <label for="page-size">Rows per page:</label>
         <select
@@ -252,19 +256,19 @@ export class PaginationControls extends TailwindElement {
           @change=${this.handlePageSizeChange}
         >
           ${this.pageSizeOptions.map(
-            (size) => html`
+						(size) => html`
               <option value=${size.toString()} ?selected=${size === this.pageSize}>
                 ${size}
               </option>
-            `
-          )}
+            `,
+					)}
         </select>
       </div>
     `;
-  }
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       ${this.renderPageInfo()} ${this.renderPageSizeSelector()}
 
       <nav class="page-nav" role="navigation" aria-label="Pagination">
@@ -323,12 +327,12 @@ export class PaginationControls extends TailwindElement {
         </button>
       </nav>
     `;
-  }
+	}
 }
 
 // JSX type declaration
 declare global {
-  interface HTMLElementTagNameMap {
-    'lui-pagination-controls': PaginationControls;
-  }
+	interface HTMLElementTagNameMap {
+		"lui-pagination-controls": PaginationControls;
+	}
 }

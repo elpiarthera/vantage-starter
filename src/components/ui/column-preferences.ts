@@ -5,13 +5,13 @@
  * with versioning support for future migrations.
  */
 
-import type { ColumnPreferences } from './types.js';
+import type { ColumnPreferences } from "./types.js";
 
-const STORAGE_KEY_PREFIX = 'lui-data-table-prefs';
+const STORAGE_KEY_PREFIX = "lui-data-table-prefs";
 const PREFS_VERSION = 1;
 
 interface StoredPreferences extends ColumnPreferences {
-  version: number;
+	version: number;
 }
 
 /**
@@ -21,20 +21,23 @@ interface StoredPreferences extends ColumnPreferences {
  * @param tableId - Unique identifier for the table
  * @param prefs - Column preferences to save
  */
-export function savePreferences(tableId: string, prefs: ColumnPreferences): void {
-  if (!tableId) return;
+export function savePreferences(
+	tableId: string,
+	prefs: ColumnPreferences,
+): void {
+	if (!tableId) return;
 
-  try {
-    const key = `${STORAGE_KEY_PREFIX}-${tableId}`;
-    const stored: StoredPreferences = {
-      ...prefs,
-      version: PREFS_VERSION,
-    };
-    localStorage.setItem(key, JSON.stringify(stored));
-  } catch (e) {
-    // QuotaExceededError or SecurityError - fail silently
-    console.warn('Failed to save table preferences:', e);
-  }
+	try {
+		const key = `${STORAGE_KEY_PREFIX}-${tableId}`;
+		const stored: StoredPreferences = {
+			...prefs,
+			version: PREFS_VERSION,
+		};
+		localStorage.setItem(key, JSON.stringify(stored));
+	} catch (e) {
+		// QuotaExceededError or SecurityError - fail silently
+		console.warn("Failed to save table preferences:", e);
+	}
 }
 
 /**
@@ -45,31 +48,31 @@ export function savePreferences(tableId: string, prefs: ColumnPreferences): void
  * @returns Stored preferences or null
  */
 export function loadPreferences(tableId: string): ColumnPreferences | null {
-  if (!tableId) return null;
+	if (!tableId) return null;
 
-  try {
-    const key = `${STORAGE_KEY_PREFIX}-${tableId}`;
-    const stored = localStorage.getItem(key);
-    if (!stored) return null;
+	try {
+		const key = `${STORAGE_KEY_PREFIX}-${tableId}`;
+		const stored = localStorage.getItem(key);
+		if (!stored) return null;
 
-    const prefs: StoredPreferences = JSON.parse(stored);
+		const prefs: StoredPreferences = JSON.parse(stored);
 
-    // Version check for future migrations
-    if (prefs.version !== PREFS_VERSION) {
-      // Clear outdated preferences
-      localStorage.removeItem(key);
-      return null;
-    }
+		// Version check for future migrations
+		if (prefs.version !== PREFS_VERSION) {
+			// Clear outdated preferences
+			localStorage.removeItem(key);
+			return null;
+		}
 
-    return {
-      columnSizing: prefs.columnSizing ?? {},
-      columnOrder: prefs.columnOrder ?? [],
-      columnVisibility: prefs.columnVisibility ?? {},
-    };
-  } catch {
-    // Parse error or SecurityError - return null
-    return null;
-  }
+		return {
+			columnSizing: prefs.columnSizing ?? {},
+			columnOrder: prefs.columnOrder ?? [],
+			columnVisibility: prefs.columnVisibility ?? {},
+		};
+	} catch {
+		// Parse error or SecurityError - return null
+		return null;
+	}
 }
 
 /**
@@ -78,12 +81,12 @@ export function loadPreferences(tableId: string): ColumnPreferences | null {
  * @param tableId - Unique identifier for the table
  */
 export function clearPreferences(tableId: string): void {
-  if (!tableId) return;
+	if (!tableId) return;
 
-  try {
-    const key = `${STORAGE_KEY_PREFIX}-${tableId}`;
-    localStorage.removeItem(key);
-  } catch {
-    // Ignore storage errors
-  }
+	try {
+		const key = `${STORAGE_KEY_PREFIX}-${tableId}`;
+		localStorage.removeItem(key);
+	} catch {
+		// Ignore storage errors
+	}
 }

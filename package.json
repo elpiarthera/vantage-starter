@@ -130,8 +130,8 @@
 		"@testing-library/user-event": "^14.6.1",
 		"@types/jest": "^30.0.0",
 		"@types/node": "^22",
-		"@types/react": "^18",
-		"@types/react-dom": "^18",
+		"@types/react": "^19.2.17",
+		"@types/react-dom": "^19.2.3",
 		"convex-test": "^0.0.38",
 		"dotenv": "^17.2.3",
 		"esbuild": "^0.28.1",
@@ -145,6 +145,7 @@
 		"tailwindcss": "^4.2.2",
 		"ts-node": "^10.9.2",
 		"typescript": "^5",
+		"vite": "^7.2.2",
 		"vitest": "^4.0.9"
 	}
 }

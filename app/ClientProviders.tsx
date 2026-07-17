@@ -25,10 +25,13 @@ const CLERK_TEXT_MUTED = "#a3a3a3"; // oklch(0.65 0 0) — gray-400
 const CLERK_DANGER = "#c0392b"; // keep red for danger
 
 // ClerkProvider in @clerk/nextjs v6 is typed as an async Server Component
-// (Promise<React.JSX.Element>), which is incompatible with @types/react 18.0.x JSX.
-// This is a known TS compatibility gap — the runtime behavior is correct.
+// (Promise<React.JSX.Element>), which TS rejects as a JSX component regardless
+// of @types/react version (verified against @types/react 19.2.17 — TS2786 persists:
+// "'ClerkProvider' cannot be used as a JSX component. Its return type
+// 'Promise<Element>' is not a valid JSX element"). Not a React 18 vs 19 gap —
+// it is Clerk v6's own async-component typing, the runtime behavior is correct.
 // See: https://clerk.com/changelog/2024-04-19#nextjs-app-router-server-components
-// biome-ignore lint/suspicious/noExplicitAny: cast required for Clerk v6 + @types/react 18 compat
+// biome-ignore lint/suspicious/noExplicitAny: cast required for Clerk v6 async-component typing
 const ClerkProviderCompat = ClerkProvider as any;
 
 export function ClientProviders({

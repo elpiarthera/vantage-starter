@@ -41,19 +41,19 @@
  * ```
  */
 
-import { html, css, nothing } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
-import { TailwindElement } from '../../lib/lit-ui/tailwind-element';
+import { css, html, nothing } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
+import { TailwindElement } from "../../lib/lit-ui/tailwind-element";
 
 /**
  * Dialog size types for max-width
  */
-export type DialogSize = 'sm' | 'md' | 'lg';
+export type DialogSize = "sm" | "md" | "lg";
 
 /**
  * Close reason types for the close event detail
  */
-export type CloseReason = 'escape' | 'backdrop' | 'programmatic';
+export type CloseReason = "escape" | "backdrop" | "programmatic";
 
 /**
  * An accessible modal dialog component using the native HTML dialog element.
@@ -65,59 +65,59 @@ export type CloseReason = 'escape' | 'backdrop' | 'programmatic';
  *
  * @fires close - Fired when the dialog closes, with { reason: CloseReason } detail
  */
-@customElement('ui-dialog')
+@customElement("ui-dialog")
 export class Dialog extends TailwindElement {
-  /**
-   * Whether the dialog is open.
-   * When true, the dialog is displayed using showModal().
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  open = false;
+	/**
+	 * Whether the dialog is open.
+	 * When true, the dialog is displayed using showModal().
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	open = false;
 
-  /**
-   * The size of the dialog (affects max-width).
-   * - sm: max-w-sm (24rem)
-   * - md: max-w-md (28rem)
-   * - lg: max-w-lg (32rem)
-   * @default 'md'
-   */
-  @property({ type: String })
-  size: DialogSize = 'md';
+	/**
+	 * The size of the dialog (affects max-width).
+	 * - sm: max-w-sm (24rem)
+	 * - md: max-w-md (28rem)
+	 * - lg: max-w-lg (32rem)
+	 * @default 'md'
+	 */
+	@property({ type: String })
+	size: DialogSize = "md";
 
-  /**
-   * Whether the dialog can be dismissed via Escape key or backdrop click.
-   * When false, only programmatic close() works.
-   * @default true
-   */
-  @property({ type: Boolean })
-  dismissible = true;
+	/**
+	 * Whether the dialog can be dismissed via Escape key or backdrop click.
+	 * When false, only programmatic close() works.
+	 * @default true
+	 */
+	@property({ type: Boolean })
+	dismissible = true;
 
-  /**
-   * Whether to show an X close button in the top-right corner.
-   * @default false
-   */
-  @property({ type: Boolean, attribute: 'show-close-button' })
-  showCloseButton = false;
+	/**
+	 * Whether to show an X close button in the top-right corner.
+	 * @default false
+	 */
+	@property({ type: Boolean, attribute: "show-close-button" })
+	showCloseButton = false;
 
-  /**
-   * Reference to the native dialog element.
-   */
-  @query('dialog')
-  private dialogEl!: HTMLDialogElement;
+	/**
+	 * Reference to the native dialog element.
+	 */
+	@query("dialog")
+	private dialogEl!: HTMLDialogElement;
 
-  /**
-   * The element that had focus before the dialog opened.
-   * Focus is restored to this element on close.
-   */
-  private triggerElement: HTMLElement | null = null;
+	/**
+	 * The element that had focus before the dialog opened.
+	 * Focus is restored to this element on close.
+	 */
+	private triggerElement: HTMLElement | null = null;
 
-  /**
-   * Static styles for dialog animations and layout.
-   * Uses native CSS transitions with @starting-style for enter animations
-   * and transition-behavior: allow-discrete for exit animations.
-   */
-  static override styles = css`
+	/**
+	 * Static styles for dialog animations and layout.
+	 * Uses native CSS transitions with @starting-style for enter animations
+	 * and transition-behavior: allow-discrete for exit animations.
+	 */
+	static override styles = css`
     :host {
       display: contents;
     }
@@ -183,104 +183,104 @@ export class Dialog extends TailwindElement {
     }
   `;
 
-  /**
-   * Called when reactive properties change.
-   * Syncs the open property with the native dialog state.
-   */
-  override updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('open')) {
-      if (this.open && !this.dialogEl.open) {
-        this.dialogEl.showModal();
-      } else if (!this.open && this.dialogEl.open) {
-        this.dialogEl.close();
-      }
-    }
-  }
+	/**
+	 * Called when reactive properties change.
+	 * Syncs the open property with the native dialog state.
+	 */
+	override updated(changedProperties: Map<string, unknown>) {
+		if (changedProperties.has("open")) {
+			if (this.open && !this.dialogEl.open) {
+				this.dialogEl.showModal();
+			} else if (!this.open && this.dialogEl.open) {
+				this.dialogEl.close();
+			}
+		}
+	}
 
-  /**
-   * Opens the dialog.
-   * Stores the currently focused element for focus restoration on close.
-   */
-  show() {
-    this.triggerElement = document.activeElement as HTMLElement;
-    this.open = true;
-  }
+	/**
+	 * Opens the dialog.
+	 * Stores the currently focused element for focus restoration on close.
+	 */
+	show() {
+		this.triggerElement = document.activeElement as HTMLElement;
+		this.open = true;
+	}
 
-  /**
-   * Closes the dialog.
-   * Emits a close event with the specified reason.
-   * @param reason - The reason for closing (default: 'programmatic')
-   */
-  close(reason: CloseReason = 'programmatic') {
-    this.emitClose(reason);
-  }
+	/**
+	 * Closes the dialog.
+	 * Emits a close event with the specified reason.
+	 * @param reason - The reason for closing (default: 'programmatic')
+	 */
+	close(reason: CloseReason = "programmatic") {
+		this.emitClose(reason);
+	}
 
-  /**
-   * Emits the close event and updates the open state.
-   * @param reason - The reason for closing
-   */
-  private emitClose(reason: CloseReason) {
-    this.open = false;
-    this.dispatchEvent(
-      new CustomEvent('close', {
-        detail: { reason },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
+	/**
+	 * Emits the close event and updates the open state.
+	 * @param reason - The reason for closing
+	 */
+	private emitClose(reason: CloseReason) {
+		this.open = false;
+		this.dispatchEvent(
+			new CustomEvent("close", {
+				detail: { reason },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	}
 
-  /**
-   * Handles the native cancel event (triggered by Escape key).
-   * Prevents default if the dialog is not dismissible.
-   */
-  private handleCancel(e: Event) {
-    if (!this.dismissible) {
-      e.preventDefault();
-      return;
-    }
-    this.emitClose('escape');
-  }
+	/**
+	 * Handles the native cancel event (triggered by Escape key).
+	 * Prevents default if the dialog is not dismissible.
+	 */
+	private handleCancel(e: Event) {
+		if (!this.dismissible) {
+			e.preventDefault();
+			return;
+		}
+		this.emitClose("escape");
+	}
 
-  /**
-   * Handles the native close event.
-   * Restores focus to the element that opened the dialog.
-   */
-  private handleNativeClose() {
-    if (
-      this.triggerElement &&
-      typeof this.triggerElement.focus === 'function'
-    ) {
-      this.triggerElement.focus();
-    }
-    this.triggerElement = null;
-  }
+	/**
+	 * Handles the native close event.
+	 * Restores focus to the element that opened the dialog.
+	 */
+	private handleNativeClose() {
+		if (
+			this.triggerElement &&
+			typeof this.triggerElement.focus === "function"
+		) {
+			this.triggerElement.focus();
+		}
+		this.triggerElement = null;
+	}
 
-  /**
-   * Handles clicks on the dialog element.
-   * Closes if clicking the backdrop area (not the content) and dismissible.
-   */
-  private handleDialogClick(e: MouseEvent) {
-    // Only close if clicking the dialog backdrop area, not content
-    if (e.target === this.dialogEl && this.dismissible) {
-      this.emitClose('backdrop');
-    }
-  }
+	/**
+	 * Handles clicks on the dialog element.
+	 * Closes if clicking the backdrop area (not the content) and dismissible.
+	 */
+	private handleDialogClick(e: MouseEvent) {
+		// Only close if clicking the dialog backdrop area, not content
+		if (e.target === this.dialogEl && this.dismissible) {
+			this.emitClose("backdrop");
+		}
+	}
 
-  /**
-   * Gets the size class for the dialog content.
-   */
-  private getSizeClasses(): string {
-    const sizeClasses: Record<DialogSize, string> = {
-      sm: 'max-w-sm',
-      md: 'max-w-md',
-      lg: 'max-w-lg',
-    };
-    return sizeClasses[this.size];
-  }
+	/**
+	 * Gets the size class for the dialog content.
+	 */
+	private getSizeClasses(): string {
+		const sizeClasses: Record<DialogSize, string> = {
+			sm: "max-w-sm",
+			md: "max-w-md",
+			lg: "max-w-lg",
+		};
+		return sizeClasses[this.size];
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <dialog
         @cancel=${this.handleCancel}
         @close=${this.handleNativeClose}
@@ -292,11 +292,12 @@ export class Dialog extends TailwindElement {
           class="dialog-content ${this.getSizeClasses()} bg-card text-card-foreground rounded-lg shadow-lg p-6 relative"
           @click=${(e: Event) => e.stopPropagation()}
         >
-          ${this.showCloseButton
-            ? html`
+          ${
+						this.showCloseButton
+							? html`
                 <button
                   class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  @click=${() => this.close('programmatic')}
+                  @click=${() => this.close("programmatic")}
                   aria-label="Close dialog"
                 >
                   <svg
@@ -314,7 +315,8 @@ export class Dialog extends TailwindElement {
                   </svg>
                 </button>
               `
-            : nothing}
+							: nothing
+					}
           <header id="dialog-title" class="text-lg font-semibold mb-4">
             <slot name="title"></slot>
           </header>
@@ -327,12 +329,12 @@ export class Dialog extends TailwindElement {
         </div>
       </dialog>
     `;
-  }
+	}
 }
 
 // TypeScript global interface declaration for HTMLElementTagNameMap
 declare global {
-  interface HTMLElementTagNameMap {
-    'ui-dialog': Dialog;
-  }
+	interface HTMLElementTagNameMap {
+		"ui-dialog": Dialog;
+	}
 }

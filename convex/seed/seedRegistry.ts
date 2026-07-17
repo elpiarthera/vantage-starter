@@ -12,8 +12,8 @@
  * references these slugs directly — keep them in sync if you rename.
  */
 
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
 
 // ============================================================================
 // SEED DATA
@@ -115,7 +115,8 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "seo-copywriting",
 				name: "SEO Copywriting",
-				description: "Optimise copy for target keywords without keyword stuffing.",
+				description:
+					"Optimise copy for target keywords without keyword stuffing.",
 				category: "writing",
 			},
 			{
@@ -175,13 +176,15 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "keyword-research",
 				name: "Keyword Research",
-				description: "Discover and prioritise keyword opportunities by intent and volume.",
+				description:
+					"Discover and prioritise keyword opportunities by intent and volume.",
 				category: "seo",
 			},
 			{
 				skillId: "serp-analysis",
 				name: "SERP Analysis",
-				description: "Analyse top-ranking pages to understand what Google rewards.",
+				description:
+					"Analyse top-ranking pages to understand what Google rewards.",
 				category: "seo",
 			},
 			{
@@ -193,7 +196,8 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "outreach-email",
 				name: "Outreach Email",
-				description: "Write personalised outreach emails for link building or PR.",
+				description:
+					"Write personalised outreach emails for link building or PR.",
 				category: "communication",
 			},
 		],
@@ -285,7 +289,8 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "caption-writing",
 				name: "Caption Writing",
-				description: "Write engaging, on-brand captions for image and video posts.",
+				description:
+					"Write engaging, on-brand captions for image and video posts.",
 				category: "writing",
 			},
 			{
@@ -325,7 +330,11 @@ const REGISTRY_SEED: TeamSeed[] = [
 				role: "Sales",
 				description:
 					"Writes personalised cold emails and LinkedIn messages tailored to ICP and pain points.",
-				skills: ["cold-email-writing", "linkedin-message", "follow-up-sequence"],
+				skills: [
+					"cold-email-writing",
+					"linkedin-message",
+					"follow-up-sequence",
+				],
 			},
 			{
 				agentId: "sales-deck-writer",
@@ -340,13 +349,15 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "cold-email-writing",
 				name: "Cold Email Writing",
-				description: "Write personalised, high-converting cold outreach emails.",
+				description:
+					"Write personalised, high-converting cold outreach emails.",
 				category: "writing",
 			},
 			{
 				skillId: "linkedin-message",
 				name: "LinkedIn Message",
-				description: "Write natural, non-spammy LinkedIn connection and follow-up messages.",
+				description:
+					"Write natural, non-spammy LinkedIn connection and follow-up messages.",
 				category: "writing",
 			},
 			{
@@ -358,7 +369,8 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "sales-deck",
 				name: "Sales Deck",
-				description: "Outline and write slides for a persuasive sales presentation.",
+				description:
+					"Outline and write slides for a persuasive sales presentation.",
 				category: "writing",
 			},
 			{
@@ -398,31 +410,36 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "icp-definition",
 				name: "ICP Definition",
-				description: "Define the Ideal Customer Profile with firmographic and psychographic criteria.",
+				description:
+					"Define the Ideal Customer Profile with firmographic and psychographic criteria.",
 				category: "strategy",
 			},
 			{
 				skillId: "prospect-list-building",
 				name: "Prospect List Building",
-				description: "Build a targeted list of companies and contacts matching the ICP.",
+				description:
+					"Build a targeted list of companies and contacts matching the ICP.",
 				category: "research",
 			},
 			{
 				skillId: "lead-enrichment",
 				name: "Lead Enrichment",
-				description: "Enrich prospect records with firmographic and technographic data.",
+				description:
+					"Enrich prospect records with firmographic and technographic data.",
 				category: "research",
 			},
 			{
 				skillId: "lead-scoring",
 				name: "Lead Scoring",
-				description: "Score leads on fit and intent to prioritise sales effort.",
+				description:
+					"Score leads on fit and intent to prioritise sales effort.",
 				category: "analytics",
 			},
 			{
 				skillId: "qualification-call-script",
 				name: "Qualification Call Script",
-				description: "Write a discovery call script that uncovers budget, authority, need, timeline.",
+				description:
+					"Write a discovery call script that uncovers budget, authority, need, timeline.",
 				category: "writing",
 			},
 		],
@@ -459,31 +476,36 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "onboarding-plan",
 				name: "Onboarding Plan",
-				description: "Design a structured 30/60/90 day onboarding journey for new clients.",
+				description:
+					"Design a structured 30/60/90 day onboarding journey for new clients.",
 				category: "strategy",
 			},
 			{
 				skillId: "welcome-email",
 				name: "Welcome Email",
-				description: "Write a warm, actionable welcome email for new customers.",
+				description:
+					"Write a warm, actionable welcome email for new customers.",
 				category: "writing",
 			},
 			{
 				skillId: "milestone-tracking",
 				name: "Milestone Tracking",
-				description: "Define and track client success milestones and health metrics.",
+				description:
+					"Define and track client success milestones and health metrics.",
 				category: "analytics",
 			},
 			{
 				skillId: "churn-risk-scoring",
 				name: "Churn Risk Scoring",
-				description: "Score accounts by churn risk using engagement and usage signals.",
+				description:
+					"Score accounts by churn risk using engagement and usage signals.",
 				category: "analytics",
 			},
 			{
 				skillId: "reengagement-playbook",
 				name: "Re-engagement Playbook",
-				description: "Define the steps and messages to re-activate at-risk accounts.",
+				description:
+					"Define the steps and messages to re-activate at-risk accounts.",
 				category: "strategy",
 			},
 		],
@@ -526,25 +548,29 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "sql-query-writing",
 				name: "SQL Query Writing",
-				description: "Write SQL queries to extract and transform business data.",
+				description:
+					"Write SQL queries to extract and transform business data.",
 				category: "development",
 			},
 			{
 				skillId: "insight-report",
 				name: "Insight Report",
-				description: "Synthesise data findings into an executive-readable insight report.",
+				description:
+					"Synthesise data findings into an executive-readable insight report.",
 				category: "writing",
 			},
 			{
 				skillId: "kpi-definition",
 				name: "KPI Definition",
-				description: "Define the right KPIs for a business function with measurement plan.",
+				description:
+					"Define the right KPIs for a business function with measurement plan.",
 				category: "strategy",
 			},
 			{
 				skillId: "dashboard-design",
 				name: "Dashboard Design",
-				description: "Design a data dashboard layout with the right charts and filters.",
+				description:
+					"Design a data dashboard layout with the right charts and filters.",
 				category: "analytics",
 			},
 		],
@@ -570,25 +596,29 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "weekly-report",
 				name: "Weekly Report",
-				description: "Write a concise weekly performance report with highlights and blockers.",
+				description:
+					"Write a concise weekly performance report with highlights and blockers.",
 				category: "writing",
 			},
 			{
 				skillId: "monthly-report",
 				name: "Monthly Report",
-				description: "Write a comprehensive monthly business performance report.",
+				description:
+					"Write a comprehensive monthly business performance report.",
 				category: "writing",
 			},
 			{
 				skillId: "executive-summary",
 				name: "Executive Summary",
-				description: "Distil complex data into a crisp executive summary (1 page max).",
+				description:
+					"Distil complex data into a crisp executive summary (1 page max).",
 				category: "writing",
 			},
 			{
 				skillId: "competitive-benchmarking",
 				name: "Competitive Benchmarking",
-				description: "Compare performance metrics against competitors and industry benchmarks.",
+				description:
+					"Compare performance metrics against competitors and industry benchmarks.",
 				category: "analytics",
 			},
 		],
@@ -625,31 +655,36 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "process-mapping",
 				name: "Process Mapping",
-				description: "Document a business process step by step with roles and handoffs.",
+				description:
+					"Document a business process step by step with roles and handoffs.",
 				category: "operations",
 			},
 			{
 				skillId: "bottleneck-analysis",
 				name: "Bottleneck Analysis",
-				description: "Identify and quantify the biggest friction points in a workflow.",
+				description:
+					"Identify and quantify the biggest friction points in a workflow.",
 				category: "analysis",
 			},
 			{
 				skillId: "sop-writing",
 				name: "SOP Writing",
-				description: "Write a Standard Operating Procedure document for a recurring process.",
+				description:
+					"Write a Standard Operating Procedure document for a recurring process.",
 				category: "writing",
 			},
 			{
 				skillId: "automation-design",
 				name: "Automation Design",
-				description: "Design an automation flow with triggers, actions, and error handling.",
+				description:
+					"Design an automation flow with triggers, actions, and error handling.",
 				category: "operations",
 			},
 			{
 				skillId: "tool-selection",
 				name: "Tool Selection",
-				description: "Evaluate and recommend the right tool for a given automation requirement.",
+				description:
+					"Evaluate and recommend the right tool for a given automation requirement.",
 				category: "strategy",
 			},
 		],
@@ -683,31 +718,36 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "project-plan",
 				name: "Project Plan",
-				description: "Create a structured project plan with phases, tasks, and owners.",
+				description:
+					"Create a structured project plan with phases, tasks, and owners.",
 				category: "operations",
 			},
 			{
 				skillId: "milestone-definition",
 				name: "Milestone Definition",
-				description: "Define clear, measurable project milestones with acceptance criteria.",
+				description:
+					"Define clear, measurable project milestones with acceptance criteria.",
 				category: "strategy",
 			},
 			{
 				skillId: "status-update",
 				name: "Status Update",
-				description: "Write a stakeholder status update that highlights progress and blockers.",
+				description:
+					"Write a stakeholder status update that highlights progress and blockers.",
 				category: "writing",
 			},
 			{
 				skillId: "project-brief",
 				name: "Project Brief",
-				description: "Write a comprehensive project brief with goals, scope, and constraints.",
+				description:
+					"Write a comprehensive project brief with goals, scope, and constraints.",
 				category: "writing",
 			},
 			{
 				skillId: "requirements-doc",
 				name: "Requirements Document",
-				description: "Write a functional requirements document from stakeholder interviews.",
+				description:
+					"Write a functional requirements document from stakeholder interviews.",
 				category: "writing",
 			},
 		],
@@ -750,13 +790,15 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "security-scan",
 				name: "Security Scan",
-				description: "Identify security vulnerabilities and OWASP issues in code.",
+				description:
+					"Identify security vulnerabilities and OWASP issues in code.",
 				category: "development",
 			},
 			{
 				skillId: "performance-review",
 				name: "Performance Review",
-				description: "Identify performance bottlenecks and suggest optimisations.",
+				description:
+					"Identify performance bottlenecks and suggest optimisations.",
 				category: "development",
 			},
 			{
@@ -768,7 +810,8 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "readme-writing",
 				name: "README Writing",
-				description: "Write a concise, well-structured README for a repository.",
+				description:
+					"Write a concise, well-structured README for a repository.",
 				category: "writing",
 			},
 			{
@@ -808,25 +851,29 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "architecture-review",
 				name: "Architecture Review",
-				description: "Review system architecture for scalability, maintainability, and risk.",
+				description:
+					"Review system architecture for scalability, maintainability, and risk.",
 				category: "development",
 			},
 			{
 				skillId: "tech-debt-assessment",
 				name: "Tech Debt Assessment",
-				description: "Identify and quantify technical debt with a prioritised remediation plan.",
+				description:
+					"Identify and quantify technical debt with a prioritised remediation plan.",
 				category: "development",
 			},
 			{
 				skillId: "dependency-audit",
 				name: "Dependency Audit",
-				description: "Audit project dependencies for outdated, vulnerable, or unused packages.",
+				description:
+					"Audit project dependencies for outdated, vulnerable, or unused packages.",
 				category: "development",
 			},
 			{
 				skillId: "owasp-checklist",
 				name: "OWASP Checklist",
-				description: "Run through the OWASP Top 10 checklist against a codebase or endpoint.",
+				description:
+					"Run through the OWASP Top 10 checklist against a codebase or endpoint.",
 				category: "development",
 			},
 		],
@@ -855,25 +902,29 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "market-sizing",
 				name: "Market Sizing",
-				description: "Estimate TAM/SAM/SOM using bottom-up or top-down approaches.",
+				description:
+					"Estimate TAM/SAM/SOM using bottom-up or top-down approaches.",
 				category: "research",
 			},
 			{
 				skillId: "trend-analysis",
 				name: "Trend Analysis",
-				description: "Identify and explain macro and micro trends affecting a market.",
+				description:
+					"Identify and explain macro and micro trends affecting a market.",
 				category: "research",
 			},
 			{
 				skillId: "buyer-persona",
 				name: "Buyer Persona",
-				description: "Create detailed buyer personas based on research and behavioural data.",
+				description:
+					"Create detailed buyer personas based on research and behavioural data.",
 				category: "strategy",
 			},
 			{
 				skillId: "market-report",
 				name: "Market Report",
-				description: "Write a structured market overview report for stakeholders.",
+				description:
+					"Write a structured market overview report for stakeholders.",
 				category: "writing",
 			},
 		],
@@ -892,7 +943,11 @@ const REGISTRY_SEED: TeamSeed[] = [
 				role: "Research",
 				description:
 					"Tracks competitor product changes, pricing, content, and positioning over time.",
-				skills: ["competitor-profiling", "pricing-analysis", "competitive-gap-analysis"],
+				skills: [
+					"competitor-profiling",
+					"pricing-analysis",
+					"competitive-gap-analysis",
+				],
 			},
 			{
 				agentId: "positioning-strategist",
@@ -907,31 +962,36 @@ const REGISTRY_SEED: TeamSeed[] = [
 			{
 				skillId: "competitor-profiling",
 				name: "Competitor Profiling",
-				description: "Build a detailed profile of a competitor: offering, pricing, positioning, weaknesses.",
+				description:
+					"Build a detailed profile of a competitor: offering, pricing, positioning, weaknesses.",
 				category: "research",
 			},
 			{
 				skillId: "pricing-analysis",
 				name: "Pricing Analysis",
-				description: "Analyse competitor pricing tiers and identify pricing opportunity gaps.",
+				description:
+					"Analyse competitor pricing tiers and identify pricing opportunity gaps.",
 				category: "research",
 			},
 			{
 				skillId: "competitive-gap-analysis",
 				name: "Competitive Gap Analysis",
-				description: "Identify gaps in competitor offerings that your product can exploit.",
+				description:
+					"Identify gaps in competitor offerings that your product can exploit.",
 				category: "research",
 			},
 			{
 				skillId: "positioning-statement",
 				name: "Positioning Statement",
-				description: "Write a clear positioning statement that differentiates from key competitors.",
+				description:
+					"Write a clear positioning statement that differentiates from key competitors.",
 				category: "strategy",
 			},
 			{
 				skillId: "differentiation-playbook",
 				name: "Differentiation Playbook",
-				description: "Create a playbook of differentiation messages for each competitor.",
+				description:
+					"Create a playbook of differentiation messages for each competitor.",
 				category: "strategy",
 			},
 		],

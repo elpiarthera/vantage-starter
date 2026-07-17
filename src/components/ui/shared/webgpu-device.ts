@@ -20,20 +20,20 @@
  */
 
 /** Active renderer tier — set on BaseChartElement.renderer after detection. */
-export type RendererTier = 'webgpu' | 'webgl' | 'canvas';
+export type RendererTier = "webgpu" | "webgl" | "canvas";
 
 declare global {
-  interface HTMLElementEventMap {
-    /**
-     * WEBGPU-01: Fired by every chart instance during firstUpdated() once the
-     * renderer tier has been determined. detail.renderer is one of RendererTier.
-     * Always read renderer from this event — do not poll .renderer synchronously
-     * before the event fires (the async GPU probe may not have resolved yet).
-     */
-    'renderer-selected': CustomEvent<{ renderer: RendererTier }>;
-    /** Existing event — redeclared here for completeness alongside renderer-selected. */
-    'webgl-unavailable': CustomEvent<{ reason: string }>;
-  }
+	interface HTMLElementEventMap {
+		/**
+		 * WEBGPU-01: Fired by every chart instance during firstUpdated() once the
+		 * renderer tier has been determined. detail.renderer is one of RendererTier.
+		 * Always read renderer from this event — do not poll .renderer synchronously
+		 * before the event fires (the async GPU probe may not have resolved yet).
+		 */
+		"renderer-selected": CustomEvent<{ renderer: RendererTier }>;
+		/** Existing event — redeclared here for completeness alongside renderer-selected. */
+		"webgl-unavailable": CustomEvent<{ reason: string }>;
+	}
 }
 
 let _devicePromise: Promise<GPUDevice> | null = null;
@@ -50,20 +50,22 @@ let _refCount = 0;
  *
  * @param adapter - GPUAdapter obtained from navigator.gpu.requestAdapter()
  */
-export async function acquireGpuDevice(adapter: GPUAdapter): Promise<GPUDevice> {
-  if (_devicePromise) {
-    // Shared device already exists — increment refcount and return cached promise.
-    // The incoming adapter is intentionally discarded here: calling requestDevice()
-    // on it would violate the WebGPU spec (adapter is consumed after first requestDevice).
-    _refCount++;
-    return _devicePromise;
-  }
-  // First call only — store adapter so getGpuAdapter() can return it to Plans 02/03.
-  _adapter = adapter;
-  _refCount = 1;
-  // Do NOT call requestDevice() again on any adapter after this point.
-  _devicePromise = adapter.requestDevice();
-  return _devicePromise;
+export async function acquireGpuDevice(
+	adapter: GPUAdapter,
+): Promise<GPUDevice> {
+	if (_devicePromise) {
+		// Shared device already exists — increment refcount and return cached promise.
+		// The incoming adapter is intentionally discarded here: calling requestDevice()
+		// on it would violate the WebGPU spec (adapter is consumed after first requestDevice).
+		_refCount++;
+		return _devicePromise;
+	}
+	// First call only — store adapter so getGpuAdapter() can return it to Plans 02/03.
+	_adapter = adapter;
+	_refCount = 1;
+	// Do NOT call requestDevice() again on any adapter after this point.
+	_devicePromise = adapter.requestDevice();
+	return _devicePromise;
 }
 
 /**
@@ -72,7 +74,7 @@ export async function acquireGpuDevice(adapter: GPUAdapter): Promise<GPUDevice> 
  * Used by Phase 101 to access the shared device for WebGPU rendering.
  */
 export function getGpuDevice(): Promise<GPUDevice> | null {
-  return _devicePromise;
+	return _devicePromise;
 }
 
 /**
@@ -81,7 +83,7 @@ export function getGpuDevice(): Promise<GPUDevice> | null {
  * Used by Plans 02 and 03 to pass { adapter, device } to ChartGPU.create().
  */
 export function getGpuAdapter(): GPUAdapter | null {
-  return _adapter;
+	return _adapter;
 }
 
 /**
@@ -98,14 +100,14 @@ export function getGpuAdapter(): GPUAdapter | null {
  * repeated create/destroy cycles.
  */
 export async function releaseGpuDevice(): Promise<void> {
-  if (_refCount <= 0) return;
+	if (_refCount <= 0) return;
 
-  _refCount--;
+	_refCount--;
 
-  if (_refCount === 0 && _devicePromise !== null) {
-    const device = await _devicePromise;
-    device.destroy();
-    _devicePromise = null;
-    _adapter = null;
-  }
+	if (_refCount === 0 && _devicePromise !== null) {
+		const device = await _devicePromise;
+		device.destroy();
+		_devicePromise = null;
+		_adapter = null;
+	}
 }

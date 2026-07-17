@@ -11,43 +11,43 @@
 let _registered = false;
 
 export async function registerCanvasCore(): Promise<void> {
-  if (_registered) return;
-  _registered = true;
+	if (_registered) return;
+	_registered = true;
 
-  // Dynamic imports — required for SSR safety (CRITICAL-04)
-  // These run client-side only since registerCanvasCore() is called from firstUpdated()
-  const [
-    { use },
-    { CanvasRenderer },
-    {
-      TitleComponent,
-      TooltipComponent,
-      GridComponent,
-      LegendComponent,
-      DataZoomComponent,
-      MarkLineComponent,
-      MarkAreaComponent,
-      ToolboxComponent,
-    },
-    { LabelLayout, UniversalTransition },
-  ] = await Promise.all([
-    import('echarts/core'),
-    import('echarts/renderers'),
-    import('echarts/components'),
-    import('echarts/features'),
-  ]);
+	// Dynamic imports — required for SSR safety (CRITICAL-04)
+	// These run client-side only since registerCanvasCore() is called from firstUpdated()
+	const [
+		{ use },
+		{ CanvasRenderer },
+		{
+			TitleComponent,
+			TooltipComponent,
+			GridComponent,
+			LegendComponent,
+			DataZoomComponent,
+			MarkLineComponent,
+			MarkAreaComponent,
+			ToolboxComponent,
+		},
+		{ LabelLayout, UniversalTransition },
+	] = await Promise.all([
+		import("echarts/core"),
+		import("echarts/renderers"),
+		import("echarts/components"),
+		import("echarts/features"),
+	]);
 
-  use([
-    CanvasRenderer,
-    TitleComponent,
-    TooltipComponent,
-    GridComponent,
-    LegendComponent,
-    DataZoomComponent,
-    MarkLineComponent,
-    MarkAreaComponent,
-    ToolboxComponent,
-    LabelLayout,
-    UniversalTransition,
-  ]);
+	use([
+		CanvasRenderer,
+		TitleComponent,
+		TooltipComponent,
+		GridComponent,
+		LegendComponent,
+		DataZoomComponent,
+		MarkLineComponent,
+		MarkAreaComponent,
+		ToolboxComponent,
+		LabelLayout,
+		UniversalTransition,
+	]);
 }

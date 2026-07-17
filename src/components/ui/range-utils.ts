@@ -5,14 +5,20 @@
  * All date parameters are ISO 8601 strings (YYYY-MM-DD).
  */
 
-import { parseISO, differenceInCalendarDays, isWithinInterval, isBefore, startOfDay } from 'date-fns';
+import {
+	differenceInCalendarDays,
+	isBefore,
+	isWithinInterval,
+	parseISO,
+	startOfDay,
+} from "date-fns";
 
 /**
  * Result of range duration validation.
  */
 export interface RangeValidation {
-  valid: boolean;
-  error: string;
+	valid: boolean;
+	error: string;
 }
 
 /**
@@ -24,14 +30,18 @@ export interface RangeValidation {
  * @param endISO - Range end date (YYYY-MM-DD)
  * @returns true if dateISO is within [startISO, endISO] inclusive
  */
-export function isDateInRange(dateISO: string, startISO: string, endISO: string): boolean {
-  if (!dateISO || !startISO || !endISO) return false;
+export function isDateInRange(
+	dateISO: string,
+	startISO: string,
+	endISO: string,
+): boolean {
+	if (!dateISO || !startISO || !endISO) return false;
 
-  const date = startOfDay(parseISO(dateISO));
-  const start = startOfDay(parseISO(startISO));
-  const end = startOfDay(parseISO(endISO));
+	const date = startOfDay(parseISO(dateISO));
+	const start = startOfDay(parseISO(startISO));
+	const end = startOfDay(parseISO(endISO));
 
-  return isWithinInterval(date, { start, end });
+	return isWithinInterval(date, { start, end });
 }
 
 /**
@@ -45,32 +55,38 @@ export function isDateInRange(dateISO: string, startISO: string, endISO: string)
  * @returns RangeValidation with valid flag and error message
  */
 export function validateRangeDuration(
-  startISO: string,
-  endISO: string,
-  minDays?: number,
-  maxDays?: number,
+	startISO: string,
+	endISO: string,
+	minDays?: number,
+	maxDays?: number,
 ): RangeValidation {
-  if (!startISO || !endISO) {
-    return { valid: false, error: 'Start and end dates are required' };
-  }
+	if (!startISO || !endISO) {
+		return { valid: false, error: "Start and end dates are required" };
+	}
 
-  const start = startOfDay(parseISO(startISO));
-  const end = startOfDay(parseISO(endISO));
-  const days = differenceInCalendarDays(end, start) + 1; // inclusive count
+	const start = startOfDay(parseISO(startISO));
+	const end = startOfDay(parseISO(endISO));
+	const days = differenceInCalendarDays(end, start) + 1; // inclusive count
 
-  if (days < 1) {
-    return { valid: false, error: 'End date must be on or after start date' };
-  }
+	if (days < 1) {
+		return { valid: false, error: "End date must be on or after start date" };
+	}
 
-  if (minDays && minDays > 0 && days < minDays) {
-    return { valid: false, error: `Range must be at least ${minDays} day${minDays === 1 ? '' : 's'}` };
-  }
+	if (minDays && minDays > 0 && days < minDays) {
+		return {
+			valid: false,
+			error: `Range must be at least ${minDays} day${minDays === 1 ? "" : "s"}`,
+		};
+	}
 
-  if (maxDays && maxDays > 0 && days > maxDays) {
-    return { valid: false, error: `Range must be at most ${maxDays} day${maxDays === 1 ? '' : 's'}` };
-  }
+	if (maxDays && maxDays > 0 && days > maxDays) {
+		return {
+			valid: false,
+			error: `Range must be at most ${maxDays} day${maxDays === 1 ? "" : "s"}`,
+		};
+	}
 
-  return { valid: true, error: '' };
+	return { valid: true, error: "" };
 }
 
 /**
@@ -82,8 +98,8 @@ export function validateRangeDuration(
  * @returns ISO 8601 interval string or empty string
  */
 export function formatISOInterval(startISO: string, endISO: string): string {
-  if (!startISO || !endISO) return '';
-  return `${startISO}/${endISO}`;
+	if (!startISO || !endISO) return "";
+	return `${startISO}/${endISO}`;
 }
 
 /**
@@ -97,18 +113,22 @@ export function formatISOInterval(startISO: string, endISO: string): string {
  * @param hoveredISO - The currently hovered date (YYYY-MM-DD)
  * @returns true if dateISO falls within the preview range
  */
-export function isDateInPreview(dateISO: string, startISO: string, hoveredISO: string): boolean {
-  if (!dateISO || !startISO || !hoveredISO) return false;
+export function isDateInPreview(
+	dateISO: string,
+	startISO: string,
+	hoveredISO: string,
+): boolean {
+	if (!dateISO || !startISO || !hoveredISO) return false;
 
-  const date = startOfDay(parseISO(dateISO));
-  const start = startOfDay(parseISO(startISO));
-  const hovered = startOfDay(parseISO(hoveredISO));
+	const date = startOfDay(parseISO(dateISO));
+	const start = startOfDay(parseISO(startISO));
+	const hovered = startOfDay(parseISO(hoveredISO));
 
-  // Normalize order: preview range is always [min, max]
-  const rangeStart = isBefore(hovered, start) ? hovered : start;
-  const rangeEnd = isBefore(hovered, start) ? start : hovered;
+	// Normalize order: preview range is always [min, max]
+	const rangeStart = isBefore(hovered, start) ? hovered : start;
+	const rangeEnd = isBefore(hovered, start) ? start : hovered;
 
-  return isWithinInterval(date, { start: rangeStart, end: rangeEnd });
+	return isWithinInterval(date, { start: rangeStart, end: rangeEnd });
 }
 
 /**
@@ -128,23 +148,26 @@ export function isDateInPreview(dateISO: string, startISO: string, hoveredISO: s
  * @returns Inclusive day count (e.g., Jan 10 to Jan 16 = 7 days)
  */
 export function computeRangeDuration(startISO: string, endISO: string): number {
-  if (!startISO || !endISO) return 0;
+	if (!startISO || !endISO) return 0;
 
-  const start = startOfDay(parseISO(startISO));
-  const end = startOfDay(parseISO(endISO));
+	const start = startOfDay(parseISO(startISO));
+	const end = startOfDay(parseISO(endISO));
 
-  return differenceInCalendarDays(end, start) + 1;
+	return differenceInCalendarDays(end, start) + 1;
 }
 
-export function normalizeRange(startISO: string, endISO: string): [string, string] {
-  if (!startISO || !endISO) return [startISO, endISO];
+export function normalizeRange(
+	startISO: string,
+	endISO: string,
+): [string, string] {
+	if (!startISO || !endISO) return [startISO, endISO];
 
-  const start = startOfDay(parseISO(startISO));
-  const end = startOfDay(parseISO(endISO));
+	const start = startOfDay(parseISO(startISO));
+	const end = startOfDay(parseISO(endISO));
 
-  if (isBefore(end, start)) {
-    return [endISO, startISO];
-  }
+	if (isBefore(end, start)) {
+		return [endISO, startISO];
+	}
 
-  return [startISO, endISO];
+	return [startISO, endISO];
 }

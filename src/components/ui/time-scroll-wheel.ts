@@ -9,10 +9,20 @@
  * @fires ui-scroll-wheel-change - Dispatched when scroll selection changes
  */
 
-import { html, css, nothing, type PropertyValues, type CSSResultGroup } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles, dispatchCustomEvent } from '@lit-ui/core';
-import { type TimeValue, to12Hour, to24Hour } from './time-utils.js';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import {
+	type CSSResultGroup,
+	css,
+	html,
+	nothing,
+	type PropertyValues,
+} from "lit";
+import { property, state } from "lit/decorators.js";
+import { type TimeValue, to12Hour, to24Hour } from "./time-utils.js";
 
 /** Height of each wheel item in pixels */
 const ITEM_HEIGHT = 40;
@@ -24,14 +34,14 @@ const VISIBLE_ITEMS = 5;
 const SCROLL_DEBOUNCE = 200;
 
 interface WheelItem {
-  value: number;
-  label: string;
+	value: number;
+	label: string;
 }
 
 export class TimeScrollWheel extends TailwindElement {
-  static override styles: CSSResultGroup = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles: CSSResultGroup = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
       }
@@ -101,198 +111,204 @@ export class TimeScrollWheel extends TailwindElement {
         user-select: none;
       }
     `,
-  ];
+	];
 
-  /** Currently selected time value */
-  @property({ attribute: false })
-  value: TimeValue | null = null;
+	/** Currently selected time value */
+	@property({ attribute: false })
+	value: TimeValue | null = null;
 
-  /** Whether to display in 12-hour format */
-  @property({ type: Boolean })
-  hour12 = false;
+	/** Whether to display in 12-hour format */
+	@property({ type: Boolean })
+	hour12 = false;
 
-  /** Minute step interval */
-  @property({ type: Number })
-  step = 1;
+	/** Minute step interval */
+	@property({ type: Number })
+	step = 1;
 
-  /** Whether the scroll wheel is disabled */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/** Whether the scroll wheel is disabled */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  @state() private _selectedHour = 0;
-  @state() private _selectedMinute = 0;
-  @state() private _selectedPeriod: 'AM' | 'PM' = 'AM';
+	@state() private _selectedHour = 0;
+	@state() private _selectedMinute = 0;
+	@state() private _selectedPeriod: "AM" | "PM" = "AM";
 
-  /** Debounce timers for scroll fallback, keyed by column name */
-  private _scrollTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+	/** Debounce timers for scroll fallback, keyed by column name */
+	private _scrollTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
-  override updated(changed: PropertyValues): void {
-    if (changed.has('value') && this.value) {
-      if (this.hour12) {
-        const converted = to12Hour(this.value.hour);
-        this._selectedHour = converted.hour;
-        this._selectedPeriod = converted.period;
-      } else {
-        this._selectedHour = this.value.hour;
-      }
-      this._selectedMinute = this.value.minute;
+	override updated(changed: PropertyValues): void {
+		if (changed.has("value") && this.value) {
+			if (this.hour12) {
+				const converted = to12Hour(this.value.hour);
+				this._selectedHour = converted.hour;
+				this._selectedPeriod = converted.period;
+			} else {
+				this._selectedHour = this.value.hour;
+			}
+			this._selectedMinute = this.value.minute;
 
-      // Scroll each column to selected position after render
-      this.updateComplete.then(() => {
-        this._scrollColumnTo('hour');
-        this._scrollColumnTo('minute');
-        if (this.hour12) {
-          this._scrollColumnTo('period');
-        }
-      });
-    }
-  }
+			// Scroll each column to selected position after render
+			this.updateComplete.then(() => {
+				this._scrollColumnTo("hour");
+				this._scrollColumnTo("minute");
+				if (this.hour12) {
+					this._scrollColumnTo("period");
+				}
+			});
+		}
+	}
 
-  /**
-   * Scroll a specific column to its selected value position.
-   */
-  private _scrollColumnTo(column: 'hour' | 'minute' | 'period'): void {
-    const container = this.renderRoot.querySelector(
-      `.wheel-column[data-column="${column}"] .wheel-container`,
-    ) as HTMLElement | null;
-    if (!container) return;
+	/**
+	 * Scroll a specific column to its selected value position.
+	 */
+	private _scrollColumnTo(column: "hour" | "minute" | "period"): void {
+		const container = this.renderRoot.querySelector(
+			`.wheel-column[data-column="${column}"] .wheel-container`,
+		) as HTMLElement | null;
+		if (!container) return;
 
-    let index = 0;
-    if (column === 'hour') {
-      const items = this._getHourItems();
-      index = items.findIndex((item) => item.value === this._selectedHour);
-    } else if (column === 'minute') {
-      const items = this._getMinuteItems();
-      index = items.findIndex((item) => item.value === this._selectedMinute);
-    } else {
-      index = this._selectedPeriod === 'AM' ? 0 : 1;
-    }
+		let index = 0;
+		if (column === "hour") {
+			const items = this._getHourItems();
+			index = items.findIndex((item) => item.value === this._selectedHour);
+		} else if (column === "minute") {
+			const items = this._getMinuteItems();
+			index = items.findIndex((item) => item.value === this._selectedMinute);
+		} else {
+			index = this._selectedPeriod === "AM" ? 0 : 1;
+		}
 
-    if (index < 0) index = 0;
+		if (index < 0) index = 0;
 
-    // Account for padding items (2 empty items at top)
-    container.scrollTop = (index + 2) * ITEM_HEIGHT - (VISIBLE_ITEMS - 1) / 2 * ITEM_HEIGHT;
-  }
+		// Account for padding items (2 empty items at top)
+		container.scrollTop =
+			(index + 2) * ITEM_HEIGHT - ((VISIBLE_ITEMS - 1) / 2) * ITEM_HEIGHT;
+	}
 
-  /**
-   * Get hour items based on hour12 mode.
-   */
-  private _getHourItems(): WheelItem[] {
-    if (this.hour12) {
-      const items: WheelItem[] = [];
-      for (let i = 1; i <= 12; i++) {
-        items.push({ value: i, label: String(i) });
-      }
-      return items;
-    }
-    const items: WheelItem[] = [];
-    for (let i = 0; i <= 23; i++) {
-      items.push({ value: i, label: String(i).padStart(2, '0') });
-    }
-    return items;
-  }
+	/**
+	 * Get hour items based on hour12 mode.
+	 */
+	private _getHourItems(): WheelItem[] {
+		if (this.hour12) {
+			const items: WheelItem[] = [];
+			for (let i = 1; i <= 12; i++) {
+				items.push({ value: i, label: String(i) });
+			}
+			return items;
+		}
+		const items: WheelItem[] = [];
+		for (let i = 0; i <= 23; i++) {
+			items.push({ value: i, label: String(i).padStart(2, "0") });
+		}
+		return items;
+	}
 
-  /**
-   * Get minute items based on step interval.
-   */
-  private _getMinuteItems(): WheelItem[] {
-    const items: WheelItem[] = [];
-    for (let i = 0; i < 60; i += this.step) {
-      items.push({ value: i, label: String(i).padStart(2, '0') });
-    }
-    return items;
-  }
+	/**
+	 * Get minute items based on step interval.
+	 */
+	private _getMinuteItems(): WheelItem[] {
+		const items: WheelItem[] = [];
+		for (let i = 0; i < 60; i += this.step) {
+			items.push({ value: i, label: String(i).padStart(2, "0") });
+		}
+		return items;
+	}
 
-  /**
-   * Handle native scrollend event to read final scroll position.
-   */
-  private _handleScrollEnd(column: 'hour' | 'minute' | 'period', e: Event): void {
-    const container = e.currentTarget as HTMLElement;
-    // Subtract padding items offset
-    const rawIndex = Math.round(container.scrollTop / ITEM_HEIGHT);
-    // The padding adds 2 items at the top, so subtract 2 from raw index
-    // But scrollTop=0 corresponds to the first padding item
-    // selected index = rawIndex - paddingOffset that centers items
-    // With 5 visible items and padding of 2, the center item at scrollTop=0 is index -2
-    // After snapping: selectedIndex = rawIndex - 2 + floor((VISIBLE_ITEMS - 1) / 2)
-    // Simplify: the _scrollColumnTo sets scrollTop = (index + 2) * ITEM_HEIGHT - 2 * ITEM_HEIGHT = index * ITEM_HEIGHT
-    // So selectedIndex = rawIndex
-    const selectedIndex = Math.round(container.scrollTop / ITEM_HEIGHT);
+	/**
+	 * Handle native scrollend event to read final scroll position.
+	 */
+	private _handleScrollEnd(
+		column: "hour" | "minute" | "period",
+		e: Event,
+	): void {
+		const container = e.currentTarget as HTMLElement;
+		// Subtract padding items offset
+		const rawIndex = Math.round(container.scrollTop / ITEM_HEIGHT);
+		// The padding adds 2 items at the top, so subtract 2 from raw index
+		// But scrollTop=0 corresponds to the first padding item
+		// selected index = rawIndex - paddingOffset that centers items
+		// With 5 visible items and padding of 2, the center item at scrollTop=0 is index -2
+		// After snapping: selectedIndex = rawIndex - 2 + floor((VISIBLE_ITEMS - 1) / 2)
+		// Simplify: the _scrollColumnTo sets scrollTop = (index + 2) * ITEM_HEIGHT - 2 * ITEM_HEIGHT = index * ITEM_HEIGHT
+		// So selectedIndex = rawIndex
+		const selectedIndex = Math.round(container.scrollTop / ITEM_HEIGHT);
 
-    if (column === 'hour') {
-      const items = this._getHourItems();
-      const clamped = Math.max(0, Math.min(items.length - 1, selectedIndex));
-      this._selectedHour = items[clamped].value;
-    } else if (column === 'minute') {
-      const items = this._getMinuteItems();
-      const clamped = Math.max(0, Math.min(items.length - 1, selectedIndex));
-      this._selectedMinute = items[clamped].value;
-    } else {
-      const clamped = Math.max(0, Math.min(1, selectedIndex));
-      this._selectedPeriod = clamped === 0 ? 'AM' : 'PM';
-    }
+		if (column === "hour") {
+			const items = this._getHourItems();
+			const clamped = Math.max(0, Math.min(items.length - 1, selectedIndex));
+			this._selectedHour = items[clamped].value;
+		} else if (column === "minute") {
+			const items = this._getMinuteItems();
+			const clamped = Math.max(0, Math.min(items.length - 1, selectedIndex));
+			this._selectedMinute = items[clamped].value;
+		} else {
+			const clamped = Math.max(0, Math.min(1, selectedIndex));
+			this._selectedPeriod = clamped === 0 ? "AM" : "PM";
+		}
 
-    this._emitChange();
-  }
+		this._emitChange();
+	}
 
-  /**
-   * Handle scroll event with debounce fallback for browsers without scrollend.
-   */
-  private _handleScroll(column: string, e: Event): void {
-    // If browser supports scrollend natively, let that handler fire instead
-    if ('onscrollend' in window) return;
+	/**
+	 * Handle scroll event with debounce fallback for browsers without scrollend.
+	 */
+	private _handleScroll(column: string, e: Event): void {
+		// If browser supports scrollend natively, let that handler fire instead
+		if ("onscrollend" in window) return;
 
-    const existing = this._scrollTimers.get(column);
-    if (existing) {
-      clearTimeout(existing);
-    }
+		const existing = this._scrollTimers.get(column);
+		if (existing) {
+			clearTimeout(existing);
+		}
 
-    const timer = setTimeout(() => {
-      this._handleScrollEnd(column as 'hour' | 'minute' | 'period', e);
-      this._scrollTimers.delete(column);
-    }, SCROLL_DEBOUNCE);
+		const timer = setTimeout(() => {
+			this._handleScrollEnd(column as "hour" | "minute" | "period", e);
+			this._scrollTimers.delete(column);
+		}, SCROLL_DEBOUNCE);
 
-    this._scrollTimers.set(column, timer);
-  }
+		this._scrollTimers.set(column, timer);
+	}
 
-  /**
-   * Emit the current selection as a TimeValue.
-   */
-  private _emitChange(): void {
-    let hour = this._selectedHour;
-    if (this.hour12) {
-      hour = to24Hour(this._selectedHour, this._selectedPeriod);
-    }
+	/**
+	 * Emit the current selection as a TimeValue.
+	 */
+	private _emitChange(): void {
+		let hour = this._selectedHour;
+		if (this.hour12) {
+			hour = to24Hour(this._selectedHour, this._selectedPeriod);
+		}
 
-    const value: TimeValue = {
-      hour,
-      minute: this._selectedMinute,
-      second: 0,
-    };
+		const value: TimeValue = {
+			hour,
+			minute: this._selectedMinute,
+			second: 0,
+		};
 
-    dispatchCustomEvent<{ value: TimeValue }>(this, 'ui-scroll-wheel-change', { value });
-  }
+		dispatchCustomEvent<{ value: TimeValue }>(this, "ui-scroll-wheel-change", {
+			value,
+		});
+	}
 
-  /**
-   * Render padding items so first/last real items can center in the highlight.
-   */
-  private _renderPadding() {
-    // Render 2 empty items (half of visible - 1 rounded down)
-    return html`
+	/**
+	 * Render padding items so first/last real items can center in the highlight.
+	 */
+	private _renderPadding() {
+		// Render 2 empty items (half of visible - 1 rounded down)
+		return html`
       <div class="wheel-item" aria-hidden="true"></div>
       <div class="wheel-item" aria-hidden="true"></div>
     `;
-  }
+	}
 
-  /**
-   * Render a single scroll column with items.
-   */
-  private _renderColumn(
-    items: WheelItem[],
-    column: 'hour' | 'minute' | 'period',
-    selectedValue: number,
-  ) {
-    return html`
+	/**
+	 * Render a single scroll column with items.
+	 */
+	private _renderColumn(
+		items: WheelItem[],
+		column: "hour" | "minute" | "period",
+		selectedValue: number,
+	) {
+		return html`
       <div class="wheel-column" data-column=${column}>
         <div
           class="wheel-container"
@@ -301,46 +317,48 @@ export class TimeScrollWheel extends TailwindElement {
         >
           ${this._renderPadding()}
           ${items.map(
-            (item) => html`
+						(item) => html`
               <div
-                class="wheel-item ${item.value === selectedValue ? 'selected' : ''}"
+                class="wheel-item ${item.value === selectedValue ? "selected" : ""}"
                 data-value=${item.value}
               >
                 ${item.label}
               </div>
             `,
-          )}
+					)}
           ${this._renderPadding()}
         </div>
       </div>
     `;
-  }
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div class="scroll-wheel-wrapper" role="group" aria-label="Select time">
         <div class="wheel-highlight" aria-hidden="true"></div>
-        ${this._renderColumn(this._getHourItems(), 'hour', this._selectedHour)}
+        ${this._renderColumn(this._getHourItems(), "hour", this._selectedHour)}
         <span class="wheel-separator" aria-hidden="true">:</span>
-        ${this._renderColumn(this._getMinuteItems(), 'minute', this._selectedMinute)}
-        ${this.hour12
-          ? this._renderColumn(
-              [
-                { value: 0, label: 'AM' },
-                { value: 1, label: 'PM' },
-              ],
-              'period',
-              this._selectedPeriod === 'AM' ? 0 : 1,
-            )
-          : nothing}
+        ${this._renderColumn(this._getMinuteItems(), "minute", this._selectedMinute)}
+        ${
+					this.hour12
+						? this._renderColumn(
+								[
+									{ value: 0, label: "AM" },
+									{ value: 1, label: "PM" },
+								],
+								"period",
+								this._selectedPeriod === "AM" ? 0 : 1,
+							)
+						: nothing
+				}
       </div>
     `;
-  }
+	}
 }
 
 // Safe custom element registration
-if (typeof customElements !== 'undefined') {
-  if (!customElements.get('lui-time-scroll-wheel')) {
-    customElements.define('lui-time-scroll-wheel', TimeScrollWheel);
-  }
+if (typeof customElements !== "undefined") {
+	if (!customElements.get("lui-time-scroll-wheel")) {
+		customElements.define("lui-time-scroll-wheel", TimeScrollWheel);
+	}
 }

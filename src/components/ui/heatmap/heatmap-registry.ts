@@ -14,17 +14,18 @@
 let _heatmapRegistered = false;
 
 export async function registerHeatmapModules(): Promise<void> {
-  if (_heatmapRegistered) return;
-  _heatmapRegistered = true;
+	if (_heatmapRegistered) return;
+	_heatmapRegistered = true;
 
-  const { registerCanvasCore } = await import('../registry/canvas-core.js');
-  await registerCanvasCore();
+	const { registerCanvasCore } = await import("../registry/canvas-core.js");
+	await registerCanvasCore();
 
-  const [{ HeatmapChart }, { VisualMapContinuousComponent }, { use }] = await Promise.all([
-    import('echarts/charts'),
-    import('echarts/components'),
-    import('echarts/core'),
-  ]);
+	const [{ HeatmapChart }, { VisualMapContinuousComponent }, { use }] =
+		await Promise.all([
+			import("echarts/charts"),
+			import("echarts/components"),
+			import("echarts/core"),
+		]);
 
-  use([HeatmapChart, VisualMapContinuousComponent]);
+	use([HeatmapChart, VisualMapContinuousComponent]);
 }

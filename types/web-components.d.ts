@@ -12,7 +12,11 @@ type LitUIBaseProps = {
 	class?: string;
 };
 
-declare global {
+// React 19 moved the JSX namespace from the global scope to `React.JSX`
+// (see @types/react 19 index.d.ts: `declare namespace React { namespace JSX {...} } }`).
+// Custom elements must therefore be declared via module augmentation of "react",
+// not `declare global { namespace JSX {} }` (which no longer merges with anything).
+declare module "react" {
 	namespace JSX {
 		interface IntrinsicElements {
 			// ----------------------------------------------------------------

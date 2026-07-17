@@ -6,41 +6,41 @@
  */
 
 import {
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-  isSameMonth,
-  isSameDay,
-  isToday,
-  addMonths,
-  subMonths,
-  getYear,
-  getMonth,
-  format,
-  isBefore,
-  isAfter,
-  startOfDay,
-  getISOWeek,
-  startOfISOWeek,
-  endOfISOWeek,
-} from 'date-fns';
+	addMonths,
+	eachDayOfInterval,
+	endOfISOWeek,
+	endOfMonth,
+	endOfWeek,
+	format,
+	getISOWeek,
+	getMonth,
+	getYear,
+	isAfter,
+	isBefore,
+	isSameDay,
+	isSameMonth,
+	isToday,
+	startOfDay,
+	startOfISOWeek,
+	startOfMonth,
+	startOfWeek,
+	subMonths,
+} from "date-fns";
 
 // Re-export commonly used date-fns functions for convenience
 export {
-  isSameMonth,
-  isSameDay,
-  isToday,
-  addMonths,
-  subMonths,
-  getYear,
-  getMonth,
-  format,
-  isBefore,
-  isAfter,
-  startOfDay,
-  getISOWeek,
+	isSameMonth,
+	isSameDay,
+	isToday,
+	addMonths,
+	subMonths,
+	getYear,
+	getMonth,
+	format,
+	isBefore,
+	isAfter,
+	startOfDay,
+	getISOWeek,
 };
 
 /**
@@ -56,14 +56,14 @@ export {
  * @returns Array of Date objects for the full calendar grid
  */
 export function getCalendarDays(
-  month: Date,
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6
+	month: Date,
+	weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6,
 ): Date[] {
-  const monthStart = startOfMonth(month);
-  const monthEnd = endOfMonth(month);
-  const calendarStart = startOfWeek(monthStart, { weekStartsOn });
-  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn });
-  return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+	const monthStart = startOfMonth(month);
+	const monthEnd = endOfMonth(month);
+	const calendarStart = startOfWeek(monthStart, { weekStartsOn });
+	const calendarEnd = endOfWeek(monthEnd, { weekStartsOn });
+	return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 }
 
 /**
@@ -74,10 +74,10 @@ export function getCalendarDays(
  * @returns Localized string like "January 2026" or "Januar 2026"
  */
 export function getMonthYearLabel(month: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    month: 'long',
-    year: 'numeric',
-  }).format(month);
+	return new Intl.DateTimeFormat(locale, {
+		month: "long",
+		year: "numeric",
+	}).format(month);
 }
 
 /**
@@ -90,23 +90,23 @@ export function getMonthYearLabel(month: Date, locale: string): string {
  * @returns date-fns weekStartsOn value (0-6)
  */
 export function intlFirstDayToDateFns(
-  intlFirstDay: number
+	intlFirstDay: number,
 ): 0 | 1 | 2 | 3 | 4 | 5 | 6 {
-  return (intlFirstDay === 7 ? 0 : intlFirstDay) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+	return (intlFirstDay === 7 ? 0 : intlFirstDay) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 /**
  * Information about a single week row in the calendar grid.
  */
 export interface WeekInfo {
-  /** ISO 8601 week number (1-53). */
-  weekNumber: number;
-  /** First day of this calendar row. */
-  startDate: Date;
-  /** Last day of this calendar row. */
-  endDate: Date;
-  /** All 7 days in this calendar row. */
-  days: Date[];
+	/** ISO 8601 week number (1-53). */
+	weekNumber: number;
+	/** First day of this calendar row. */
+	startDate: Date;
+	/** Last day of this calendar row. */
+	endDate: Date;
+	/** All 7 days in this calendar row. */
+	days: Date[];
 }
 
 /**
@@ -117,7 +117,7 @@ export interface WeekInfo {
  * @returns ISO 8601 week number (1-53)
  */
 export function getISOWeekNumber(date: Date): number {
-  return getISOWeek(date);
+	return getISOWeek(date);
 }
 
 /**
@@ -130,10 +130,10 @@ export function getISOWeekNumber(date: Date): number {
  * @returns Array of 7 Date objects (Monday to Sunday)
  */
 export function getISOWeekDates(date: Date): Date[] {
-  return eachDayOfInterval({
-    start: startOfISOWeek(date),
-    end: endOfISOWeek(date),
-  });
+	return eachDayOfInterval({
+		start: startOfISOWeek(date),
+		end: endOfISOWeek(date),
+	});
 }
 
 /**
@@ -149,32 +149,32 @@ export function getISOWeekDates(date: Date): Date[] {
  * @returns Array of WeekInfo sorted by startDate
  */
 export function getMonthWeeks(
-  month: Date,
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6
+	month: Date,
+	weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6,
 ): WeekInfo[] {
-  const allDays = getCalendarDays(month, weekStartsOn);
-  const seen = new Map<number, WeekInfo>();
+	const allDays = getCalendarDays(month, weekStartsOn);
+	const seen = new Map<number, WeekInfo>();
 
-  // Group days into rows of 7 (each row is one calendar week row)
-  for (let i = 0; i < allDays.length; i += 7) {
-    const row = allDays.slice(i, i + 7);
-    if (row.length < 7) break;
+	// Group days into rows of 7 (each row is one calendar week row)
+	for (let i = 0; i < allDays.length; i += 7) {
+		const row = allDays.slice(i, i + 7);
+		if (row.length < 7) break;
 
-    // ISO 8601 defines a week by its Thursday
-    const thursday = row.find((d) => d.getDay() === 4) ?? row[0];
-    const weekKey = startOfISOWeek(thursday).getTime();
+		// ISO 8601 defines a week by its Thursday
+		const thursday = row.find((d) => d.getDay() === 4) ?? row[0];
+		const weekKey = startOfISOWeek(thursday).getTime();
 
-    if (!seen.has(weekKey)) {
-      seen.set(weekKey, {
-        weekNumber: getISOWeekNumber(thursday),
-        startDate: row[0],
-        endDate: row[6],
-        days: row,
-      });
-    }
-  }
+		if (!seen.has(weekKey)) {
+			seen.set(weekKey, {
+				weekNumber: getISOWeekNumber(thursday),
+				startDate: row[0],
+				endDate: row[6],
+				days: row,
+			});
+		}
+	}
 
-  return Array.from(seen.values()).sort(
-    (a, b) => a.startDate.getTime() - b.startDate.getTime()
-  );
+	return Array.from(seen.values()).sort(
+		(a, b) => a.startDate.getTime() - b.startDate.getTime(),
+	);
 }

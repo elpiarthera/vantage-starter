@@ -14,9 +14,10 @@
  * ></lui-column-date-filter>
  * ```
  */
-import { html, css, isServer } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
+
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, isServer } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
 /**
  * Date range filter value type.
@@ -31,36 +32,36 @@ export type DateRangeValue = [string | null, string | null];
  * Emits:
  * - `filter-change` - When filter value changes (detail: { columnId, value })
  */
-@customElement('lui-column-date-filter')
+@customElement("lui-column-date-filter")
 export class ColumnDateFilter extends TailwindElement {
-  /**
-   * Current filter value as [start, end] ISO date strings.
-   */
-  @property({ type: Array })
-  value: DateRangeValue = [null, null];
+	/**
+	 * Current filter value as [start, end] ISO date strings.
+	 */
+	@property({ type: Array })
+	value: DateRangeValue = [null, null];
 
-  /**
-   * Column ID this filter is associated with.
-   * Used in the filter-change event detail.
-   */
-  @property({ type: String, attribute: 'column-id' })
-  columnId = '';
+	/**
+	 * Column ID this filter is associated with.
+	 * Used in the filter-change event detail.
+	 */
+	@property({ type: String, attribute: "column-id" })
+	columnId = "";
 
-  /**
-   * Placeholder/aria-label for start date input.
-   */
-  @property({ type: String, attribute: 'start-placeholder' })
-  startPlaceholder = 'Start date';
+	/**
+	 * Placeholder/aria-label for start date input.
+	 */
+	@property({ type: String, attribute: "start-placeholder" })
+	startPlaceholder = "Start date";
 
-  /**
-   * Placeholder/aria-label for end date input.
-   */
-  @property({ type: String, attribute: 'end-placeholder' })
-  endPlaceholder = 'End date';
+	/**
+	 * Placeholder/aria-label for end date input.
+	 */
+	@property({ type: String, attribute: "end-placeholder" })
+	endPlaceholder = "End date";
 
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
         min-width: 200px;
@@ -100,46 +101,47 @@ export class ColumnDateFilter extends TailwindElement {
       }
 
     `,
-  ];
+	];
 
-  private handleStartChange(e: Event): void {
-    const input = e.target as HTMLInputElement;
-    const start = input.value || null;
-    this.emitChange([start, this.value[1]]);
-  }
+	private handleStartChange(e: Event): void {
+		const input = e.target as HTMLInputElement;
+		const start = input.value || null;
+		this.emitChange([start, this.value[1]]);
+	}
 
-  private handleEndChange(e: Event): void {
-    const input = e.target as HTMLInputElement;
-    const end = input.value || null;
-    this.emitChange([this.value[0], end]);
-  }
+	private handleEndChange(e: Event): void {
+		const input = e.target as HTMLInputElement;
+		const end = input.value || null;
+		this.emitChange([this.value[0], end]);
+	}
 
-  private emitChange(value: DateRangeValue): void {
-    this.value = value;
+	private emitChange(value: DateRangeValue): void {
+		this.value = value;
 
-    // Only emit if at least one value is set, otherwise clear filter
-    const filterValue = value[0] === null && value[1] === null ? undefined : value;
+		// Only emit if at least one value is set, otherwise clear filter
+		const filterValue =
+			value[0] === null && value[1] === null ? undefined : value;
 
-    this.dispatchEvent(
-      new CustomEvent('filter-change', {
-        detail: {
-          columnId: this.columnId,
-          value: filterValue,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
+		this.dispatchEvent(
+			new CustomEvent("filter-change", {
+				detail: {
+					columnId: this.columnId,
+					value: filterValue,
+				},
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <div class="date-filter">
         <div class="date-row">
           <label>From</label>
           <input
             type="date"
-            .value=${this.value[0] ?? ''}
+            .value=${this.value[0] ?? ""}
             @change=${this.handleStartChange}
             aria-label=${this.startPlaceholder}
           />
@@ -148,19 +150,19 @@ export class ColumnDateFilter extends TailwindElement {
           <label>To</label>
           <input
             type="date"
-            .value=${this.value[1] ?? ''}
+            .value=${this.value[1] ?? ""}
             @change=${this.handleEndChange}
             aria-label=${this.endPlaceholder}
           />
         </div>
       </div>
     `;
-  }
+	}
 }
 
 // JSX type declaration
 declare global {
-  interface HTMLElementTagNameMap {
-    'lui-column-date-filter': ColumnDateFilter;
-  }
+	interface HTMLElementTagNameMap {
+		"lui-column-date-filter": ColumnDateFilter;
+	}
 }
