@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-17 — fleet rule fix-the-class mirrored into the starter)
+
+`.claude/rules/fix-the-class.md` — mirror of Pi's Day-134 broadcast (canonical: elpi-corp commit 8410007d). No fix ships without a `CLASSE:` block: general pattern named before the fix, sweep command with pasted output, remaining=0-or-traced. Born from 4 "instance fixed, twin missed" recidives in 24h — two of them mine on #22 (next/jest then its ./scripts twin one line down). Mirror pending byte-exact re-sync when the canonical is reachable (VR get_rule_content returned null; elpi-corp not on this host).
+
 ### Added (2026-07-17 — phantom-string guard: a bundle grep hit on a vendor-example string is never a config defect)
 
 Ported the fleet guard `enforce-phantom-string-check.py` (+ `.claude/config/known-phantom-strings.json` registry + `.claude/rules/phantom-string-registry.md`) byte-identical from elpi-corp `5959f52`, wired PreToolUse on `send_message`/`create_task`/`block_task`. Closes a real recurrence: a config-defect claim was routed toward a human on a grep hit for `happy-otter-123.convex.cloud` — the Convex SDK's embedded example URL, present in every Convex bundle — when the value Vercel actually RETURNS (`vercel env pull`, Prod + Preview) was already `secret-parakeet-855`. The guard fires at the failure point and demands the paired good-value read (the value the app RETURNS, never a bundle grep); advisory, overridable with `// allow-phantom-cite: <reason>` for a legitimate historical citation. Bipolar bite-probe: warns on phantom-as-defect, silent on good-value/override/clean.
