@@ -13,12 +13,11 @@ Before any Next.js work, find and read the relevant doc in `node_modules/next/di
 ## Read before any work
 - `CLAUDE.md` — orchestrator rules, agent routing, stack, conventions
 - `project-context.md` — product identity, design, tech stack (if it exists)
-- `.claude/skills/lit-ui/SKILL.md` — UI component library reference
 
-## Component library
-- lit-ui web components (`lui-*` prefix, `ui-button` alias)
-- Skills at `.claude/skills/lit-ui/` — read the relevant SKILL.md before using any component
-- No shadcn/ui. No lucide-react. Inline SVGs only.
+## Component layers
+- Primary: shadcn/ui (`components/ui/`) with lucide-react icons
+- Secondary: lit-ui web components (`src/components/ui/`, `lui-*` tags, `ui-button` alias) on landing/dashboard surfaces
+- Match the layer already used in the file you edit
 
 ## Stack
 - Next.js 15+ App Router
@@ -26,7 +25,7 @@ Before any Next.js work, find and read the relevant doc in `node_modules/next/di
 - Clerk (auth, RBAC)
 - Polar.sh (billing)
 - Vercel AI SDK v6 (multi-provider)
-- lit-ui (web components)
+- shadcn/ui (primary UI) + lit-ui web components (secondary, specific surfaces)
 - Tailwind CSS with OKLCH tokens
 
 ## Conventions
