@@ -138,6 +138,7 @@ export function LandingNav() {
 					className="group flex items-center gap-2.5 no-underline"
 					aria-label={t("nav.home_aria")}
 				>
+					{/* Brand monogram — logo initials, not sentence content, never translated */}
 					<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 text-xs font-bold shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-2deg]">
 						VS
 					</span>

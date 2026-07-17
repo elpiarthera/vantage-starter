@@ -28,13 +28,16 @@ function TerminalMockup() {
 					<div className="h-3 w-3 rounded-full bg-gray-700 transition-all hover:bg-yellow-400 hover:scale-110" />
 					<div className="h-3 w-3 rounded-full bg-gray-700 transition-all hover:bg-green-400 hover:scale-110" />
 				</div>
-				<span className="ml-2 text-xs text-gray-500 font-medium">Terminal</span>
+				<span className="ml-2 text-xs text-gray-500 font-medium">
+					{t("terminal_label")}
+				</span>
 			</div>
 			<div className="p-5">
 				<code className="font-mono text-sm flex items-center gap-3">
 					<span className="text-gray-500 select-none" aria-hidden="true">
 						$
 					</span>
+					{/* CLI command literal — shell syntax, not sentence content, never translated */}
 					<span className="text-white">
 						<span className="font-semibold">npx</span> create-vantage-app
 						my-saas

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 interface ShaderBackgroundProps {
@@ -25,6 +26,7 @@ export function ShaderBackground({
 	opacity = 0.6,
 	timeScale = 0.07,
 }: ShaderBackgroundProps) {
+	const t = useTranslations("landing.decorative");
 	const iframeRef = useRef<HTMLIFrameElement>(null);
 	const [prefersReduced, setPrefersReduced] = useState(false);
 	const [iframeReady, setIframeReady] = useState(false);
@@ -89,7 +91,7 @@ export function ShaderBackground({
 				aria-hidden="true"
 				tabIndex={-1}
 				loading="lazy"
-				title="Animated background shader"
+				title={t("shader_title")}
 				onLoad={() => setIframeReady(true)}
 			/>
 		</>

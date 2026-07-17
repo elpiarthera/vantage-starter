@@ -2638,7 +2638,8 @@
 			"social_proof_micro": "Built on Convex. Shipped with Clerk. Powered by AI SDK v6.",
 			"badge": "AI-Native SaaS Boilerplate",
 			"copied": "Copied!",
-			"copy_command": "Copy command"
+			"copy_command": "Copy command",
+			"terminal_label": "Terminal"
 		},
 		"features": {
 			"eyebrow": "What the agentic era demands",
@@ -2755,13 +2756,21 @@
 			"res_litui": "lit-ui",
 			"built_with": "Built with",
 			"mit_license": "Open source under MIT License",
-			"discord": "Discord"
+			"discord": "Discord",
+			"github_sr": "GitHub",
+			"twitter_sr": "X (Twitter)",
+			"copyright_line": "© {year} VantageStarter. Open source under MIT License."
 		},
 		"testimonials": {
 			"heading": "What early builders are saying",
 			"subheading": "We're just getting started — real testimonials will land here as teams ship with VantageStarter.",
 			"placeholder_aria": "Testimonial placeholder {index}",
-			"placeholder_sr": "This testimonial slot is reserved for a future customer story."
+			"placeholder_sr": "This testimonial slot is reserved for a future customer story.",
+			"eyebrow": "Testimonials"
+		},
+		"decorative": {
+			"tree_title": "Generative tree animation",
+			"shader_title": "Animated background shader"
 		}
 	},
 	"app_sidebar": {
@@ -3271,5 +3280,95 @@
 		"radius": "Radius",
 		"style": "Style",
 		"theme": "Theme"
+	},
+	"sidebar_ui": {
+		"title": "Sidebar",
+		"description": "Displays the mobile sidebar.",
+		"toggle": "Toggle Sidebar"
+	},
+	"not_found": {
+		"title": "Page not found",
+		"description": "The page you are looking for does not exist or has been moved.",
+		"cta_home": "Go home"
+	},
+	"legal": {
+		"notice": {
+			"back_home": "← Back to home",
+			"title": "Legal Notice",
+			"last_updated": "Last updated: March 2026",
+			"placeholder_notice": "This is a placeholder legal notice for VantageStarter. Replace this content with your actual legal information (SIRET, company address, hosting provider) before launching.",
+			"publisher_heading": "Publisher",
+			"publisher_body": "ElPi Corp — [YOUR_COMPANY_ADDRESS]",
+			"publisher_siret": "SIRET: [YOUR_SIRET]",
+			"hosting_heading": "Hosting",
+			"hosting_body": "Hosted on Vercel, Inc. — 340 Pine Street, Suite 400, San Francisco, CA 94104, USA.",
+			"contact_heading": "Contact"
+		},
+		"privacy": {
+			"back_home": "← Back to home",
+			"title": "Privacy Policy",
+			"last_updated": "Last updated: March 2026",
+			"placeholder_notice": "This is a placeholder privacy policy for VantageStarter. Replace this content with your actual privacy policy before launching.",
+			"data_heading": "Data we collect",
+			"data_body": "VantageStarter collects only the data necessary to provide the service: account information, usage data, and payment information handled by Polar.sh.",
+			"contact_heading": "Contact",
+			"contact_intro": "For privacy-related questions, contact"
+		},
+		"accessibility_declaration": {
+			"title": "Accessibility Declaration",
+			"conformity_heading": "Conformity Status",
+			"conformity_intro": "VantageStarter is",
+			"conformity_status": "partially compliant",
+			"conformity_body": "with the RGAA 4.1.2 standard (Référentiel Général d'Amélioration de l'Accessibilité).",
+			"scope_heading": "Scope",
+			"scope_body": "This declaration applies to VantageStarter at",
+			"nonaccessible_heading": "Non-Accessible Content",
+			"nonaccessible_item1": "Third-party embedded content (Clerk authentication forms) may not fully conform to RGAA 4.1.2.",
+			"nonaccessible_item2": "Some dynamically generated content may have incomplete ARIA attributes.",
+			"prepared_heading": "Preparation of This Declaration",
+			"prepared_intro": "This declaration was prepared on",
+			"prepared_date": "19 March 2026",
+			"prepared_body": ". It is based on a self-assessment carried out by VantageStarter.",
+			"feedback_heading": "Feedback and Contact",
+			"feedback_body": "If you encounter any accessibility barrier, please contact us so we can provide an accessible alternative or fix the issue:",
+			"email_label": "Email:",
+			"recourse_heading": "Recourse",
+			"recourse_intro": "If you do not receive a satisfactory response within 30 days, you may refer the matter to the",
+			"defenseur_label": "Défenseur des droits",
+			"last_updated_label": "Last updated:",
+			"last_updated_date": "19 March 2026"
+		},
+		"accessibility_plan": {
+			"title": "Accessibility Improvement Plan",
+			"description": "This plan describes the actions planned to improve the accessibility of VantageStarter in line with RGAA 4.1.2.",
+			"actions_heading": "2026 Actions",
+			"priority": "Priority",
+			"issue": "Issue",
+			"target_date": "Target date",
+			"action1": "Complete ARIA labelling on all interactive components",
+			"action2": "Improve keyboard navigation in dashboard views",
+			"action3": "Audit and fix colour contrast ratios (WCAG 1.4.3)",
+			"action4": "Add skip-to-content link on all public pages",
+			"contact_heading": "Contact",
+			"contact_intro": "Questions about this plan:",
+			"last_updated_label": "Last updated:",
+			"last_updated_date": "19 March 2026"
+		}
+	},
+	"create_page": {
+		"title": "Design System",
+		"description": "Customize your design system. Changes update in real-time via URL params.",
+		"primary": "Primary",
+		"outline": "Outline",
+		"card_title": "Card title",
+		"card_description": "This is a preview of your design system tokens applied to real components.",
+		"color_tokens": "Color Tokens",
+		"border_radius_label": "Border Radius — var(--radius)",
+		"typography_heading": "Typography",
+		"typography_sample1": "The quick brown fox",
+		"typography_sample2": "Jumps over the lazy dog — 0123456789"
+	},
+	"shared": {
+		"skip_link": "Skip to main content"
 	}
 }

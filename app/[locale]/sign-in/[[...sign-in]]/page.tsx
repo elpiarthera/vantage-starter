@@ -1,10 +1,24 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { routing } from "@/i18n/routing";
+
+// With localePrefix: "as-needed", the defaultLocale carries NO url prefix,
+// so the Clerk `path`/`signUpUrl` props must be derived the same way the
+// middleware derives its redirect (see middleware.ts). Clerk's `routing="path"`
+// mode requires the component's `path` prop to match the ACTUAL browser URL
+// exactly -- on mismatch, clerk-js silently refuses to mount the widget
+// (our own surrounding JSX still renders, which is why only the heading
+// showed on non-default locales). Emitting "/en/sign-in" would also
+// 307-loop under next-intl's "as-needed" rewrite.
+function localizedAuthPath(locale: string, page: "sign-in" | "sign-up") {
+	return locale === routing.defaultLocale ? `/${page}` : `/${locale}/${page}`;
+}
 
 export default function SignInPage() {
 	const t = useTranslations("sign_in_page");
+	const locale = useLocale();
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -18,7 +32,11 @@ export default function SignInPage() {
 					</p>
 				</div>
 
-				<SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+				<SignIn
+					routing="path"
+					path={localizedAuthPath(locale, "sign-in")}
+					signUpUrl={localizedAuthPath(locale, "sign-up")}
+				/>
 			</div>
 		</div>
 	);

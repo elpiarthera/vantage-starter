@@ -2638,7 +2638,8 @@
 			"social_proof_micro": "Construído no Convex. Entregue com Clerk. Alimentado por AI SDK v6.",
 			"badge": "Boilerplate SaaS nativo de IA",
 			"copied": "Copiado!",
-			"copy_command": "Copiar comando"
+			"copy_command": "Copiar comando",
+			"terminal_label": "Terminal"
 		},
 		"features": {
 			"eyebrow": "O que a era agêntica exige",
@@ -2708,7 +2709,10 @@
 			"res_litui": "lit-ui",
 			"built_with": "Construído com",
 			"mit_license": "Código aberto sob licença MIT",
-			"discord": "Discord"
+			"discord": "Discord",
+			"github_sr": "GitHub",
+			"twitter_sr": "X (Twitter)",
+			"copyright_line": "© {year} VantageStarter. Código aberto sob licença MIT."
 		},
 		"faq": {
 			"heading": "Perguntas",
@@ -2761,7 +2765,12 @@
 			"heading": "O que os primeiros usuários dizem",
 			"subheading": "Estamos apenas começando — depoimentos reais aparecerão aqui à medida que as equipes lançarem projetos com o VantageStarter.",
 			"placeholder_aria": "Espaço reservado para depoimento {index}",
-			"placeholder_sr": "Este espaço está reservado para um futuro depoimento de cliente."
+			"placeholder_sr": "Este espaço está reservado para um futuro depoimento de cliente.",
+			"eyebrow": "Depoimentos"
+		},
+		"decorative": {
+			"tree_title": "Animação de árvore generativa",
+			"shader_title": "Fundo animado"
 		}
 	},
 	"app_sidebar": {
@@ -3271,5 +3280,95 @@
 		"radius": "Raio",
 		"style": "Estilo",
 		"theme": "Tema"
+	},
+	"sidebar_ui": {
+		"title": "Barra lateral",
+		"description": "Exibe a barra lateral móvel.",
+		"toggle": "Alternar barra lateral"
+	},
+	"not_found": {
+		"title": "Página não encontrada",
+		"description": "A página que você procura não existe ou foi movida.",
+		"cta_home": "Ir para o início"
+	},
+	"legal": {
+		"notice": {
+			"back_home": "← Voltar ao início",
+			"title": "Aviso legal",
+			"last_updated": "Última atualização: março de 2026",
+			"placeholder_notice": "Este é um aviso legal de exemplo para o VantageStarter. Substitua este conteúdo pelas suas informações legais reais (SIRET, endereço da empresa, provedor de hospedagem) antes do lançamento.",
+			"publisher_heading": "Editor",
+			"publisher_body": "ElPi Corp — [YOUR_COMPANY_ADDRESS]",
+			"publisher_siret": "SIRET: [YOUR_SIRET]",
+			"hosting_heading": "Hospedagem",
+			"hosting_body": "Hospedado pela Vercel, Inc. — 340 Pine Street, Suite 400, San Francisco, CA 94104, EUA.",
+			"contact_heading": "Contato"
+		},
+		"privacy": {
+			"back_home": "← Voltar ao início",
+			"title": "Política de privacidade",
+			"last_updated": "Última atualização: março de 2026",
+			"placeholder_notice": "Esta é uma política de privacidade de exemplo para o VantageStarter. Substitua este conteúdo pela sua política de privacidade real antes do lançamento.",
+			"data_heading": "Dados que coletamos",
+			"data_body": "O VantageStarter coleta apenas os dados necessários para prestar o serviço: informações da conta, dados de uso e informações de pagamento processadas pela Polar.sh.",
+			"contact_heading": "Contato",
+			"contact_intro": "Para dúvidas sobre privacidade, entre em contato com"
+		},
+		"accessibility_declaration": {
+			"title": "Declaração de acessibilidade",
+			"conformity_heading": "Status de conformidade",
+			"conformity_intro": "O VantageStarter é",
+			"conformity_status": "parcialmente conforme",
+			"conformity_body": "com o padrão RGAA 4.1.2 (referencial geral francês de melhoria da acessibilidade).",
+			"scope_heading": "Escopo",
+			"scope_body": "Esta declaração se aplica ao VantageStarter em",
+			"nonaccessible_heading": "Conteúdo não acessível",
+			"nonaccessible_item1": "O conteúdo incorporado de terceiros (formulários de autenticação Clerk) pode não estar totalmente em conformidade com o RGAA 4.1.2.",
+			"nonaccessible_item2": "Alguns conteúdos gerados dinamicamente podem ter atributos ARIA incompletos.",
+			"prepared_heading": "Elaboração desta declaração",
+			"prepared_intro": "Esta declaração foi elaborada em",
+			"prepared_date": "19 de março de 2026",
+			"prepared_body": ". Baseia-se em uma autoavaliação realizada pelo VantageStarter.",
+			"feedback_heading": "Feedback e contato",
+			"feedback_body": "Se você encontrar alguma barreira de acessibilidade, entre em contato conosco para que possamos oferecer uma alternativa acessível ou corrigir o problema:",
+			"email_label": "E-mail:",
+			"recourse_heading": "Meios de recurso",
+			"recourse_intro": "Se você não receber uma resposta satisfatória em 30 dias, pode recorrer ao",
+			"defenseur_label": "Défenseur des droits",
+			"last_updated_label": "Última atualização:",
+			"last_updated_date": "19 de março de 2026"
+		},
+		"accessibility_plan": {
+			"title": "Plano plurianual de melhoria da acessibilidade",
+			"description": "Este plano descreve as ações planejadas para melhorar a acessibilidade do VantageStarter, em conformidade com o RGAA 4.1.2.",
+			"actions_heading": "Ações de 2026",
+			"priority": "Prioridade",
+			"issue": "Problema",
+			"target_date": "Data prevista",
+			"action1": "Completar a rotulagem ARIA em todos os componentes interativos",
+			"action2": "Melhorar a navegação por teclado nas visões do painel",
+			"action3": "Auditar e corrigir as taxas de contraste de cor (WCAG 1.4.3)",
+			"action4": "Adicionar um link de pular para o conteúdo em todas as páginas públicas",
+			"contact_heading": "Contato",
+			"contact_intro": "Dúvidas sobre este plano:",
+			"last_updated_label": "Última atualização:",
+			"last_updated_date": "19 de março de 2026"
+		}
+	},
+	"create_page": {
+		"title": "Sistema de design",
+		"description": "Personalize seu sistema de design. As alterações são atualizadas em tempo real por meio de parâmetros de URL.",
+		"primary": "Primário",
+		"outline": "Contorno",
+		"card_title": "Título do cartão",
+		"card_description": "Esta é uma prévia dos tokens do seu sistema de design aplicados a componentes reais.",
+		"color_tokens": "Tokens de cor",
+		"border_radius_label": "Raio da borda — var(--radius)",
+		"typography_heading": "Tipografia",
+		"typography_sample1": "Um pequeno jabuti xereta viu dez cegonhas felizes",
+		"typography_sample2": "A dançar quinze valsas — 0123456789"
+	},
+	"shared": {
+		"skip_link": "Pular para o conteúdo principal"
 	}
 }

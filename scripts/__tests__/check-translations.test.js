@@ -6,7 +6,33 @@
  * violation of exactly one control into REAL repo material (never a
  * scanner-authored fixture), grep-asserts the mutation landed before
  * reading any verdict, asserts the control goes RED naming what it found,
- * then restores the file and asserts `git diff --stat` is empty.
+ * then restores the file and asserts byte-for-byte restoration.
+ *
+ * A DIFFERENT, RECURRING failure mode of this same file: a probe that
+ * ASSERTS a defect currently living in real, unmutated product code
+ * (`app/`, `components/`) — no injection, no mutation, just reading today's
+ * bug and calling that "real material". That satisfies the letter of "use
+ * real material, not a synthetic fixture" while being its exact opposite in
+ * spirit: it is a time bomb. It is green only while the product stays
+ * broken, and the moment someone fixes the very bug this suite exists to
+ * catch, the probe goes red and looks like a regression. Four separate
+ * sweeps of this file reintroduced this class before it was written down
+ * here: a hardcoded French heading on `accessibilite/page.tsx` (fixed, probe
+ * broke), a hardcoded "Toggle Sidebar" string in `components/ui/sidebar.tsx`
+ * (fixed, probe broke), and a `toEqual([])` assertion against the live
+ * `messages/*.json` tree for Control 3's allowlist (broke every time a
+ * legitimate new cognate/brand-name key was added).
+ *
+ * The rule going forward: A PROBE MUST CREATE WHAT IT ASSERTS. If a test's
+ * pass/fail depends on the current byte contents of a real file the test
+ * did not itself write into first (via mutate -> grep-assert-landed ->
+ * verdict -> restore), it is this bomb, not a guard. The one exception is a
+ * genuine STRUCTURAL INVARIANT that is true by construction and is meant to
+ * stay true forever regardless of tree contents (e.g. "gatedViolations is
+ * empty on arrival", "outOfScopeCount equals violations.length minus
+ * gatedViolations.length", "a mutation this test just wrote actually
+ * landed") — those are fine precisely because their truth does not depend
+ * on some OTHER, unrelated bug remaining unfixed.
  */
 
 const { execSync } = require("node:child_process");
@@ -21,6 +47,10 @@ const {
 	runControl4CalledButUndefined,
 	isLocaleSensitiveDateFnsPattern,
 	detectDateFnsFormatImportNames,
+	GATED_ROOTS,
+	FR_EN_IDENTICAL_ALLOW,
+	hasProseContent,
+	isTechnicalIdentifier,
 } = require("../check-translations.js");
 
 const ROOT = path.join(__dirname, "..", "..");
@@ -789,18 +819,46 @@ describe("check-translations — Control 2 (key parity across all locales)", () 
 		}
 	});
 
-	test("MUST_BLOCK (documented defect): the `chat` namespace is absent from de/it/es/pt/ru on the CURRENT tree — an en/fr-only parity check would bless this hole", () => {
-		const result = runControl2KeyParity();
-		expect(result.locales).toEqual(
-			expect.arrayContaining(["en", "fr", "de", "it", "es", "pt", "ru"]),
+	test("MUST_BLOCK: a namespace absent from de/it/es/pt/ru (present only in en/fr) turns Control 2 RED for every one of those five locales — an en/fr-only parity check would bless this hole", () => {
+		// This asserts the DEFECT CLASS, not a hole that happens to exist in
+		// production today (the `chat` namespace hole this test used to assert
+		// was fixed this morning — a probe that only goes green because a real
+		// defect got closed is backwards: it must inject the violation itself).
+		const locales = ["en", "fr", "de", "it", "es", "pt", "ru"];
+		const targets = locales.map((l) =>
+			path.join(ROOT, "messages", `${l}.json`),
 		);
-		const chatViolations = result.violations.filter((v) =>
-			v.key.startsWith("chat."),
-		);
-		expect(chatViolations.length).toBeGreaterThan(0);
-		const flaggedLocales = new Set(chatViolations.map((v) => v.locale));
-		for (const locale of ["de", "it", "es", "pt", "ru"]) {
-			expect(flaggedLocales.has(locale)).toBe(true);
+		const originals = targets.map((t) => fs.readFileSync(t, "utf8"));
+
+		try {
+			for (let i = 0; i < locales.length; i++) {
+				const parsed = JSON.parse(originals[i]);
+				if (locales[i] === "en" || locales[i] === "fr") {
+					parsed.__probeOnlyNamespace = { greeting: "hi" };
+				} else {
+					delete parsed.__probeOnlyNamespace;
+				}
+				fs.writeFileSync(targets[i], `${JSON.stringify(parsed, null, "\t")}\n`);
+			}
+			// Assert the mutation landed before reading any verdict.
+			const enReread = JSON.parse(
+				fs.readFileSync(path.join(ROOT, "messages", "en.json"), "utf8"),
+			);
+			expect(enReread.__probeOnlyNamespace).toEqual({ greeting: "hi" });
+
+			const result = runControl2KeyParity();
+			expect(result.ok).toBe(false);
+			const violations = result.violations.filter((v) =>
+				v.key.startsWith("__probeOnlyNamespace."),
+			);
+			const flaggedLocales = new Set(violations.map((v) => v.locale));
+			for (const locale of ["de", "it", "es", "pt", "ru"]) {
+				expect(flaggedLocales.has(locale)).toBe(true);
+			}
+		} finally {
+			for (let i = 0; i < locales.length; i++) {
+				assertRestored(targets[i], originals[i]);
+			}
 		}
 	});
 
@@ -851,13 +909,137 @@ describe("check-translations — Control 3 (fr value byte-identical to en) — S
 		}
 	});
 
-	test("MUST_PASS: every declared FR_EN_IDENTICAL_ALLOW value, plus the ICU and technical-identifier derived rules, produce zero findings on the real tree", () => {
-		// Full-tree run: proves the derived rules (ICU/format strip,
-		// technical-identifier detection) and the declared value allowlist
-		// together close every measured false positive — not merely an
-		// in-memory toy case.
-		const result = runControl3FrEqualsEn();
-		expect(result.violations).toEqual([]);
+	// NOTE: this used to run `runControl3FrEqualsEn()` against the live
+	// `messages/*.json` tree and assert zero violations. That is exactly the
+	// class this file's header comment now warns about: the assertion's truth
+	// depended on nobody having added a new key that happens to be a
+	// legitimate cognate/brand name not yet in `FR_EN_IDENTICAL_ALLOW` — it
+	// went red four times as translation work landed new, correct content
+	// (e.g. "Terminal", "X (Twitter)"), never because the RULE broke. The fix
+	// injects a synthetic locale pair built FROM the declared allowlist
+	// itself (`FR_EN_IDENTICAL_ALLOW`, exported for this purpose) plus ICU and
+	// technical-identifier samples, via the same isolated-fixture + subprocess
+	// pattern as the sibling test below — so this test is green or red based
+	// only on the RULE, never on how many keys exist in the real tree today.
+	test("MUST_PASS: every declared FR_EN_IDENTICAL_ALLOW value, plus the ICU and technical-identifier derived rules, produce zero findings via a real subprocess run against a synthetic fixture built from the allowlist", () => {
+		const dir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "control3-allowlist-probe-"),
+		);
+		try {
+			fs.mkdirSync(path.join(dir, "i18n"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "messages"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "app"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "components"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "components", "Probe.tsx"),
+				"export function Probe() {\n\treturn <span />;\n}\n",
+			);
+			fs.writeFileSync(
+				path.join(dir, "i18n", "routing.ts"),
+				'export const routing = { locales: ["en", "fr"] };\n',
+			);
+
+			// Build a locale object with one key per declared allowlist value,
+			// plus one ICU-plural key and one technical-identifier (URL) key —
+			// asserting the RULE, not a snapshot of today's real messages/*.json.
+			const shared = {};
+			const allowValues = Object.keys(FR_EN_IDENTICAL_ALLOW);
+			expect(allowValues.length).toBeGreaterThan(0);
+			allowValues.forEach((value, i) => {
+				shared[`allow_${i}`] = value;
+			});
+			shared.icu_plural_probe = "{count, plural, one {item} other {items}}";
+			shared.technical_id_probe = "https://example.com/probe";
+
+			fs.writeFileSync(
+				path.join(dir, "messages", "en.json"),
+				JSON.stringify(shared, null, "\t"),
+			);
+			fs.writeFileSync(
+				path.join(dir, "messages", "fr.json"),
+				JSON.stringify(shared, null, "\t"),
+			);
+
+			// Assert the mutation (fixture content) actually landed before
+			// reading any verdict.
+			const landedEn = JSON.parse(
+				fs.readFileSync(path.join(dir, "messages", "en.json"), "utf8"),
+			);
+			expect(landedEn.allow_0).toBe(allowValues[0]);
+
+			const out = execSync(
+				`node "${path.join(ROOT, "scripts", "check-translations.js")}" --json`,
+				{
+					cwd: ROOT,
+					encoding: "utf8",
+					env: { ...process.env, CHECK_TRANSLATIONS_ROOT: dir },
+				},
+			);
+			const parsed = JSON.parse(out);
+			expect(parsed.control3.violations).toEqual([]);
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	// MUST_BLOCK sibling — proves the rule above isn't simply "allow
+	// everything": an fr===en value that is NOT declared, not ICU, and not a
+	// technical identifier must still be reported, on the same synthetic
+	// fixture shape as the MUST_PASS above.
+	test("MUST_BLOCK: an undeclared byte-identical fr/en value (not in the allowlist, not ICU, not a technical identifier) is still reported via the same synthetic fixture shape", () => {
+		const dir = fs.mkdtempSync(
+			path.join(require("node:os").tmpdir(), "control3-allowlist-negative-"),
+		);
+		try {
+			fs.mkdirSync(path.join(dir, "i18n"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "messages"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "app"), { recursive: true });
+			fs.mkdirSync(path.join(dir, "components"), { recursive: true });
+			fs.writeFileSync(
+				path.join(dir, "components", "Probe.tsx"),
+				"export function Probe() {\n\treturn <span />;\n}\n",
+			);
+			fs.writeFileSync(
+				path.join(dir, "i18n", "routing.ts"),
+				'export const routing = { locales: ["en", "fr"] };\n',
+			);
+
+			const undeclaredValue = "This is a genuinely untranslated sentence";
+			expect(FR_EN_IDENTICAL_ALLOW[undeclaredValue]).toBeUndefined();
+			expect(hasProseContent(undeclaredValue)).toBe(true);
+			expect(isTechnicalIdentifier(undeclaredValue)).toBe(false);
+
+			const shared = { undeclared_probe: undeclaredValue };
+			fs.writeFileSync(
+				path.join(dir, "messages", "en.json"),
+				JSON.stringify(shared, null, "\t"),
+			);
+			fs.writeFileSync(
+				path.join(dir, "messages", "fr.json"),
+				JSON.stringify(shared, null, "\t"),
+			);
+
+			const landed = JSON.parse(
+				fs.readFileSync(path.join(dir, "messages", "fr.json"), "utf8"),
+			);
+			expect(landed.undeclared_probe).toBe(undeclaredValue);
+
+			const out = execSync(
+				`node "${path.join(ROOT, "scripts", "check-translations.js")}" --json`,
+				{
+					cwd: ROOT,
+					encoding: "utf8",
+					env: { ...process.env, CHECK_TRANSLATIONS_ROOT: dir },
+				},
+			);
+			const parsed = JSON.parse(out);
+			const hit = parsed.control3.violations.find(
+				(v) => v.key === "undeclared_probe",
+			);
+			expect(hit).toBeDefined();
+		} finally {
+			fs.rmSync(dir, { recursive: true, force: true });
+		}
 	});
 
 	test("MUST_PASS: a declared cognate value ('Description') across many unrelated keys, plus an ICU plural and a URL placeholder, produce zero findings via a real subprocess run against an isolated fixture", () => {
@@ -1482,12 +1664,76 @@ describe("check-translations — derived inventory", () => {
 		expect(files.length).toBeGreaterThan(70);
 	});
 
-	test("components/ui/ (lit-ui source library) is excluded, and the exclusion is declared", () => {
+	test("components/ui/ (shadcn/ui, a declared divergence) is SCANNED like every other root — never invisible — but not in GATED_ROOTS", () => {
+		// `components/ui` used to be wrongly excluded from the file inventory
+		// under a claim (never verified) that it was the lit-ui source
+		// library. The real lit-ui source lives at `src/components/ui`
+		// (outside app/+components/ scan roots). `components/ui` is in fact
+		// shadcn/ui — not gating the build on it is a legitimate call, but not
+		// SCANNING it made 30 files invisible to every control. This asserts
+		// the fix: the files are present in the derived inventory, and the
+		// root is deliberately absent from GATED_ROOTS (reported, not gating).
 		const files = deriveTargetFiles();
 		const uiFiles = files.filter((f) =>
 			path.relative(ROOT, f).startsWith(`components${path.sep}ui${path.sep}`),
 		);
-		expect(uiFiles.length).toBe(0);
+		expect(uiFiles.length).toBeGreaterThan(0);
+		expect(GATED_ROOTS.some((root) => root.startsWith("components/ui"))).toBe(
+			false,
+		);
+	});
+
+	// NOTE: this used to pin the real, live `components/ui/sidebar.tsx`
+	// "Toggle Sidebar" hardcoded string as a MUST_PASS-direction fixture with
+	// zero injection — a probe that depends on a real defect staying unfixed
+	// is backwards; it rewards the bug's existence and punishes its repair.
+	// That exact string was fixed (now `{t("toggle")}` via `useTranslations`),
+	// which correctly turned this test red. The fix is coverage-preserving
+	// injection: inject a fresh hardcoded literal into this real,
+	// out-of-scope (not in GATED_ROOTS) file, assert it lands in
+	// `outOfScopeViolations` but never in `gatedViolations`, then restore.
+	test("MUST_BLOCK: an injected hardcoded literal in `components/ui/sidebar.tsx` (out-of-scope, foreign material) is reported by Control 1 but never gates the build", () => {
+		const target = path.join(ROOT, "components/ui/sidebar.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		expect(GATED_ROOTS.some((root) => root.startsWith("components/ui"))).toBe(
+			false,
+		);
+
+		const marker = "___I18N_SIDEBAR_OUTOFSCOPE_PROBE_MARKER___";
+		const injectedLiteral = `Totally Hardcoded Sidebar Probe Copy ${marker}`;
+		const mutated = original.replace(
+			'<span className="sr-only">{t("toggle")}</span>',
+			`<span className="sr-only">{t("toggle")}</span>\n\t\t\t<span>${injectedLiteral}</span>`,
+		);
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			const sidebarFindings = result.outOfScopeViolations.filter(
+				(v) => v.file === "components/ui/sidebar.tsx",
+			);
+			expect(sidebarFindings.length).toBeGreaterThan(0);
+			expect(sidebarFindings.some((v) => v.text.includes(marker))).toBe(true);
+			// Reported-not-gating: these findings must never appear in
+			// gatedViolations, and must never flip `ok` to false on their own.
+			expect(
+				result.gatedViolations.some(
+					(v) => v.file === "components/ui/sidebar.tsx",
+				),
+			).toBe(false);
+			expect(result.ok).toBe(true);
+		} finally {
+			assertRestored(target, original);
+		}
 	});
 });
 
@@ -2024,18 +2270,54 @@ describe("check-translations — Control 1 RATCHET (gated scope vs out-of-scope 
 		}
 	});
 
-	test("MUST_PASS: a real French finding (app/[locale]/accessibilite/page.tsx) is reported with the corrected, language-neutral wording — never labeled English", () => {
-		const result = runControl1LiteralScan();
-		const frHit = result.outOfScopeViolations.find(
-			(v) =>
-				v.file === "app/[locale]/accessibilite/page.tsx" &&
-				v.text.includes("Déclaration d&apos;accessibilité"),
+	// NOTE: this used to read the real, hardcoded French heading that shipped
+	// on `app/[locale]/accessibilite/page.tsx` before this control existed,
+	// with zero injection — a MUST_PASS-direction fixture pinned to a live
+	// defect. That page was fixed (its copy now goes through
+	// `getTranslations`/`t()`), which correctly turned this test red: a probe
+	// whose truth depends on a real bug staying unfixed rewards the bug and
+	// punishes its repair. The fix is coverage-preserving injection: inject a
+	// fresh French JSX-text literal into this real, out-of-scope (not in
+	// GATED_ROOTS) page, assert Control 1 reports it via the
+	// language-neutral `jsx-text` kind (never "English"), then restore.
+	test("MUST_PASS: an injected French JSX-text literal on foreign material (app/[locale]/accessibilite/page.tsx, out-of-scope) is reported with the corrected, language-neutral wording — never labeled English", () => {
+		const target = path.join(ROOT, "app/[locale]/accessibilite/page.tsx");
+		const original = fs.readFileSync(target, "utf8");
+
+		expect(isInGatedScope("app/[locale]/accessibilite/page.tsx")).toBe(false);
+
+		const marker = "___I18N_FR_JSXTEXT_PROBE_MARKER___";
+		const injectedFrenchText = `Déclaration d'accessibilité probe ${marker}`;
+		const mutated = original.replace(
+			"export default async function DeclarationAccessibilitePage({ params }: Props) {\n\tconst { locale } = await params;\n\treturn await AccessibilityDeclaration({ locale });\n}",
+			`export default async function DeclarationAccessibilitePage({ params }: Props) {\n\tconst { locale } = await params;\n\treturn (\n\t\t<>\n\t\t\t<span>${injectedFrenchText}</span>\n\t\t\t{await AccessibilityDeclaration({ locale })}\n\t\t</>\n\t);\n}`,
 		);
-		expect(frHit).toBeDefined();
-		expect(frHit.kind).toBe("jsx-text");
-		// The kind/label the reporter prints carries no language claim at all —
-		// "jsx-text" (or "hardcoded literal" in prose) never says "English".
-		expect(frHit.kind.toLowerCase()).not.toContain("english");
+		expect(mutated).not.toBe(original);
+
+		fs.writeFileSync(target, mutated);
+
+		const landed = execSync(`grep -c "${marker}" "${target}"`, {
+			cwd: ROOT,
+			encoding: "utf8",
+		}).trim();
+		expect(Number(landed)).toBeGreaterThan(0);
+
+		try {
+			const result = runControl1LiteralScan();
+			const frHit = result.outOfScopeViolations.find(
+				(v) =>
+					v.file === "app/[locale]/accessibilite/page.tsx" &&
+					v.text.includes(marker),
+			);
+			expect(frHit).toBeDefined();
+			expect(frHit.kind).toBe("jsx-text");
+			// The kind/label the reporter prints carries no language claim at
+			// all — "jsx-text" (or "hardcoded literal" in prose) never says
+			// "English", even though the injected text is French.
+			expect(frHit.kind.toLowerCase()).not.toContain("english");
+		} finally {
+			assertRestored(target, original);
+		}
 	});
 
 	// ---- Real subprocess exit-code proof, isolated fixture (no contamination

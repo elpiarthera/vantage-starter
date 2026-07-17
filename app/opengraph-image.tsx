@@ -1,5 +1,16 @@
 import { ImageResponse } from "next/og";
 
+/**
+ * NAMED EXCEPTION (i18n): this file convention only applies to a route
+ * segment that has a matching `page.tsx` at the same level. There is no
+ * `app/page.tsx` — the real homepage lives at `app/[locale]/page.tsx`, which
+ * already overrides `openGraph.images` with the static, pre-rendered
+ * `/og-image.png` and locale-correct `t("og_title")`/`t("og_description")`
+ * text (see that file's `generateMetadata`). Verified: no reachable route
+ * resolves to this file, so translating its English copy would be dead work
+ * with zero user-facing effect. Kept only as a Next.js convention fallback
+ * for tooling that probes the bare root.
+ */
 export const runtime = "edge";
 
 export const alt = "VantageStarter — AI SaaS Starter Kit";

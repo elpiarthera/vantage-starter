@@ -2638,7 +2638,8 @@
 			"social_proof_micro": "Aufgebaut auf Convex. Geliefert mit Clerk. Betrieben von AI SDK v6.",
 			"badge": "AI-natives SaaS-Boilerplate",
 			"copied": "Kopiert!",
-			"copy_command": "Befehl kopieren"
+			"copy_command": "Befehl kopieren",
+			"terminal_label": "Terminal"
 		},
 		"features": {
 			"eyebrow": "Was die agentische Ära fordert",
@@ -2708,7 +2709,10 @@
 			"res_litui": "lit-ui",
 			"built_with": "Gebaut mit",
 			"mit_license": "Open Source unter MIT-Lizenz",
-			"discord": "Discord"
+			"discord": "Discord",
+			"github_sr": "GitHub",
+			"twitter_sr": "X (Twitter)",
+			"copyright_line": "© {year} VantageStarter. Open Source unter MIT-Lizenz."
 		},
 		"faq": {
 			"heading": "Fragen",
@@ -2761,7 +2765,12 @@
 			"heading": "Was frühe Nutzer sagen",
 			"subheading": "Wir stehen erst am Anfang — echte Erfahrungsberichte erscheinen hier, sobald Teams mit VantageStarter live gehen.",
 			"placeholder_aria": "Platzhalter für Erfahrungsbericht {index}",
-			"placeholder_sr": "Dieser Platz ist für einen zukünftigen Kundenbericht reserviert."
+			"placeholder_sr": "Dieser Platz ist für einen zukünftigen Kundenbericht reserviert.",
+			"eyebrow": "Erfahrungsberichte"
+		},
+		"decorative": {
+			"tree_title": "Generative Baumanimation",
+			"shader_title": "Animierter Hintergrund"
 		}
 	},
 	"app_sidebar": {
@@ -3271,5 +3280,95 @@
 		"radius": "Radius",
 		"style": "Stil",
 		"theme": "Thema"
+	},
+	"sidebar_ui": {
+		"title": "Seitenleiste",
+		"description": "Zeigt die mobile Seitenleiste an.",
+		"toggle": "Seitenleiste umschalten"
+	},
+	"not_found": {
+		"title": "Seite nicht gefunden",
+		"description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+		"cta_home": "Zur Startseite"
+	},
+	"legal": {
+		"notice": {
+			"back_home": "← Zurück zur Startseite",
+			"title": "Impressum",
+			"last_updated": "Zuletzt aktualisiert: März 2026",
+			"placeholder_notice": "Dies ist ein Platzhalter-Impressum für VantageStarter. Ersetzen Sie diesen Inhalt vor dem Start durch Ihre tatsächlichen rechtlichen Angaben (SIRET, Firmenadresse, Hosting-Anbieter).",
+			"publisher_heading": "Herausgeber",
+			"publisher_body": "ElPi Corp — [YOUR_COMPANY_ADDRESS]",
+			"publisher_siret": "SIRET: [YOUR_SIRET]",
+			"hosting_heading": "Hosting",
+			"hosting_body": "Gehostet von Vercel, Inc. — 340 Pine Street, Suite 400, San Francisco, CA 94104, USA.",
+			"contact_heading": "Kontakt"
+		},
+		"privacy": {
+			"back_home": "← Zurück zur Startseite",
+			"title": "Datenschutzerklärung",
+			"last_updated": "Zuletzt aktualisiert: März 2026",
+			"placeholder_notice": "Dies ist eine Platzhalter-Datenschutzerklärung für VantageStarter. Ersetzen Sie diesen Inhalt vor dem Start durch Ihre tatsächliche Datenschutzerklärung.",
+			"data_heading": "Erhobene Daten",
+			"data_body": "VantageStarter erhebt nur die für den Dienst notwendigen Daten: Kontoinformationen, Nutzungsdaten und von Polar.sh verarbeitete Zahlungsinformationen.",
+			"contact_heading": "Kontakt",
+			"contact_intro": "Bei Fragen zum Datenschutz kontaktieren Sie"
+		},
+		"accessibility_declaration": {
+			"title": "Erklärung zur Barrierefreiheit",
+			"conformity_heading": "Konformitätsstatus",
+			"conformity_intro": "VantageStarter ist",
+			"conformity_status": "teilweise konform",
+			"conformity_body": "mit dem RGAA-Standard 4.1.2 (Französisches Referenzsystem zur Verbesserung der Barrierefreiheit).",
+			"scope_heading": "Geltungsbereich",
+			"scope_body": "Diese Erklärung gilt für VantageStarter unter",
+			"nonaccessible_heading": "Nicht barrierefreie Inhalte",
+			"nonaccessible_item1": "Eingebettete Inhalte Dritter (Clerk-Authentifizierungsformulare) entsprechen möglicherweise nicht vollständig dem RGAA 4.1.2.",
+			"nonaccessible_item2": "Einige dynamisch generierte Inhalte können unvollständige ARIA-Attribute aufweisen.",
+			"prepared_heading": "Erstellung dieser Erklärung",
+			"prepared_intro": "Diese Erklärung wurde erstellt am",
+			"prepared_date": "19. März 2026",
+			"prepared_body": ". Sie basiert auf einer Selbstbewertung durch VantageStarter.",
+			"feedback_heading": "Rückmeldung und Kontakt",
+			"feedback_body": "Wenn Sie auf ein Barrierefreiheitshindernis stoßen, kontaktieren Sie uns bitte, damit wir eine barrierefreie Alternative anbieten oder das Problem beheben können:",
+			"email_label": "E-Mail:",
+			"recourse_heading": "Rechtsbehelf",
+			"recourse_intro": "Wenn Sie innerhalb von 30 Tagen keine zufriedenstellende Antwort erhalten, können Sie sich an den",
+			"defenseur_label": "Défenseur des droits",
+			"last_updated_label": "Zuletzt aktualisiert:",
+			"last_updated_date": "19. März 2026"
+		},
+		"accessibility_plan": {
+			"title": "Mehrjahresplan zur Verbesserung der Barrierefreiheit",
+			"description": "Dieser Plan beschreibt die geplanten Maßnahmen zur Verbesserung der Barrierefreiheit von VantageStarter gemäß RGAA 4.1.2.",
+			"actions_heading": "Maßnahmen 2026",
+			"priority": "Priorität",
+			"issue": "Problem",
+			"target_date": "Zieldatum",
+			"action1": "ARIA-Beschriftung für alle interaktiven Komponenten vervollständigen",
+			"action2": "Tastaturnavigation in Dashboard-Ansichten verbessern",
+			"action3": "Farbkontrastverhältnisse prüfen und korrigieren (WCAG 1.4.3)",
+			"action4": "Sprung-zum-Inhalt-Link auf allen öffentlichen Seiten hinzufügen",
+			"contact_heading": "Kontakt",
+			"contact_intro": "Fragen zu diesem Plan:",
+			"last_updated_label": "Zuletzt aktualisiert:",
+			"last_updated_date": "19. März 2026"
+		}
+	},
+	"create_page": {
+		"title": "Design-System",
+		"description": "Passen Sie Ihr Design-System an. Änderungen werden in Echtzeit über URL-Parameter aktualisiert.",
+		"primary": "Primär",
+		"outline": "Umriss",
+		"card_title": "Kartentitel",
+		"card_description": "Dies ist eine Vorschau Ihrer Design-System-Tokens, angewendet auf echte Komponenten.",
+		"color_tokens": "Farb-Tokens",
+		"border_radius_label": "Eckenradius — var(--radius)",
+		"typography_heading": "Typografie",
+		"typography_sample1": "Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich",
+		"typography_sample2": "Über den faulen Hund — 0123456789"
+	},
+	"shared": {
+		"skip_link": "Zum Hauptinhalt springen"
 	}
 }

@@ -2638,7 +2638,8 @@
 			"social_proof_micro": "Construido sobre Convex. Entregado con Clerk. Impulsado por AI SDK v6.",
 			"badge": "Boilerplate SaaS nativo de IA",
 			"copied": "¡Copiado!",
-			"copy_command": "Copiar comando"
+			"copy_command": "Copiar comando",
+			"terminal_label": "Terminal"
 		},
 		"features": {
 			"eyebrow": "Lo que exige la era agéntica",
@@ -2708,7 +2709,10 @@
 			"res_litui": "lit-ui",
 			"built_with": "Construido con",
 			"mit_license": "Código abierto bajo licencia MIT",
-			"discord": "Discord"
+			"discord": "Discord",
+			"github_sr": "GitHub",
+			"twitter_sr": "X (Twitter)",
+			"copyright_line": "© {year} VantageStarter. Código abierto bajo licencia MIT."
 		},
 		"faq": {
 			"heading": "Preguntas",
@@ -2761,7 +2765,12 @@
 			"heading": "Lo que dicen los primeros usuarios",
 			"subheading": "Recién estamos empezando — los testimonios reales aparecerán aquí a medida que los equipos lancen proyectos con VantageStarter.",
 			"placeholder_aria": "Marcador de testimonio {index}",
-			"placeholder_sr": "Este espacio está reservado para una futura historia de cliente."
+			"placeholder_sr": "Este espacio está reservado para una futura historia de cliente.",
+			"eyebrow": "Testimonios"
+		},
+		"decorative": {
+			"tree_title": "Animación de árbol generativo",
+			"shader_title": "Fondo animado"
 		}
 	},
 	"app_sidebar": {
@@ -3271,5 +3280,95 @@
 		"radius": "Radio",
 		"style": "Estilo",
 		"theme": "Tema"
+	},
+	"sidebar_ui": {
+		"title": "Barra lateral",
+		"description": "Muestra la barra lateral móvil.",
+		"toggle": "Alternar barra lateral"
+	},
+	"not_found": {
+		"title": "Página no encontrada",
+		"description": "La página que buscas no existe o ha sido movida.",
+		"cta_home": "Ir al inicio"
+	},
+	"legal": {
+		"notice": {
+			"back_home": "← Volver al inicio",
+			"title": "Aviso legal",
+			"last_updated": "Última actualización: marzo de 2026",
+			"placeholder_notice": "Este es un aviso legal de marcador de posición para VantageStarter. Sustituye este contenido con tu información legal real (SIRET, dirección de la empresa, proveedor de alojamiento) antes del lanzamiento.",
+			"publisher_heading": "Editor",
+			"publisher_body": "ElPi Corp — [YOUR_COMPANY_ADDRESS]",
+			"publisher_siret": "SIRET: [YOUR_SIRET]",
+			"hosting_heading": "Alojamiento",
+			"hosting_body": "Alojado por Vercel, Inc. — 340 Pine Street, Suite 400, San Francisco, CA 94104, USA.",
+			"contact_heading": "Contacto"
+		},
+		"privacy": {
+			"back_home": "← Volver al inicio",
+			"title": "Política de privacidad",
+			"last_updated": "Última actualización: marzo de 2026",
+			"placeholder_notice": "Esta es una política de privacidad de marcador de posición para VantageStarter. Sustituye este contenido con tu política de privacidad real antes del lanzamiento.",
+			"data_heading": "Datos que recopilamos",
+			"data_body": "VantageStarter recopila únicamente los datos necesarios para prestar el servicio: información de la cuenta, datos de uso e información de pago gestionada por Polar.sh.",
+			"contact_heading": "Contacto",
+			"contact_intro": "Para preguntas relacionadas con la privacidad, contacta con"
+		},
+		"accessibility_declaration": {
+			"title": "Declaración de accesibilidad",
+			"conformity_heading": "Estado de conformidad",
+			"conformity_intro": "VantageStarter es",
+			"conformity_status": "parcialmente conforme",
+			"conformity_body": "con el estándar RGAA 4.1.2 (referencial general francés de mejora de la accesibilidad).",
+			"scope_heading": "Ámbito",
+			"scope_body": "Esta declaración se aplica a VantageStarter en",
+			"nonaccessible_heading": "Contenido no accesible",
+			"nonaccessible_item1": "El contenido incrustado de terceros (formularios de autenticación de Clerk) puede no cumplir totalmente con el RGAA 4.1.2.",
+			"nonaccessible_item2": "Algunos contenidos generados dinámicamente pueden tener atributos ARIA incompletos.",
+			"prepared_heading": "Elaboración de esta declaración",
+			"prepared_intro": "Esta declaración fue elaborada el",
+			"prepared_date": "19 de marzo de 2026",
+			"prepared_body": ". Se basa en una autoevaluación realizada por VantageStarter.",
+			"feedback_heading": "Comentarios y contacto",
+			"feedback_body": "Si encuentras alguna barrera de accesibilidad, contáctanos para que podamos ofrecerte una alternativa accesible o corregir el problema:",
+			"email_label": "Correo electrónico:",
+			"recourse_heading": "Vías de recurso",
+			"recourse_intro": "Si no recibes una respuesta satisfactoria en un plazo de 30 días, puedes acudir al",
+			"defenseur_label": "Défenseur des droits",
+			"last_updated_label": "Última actualización:",
+			"last_updated_date": "19 de marzo de 2026"
+		},
+		"accessibility_plan": {
+			"title": "Plan plurianual de mejora de la accesibilidad",
+			"description": "Este plan describe las acciones previstas para mejorar la accesibilidad de VantageStarter conforme al RGAA 4.1.2.",
+			"actions_heading": "Acciones 2026",
+			"priority": "Prioridad",
+			"issue": "Problema",
+			"target_date": "Fecha objetivo",
+			"action1": "Completar el etiquetado ARIA en todos los componentes interactivos",
+			"action2": "Mejorar la navegación por teclado en las vistas del panel",
+			"action3": "Auditar y corregir los ratios de contraste de color (WCAG 1.4.3)",
+			"action4": "Añadir un enlace de salto al contenido en todas las páginas públicas",
+			"contact_heading": "Contacto",
+			"contact_intro": "Preguntas sobre este plan:",
+			"last_updated_label": "Última actualización:",
+			"last_updated_date": "19 de marzo de 2026"
+		}
+	},
+	"create_page": {
+		"title": "Sistema de diseño",
+		"description": "Personaliza tu sistema de diseño. Los cambios se actualizan en tiempo real mediante parámetros de URL.",
+		"primary": "Primario",
+		"outline": "Contorno",
+		"card_title": "Título de la tarjeta",
+		"card_description": "Esta es una vista previa de los tokens de tu sistema de diseño aplicados a componentes reales.",
+		"color_tokens": "Tokens de color",
+		"border_radius_label": "Radio de borde — var(--radius)",
+		"typography_heading": "Tipografía",
+		"typography_sample1": "El veloz murciélago hindú comía feliz cardillo y kiwi",
+		"typography_sample2": "La ciguеña tocaba el saxofón — 0123456789"
+	},
+	"shared": {
+		"skip_link": "Saltar al contenido principal"
 	}
 }

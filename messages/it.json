@@ -2638,7 +2638,8 @@
 			"social_proof_micro": "Costruito su Convex. Distribuito con Clerk. Alimentato da AI SDK v6.",
 			"badge": "Boilerplate SaaS AI-native",
 			"copied": "Copiato!",
-			"copy_command": "Copia comando"
+			"copy_command": "Copia comando",
+			"terminal_label": "Terminale"
 		},
 		"features": {
 			"eyebrow": "Ciò che l'era agentiva richiede",
@@ -2708,7 +2709,10 @@
 			"res_litui": "lit-ui",
 			"built_with": "Costruito con",
 			"mit_license": "Open source sotto licenza MIT",
-			"discord": "Discord"
+			"discord": "Discord",
+			"github_sr": "GitHub",
+			"twitter_sr": "X (Twitter)",
+			"copyright_line": "© {year} VantageStarter. Open source con licenza MIT."
 		},
 		"faq": {
 			"heading": "Domande",
@@ -2761,7 +2765,12 @@
 			"heading": "Cosa dicono i primi utenti",
 			"subheading": "Siamo solo all'inizio — le testimonianze reali appariranno qui man mano che i team lanceranno progetti con VantageStarter.",
 			"placeholder_aria": "Segnaposto testimonianza {index}",
-			"placeholder_sr": "Questo spazio è riservato a una futura storia cliente."
+			"placeholder_sr": "Questo spazio è riservato a una futura storia cliente.",
+			"eyebrow": "Testimonianze"
+		},
+		"decorative": {
+			"tree_title": "Animazione dell'albero generativo",
+			"shader_title": "Sfondo animato"
 		}
 	},
 	"app_sidebar": {
@@ -3271,5 +3280,95 @@
 		"radius": "Raggio",
 		"style": "Stile",
 		"theme": "Tema"
+	},
+	"sidebar_ui": {
+		"title": "Barra laterale",
+		"description": "Mostra la barra laterale mobile.",
+		"toggle": "Attiva/disattiva barra laterale"
+	},
+	"not_found": {
+		"title": "Pagina non trovata",
+		"description": "La pagina che stai cercando non esiste o è stata spostata.",
+		"cta_home": "Torna alla home"
+	},
+	"legal": {
+		"notice": {
+			"back_home": "← Torna alla home",
+			"title": "Note legali",
+			"last_updated": "Ultimo aggiornamento: marzo 2026",
+			"placeholder_notice": "Questo è un modello di note legali per VantageStarter. Sostituisci questo contenuto con le tue informazioni legali reali (SIRET, indirizzo aziendale, provider di hosting) prima del lancio.",
+			"publisher_heading": "Editore",
+			"publisher_body": "ElPi Corp — [YOUR_COMPANY_ADDRESS]",
+			"publisher_siret": "SIRET: [YOUR_SIRET]",
+			"hosting_heading": "Hosting",
+			"hosting_body": "Ospitato da Vercel, Inc. — 340 Pine Street, Suite 400, San Francisco, CA 94104, USA.",
+			"contact_heading": "Contatto"
+		},
+		"privacy": {
+			"back_home": "← Torna alla home",
+			"title": "Informativa sulla privacy",
+			"last_updated": "Ultimo aggiornamento: marzo 2026",
+			"placeholder_notice": "Questa è un'informativa sulla privacy segnaposto per VantageStarter. Sostituisci questo contenuto con la tua informativa sulla privacy reale prima del lancio.",
+			"data_heading": "Dati raccolti",
+			"data_body": "VantageStarter raccoglie solo i dati necessari per fornire il servizio: informazioni sull'account, dati di utilizzo e informazioni di pagamento gestite da Polar.sh.",
+			"contact_heading": "Contatto",
+			"contact_intro": "Per domande sulla privacy, contatta"
+		},
+		"accessibility_declaration": {
+			"title": "Dichiarazione di accessibilità",
+			"conformity_heading": "Stato di conformità",
+			"conformity_intro": "VantageStarter è",
+			"conformity_status": "parzialmente conforme",
+			"conformity_body": "allo standard RGAA 4.1.2 (referenziale generale francese per il miglioramento dell'accessibilità).",
+			"scope_heading": "Ambito",
+			"scope_body": "Questa dichiarazione si applica a VantageStarter all'indirizzo",
+			"nonaccessible_heading": "Contenuti non accessibili",
+			"nonaccessible_item1": "I contenuti incorporati di terze parti (moduli di autenticazione Clerk) potrebbero non essere pienamente conformi al RGAA 4.1.2.",
+			"nonaccessible_item2": "Alcuni contenuti generati dinamicamente potrebbero avere attributi ARIA incompleti.",
+			"prepared_heading": "Redazione di questa dichiarazione",
+			"prepared_intro": "Questa dichiarazione è stata redatta il",
+			"prepared_date": "19 marzo 2026",
+			"prepared_body": ". È basata su un'autovalutazione condotta da VantageStarter.",
+			"feedback_heading": "Feedback e contatti",
+			"feedback_body": "Se incontri una barriera di accessibilità, contattaci in modo da poterti offrire un'alternativa accessibile o risolvere il problema:",
+			"email_label": "Email:",
+			"recourse_heading": "Ricorso",
+			"recourse_intro": "Se non ricevi una risposta soddisfacente entro 30 giorni, puoi rivolgerti al",
+			"defenseur_label": "Défenseur des droits",
+			"last_updated_label": "Ultimo aggiornamento:",
+			"last_updated_date": "19 marzo 2026"
+		},
+		"accessibility_plan": {
+			"title": "Piano pluriennale di miglioramento dell'accessibilità",
+			"description": "Questo piano descrive le azioni pianificate per migliorare l'accessibilità di VantageStarter in linea con il RGAA 4.1.2.",
+			"actions_heading": "Azioni 2026",
+			"priority": "Priorità",
+			"issue": "Problema",
+			"target_date": "Data obiettivo",
+			"action1": "Completare l'etichettatura ARIA su tutti i componenti interattivi",
+			"action2": "Migliorare la navigazione da tastiera nelle viste della dashboard",
+			"action3": "Verificare e correggere i rapporti di contrasto colore (WCAG 1.4.3)",
+			"action4": "Aggiungere un link salta-al-contenuto su tutte le pagine pubbliche",
+			"contact_heading": "Contatto",
+			"contact_intro": "Domande su questo piano:",
+			"last_updated_label": "Ultimo aggiornamento:",
+			"last_updated_date": "19 marzo 2026"
+		}
+	},
+	"create_page": {
+		"title": "Sistema di design",
+		"description": "Personalizza il tuo sistema di design. Le modifiche si aggiornano in tempo reale tramite i parametri dell'URL.",
+		"primary": "Primario",
+		"outline": "Contorno",
+		"card_title": "Titolo della card",
+		"card_description": "Questa è un'anteprima dei token del sistema di design applicati a componenti reali.",
+		"color_tokens": "Token colore",
+		"border_radius_label": "Raggio del bordo — var(--radius)",
+		"typography_heading": "Tipografia",
+		"typography_sample1": "Ma la volpe, col suo balzo, ha raggiunto il quieto Fido",
+		"typography_sample2": "Sul cane pigro — 0123456789"
+	},
+	"shared": {
+		"skip_link": "Vai al contenuto principale"
 	}
 }

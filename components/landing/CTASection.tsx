@@ -145,6 +145,7 @@ export function CTASection() {
 							{t("quick_label")}
 						</p>
 						<div className="inline-flex items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-3 shadow-sm transition-all hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700">
+							{/* CLI command literal — shell syntax, not sentence content, never translated */}
 							<code className="font-mono text-sm">
 								<span
 									className="text-gray-400 dark:text-gray-500"
