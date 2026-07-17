@@ -178,6 +178,34 @@ jobs:
       - name: Biome — lint + format
         run: npx biome check .
 
+      # DECLARED RED ON ARRIVAL — an explicit, authorized exception to this
+      # file's own "a gate red on day one gets disabled by the end of the
+      # week" rule (see the header comment above). Until this commit, NO
+      # workflow in this repo ran a single test: `pnpm test` was `jest` alone
+      # (`package.json`), which owns 4 of the 43 real suites on disk; the
+      # other 39 (Vitest) were never invoked by anything CI runs. `pnpm test`
+      # now runs BOTH runners that own real suites
+      # (`scripts/run-test-suites.js`) and goes red the moment either one
+      # does — which it does today: 13 Vitest suites are genuinely broken
+      # (missing source files for deleted/renamed product code, missing
+      # `POLAR_PRODUCT_*` env vars, drifted prompt-copy assertions). Landing
+      # the HONEST runner first, wired into CI, is the point — fixing those
+      # 13 is deliberately a separate, tracked follow-up, not bundled here.
+      # A test nobody runs is not a test; this makes it impossible to merge
+      # a NEW regression on top of the 13 without everyone seeing the number
+      # move.
+      - name: Test suites — Jest + Vitest (both runners that own real suites)
+        run: pnpm test
+
+      # Same family as check-translations.js Control 4: never trust a single
+      # runner's self-reported "N passed" in isolation — compare it against
+      # the independently DERIVED on-disk inventory
+      # (scripts/derive-test-runner-ownership.js) and fail loudly if they
+      # disagree. This is what catches the exact defect this step's sibling
+      # above was added to close: a suite matched by nobody's config.
+      - name: Test runner coverage parity — no suite runs under zero runners
+        run: pnpm test:coverage-parity
+
 # Gates deliberately NOT here yet — declared, not hidden
 # -----------------------------------------------------
 # Each is a tracked root-fix, not a "later". Adding them today would make this
