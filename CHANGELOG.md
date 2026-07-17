@@ -4,6 +4,11 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-17 — CLAUDE.md + AGENTS.md now describe the shipped stack, not a lit-ui-only fiction)
+
+The bible declared a pure lit-ui codebase (No shadcn, No lucide-react, Inline SVGs only, 33 lit-ui skills, a lit-ui landing-migration chantier) while the shipped product is hybrid: shadcn/ui (`components/ui/`, 29 components, lucide-react icons) as the primary UI layer plus lit-ui web components (`src/components/ui/`, 82 source files, `lui-*` tags) on landing/dashboard surfaces. Doc-only alignment: removed the false shadcn/lucide prohibitions, removed fictions (`.claude/skills/lit-ui/` never existed; the landing-migration section was a closed chantier), declared the real hybrid stack, and dropped hand-typed counts that had drifted (7 agents / 33+18 skills). CLASS sweep — `grep -niE "no shadcn|no lucide|inline svgs only|33 skills|skills/lit-ui|CURRENT MIGRATION" CLAUDE.md AGENTS.md` → 0. Every kept lit-ui path verified to exist. No code changed.
+
+
 ### Fixed (2026-07-17 — the SIBLING extensionless import jest.config had, one line below the one I just fixed)
 
 Fixing `next/jest` → `next/jest.js` cleared the first ESM `ERR_MODULE_NOT_FOUND` in CI, and the next CI run surfaced the identical fault one line down: `jest.config.ts` and `vitest.config.ts` both `import { deriveOwnership } from "./scripts/derive-test-runner-ownership"` (extensionless), target `derive-test-runner-ownership.js`. Same disease — resolves under CommonJS/ts-node locally, `ERR_MODULE_NOT_FOUND` under the CI ESM loader. I fixed line 2 and missed its sibling on line 3; the honest CI caught it. Closed the CLASS this time, not the instance: `grep -nE 'from "\./' jest.config.ts vitest.config.ts` → every relative import now carries `.js`. (CI-green proven by the run on this commit, not the local pass.)
