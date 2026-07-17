@@ -4,6 +4,11 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-17 — jest.config.ts crashed CI at parse: `next/jest` needs the `.js` extension under ESM)
+
+`jest.config.ts:2` imported `next/jest` extensionless. `next` publishes no exports-map entry for `./jest`, so Node's ESM resolver (the path CI uses) throws `ERR_MODULE_NOT_FOUND: Cannot find module '.../next/jest' — Did you mean "next/jest.js"?` before a single test runs. It resolved locally only because ts-node/CommonJS does extensionless resolution — green on my box, red in CI: the same env-relative verdict this branch exists to kill, this time in the instrument itself. Fixed to `next/jest.js`. (CI-green is proven by the next CI run, not this local note.)
+
+
 ### Fixed (2026-07-17 — last env-dependent red closed: `__tests__/convex/users.test.ts` tripolar refusal, mirrors `polar-product-mapping.test.ts`)
 
 CI (`gh run 29597084055` @ `c5c94fd`) showed 7 FAIL, all in `__tests__/convex/users.test.ts` — a box without `NEXT_PUBLIC_CONVEX_URL` set (no local Convex dev server) hit the suite's `beforeEach`, which threw `"NEXT_PUBLIC_CONVEX_URL not set"`, filing genuinely-UNKNOWN under RED. Grepped the whole test tree for env-dependency (`grep -rlE "process\.env\.[A-Z]|import\.meta\.env" __tests__/`) — exactly two suites touch env-gated external services: `polar-product-mapping.test.ts` (already fixed, same branch) and this one. No third hidden suite in this class.

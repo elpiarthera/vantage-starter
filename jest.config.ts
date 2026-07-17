@@ -1,5 +1,8 @@
 import type { Config } from "jest";
-import nextJest from "next/jest";
+// Explicit `.js` extension: `next` publishes no exports-map entry for `./jest`,
+// so ESM resolution (used by the CI runner) requires the real filename.
+// Extensionless resolves only under CommonJS/ts-node — green locally, red in CI.
+import nextJest from "next/jest.js";
 import { deriveOwnership } from "./scripts/derive-test-runner-ownership";
 
 const createJestConfig = nextJest({
