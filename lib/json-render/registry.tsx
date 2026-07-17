@@ -151,9 +151,8 @@ export const vantageOSRegistry: ComponentRegistry = {
 			element.props;
 
 		return (
-			<div
+			<section
 				className="w-full border border-border bg-[oklch(0.17_0.01_240)] overflow-hidden"
-				role="region"
 				aria-label={`Mission proposal: ${name}`}
 			>
 				{/* Header */}
@@ -211,7 +210,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 
 				{/* Operations + Checkpoints */}
 				<div className="px-6 py-4 space-y-2">{children}</div>
-			</div>
+			</section>
 		);
 	},
 
@@ -243,6 +242,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 								? "text-[oklch(0.62_0.18_240)]"
 								: "text-[oklch(0.75_0.14_65)]",
 						)}
+						role="img"
 						aria-label={isAI ? "AI operation" : "Human operation"}
 					>
 						{isAI ? <IconBot /> : <IconUser />}

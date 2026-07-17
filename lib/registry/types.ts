@@ -47,7 +47,12 @@ export interface RegistrySkill {
 export interface RegistryHook {
 	id: string;
 	name: string;
-	event: "SessionStart" | "PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SubagentStart";
+	event:
+		| "SessionStart"
+		| "PreToolUse"
+		| "PostToolUse"
+		| "UserPromptSubmit"
+		| "SubagentStart";
 	description: string;
 }
 

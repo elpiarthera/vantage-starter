@@ -10,9 +10,9 @@
  * for maintainability, following the inline-editing.ts pattern.
  */
 
-import { html, css, nothing, type TemplateResult } from 'lit';
-import type { RowData, Row } from '@tanstack/lit-table';
-import type { RowAction } from './types.js';
+import type { Row, RowData } from "@tanstack/lit-table";
+import { css, html, nothing, type TemplateResult } from "lit";
+import type { RowAction } from "./types.js";
 
 // =============================================================================
 // Kebab Icon
@@ -59,51 +59,51 @@ const deleteIcon = html`<svg viewBox="0 0 16 16" width="14" height="14" fill="cu
  * @returns Lit TemplateResult with action buttons
  */
 export function renderRowActions<TData extends RowData>(
-  row: Row<TData>,
-  actions: RowAction<TData>[],
-  onAction: (actionId: string, row: Row<TData>) => void
+	row: Row<TData>,
+	actions: RowAction<TData>[],
+	onAction: (actionId: string, row: Row<TData>) => void,
 ): TemplateResult {
-  // Filter out hidden actions
-  const visibleActions = actions.filter((a) => {
-    if (typeof a.hidden === 'function') return !a.hidden(row.original);
-    return !a.hidden;
-  });
+	// Filter out hidden actions
+	const visibleActions = actions.filter((a) => {
+		if (typeof a.hidden === "function") return !a.hidden(row.original);
+		return !a.hidden;
+	});
 
-  if (visibleActions.length === 0) return html``;
+	if (visibleActions.length === 0) return html``;
 
-  // For 1-2 actions: render inline buttons
-  if (visibleActions.length <= 2) {
-    return html`
+	// For 1-2 actions: render inline buttons
+	if (visibleActions.length <= 2) {
+		return html`
       <div class="row-actions-inline">
         ${visibleActions.map((action) => {
-          const isDisabled =
-            typeof action.disabled === 'function'
-              ? action.disabled(row.original)
-              : action.disabled;
-          return html`
+					const isDisabled =
+						typeof action.disabled === "function"
+							? action.disabled(row.original)
+							: action.disabled;
+					return html`
             <button
               type="button"
-              class="row-action-btn${action.variant === 'destructive'
-                ? ' destructive'
-                : ''}"
+              class="row-action-btn${
+								action.variant === "destructive" ? " destructive" : ""
+							}"
               ?disabled=${isDisabled}
               @click=${(e: MouseEvent) => {
-                e.stopPropagation();
-                onAction(action.id, row);
-              }}
+								e.stopPropagation();
+								onAction(action.id, row);
+							}}
               aria-label="${action.label}"
               title="${action.label}"
             >
               ${action.icon ?? action.label}
             </button>
           `;
-        })}
+				})}
       </div>
     `;
-  }
+	}
 
-  // For 3+ actions: render kebab menu with popover
-  return html`
+	// For 3+ actions: render kebab menu with popover
+	return html`
     <lui-popover placement="bottom-end" .offset=${4}>
       <button
         slot="trigger"
@@ -117,36 +117,38 @@ export function renderRowActions<TData extends RowData>(
       </button>
       <div role="menu" class="row-actions-menu">
         ${visibleActions.map((action) => {
-          const isDisabled =
-            typeof action.disabled === 'function'
-              ? action.disabled(row.original)
-              : action.disabled;
-          return html`
+					const isDisabled =
+						typeof action.disabled === "function"
+							? action.disabled(row.original)
+							: action.disabled;
+					return html`
             <button
               type="button"
               role="menuitem"
-              class="row-actions-menu-item${action.variant === 'destructive'
-                ? ' destructive'
-                : ''}"
+              class="row-actions-menu-item${
+								action.variant === "destructive" ? " destructive" : ""
+							}"
               ?disabled=${isDisabled}
               @click=${(e: MouseEvent) => {
-                e.stopPropagation();
-                onAction(action.id, row);
-                // Close popover after action
-                const popover = (e.target as HTMLElement).closest(
-                  'lui-popover'
-                );
-                if (popover && 'open' in popover)
-                  (popover as { open: boolean }).open = false;
-              }}
+								e.stopPropagation();
+								onAction(action.id, row);
+								// Close popover after action
+								const popover = (e.target as HTMLElement).closest(
+									"lui-popover",
+								);
+								if (popover && "open" in popover)
+									(popover as { open: boolean }).open = false;
+							}}
             >
-              ${action.icon
-                ? html`<span class="menu-item-icon">${action.icon}</span>`
-                : nothing}
+              ${
+								action.icon
+									? html`<span class="menu-item-icon">${action.icon}</span>`
+									: nothing
+							}
               <span class="menu-item-label">${action.label}</span>
             </button>
           `;
-        })}
+				})}
       </div>
     </lui-popover>
   `;
@@ -158,10 +160,10 @@ export function renderRowActions<TData extends RowData>(
 
 /** Options for customizing pre-built actions */
 export interface PrebuiltActionOptions {
-  /** Custom label */
-  label?: string;
-  /** Custom icon */
-  icon?: TemplateResult;
+	/** Custom label */
+	label?: string;
+	/** Custom icon */
+	icon?: TemplateResult;
 }
 
 /**
@@ -175,13 +177,13 @@ export interface PrebuiltActionOptions {
  * ```
  */
 export function createViewAction<TData extends RowData>(
-  options?: PrebuiltActionOptions
+	options?: PrebuiltActionOptions,
 ): RowAction<TData> {
-  return {
-    id: 'view',
-    label: options?.label ?? 'View',
-    icon: options?.icon ?? viewIcon,
-  };
+	return {
+		id: "view",
+		label: options?.label ?? "View",
+		icon: options?.icon ?? viewIcon,
+	};
 }
 
 /**
@@ -190,13 +192,13 @@ export function createViewAction<TData extends RowData>(
  * Renders a pencil icon. Default label: "Edit".
  */
 export function createEditAction<TData extends RowData>(
-  options?: PrebuiltActionOptions
+	options?: PrebuiltActionOptions,
 ): RowAction<TData> {
-  return {
-    id: 'edit',
-    label: options?.label ?? 'Edit',
-    icon: options?.icon ?? editIcon,
-  };
+	return {
+		id: "edit",
+		label: options?.label ?? "Edit",
+		icon: options?.icon ?? editIcon,
+	};
 }
 
 /**
@@ -205,14 +207,14 @@ export function createEditAction<TData extends RowData>(
  * Renders a trash icon with destructive variant (red). Default label: "Delete".
  */
 export function createDeleteAction<TData extends RowData>(
-  options?: PrebuiltActionOptions
+	options?: PrebuiltActionOptions,
 ): RowAction<TData> {
-  return {
-    id: 'delete',
-    label: options?.label ?? 'Delete',
-    variant: 'destructive',
-    icon: options?.icon ?? deleteIcon,
-  };
+	return {
+		id: "delete",
+		label: options?.label ?? "Delete",
+		variant: "destructive",
+		icon: options?.icon ?? deleteIcon,
+	};
 }
 
 // =============================================================================

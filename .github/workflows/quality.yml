@@ -163,32 +163,38 @@ jobs:
       - name: Translation QA — check-translations
         run: node scripts/check-translations.js
 
+      # tsc --noEmit is proven green on the commit that introduces this gate
+      # (2026-07-17): root cause of the prior 16 errors was two missing/mismatched
+      # deps (vite absent though vitest 4 requires it; @types/react pinned to ^18
+      # against react@19), not test-only noise — one of the 16 was in product code
+      # (components/chat/ModelSelector.tsx). See CHANGELOG.md "green base" entry.
+      - name: TypeScript — tsc --noEmit
+        run: npx tsc --noEmit
+
+      # biome check . is proven green on the commit that introduces this gate.
+      # public/lit-ui (our own esbuild output) and convex/_generated (Convex
+      # codegen) are excluded in biome.json — generated artifacts we never
+      # hand-edit, same class as the pre-existing node_modules/.next exclusions.
+      - name: Biome — lint + format
+        run: npx biome check .
+
 # Gates deliberately NOT here yet — declared, not hidden
 # -----------------------------------------------------
 # Each is a tracked root-fix, not a "later". Adding them today would make this
 # workflow red on arrival and get the whole file disabled.
 #
-# 1. biome — `npx biome check .` currently reports 56 pre-existing problems
-#    across app/, lib/, convex/, src/, hooks/, scripts/ and the test suites.
-#    Blocked on cleaning those; the fix is mechanical (most are FIXABLE).
-#
-# 2. tsc --noEmit — currently 16 pre-existing errors: missing `vite/client`
-#    types across __tests__/convex/*, `vitest.config.ts` missing `vite`, and
-#    `useOptimistic` in components/chat/ModelSelector.tsx. Until these are
-#    resolved, TypeScript is not a usable gate in this repo.
-#
-# 3. convex typecheck + codegen freshness — `convex/_generated` is committed, and
+# 1. convex typecheck + codegen freshness — `convex/_generated` is committed, and
 #    `npx convex codegen` needs a Convex access token to reach the API. The build
 #    environment deliberately has none: a preview must never touch the shared dev
 #    backend. Verifying that `_generated` is in sync therefore needs a job with
 #    credentials, which does not exist yet. This is precisely how five TS18047
 #    errors reached main.
 #
-# 4. undeclared imports — nothing checks that an imported package is declared in
+# 2. undeclared imports — nothing checks that an imported package is declared in
 #    package.json. `@ai-sdk/gateway` (4 importers) and `esbuild` both were not,
 #    which is the root of this whole batch. A depcheck/knip gate closes the class.
 #
-# 5. bare `bg-gray-*` / `text-gray-*` / `border-gray-*` Tailwind colour classes —
+# 3. bare `bg-gray-*` / `text-gray-*` / `border-gray-*` Tailwind colour classes —
 #    `vantage-design-system` §3 prefers semantic tokens, and the hex-bracket gate
 #    above only closes the sibling class. 71 legitimate occurrences remain today:
 #    each carries a `dark:` counterpart, renders correctly in both themes, and is

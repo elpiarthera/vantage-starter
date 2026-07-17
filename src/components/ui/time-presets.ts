@@ -1,4 +1,4 @@
-import type { TimeValue } from './time-utils.js';
+import type { TimeValue } from "./time-utils.js";
 
 /**
  * A time preset for quick one-click time selection.
@@ -12,10 +12,10 @@ import type { TimeValue } from './time-utils.js';
  * ```
  */
 export interface TimePreset {
-  /** Display label for the preset button */
-  label: string;
-  /** Function that returns the resolved TimeValue when called */
-  resolve: () => TimeValue;
+	/** Display label for the preset button */
+	label: string;
+	/** Function that returns the resolved TimeValue when called */
+	resolve: () => TimeValue;
 }
 
 /**
@@ -24,9 +24,9 @@ export interface TimePreset {
  * to ensure SSR safety.
  */
 export const DEFAULT_TIME_PRESETS: TimePreset[] = [
-  { label: 'Morning', resolve: () => ({ hour: 9, minute: 0, second: 0 }) },
-  { label: 'Afternoon', resolve: () => ({ hour: 14, minute: 0, second: 0 }) },
-  { label: 'Evening', resolve: () => ({ hour: 18, minute: 0, second: 0 }) },
+	{ label: "Morning", resolve: () => ({ hour: 9, minute: 0, second: 0 }) },
+	{ label: "Afternoon", resolve: () => ({ hour: 14, minute: 0, second: 0 }) },
+	{ label: "Evening", resolve: () => ({ hour: 18, minute: 0, second: 0 }) },
 ];
 
 /**
@@ -34,6 +34,6 @@ export const DEFAULT_TIME_PRESETS: TimePreset[] = [
  * Called at evaluation time (not import time) for SSR safety.
  */
 export function resolveNow(): TimeValue {
-  const now = new Date();
-  return { hour: now.getHours(), minute: now.getMinutes(), second: 0 };
+	const now = new Date();
+	return { hour: now.getHours(), minute: now.getMinutes(), second: 0 };
 }

@@ -3,15 +3,15 @@
  */
 
 import {
-  computePosition as _computePosition,
-  autoUpdate,
-  flip as _flip,
-  shift as _shift,
-  offset as _offset,
-  arrow as _arrow,
-  size as _size,
-  type Placement,
-} from '@floating-ui/dom';
+	arrow as _arrow,
+	computePosition as _computePosition,
+	flip as _flip,
+	offset as _offset,
+	shift as _shift,
+	size as _size,
+	autoUpdate,
+	type Placement,
+} from "@floating-ui/dom";
 
 export type { Placement };
 export const flip = _flip;

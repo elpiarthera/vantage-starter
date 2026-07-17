@@ -7,9 +7,9 @@
  * Follows the selection-column.ts factory pattern.
  */
 
-import { html, css, nothing } from 'lit';
-import type { ColumnDef, RowData } from './types.js';
-import type { Row } from '@tanstack/lit-table';
+import type { Row } from "@tanstack/lit-table";
+import { css, html, nothing } from "lit";
+import type { ColumnDef, RowData } from "./types.js";
 
 /**
  * Creates an expand toggle column for expandable rows.
@@ -30,27 +30,30 @@ import type { Row } from '@tanstack/lit-table';
  * ];
  * ```
  */
-export function createExpandColumn<TData extends RowData>(): ColumnDef<TData, unknown> {
-  return {
-    id: '_expand',
-    header: () => nothing,
-    cell: ({ row }: { row: Row<TData> }) => {
-      if (!row.getCanExpand()) return nothing;
+export function createExpandColumn<TData extends RowData>(): ColumnDef<
+	TData,
+	unknown
+> {
+	return {
+		id: "_expand",
+		header: () => nothing,
+		cell: ({ row }: { row: Row<TData> }) => {
+			if (!row.getCanExpand()) return nothing;
 
-      const isExpanded = row.getIsExpanded();
-      return html`
+			const isExpanded = row.getIsExpanded();
+			return html`
         <button
           type="button"
           class="expand-toggle"
           aria-expanded="${isExpanded}"
-          aria-label="${isExpanded ? 'Collapse row' : 'Expand row'}"
+          aria-label="${isExpanded ? "Collapse row" : "Expand row"}"
           @click=${(e: MouseEvent) => {
-            e.stopPropagation();
-            row.toggleExpanded();
-          }}
+						e.stopPropagation();
+						row.toggleExpanded();
+					}}
         >
           <svg
-            class="expand-icon ${isExpanded ? 'expanded' : ''}"
+            class="expand-icon ${isExpanded ? "expanded" : ""}"
             width="16"
             height="16"
             viewBox="0 0 24 24"
@@ -65,14 +68,14 @@ export function createExpandColumn<TData extends RowData>(): ColumnDef<TData, un
           </svg>
         </button>
       `;
-    },
-    size: 40,
-    minSize: 40,
-    maxSize: 40,
-    enableSorting: false,
-    enableColumnFilter: false,
-    enableResizing: false,
-  };
+		},
+		size: 40,
+		minSize: 40,
+		maxSize: 40,
+		enableSorting: false,
+		enableColumnFilter: false,
+		enableResizing: false,
+	};
 }
 
 /**
@@ -139,10 +142,10 @@ export const expandColumnStyles = css`
  * @returns TemplateResult for the detail panel
  */
 export function renderDetailPanel<TData extends RowData>(
-  row: Row<TData>,
-  renderFn: (rowData: TData, row: any) => any
+	row: Row<TData>,
+	renderFn: (rowData: TData, row: any) => any,
 ) {
-  return html`
+	return html`
     <div
       class="detail-panel"
       role="region"

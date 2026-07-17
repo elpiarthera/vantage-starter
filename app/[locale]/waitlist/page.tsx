@@ -14,8 +14,7 @@ const frLocalization = {
 		},
 		success: {
 			title: "Vous êtes sur la liste !",
-			subtitle:
-				"Nous vous contacterons dès que votre accès sera disponible.",
+			subtitle: "Nous vous contacterons dès que votre accès sera disponible.",
 		},
 	},
 };

@@ -1,239 +1,243 @@
 {
-  "version": "1.0.0",
-  "description": "Routing eval corpus — maps natural language prompts to expected agents. VantageStarter 7-agent team.",
-  "agents": [
-    "dev-frontend",
-    "dev-convex-expert",
-    "clerk-expert",
-    "dev-seo",
-    "dev-sentinel",
-    "accessibility-audit",
-    "dev-senior-dev"
-  ],
-  "evals": [
-    {
-      "id": 1,
-      "team": "dev-studio",
-      "prompt": "build a new dashboard page with stats cards",
-      "expectedAgent": "dev-frontend",
-      "assertions": [
-        "Routes to dev-frontend, not dev-senior-dev",
-        "Does NOT invoke dev-convex-expert for the UI layer"
-      ],
-      "tags": ["frontend", "exact"]
-    },
-    {
-      "id": 2,
-      "team": "dev-studio",
-      "prompt": "add a responsive mobile navigation sidebar",
-      "expectedAgent": "dev-frontend",
-      "assertions": [
-        "Routes to dev-frontend",
-        "Mobile/responsive work = frontend specialist"
-      ],
-      "tags": ["frontend", "exact"]
-    },
-    {
-      "id": 3,
-      "team": "dev-studio",
-      "prompt": "create a shadcn modal for confirming deletions",
-      "expectedAgent": "dev-frontend",
-      "assertions": ["Routes to dev-frontend for shadcn component work"],
-      "tags": ["frontend", "exact"]
-    },
-    {
-      "id": 4,
-      "team": "dev-studio",
-      "prompt": "write a Convex mutation to create a new project",
-      "expectedAgent": "dev-convex-expert",
-      "assertions": [
-        "Routes to dev-convex-expert",
-        "Does NOT route to dev-frontend"
-      ],
-      "tags": ["convex", "exact"]
-    },
-    {
-      "id": 5,
-      "team": "dev-studio",
-      "prompt": "add an index to the Convex schema for querying by userId",
-      "expectedAgent": "dev-convex-expert",
-      "assertions": ["Routes to dev-convex-expert for schema/index work"],
-      "tags": ["convex", "exact"]
-    },
-    {
-      "id": 6,
-      "team": "dev-studio",
-      "prompt": "set up a Convex cron job to send weekly digest emails",
-      "expectedAgent": "dev-convex-expert",
-      "assertions": ["Routes to dev-convex-expert for cron jobs"],
-      "tags": ["convex", "exact"]
-    },
-    {
-      "id": 7,
-      "team": "dev-studio",
-      "prompt": "configure Clerk organizations with custom roles",
-      "expectedAgent": "dev-clerk-expert",
-      "assertions": [
-        "Routes to dev-clerk-expert",
-        "Does NOT route to dev-senior-dev"
-      ],
-      "tags": ["clerk", "exact"]
-    },
-    {
-      "id": 8,
-      "team": "dev-studio",
-      "prompt": "protect the /dashboard route so only signed-in users can access it",
-      "expectedAgent": "dev-clerk-expert",
-      "assertions": ["Routes to dev-clerk-expert for middleware/auth protection"],
-      "tags": ["clerk", "paraphrase"]
-    },
-    {
-      "id": 9,
-      "team": "dev-studio",
-      "prompt": "add generateMetadata for the blog post page",
-      "expectedAgent": "dev-seo",
-      "assertions": [
-        "Routes to dev-seo for metadata/SEO work",
-        "Does NOT route to dev-frontend"
-      ],
-      "tags": ["seo", "exact"]
-    },
-    {
-      "id": 10,
-      "team": "dev-studio",
-      "prompt": "create a sitemap.ts and robots.ts for the Next.js app",
-      "expectedAgent": "dev-seo",
-      "assertions": ["Routes to dev-seo for sitemap/robots"],
-      "tags": ["seo", "exact"]
-    },
-    {
-      "id": 11,
-      "team": "dev-studio",
-      "prompt": "run a security audit on the codebase before deployment",
-      "expectedAgent": "dev-sentinel",
-      "assertions": [
-        "Routes to dev-sentinel",
-        "Does NOT route to dev-senior-dev"
-      ],
-      "tags": ["security", "exact"]
-    },
-    {
-      "id": 12,
-      "team": "dev-studio",
-      "prompt": "check for XSS vulnerabilities in the form inputs",
-      "expectedAgent": "dev-sentinel",
-      "assertions": ["Routes to dev-sentinel for vulnerability checks"],
-      "tags": ["security", "paraphrase"]
-    },
-    {
-      "id": 13,
-      "team": "dev-studio",
-      "prompt": "audit the app for WCAG contrast failures",
-      "expectedAgent": "accessibility-audit",
-      "assertions": [
-        "Routes to accessibility-audit",
-        "Does NOT route to dev-frontend"
-      ],
-      "tags": ["accessibility", "exact"]
-    },
-    {
-      "id": 14,
-      "team": "dev-studio",
-      "prompt": "check if the site passes RGAA accessibility criteria",
-      "expectedAgent": "accessibility-audit",
-      "assertions": ["Routes to accessibility-audit for RGAA"],
-      "tags": ["accessibility", "exact"]
-    },
-    {
-      "id": 15,
-      "team": "dev-studio",
-      "prompt": "review the architecture before we add the new payments feature",
-      "expectedAgent": "dev-senior-dev",
-      "assertions": [
-        "Routes to dev-senior-dev for architecture review",
-        "Does NOT route to dev-frontend or dev-convex-expert"
-      ],
-      "tags": ["architecture", "exact"]
-    },
-    {
-      "id": 16,
-      "team": "dev-studio",
-      "prompt": "do a code review on this PR",
-      "expectedAgent": "dev-senior-dev",
-      "assertions": ["Routes to dev-senior-dev for PR review"],
-      "tags": ["architecture", "paraphrase"]
-    },
-    {
-      "id": 17,
-      "team": "dev-studio",
-      "prompt": "the layout is broken on mobile screens",
-      "expectedAgent": "dev-frontend",
-      "assertions": ["Layout/responsive = dev-frontend, not dev-senior-dev"],
-      "tags": ["frontend", "paraphrase"]
-    },
-    {
-      "id": 18,
-      "team": "dev-studio",
-      "prompt": "add keyboard navigation support to the dropdown menu",
-      "expectedAgent": "accessibility-audit",
-      "assertions": ["Keyboard nav = accessibility-audit domain"],
-      "tags": ["accessibility", "paraphrase"]
-    },
-    {
-      "id": 19,
-      "team": "dev-studio",
-      "prompt": "the Convex query is too slow, add indexes to fix it",
-      "expectedAgent": "dev-convex-expert",
-      "assertions": ["Performance issue in Convex = dev-convex-expert"],
-      "tags": ["convex", "paraphrase"]
-    },
-    {
-      "id": 20,
-      "team": "dev-studio",
-      "prompt": "set up CSP headers for production",
-      "expectedAgent": "dev-sentinel",
-      "assertions": ["CSP headers = security domain = dev-sentinel"],
-      "tags": ["security", "paraphrase"]
-    },
-    {
-      "id": 21,
-      "team": "dev-studio",
-      "prompt": "add structured data JSON-LD schema to the product page",
-      "expectedAgent": "dev-seo",
-      "assertions": ["JSON-LD schema.org = dev-seo domain"],
-      "tags": ["seo", "paraphrase"]
-    },
-    {
-      "id": 22,
-      "team": "dev-studio",
-      "prompt": "should we use Zustand or Jotai for this state management problem",
-      "expectedAgent": "dev-senior-dev",
-      "assertions": ["Tech decision = dev-senior-dev"],
-      "tags": ["architecture", "paraphrase"]
-    },
-    {
-      "id": 23,
-      "team": "dev-studio",
-      "prompt": "implement Clerk webhook to sync users to Convex on sign-up",
-      "expectedAgent": "dev-clerk-expert",
-      "assertions": ["Clerk webhook = dev-clerk-expert, even if Convex is involved"],
-      "tags": ["clerk", "paraphrase"]
-    },
-    {
-      "id": 24,
-      "team": "dev-studio",
-      "prompt": "add screen reader support to the notification system",
-      "expectedAgent": "accessibility-audit",
-      "assertions": ["Screen reader = accessibility-audit"],
-      "tags": ["accessibility", "paraphrase"]
-    },
-    {
-      "id": 25,
-      "team": "dev-studio",
-      "prompt": "refactor the data fetching pattern across the app",
-      "expectedAgent": "dev-senior-dev",
-      "assertions": ["Refactoring at system level = dev-senior-dev"],
-      "tags": ["architecture", "paraphrase"]
-    }
-  ]
+	"version": "1.0.0",
+	"description": "Routing eval corpus — maps natural language prompts to expected agents. VantageStarter 7-agent team.",
+	"agents": [
+		"dev-frontend",
+		"dev-convex-expert",
+		"clerk-expert",
+		"dev-seo",
+		"dev-sentinel",
+		"accessibility-audit",
+		"dev-senior-dev"
+	],
+	"evals": [
+		{
+			"id": 1,
+			"team": "dev-studio",
+			"prompt": "build a new dashboard page with stats cards",
+			"expectedAgent": "dev-frontend",
+			"assertions": [
+				"Routes to dev-frontend, not dev-senior-dev",
+				"Does NOT invoke dev-convex-expert for the UI layer"
+			],
+			"tags": ["frontend", "exact"]
+		},
+		{
+			"id": 2,
+			"team": "dev-studio",
+			"prompt": "add a responsive mobile navigation sidebar",
+			"expectedAgent": "dev-frontend",
+			"assertions": [
+				"Routes to dev-frontend",
+				"Mobile/responsive work = frontend specialist"
+			],
+			"tags": ["frontend", "exact"]
+		},
+		{
+			"id": 3,
+			"team": "dev-studio",
+			"prompt": "create a shadcn modal for confirming deletions",
+			"expectedAgent": "dev-frontend",
+			"assertions": ["Routes to dev-frontend for shadcn component work"],
+			"tags": ["frontend", "exact"]
+		},
+		{
+			"id": 4,
+			"team": "dev-studio",
+			"prompt": "write a Convex mutation to create a new project",
+			"expectedAgent": "dev-convex-expert",
+			"assertions": [
+				"Routes to dev-convex-expert",
+				"Does NOT route to dev-frontend"
+			],
+			"tags": ["convex", "exact"]
+		},
+		{
+			"id": 5,
+			"team": "dev-studio",
+			"prompt": "add an index to the Convex schema for querying by userId",
+			"expectedAgent": "dev-convex-expert",
+			"assertions": ["Routes to dev-convex-expert for schema/index work"],
+			"tags": ["convex", "exact"]
+		},
+		{
+			"id": 6,
+			"team": "dev-studio",
+			"prompt": "set up a Convex cron job to send weekly digest emails",
+			"expectedAgent": "dev-convex-expert",
+			"assertions": ["Routes to dev-convex-expert for cron jobs"],
+			"tags": ["convex", "exact"]
+		},
+		{
+			"id": 7,
+			"team": "dev-studio",
+			"prompt": "configure Clerk organizations with custom roles",
+			"expectedAgent": "dev-clerk-expert",
+			"assertions": [
+				"Routes to dev-clerk-expert",
+				"Does NOT route to dev-senior-dev"
+			],
+			"tags": ["clerk", "exact"]
+		},
+		{
+			"id": 8,
+			"team": "dev-studio",
+			"prompt": "protect the /dashboard route so only signed-in users can access it",
+			"expectedAgent": "dev-clerk-expert",
+			"assertions": [
+				"Routes to dev-clerk-expert for middleware/auth protection"
+			],
+			"tags": ["clerk", "paraphrase"]
+		},
+		{
+			"id": 9,
+			"team": "dev-studio",
+			"prompt": "add generateMetadata for the blog post page",
+			"expectedAgent": "dev-seo",
+			"assertions": [
+				"Routes to dev-seo for metadata/SEO work",
+				"Does NOT route to dev-frontend"
+			],
+			"tags": ["seo", "exact"]
+		},
+		{
+			"id": 10,
+			"team": "dev-studio",
+			"prompt": "create a sitemap.ts and robots.ts for the Next.js app",
+			"expectedAgent": "dev-seo",
+			"assertions": ["Routes to dev-seo for sitemap/robots"],
+			"tags": ["seo", "exact"]
+		},
+		{
+			"id": 11,
+			"team": "dev-studio",
+			"prompt": "run a security audit on the codebase before deployment",
+			"expectedAgent": "dev-sentinel",
+			"assertions": [
+				"Routes to dev-sentinel",
+				"Does NOT route to dev-senior-dev"
+			],
+			"tags": ["security", "exact"]
+		},
+		{
+			"id": 12,
+			"team": "dev-studio",
+			"prompt": "check for XSS vulnerabilities in the form inputs",
+			"expectedAgent": "dev-sentinel",
+			"assertions": ["Routes to dev-sentinel for vulnerability checks"],
+			"tags": ["security", "paraphrase"]
+		},
+		{
+			"id": 13,
+			"team": "dev-studio",
+			"prompt": "audit the app for WCAG contrast failures",
+			"expectedAgent": "accessibility-audit",
+			"assertions": [
+				"Routes to accessibility-audit",
+				"Does NOT route to dev-frontend"
+			],
+			"tags": ["accessibility", "exact"]
+		},
+		{
+			"id": 14,
+			"team": "dev-studio",
+			"prompt": "check if the site passes RGAA accessibility criteria",
+			"expectedAgent": "accessibility-audit",
+			"assertions": ["Routes to accessibility-audit for RGAA"],
+			"tags": ["accessibility", "exact"]
+		},
+		{
+			"id": 15,
+			"team": "dev-studio",
+			"prompt": "review the architecture before we add the new payments feature",
+			"expectedAgent": "dev-senior-dev",
+			"assertions": [
+				"Routes to dev-senior-dev for architecture review",
+				"Does NOT route to dev-frontend or dev-convex-expert"
+			],
+			"tags": ["architecture", "exact"]
+		},
+		{
+			"id": 16,
+			"team": "dev-studio",
+			"prompt": "do a code review on this PR",
+			"expectedAgent": "dev-senior-dev",
+			"assertions": ["Routes to dev-senior-dev for PR review"],
+			"tags": ["architecture", "paraphrase"]
+		},
+		{
+			"id": 17,
+			"team": "dev-studio",
+			"prompt": "the layout is broken on mobile screens",
+			"expectedAgent": "dev-frontend",
+			"assertions": ["Layout/responsive = dev-frontend, not dev-senior-dev"],
+			"tags": ["frontend", "paraphrase"]
+		},
+		{
+			"id": 18,
+			"team": "dev-studio",
+			"prompt": "add keyboard navigation support to the dropdown menu",
+			"expectedAgent": "accessibility-audit",
+			"assertions": ["Keyboard nav = accessibility-audit domain"],
+			"tags": ["accessibility", "paraphrase"]
+		},
+		{
+			"id": 19,
+			"team": "dev-studio",
+			"prompt": "the Convex query is too slow, add indexes to fix it",
+			"expectedAgent": "dev-convex-expert",
+			"assertions": ["Performance issue in Convex = dev-convex-expert"],
+			"tags": ["convex", "paraphrase"]
+		},
+		{
+			"id": 20,
+			"team": "dev-studio",
+			"prompt": "set up CSP headers for production",
+			"expectedAgent": "dev-sentinel",
+			"assertions": ["CSP headers = security domain = dev-sentinel"],
+			"tags": ["security", "paraphrase"]
+		},
+		{
+			"id": 21,
+			"team": "dev-studio",
+			"prompt": "add structured data JSON-LD schema to the product page",
+			"expectedAgent": "dev-seo",
+			"assertions": ["JSON-LD schema.org = dev-seo domain"],
+			"tags": ["seo", "paraphrase"]
+		},
+		{
+			"id": 22,
+			"team": "dev-studio",
+			"prompt": "should we use Zustand or Jotai for this state management problem",
+			"expectedAgent": "dev-senior-dev",
+			"assertions": ["Tech decision = dev-senior-dev"],
+			"tags": ["architecture", "paraphrase"]
+		},
+		{
+			"id": 23,
+			"team": "dev-studio",
+			"prompt": "implement Clerk webhook to sync users to Convex on sign-up",
+			"expectedAgent": "dev-clerk-expert",
+			"assertions": [
+				"Clerk webhook = dev-clerk-expert, even if Convex is involved"
+			],
+			"tags": ["clerk", "paraphrase"]
+		},
+		{
+			"id": 24,
+			"team": "dev-studio",
+			"prompt": "add screen reader support to the notification system",
+			"expectedAgent": "accessibility-audit",
+			"assertions": ["Screen reader = accessibility-audit"],
+			"tags": ["accessibility", "paraphrase"]
+		},
+		{
+			"id": 25,
+			"team": "dev-studio",
+			"prompt": "refactor the data fetching pattern across the app",
+			"expectedAgent": "dev-senior-dev",
+			"assertions": ["Refactoring at system level = dev-senior-dev"],
+			"tags": ["architecture", "paraphrase"]
+		}
+	]
 }

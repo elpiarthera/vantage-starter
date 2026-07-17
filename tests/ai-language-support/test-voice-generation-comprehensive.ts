@@ -129,7 +129,7 @@ async function runTest(
 	falKey: string,
 	config: TestConfig,
 	language: LanguageCode,
-	text: string,
+	_text: string,
 ): Promise<TestResult> {
 	const startTime = Date.now();
 

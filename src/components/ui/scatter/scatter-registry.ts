@@ -18,26 +18,26 @@
 let _scatterRegistered = false;
 
 export async function registerScatterModules(): Promise<void> {
-  if (_scatterRegistered) return;
-  _scatterRegistered = true;
+	if (_scatterRegistered) return;
+	_scatterRegistered = true;
 
-  // registerCanvasCore() registers CanvasRenderer + shared ECharts components
-  // (GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, etc.)
-  // Its own _registered guard makes double-call safe from any other chart registry.
-  const { registerCanvasCore } = await import('../registry/canvas-core.js');
-  await registerCanvasCore();
+	// registerCanvasCore() registers CanvasRenderer + shared ECharts components
+	// (GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, etc.)
+	// Its own _registered guard makes double-call safe from any other chart registry.
+	const { registerCanvasCore } = await import("../registry/canvas-core.js");
+	await registerCanvasCore();
 
-  // ScatterChart: tree-shaken subpath import — keeps bundle at ~135KB gzip.
-  const [{ ScatterChart }, { use }] = await Promise.all([
-    import('echarts/charts'),
-    import('echarts/core'),
-  ]);
-  use([ScatterChart]);
+	// ScatterChart: tree-shaken subpath import — keeps bundle at ~135KB gzip.
+	const [{ ScatterChart }, { use }] = await Promise.all([
+		import("echarts/charts"),
+		import("echarts/core"),
+	]);
+	use([ScatterChart]);
 
-  // ScatterGLChart: always register so type: 'scatterGL' works when enable-gl is set.
-  // _maybeLoadGl() in BaseChartElement side-effect-imports echarts-gl when enableGl is true,
-  // but explicit use() ensures the tree-shaken build includes the correct module.
-  // Type shim in echarts-gl.d.ts provides TypeScript types for this import.
-  const { ScatterGLChart } = await import('echarts-gl/charts');
-  use([ScatterGLChart]);
+	// ScatterGLChart: always register so type: 'scatterGL' works when enable-gl is set.
+	// _maybeLoadGl() in BaseChartElement side-effect-imports echarts-gl when enableGl is true,
+	// but explicit use() ensures the tree-shaken build includes the correct module.
+	// Type shim in echarts-gl.d.ts provides TypeScript types for this import.
+	const { ScatterGLChart } = await import("echarts-gl/charts");
+	use([ScatterGLChart]);
 }

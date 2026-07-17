@@ -12,9 +12,10 @@
  * ></lui-global-search>
  * ```
  */
-import { html, css, isServer } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
+
+import { TailwindElement, tailwindBaseStyles } from "@lit-ui/core";
+import { css, html, isServer } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
 /**
  * Global search component for table-wide filtering.
@@ -22,35 +23,35 @@ import { TailwindElement, tailwindBaseStyles } from '@lit-ui/core';
  * Emits:
  * - `global-filter-change` - When filter value changes (detail: { value })
  */
-@customElement('lui-global-search')
+@customElement("lui-global-search")
 export class GlobalSearch extends TailwindElement {
-  /**
-   * Current search value.
-   */
-  @property({ type: String })
-  value = '';
+	/**
+	 * Current search value.
+	 */
+	@property({ type: String })
+	value = "";
 
-  /**
-   * Placeholder text for the search input.
-   */
-  @property({ type: String })
-  placeholder = 'Search all columns...';
+	/**
+	 * Placeholder text for the search input.
+	 */
+	@property({ type: String })
+	placeholder = "Search all columns...";
 
-  /**
-   * Debounce delay in milliseconds.
-   * @default 300
-   */
-  @property({ type: Number, attribute: 'debounce-delay' })
-  debounceDelay = 300;
+	/**
+	 * Debounce delay in milliseconds.
+	 * @default 300
+	 */
+	@property({ type: Number, attribute: "debounce-delay" })
+	debounceDelay = 300;
 
-  /**
-   * Debounce timeout reference.
-   */
-  private debounceTimeout?: ReturnType<typeof setTimeout>;
+	/**
+	 * Debounce timeout reference.
+	 */
+	private debounceTimeout?: ReturnType<typeof setTimeout>;
 
-  static override styles = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
       }
@@ -70,31 +71,31 @@ export class GlobalSearch extends TailwindElement {
         height: 16px;
       }
     `,
-  ];
+	];
 
-  private handleInput(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this.value = target.value;
+	private handleInput(e: Event): void {
+		const target = e.target as HTMLInputElement;
+		this.value = target.value;
 
-    clearTimeout(this.debounceTimeout);
-    this.debounceTimeout = setTimeout(() => {
-      this.dispatchEvent(
-        new CustomEvent('global-filter-change', {
-          detail: { value: this.value || '' },
-          bubbles: true,
-          composed: true,
-        })
-      );
-    }, this.debounceDelay);
-  }
+		clearTimeout(this.debounceTimeout);
+		this.debounceTimeout = setTimeout(() => {
+			this.dispatchEvent(
+				new CustomEvent("global-filter-change", {
+					detail: { value: this.value || "" },
+					bubbles: true,
+					composed: true,
+				}),
+			);
+		}, this.debounceDelay);
+	}
 
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    clearTimeout(this.debounceTimeout);
-  }
+	override disconnectedCallback(): void {
+		super.disconnectedCallback();
+		clearTimeout(this.debounceTimeout);
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <lui-input
         type="search"
         size="sm"
@@ -118,12 +119,12 @@ export class GlobalSearch extends TailwindElement {
         </span>
       </lui-input>
     `;
-  }
+	}
 }
 
 // JSX type declaration
 declare global {
-  interface HTMLElementTagNameMap {
-    'lui-global-search': GlobalSearch;
-  }
+	interface HTMLElementTagNameMap {
+		"lui-global-search": GlobalSearch;
+	}
 }

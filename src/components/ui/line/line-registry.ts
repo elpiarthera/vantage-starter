@@ -12,18 +12,18 @@
 let _lineRegistered = false;
 
 export async function registerLineModules(): Promise<void> {
-  if (_lineRegistered) return;
-  _lineRegistered = true;
+	if (_lineRegistered) return;
+	_lineRegistered = true;
 
-  // registerCanvasCore() is always called first — it registers CanvasRenderer + shared components.
-  // Its own _registered guard makes double-call safe from area-chart.ts.
-  const { registerCanvasCore } = await import('../registry/canvas-core.js');
-  await registerCanvasCore();
+	// registerCanvasCore() is always called first — it registers CanvasRenderer + shared components.
+	// Its own _registered guard makes double-call safe from area-chart.ts.
+	const { registerCanvasCore } = await import("../registry/canvas-core.js");
+	await registerCanvasCore();
 
-  const [{ LineChart }, { use }] = await Promise.all([
-    import('echarts/charts'),
-    import('echarts/core'),
-  ]);
+	const [{ LineChart }, { use }] = await Promise.all([
+		import("echarts/charts"),
+		import("echarts/core"),
+	]);
 
-  use([LineChart]);
+	use([LineChart]);
 }

@@ -16,18 +16,18 @@
  */
 
 export type TreemapNode = {
-  name: string;
-  value: number;
-  children?: TreemapNode[];
+	name: string;
+	value: number;
+	children?: TreemapNode[];
 };
 
 export type TreemapOptionProps = {
-  /** Show ECharts built-in breadcrumb navigation. Default: true */
-  breadcrumb?: boolean;
-  /** Apply borderRadius to cells. Maps to itemStyle.borderRadius per level. Default: 0 */
-  borderRadius?: number;
-  /** Per-level color arrays. levels[0] applies to depth-0 nodes. Each inner array is the palette for that level. */
-  levelColors?: string[][];
+	/** Show ECharts built-in breadcrumb navigation. Default: true */
+	breadcrumb?: boolean;
+	/** Apply borderRadius to cells. Maps to itemStyle.borderRadius per level. Default: 0 */
+	borderRadius?: number;
+	/** Per-level color arrays. levels[0] applies to depth-0 nodes. Each inner array is the palette for that level. */
+	levelColors?: string[][];
 };
 
 /**
@@ -39,53 +39,53 @@ export type TreemapOptionProps = {
  * - levels[] uses color: string[] per entry matching levelColors input arrays (Pitfall 3).
  */
 export function buildTreemapOption(
-  data: TreemapNode[],
-  props: TreemapOptionProps
+	data: TreemapNode[],
+	props: TreemapOptionProps,
 ): Record<string, unknown> {
-  // Apply defaults
-  const showBreadcrumb = props.breadcrumb ?? true;
-  const borderRadius = props.borderRadius ?? 0;
-  const levelColors = props.levelColors ?? [];
+	// Apply defaults
+	const showBreadcrumb = props.breadcrumb ?? true;
+	const borderRadius = props.borderRadius ?? 0;
+	const levelColors = props.levelColors ?? [];
 
-  // Build levels array from levelColors
-  // Each level entry gets: color palette, itemStyle with borderRadius, gapWidth, borderWidth
-  const levels = levelColors.map((colors, i) => ({
-    color: colors,
-    itemStyle: {
-      borderRadius: borderRadius > 0 ? Math.max(0, borderRadius - i) : 0,
-      gapWidth: i === 0 ? 4 : 2,
-      borderWidth: i === 0 ? 3 : 1,
-      borderColor: '#fff',
-    },
-  }));
+	// Build levels array from levelColors
+	// Each level entry gets: color palette, itemStyle with borderRadius, gapWidth, borderWidth
+	const levels = levelColors.map((colors, i) => ({
+		color: colors,
+		itemStyle: {
+			borderRadius: borderRadius > 0 ? Math.max(0, borderRadius - i) : 0,
+			gapWidth: i === 0 ? 4 : 2,
+			borderWidth: i === 0 ? 3 : 1,
+			borderColor: "#fff",
+		},
+	}));
 
-  // When no levelColors are provided but borderRadius > 0, apply borderRadius on the series itemStyle directly
-  const seriesItemStyle: Record<string, unknown> =
-    levelColors.length === 0 && borderRadius > 0 ? { borderRadius } : {};
+	// When no levelColors are provided but borderRadius > 0, apply borderRadius on the series itemStyle directly
+	const seriesItemStyle: Record<string, unknown> =
+		levelColors.length === 0 && borderRadius > 0 ? { borderRadius } : {};
 
-  return {
-    tooltip: { trigger: 'item' },
-    series: [
-      {
-        type: 'treemap',
-        width: '100%',
-        // IMPORTANT: Do NOT use calc() — ECharts layout engine does not resolve CSS calc().
-        // '90%' gives room for the breadcrumb bar (Pitfall 1 from RESEARCH.md).
-        height: showBreadcrumb ? '90%' : '100%',
-        nodeClick: 'zoomToNode', // enables breadcrumb drill-down navigation (TREE-02)
-        roam: false,
-        animationDurationUpdate: 900,
-        breadcrumb: {
-          show: showBreadcrumb,
-          height: 22,
-          left: 'center',
-          bottom: 0,
-        },
-        visibleMin: 10, // ECharts hides nodes below 10px² area automatically
-        levels: levels.length > 0 ? levels : undefined,
-        itemStyle: seriesItemStyle,
-        data,
-      },
-    ],
-  };
+	return {
+		tooltip: { trigger: "item" },
+		series: [
+			{
+				type: "treemap",
+				width: "100%",
+				// IMPORTANT: Do NOT use calc() — ECharts layout engine does not resolve CSS calc().
+				// '90%' gives room for the breadcrumb bar (Pitfall 1 from RESEARCH.md).
+				height: showBreadcrumb ? "90%" : "100%",
+				nodeClick: "zoomToNode", // enables breadcrumb drill-down navigation (TREE-02)
+				roam: false,
+				animationDurationUpdate: 900,
+				breadcrumb: {
+					show: showBreadcrumb,
+					height: 22,
+					left: "center",
+					bottom: 0,
+				},
+				visibleMin: 10, // ECharts hides nodes below 10px² area automatically
+				levels: levels.length > 0 ? levels : undefined,
+				itemStyle: seriesItemStyle,
+				data,
+			},
+		],
+	};
 }

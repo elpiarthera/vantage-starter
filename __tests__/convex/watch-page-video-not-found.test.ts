@@ -42,7 +42,10 @@ describe("Issue #175 — watch page Video Not Found fix", () => {
 		const getPublicIdx = projectsSource.indexOf("export const getPublic");
 		expect(getPublicIdx).toBeGreaterThan(-1);
 
-		const afterGetPublic = projectsSource.slice(getPublicIdx, getPublicIdx + 600);
+		const afterGetPublic = projectsSource.slice(
+			getPublicIdx,
+			getPublicIdx + 600,
+		);
 
 		// Guard should check status === "draft" (not status !== "completed")
 		// so that "in_progress" projects with a finalVideoUrl are accessible

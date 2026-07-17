@@ -12,10 +12,20 @@
  * @fires ui-time-input-change - Dispatched when the time value changes, with { value: TimeValue }
  */
 
-import { html, css, nothing, isServer, type PropertyValues, type CSSResultGroup } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles, dispatchCustomEvent } from '@lit-ui/core';
-import { type TimeValue, to12Hour, to24Hour, clampHour, clampMinute } from './time-utils.js';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { type CSSResultGroup, css, html, nothing } from "lit";
+import { property, state } from "lit/decorators.js";
+import {
+	clampHour,
+	clampMinute,
+	type TimeValue,
+	to12Hour,
+	to24Hour,
+} from "./time-utils.js";
 
 /**
  * Internal time input with hour/minute spinbuttons and optional AM/PM toggle.
@@ -28,65 +38,55 @@ import { type TimeValue, to12Hour, to24Hour, clampHour, clampMinute } from './ti
  * ```
  */
 export class TimeInput extends TailwindElement {
-  // ---------------------------------------------------------------------------
-  // Public properties
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Public properties
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Current time value. Always stored in 24-hour format internally.
-   * Null when no time is set.
-   */
-  @property({ attribute: false })
-  value: TimeValue | null = null;
+	/**
+	 * Current time value. Always stored in 24-hour format internally.
+	 * Null when no time is set.
+	 */
+	@property({ attribute: false })
+	value: TimeValue | null = null;
 
-  /**
-   * Whether to display in 12-hour format with AM/PM toggle.
-   * When false, uses 24-hour format (0-23).
-   */
-  @property({ type: Boolean, reflect: true })
-  hour12 = false;
+	/**
+	 * Whether to display in 12-hour format with AM/PM toggle.
+	 * When false, uses 24-hour format (0-23).
+	 */
+	@property({ type: Boolean, reflect: true })
+	hour12 = false;
 
-  /**
-   * Whether the input is disabled.
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether the input is disabled.
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Whether the input is readonly.
-   */
-  @property({ type: Boolean, reflect: true })
-  readonly = false;
+	/**
+	 * Whether the input is readonly.
+	 */
+	@property({ type: Boolean, reflect: true })
+	readonly = false;
 
-  // ---------------------------------------------------------------------------
-  // Internal state
-  // ---------------------------------------------------------------------------
+	/**
+	 * Buffer for type-ahead digit entry.
+	 * Digits accumulate within the 750ms timeout window.
+	 */
+	@state()
+	private typeAheadBuffer = "";
 
-  /**
-   * Currently focused field within the time input.
-   */
-  @state()
-  private focusedField: 'hour' | 'minute' | 'period' = 'hour';
+	/**
+	 * Timer ID for the type-ahead buffer timeout.
+	 */
+	private typeAheadTimer: number | undefined;
 
-  /**
-   * Buffer for type-ahead digit entry.
-   * Digits accumulate within the 750ms timeout window.
-   */
-  @state()
-  private typeAheadBuffer = '';
+	// ---------------------------------------------------------------------------
+	// Styles
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Timer ID for the type-ahead buffer timeout.
-   */
-  private typeAheadTimer: number | undefined;
-
-  // ---------------------------------------------------------------------------
-  // Styles
-  // ---------------------------------------------------------------------------
-
-  static override styles: CSSResultGroup = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles: CSSResultGroup = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: inline-block;
       }
@@ -159,90 +159,92 @@ export class TimeInput extends TailwindElement {
       }
 
     `,
-  ];
+	];
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Lifecycle
+	// ---------------------------------------------------------------------------
 
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.clearTypeAheadTimer();
-  }
+	override disconnectedCallback(): void {
+		super.disconnectedCallback();
+		this.clearTypeAheadTimer();
+	}
 
-  // ---------------------------------------------------------------------------
-  // Getters
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Getters
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Get the current hour value for display.
-   * In 12-hour mode, converts from 24h internal storage.
-   */
-  private get displayHour(): number {
-    if (!this.value) return this.hour12 ? 12 : 0;
-    if (this.hour12) {
-      return to12Hour(this.value.hour).hour;
-    }
-    return this.value.hour;
-  }
+	/**
+	 * Get the current hour value for display.
+	 * In 12-hour mode, converts from 24h internal storage.
+	 */
+	private get displayHour(): number {
+		if (!this.value) return this.hour12 ? 12 : 0;
+		if (this.hour12) {
+			return to12Hour(this.value.hour).hour;
+		}
+		return this.value.hour;
+	}
 
-  /**
-   * Get the current minute value for display.
-   */
-  private get displayMinute(): number {
-    return this.value?.minute ?? 0;
-  }
+	/**
+	 * Get the current minute value for display.
+	 */
+	private get displayMinute(): number {
+		return this.value?.minute ?? 0;
+	}
 
-  /**
-   * Get the current period (AM/PM) based on the 24-hour value.
-   */
-  private get currentPeriod(): 'AM' | 'PM' {
-    if (!this.value) return 'AM';
-    return to12Hour(this.value.hour).period;
-  }
+	/**
+	 * Get the current period (AM/PM) based on the 24-hour value.
+	 */
+	private get currentPeriod(): "AM" | "PM" {
+		if (!this.value) return "AM";
+		return to12Hour(this.value.hour).period;
+	}
 
-  /**
-   * Hour minimum value based on format mode.
-   */
-  private get hourMin(): number {
-    return this.hour12 ? 1 : 0;
-  }
+	/**
+	 * Hour minimum value based on format mode.
+	 */
+	private get hourMin(): number {
+		return this.hour12 ? 1 : 0;
+	}
 
-  /**
-   * Hour maximum value based on format mode.
-   */
-  private get hourMax(): number {
-    return this.hour12 ? 12 : 23;
-  }
+	/**
+	 * Hour maximum value based on format mode.
+	 */
+	private get hourMax(): number {
+		return this.hour12 ? 12 : 23;
+	}
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Render
+	// ---------------------------------------------------------------------------
 
-  override render() {
-    const hourText = String(this.displayHour).padStart(2, '0');
-    const minuteText = String(this.displayMinute).padStart(2, '0');
-    const isInteractive = !this.disabled && !this.readonly;
+	override render() {
+		const hourText = String(this.displayHour).padStart(2, "0");
+		const minuteText = String(this.displayMinute).padStart(2, "0");
+		const isInteractive = !this.disabled && !this.readonly;
 
-    const hourAriaText = this.hour12
-      ? `${this.displayHour} ${this.currentPeriod}`
-      : String(this.displayHour);
+		const hourAriaText = this.hour12
+			? `${this.displayHour} ${this.currentPeriod}`
+			: String(this.displayHour);
 
-    return html`
+		return html`
       <div class="time-input-wrapper">
         <div
           class="spinbutton"
           role="spinbutton"
-          tabindex=${isInteractive ? '0' : '-1'}
+          tabindex=${isInteractive ? "0" : "-1"}
           aria-label="Hour"
           aria-valuenow=${this.displayHour}
           aria-valuemin=${this.hourMin}
           aria-valuemax=${this.hourMax}
           aria-valuetext=${hourAriaText}
-          aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-readonly=${this.readonly ? 'true' : 'false'}
+          aria-disabled=${this.disabled ? "true" : "false"}
+          aria-readonly=${this.readonly ? "true" : "false"}
           @keydown=${this.handleHourKeydown}
-          @focus=${() => { this.focusedField = 'hour'; }}
+          @focus=${() => {
+						this.focusedField = "hour";
+					}}
         >${hourText}</div>
 
         <span class="separator" aria-hidden="true">:</span>
@@ -250,20 +252,23 @@ export class TimeInput extends TailwindElement {
         <div
           class="spinbutton"
           role="spinbutton"
-          tabindex=${isInteractive ? '0' : '-1'}
+          tabindex=${isInteractive ? "0" : "-1"}
           aria-label="Minute"
           aria-valuenow=${this.displayMinute}
           aria-valuemin=${0}
           aria-valuemax=${59}
           aria-valuetext=${String(this.displayMinute)}
-          aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-readonly=${this.readonly ? 'true' : 'false'}
+          aria-disabled=${this.disabled ? "true" : "false"}
+          aria-readonly=${this.readonly ? "true" : "false"}
           @keydown=${this.handleMinuteKeydown}
-          @focus=${() => { this.focusedField = 'minute'; }}
+          @focus=${() => {
+						this.focusedField = "minute";
+					}}
         >${minuteText}</div>
 
-        ${this.hour12
-          ? html`
+        ${
+					this.hour12
+						? html`
               <button
                 class="period-toggle"
                 type="button"
@@ -271,246 +276,249 @@ export class TimeInput extends TailwindElement {
                 ?disabled=${this.disabled || this.readonly}
                 @click=${this.togglePeriod}
                 @keydown=${this.handlePeriodKeydown}
-                @focus=${() => { this.focusedField = 'period'; }}
+                @focus=${() => {
+									this.focusedField = "period";
+								}}
               >${this.currentPeriod}</button>
             `
-          : nothing}
+						: nothing
+				}
       </div>
     `;
-  }
+	}
 
-  // ---------------------------------------------------------------------------
-  // Keyboard handlers
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Keyboard handlers
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Handle keyboard events on the hour spinbutton.
-   */
-  private handleHourKeydown(e: KeyboardEvent): void {
-    if (this.disabled || this.readonly) return;
+	/**
+	 * Handle keyboard events on the hour spinbutton.
+	 */
+	private handleHourKeydown(e: KeyboardEvent): void {
+		if (this.disabled || this.readonly) return;
 
-    switch (e.key) {
-      case 'ArrowUp':
-        e.preventDefault();
-        this.incrementHour(1);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        this.incrementHour(-1);
-        break;
-      case 'Home':
-        e.preventDefault();
-        this.setHourDisplay(this.hourMin);
-        break;
-      case 'End':
-        e.preventDefault();
-        this.setHourDisplay(this.hourMax);
-        break;
-      case 'PageUp':
-        e.preventDefault();
-        this.incrementHour(6);
-        break;
-      case 'PageDown':
-        e.preventDefault();
-        this.incrementHour(-6);
-        break;
-      default:
-        if (e.key >= '0' && e.key <= '9') {
-          e.preventDefault();
-          this.handleTypeAhead(e.key, 'hour');
-        }
-        break;
-    }
-  }
+		switch (e.key) {
+			case "ArrowUp":
+				e.preventDefault();
+				this.incrementHour(1);
+				break;
+			case "ArrowDown":
+				e.preventDefault();
+				this.incrementHour(-1);
+				break;
+			case "Home":
+				e.preventDefault();
+				this.setHourDisplay(this.hourMin);
+				break;
+			case "End":
+				e.preventDefault();
+				this.setHourDisplay(this.hourMax);
+				break;
+			case "PageUp":
+				e.preventDefault();
+				this.incrementHour(6);
+				break;
+			case "PageDown":
+				e.preventDefault();
+				this.incrementHour(-6);
+				break;
+			default:
+				if (e.key >= "0" && e.key <= "9") {
+					e.preventDefault();
+					this.handleTypeAhead(e.key, "hour");
+				}
+				break;
+		}
+	}
 
-  /**
-   * Handle keyboard events on the minute spinbutton.
-   */
-  private handleMinuteKeydown(e: KeyboardEvent): void {
-    if (this.disabled || this.readonly) return;
+	/**
+	 * Handle keyboard events on the minute spinbutton.
+	 */
+	private handleMinuteKeydown(e: KeyboardEvent): void {
+		if (this.disabled || this.readonly) return;
 
-    switch (e.key) {
-      case 'ArrowUp':
-        e.preventDefault();
-        this.incrementMinute(1);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        this.incrementMinute(-1);
-        break;
-      case 'Home':
-        e.preventDefault();
-        this.setMinute(0);
-        break;
-      case 'End':
-        e.preventDefault();
-        this.setMinute(59);
-        break;
-      case 'PageUp':
-        e.preventDefault();
-        this.incrementMinute(10);
-        break;
-      case 'PageDown':
-        e.preventDefault();
-        this.incrementMinute(-10);
-        break;
-      default:
-        if (e.key >= '0' && e.key <= '9') {
-          e.preventDefault();
-          this.handleTypeAhead(e.key, 'minute');
-        }
-        break;
-    }
-  }
+		switch (e.key) {
+			case "ArrowUp":
+				e.preventDefault();
+				this.incrementMinute(1);
+				break;
+			case "ArrowDown":
+				e.preventDefault();
+				this.incrementMinute(-1);
+				break;
+			case "Home":
+				e.preventDefault();
+				this.setMinute(0);
+				break;
+			case "End":
+				e.preventDefault();
+				this.setMinute(59);
+				break;
+			case "PageUp":
+				e.preventDefault();
+				this.incrementMinute(10);
+				break;
+			case "PageDown":
+				e.preventDefault();
+				this.incrementMinute(-10);
+				break;
+			default:
+				if (e.key >= "0" && e.key <= "9") {
+					e.preventDefault();
+					this.handleTypeAhead(e.key, "minute");
+				}
+				break;
+		}
+	}
 
-  /**
-   * Handle keyboard events on the AM/PM toggle button.
-   * Space and Enter are handled natively by the button element.
-   */
-  private handlePeriodKeydown(e: KeyboardEvent): void {
-    if (this.disabled || this.readonly) return;
+	/**
+	 * Handle keyboard events on the AM/PM toggle button.
+	 * Space and Enter are handled natively by the button element.
+	 */
+	private handlePeriodKeydown(e: KeyboardEvent): void {
+		if (this.disabled || this.readonly) return;
 
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      this.togglePeriod();
-    }
-  }
+		if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+			e.preventDefault();
+			this.togglePeriod();
+		}
+	}
 
-  // ---------------------------------------------------------------------------
-  // Value mutation helpers
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Value mutation helpers
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Increment/decrement the display hour by a delta, wrapping at boundaries.
-   */
-  private incrementHour(delta: number): void {
-    const current = this.displayHour;
-    const min = this.hourMin;
-    const max = this.hourMax;
-    const range = max - min + 1;
+	/**
+	 * Increment/decrement the display hour by a delta, wrapping at boundaries.
+	 */
+	private incrementHour(delta: number): void {
+		const current = this.displayHour;
+		const min = this.hourMin;
+		const max = this.hourMax;
+		const range = max - min + 1;
 
-    let next = current + delta;
-    // Wrap within the valid range
-    next = ((next - min) % range + range) % range + min;
+		let next = current + delta;
+		// Wrap within the valid range
+		next = ((((next - min) % range) + range) % range) + min;
 
-    this.setHourDisplay(next);
-  }
+		this.setHourDisplay(next);
+	}
 
-  /**
-   * Set the display hour value (handles 12h to 24h conversion).
-   */
-  private setHourDisplay(displayHour: number): void {
-    const clamped = clampHour(displayHour, this.hour12);
-    let hour24: number;
+	/**
+	 * Set the display hour value (handles 12h to 24h conversion).
+	 */
+	private setHourDisplay(displayHour: number): void {
+		const clamped = clampHour(displayHour, this.hour12);
+		let hour24: number;
 
-    if (this.hour12) {
-      hour24 = to24Hour(clamped, this.currentPeriod);
-    } else {
-      hour24 = clamped;
-    }
+		if (this.hour12) {
+			hour24 = to24Hour(clamped, this.currentPeriod);
+		} else {
+			hour24 = clamped;
+		}
 
-    this.updateValue(hour24, this.value?.minute ?? 0);
-  }
+		this.updateValue(hour24, this.value?.minute ?? 0);
+	}
 
-  /**
-   * Increment/decrement the minute by a delta, wrapping 0-59.
-   */
-  private incrementMinute(delta: number): void {
-    const current = this.displayMinute;
-    let next = (current + delta) % 60;
-    if (next < 0) next += 60;
-    this.setMinute(next);
-  }
+	/**
+	 * Increment/decrement the minute by a delta, wrapping 0-59.
+	 */
+	private incrementMinute(delta: number): void {
+		const current = this.displayMinute;
+		let next = (current + delta) % 60;
+		if (next < 0) next += 60;
+		this.setMinute(next);
+	}
 
-  /**
-   * Set the minute value directly.
-   */
-  private setMinute(minute: number): void {
-    const clamped = clampMinute(minute);
-    this.updateValue(this.value?.hour ?? 0, clamped);
-  }
+	/**
+	 * Set the minute value directly.
+	 */
+	private setMinute(minute: number): void {
+		const clamped = clampMinute(minute);
+		this.updateValue(this.value?.hour ?? 0, clamped);
+	}
 
-  /**
-   * Toggle between AM and PM, preserving the display hour.
-   */
-  private togglePeriod(): void {
-    if (this.disabled || this.readonly) return;
+	/**
+	 * Toggle between AM and PM, preserving the display hour.
+	 */
+	private togglePeriod(): void {
+		if (this.disabled || this.readonly) return;
 
-    const newPeriod = this.currentPeriod === 'AM' ? 'PM' : 'AM';
-    const hour24 = to24Hour(this.displayHour, newPeriod);
-    this.updateValue(hour24, this.value?.minute ?? 0);
-  }
+		const newPeriod = this.currentPeriod === "AM" ? "PM" : "AM";
+		const hour24 = to24Hour(this.displayHour, newPeriod);
+		this.updateValue(hour24, this.value?.minute ?? 0);
+	}
 
-  /**
-   * Update the internal value and dispatch change event.
-   */
-  private updateValue(hour24: number, minute: number): void {
-    const newValue: TimeValue = {
-      hour: hour24,
-      minute,
-      second: this.value?.second ?? 0,
-    };
-    this.value = newValue;
+	/**
+	 * Update the internal value and dispatch change event.
+	 */
+	private updateValue(hour24: number, minute: number): void {
+		const newValue: TimeValue = {
+			hour: hour24,
+			minute,
+			second: this.value?.second ?? 0,
+		};
+		this.value = newValue;
 
-    dispatchCustomEvent(this, 'ui-time-input-change', { value: newValue });
-  }
+		dispatchCustomEvent(this, "ui-time-input-change", { value: newValue });
+	}
 
-  // ---------------------------------------------------------------------------
-  // Type-ahead buffer
-  // ---------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------
+	// Type-ahead buffer
+	// ---------------------------------------------------------------------------
 
-  /**
-   * Handle digit keypress for type-ahead entry.
-   * Accumulates digits within a 750ms window, then parses and clamps.
-   */
-  private handleTypeAhead(digit: string, field: 'hour' | 'minute'): void {
-    this.clearTypeAheadTimer();
-    this.typeAheadBuffer += digit;
+	/**
+	 * Handle digit keypress for type-ahead entry.
+	 * Accumulates digits within a 750ms window, then parses and clamps.
+	 */
+	private handleTypeAhead(digit: string, field: "hour" | "minute"): void {
+		this.clearTypeAheadTimer();
+		this.typeAheadBuffer += digit;
 
-    this.typeAheadTimer = window.setTimeout(() => {
-      this.applyTypeAheadBuffer(field);
-    }, 750);
+		this.typeAheadTimer = window.setTimeout(() => {
+			this.applyTypeAheadBuffer(field);
+		}, 750);
 
-    // If buffer reaches max digits for the field, apply immediately
-    const maxDigits = field === 'hour' ? 2 : 2;
-    if (this.typeAheadBuffer.length >= maxDigits) {
-      this.clearTypeAheadTimer();
-      this.applyTypeAheadBuffer(field);
-    }
-  }
+		// If buffer reaches max digits for the field, apply immediately
+		const maxDigits = field === "hour" ? 2 : 2;
+		if (this.typeAheadBuffer.length >= maxDigits) {
+			this.clearTypeAheadTimer();
+			this.applyTypeAheadBuffer(field);
+		}
+	}
 
-  /**
-   * Parse the type-ahead buffer and apply the value to the specified field.
-   */
-  private applyTypeAheadBuffer(field: 'hour' | 'minute'): void {
-    if (!this.typeAheadBuffer) return;
+	/**
+	 * Parse the type-ahead buffer and apply the value to the specified field.
+	 */
+	private applyTypeAheadBuffer(field: "hour" | "minute"): void {
+		if (!this.typeAheadBuffer) return;
 
-    const parsed = parseInt(this.typeAheadBuffer, 10);
-    this.typeAheadBuffer = '';
+		const parsed = parseInt(this.typeAheadBuffer, 10);
+		this.typeAheadBuffer = "";
 
-    if (isNaN(parsed)) return;
+		if (Number.isNaN(parsed)) return;
 
-    if (field === 'hour') {
-      this.setHourDisplay(parsed);
-    } else {
-      this.setMinute(parsed);
-    }
-  }
+		if (field === "hour") {
+			this.setHourDisplay(parsed);
+		} else {
+			this.setMinute(parsed);
+		}
+	}
 
-  /**
-   * Clear the type-ahead timer and reset buffer state.
-   */
-  private clearTypeAheadTimer(): void {
-    if (this.typeAheadTimer !== undefined) {
-      window.clearTimeout(this.typeAheadTimer);
-      this.typeAheadTimer = undefined;
-    }
-  }
+	/**
+	 * Clear the type-ahead timer and reset buffer state.
+	 */
+	private clearTypeAheadTimer(): void {
+		if (this.typeAheadTimer !== undefined) {
+			window.clearTimeout(this.typeAheadTimer);
+			this.typeAheadTimer = undefined;
+		}
+	}
 }
 
 // Safe custom element registration for internal component
-if (typeof customElements !== 'undefined') {
-  if (!customElements.get('lui-time-input')) {
-    customElements.define('lui-time-input', TimeInput);
-  }
+if (typeof customElements !== "undefined") {
+	if (!customElements.get("lui-time-input")) {
+		customElements.define("lui-time-input", TimeInput);
+	}
 }

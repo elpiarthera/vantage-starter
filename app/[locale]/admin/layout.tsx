@@ -188,6 +188,7 @@ export default function AdminLayout({
 					<SidebarContent collapsed={isSidebarCollapsed} />
 
 					<button
+						type="button"
 						onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
 						className="absolute -right-3 top-6 w-6 h-6 rounded-full border border-border bg-background shadow-sm hover:bg-accent/10 transition-colors flex items-center justify-center"
 						aria-label={
@@ -209,7 +210,10 @@ export default function AdminLayout({
 					<h1 className="text-lg font-semibold">{t("panel_title")}</h1>
 					<Sheet>
 						<SheetTrigger asChild>
-							<button className="p-2 hover:bg-accent/10 rounded-lg transition-colors">
+							<button
+								type="button"
+								className="p-2 hover:bg-accent/10 rounded-lg transition-colors"
+							>
 								<Menu className="w-6 h-6" />
 							</button>
 						</SheetTrigger>

@@ -15,10 +15,14 @@
  * @fires ui-range-input - Dispatched during drag with interim range values
  */
 
-import { html, css, type CSSResultGroup } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { TailwindElement, tailwindBaseStyles, dispatchCustomEvent } from '@lit-ui/core';
-import { type TimeValue, formatTimeForDisplay } from './time-utils.js';
+import {
+	dispatchCustomEvent,
+	TailwindElement,
+	tailwindBaseStyles,
+} from "@lit-ui/core";
+import { type CSSResultGroup, css, html } from "lit";
+import { property, state } from "lit/decorators.js";
+import { formatTimeForDisplay, type TimeValue } from "./time-utils.js";
 
 /** Maximum minutes in a day (24 * 60) */
 const MAX_MINUTES = 1440;
@@ -27,9 +31,9 @@ const MAX_MINUTES = 1440;
 const TICK_POSITIONS = [0, 180, 360, 540, 720, 900, 1080, 1260];
 
 export class TimeRangeSlider extends TailwindElement {
-  static override styles: CSSResultGroup = [
-    ...tailwindBaseStyles,
-    css`
+	static override styles: CSSResultGroup = [
+		...tailwindBaseStyles,
+		css`
       :host {
         display: block;
         padding: 0.5rem 0;
@@ -119,220 +123,228 @@ export class TimeRangeSlider extends TailwindElement {
       }
 
     `,
-  ];
+	];
 
-  // ─── Public properties ──────────────────────────────────────────────
+	// ─── Public properties ──────────────────────────────────────────────
 
-  /** Start of the selected range in minutes since midnight (0-1440). Default 9:00 AM. */
-  @property({ type: Number }) startMinutes = 540;
+	/** Start of the selected range in minutes since midnight (0-1440). Default 9:00 AM. */
+	@property({ type: Number }) startMinutes = 540;
 
-  /** End of the selected range in minutes since midnight (0-1440). Default 5:00 PM. */
-  @property({ type: Number }) endMinutes = 1020;
+	/** End of the selected range in minutes since midnight (0-1440). Default 5:00 PM. */
+	@property({ type: Number }) endMinutes = 1020;
 
-  /** Step size in minutes for snapping. */
-  @property({ type: Number }) step = 30;
+	/** Step size in minutes for snapping. */
+	@property({ type: Number }) step = 30;
 
-  /** Whether to use 12-hour display format. */
-  @property({ type: Boolean }) hour12 = false;
+	/** Whether to use 12-hour display format. */
+	@property({ type: Boolean }) hour12 = false;
 
-  /** Locale for time formatting. */
-  @property() locale = 'en-US';
+	/** Locale for time formatting. */
+	@property() locale = "en-US";
 
-  /** Disabled state. */
-  @property({ type: Boolean, reflect: true }) disabled = false;
+	/** Disabled state. */
+	@property({ type: Boolean, reflect: true }) disabled = false;
 
-  // ─── Internal state ─────────────────────────────────────────────────
+	// ─── Internal state ─────────────────────────────────────────────────
 
-  /** Which thumb is currently being dragged, or null if idle. */
-  @state() private _activeThumb: 'start' | 'end' | null = null;
+	/** Which thumb is currently being dragged, or null if idle. */
+	@state() private _activeThumb: "start" | "end" | null = null;
 
-  // ─── Helpers ────────────────────────────────────────────────────────
+	// ─── Helpers ────────────────────────────────────────────────────────
 
-  /**
-   * Convert minutes since midnight to a TimeValue.
-   */
-  private _minutesToTimeValue(minutes: number): TimeValue {
-    return {
-      hour: Math.floor(minutes / 60) % 24,
-      minute: minutes % 60,
-      second: 0,
-    };
-  }
+	/**
+	 * Convert minutes since midnight to a TimeValue.
+	 */
+	private _minutesToTimeValue(minutes: number): TimeValue {
+		return {
+			hour: Math.floor(minutes / 60) % 24,
+			minute: minutes % 60,
+			second: 0,
+		};
+	}
 
-  /**
-   * Format minutes since midnight into a locale-aware display string.
-   */
-  private _formatMinutes(minutes: number): string {
-    const tv = this._minutesToTimeValue(minutes);
-    return formatTimeForDisplay(tv, this.locale, this.hour12);
-  }
+	/**
+	 * Format minutes since midnight into a locale-aware display string.
+	 */
+	private _formatMinutes(minutes: number): string {
+		const tv = this._minutesToTimeValue(minutes);
+		return formatTimeForDisplay(tv, this.locale, this.hour12);
+	}
 
-  /**
-   * Snap a raw minutes value to the nearest step and clamp to [0, 1440].
-   */
-  private _snapToStep(minutes: number): number {
-    const snapped = Math.round(minutes / this.step) * this.step;
-    return Math.max(0, Math.min(MAX_MINUTES, snapped));
-  }
+	/**
+	 * Snap a raw minutes value to the nearest step and clamp to [0, 1440].
+	 */
+	private _snapToStep(minutes: number): number {
+		const snapped = Math.round(minutes / this.step) * this.step;
+		return Math.max(0, Math.min(MAX_MINUTES, snapped));
+	}
 
-  /**
-   * Compute the duration display string between start and end.
-   */
-  private _durationDisplay(): string {
-    const diff = this.endMinutes - this.startMinutes;
-    const hours = Math.floor(diff / 60);
-    const mins = diff % 60;
-    if (hours === 0) return `${mins}m`;
-    if (mins === 0) return `${hours}h`;
-    return `${hours}h ${mins}m`;
-  }
+	/**
+	 * Compute the duration display string between start and end.
+	 */
+	private _durationDisplay(): string {
+		const diff = this.endMinutes - this.startMinutes;
+		const hours = Math.floor(diff / 60);
+		const mins = diff % 60;
+		if (hours === 0) return `${mins}m`;
+		if (mins === 0) return `${hours}h`;
+		return `${hours}h ${mins}m`;
+	}
 
-  // ─── Pointer event handlers ─────────────────────────────────────────
+	// ─── Pointer event handlers ─────────────────────────────────────────
 
-  private _handlePointerDown(e: PointerEvent): void {
-    if (this.disabled) return;
-    e.preventDefault();
+	private _handlePointerDown(e: PointerEvent): void {
+		if (this.disabled) return;
+		e.preventDefault();
 
-    const track = e.currentTarget as HTMLElement;
-    const rect = track.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const clickMinutes = pct * MAX_MINUTES;
+		const track = e.currentTarget as HTMLElement;
+		const rect = track.getBoundingClientRect();
+		const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+		const clickMinutes = pct * MAX_MINUTES;
 
-    // Determine which thumb is closer to the click position
-    const distStart = Math.abs(clickMinutes - this.startMinutes);
-    const distEnd = Math.abs(clickMinutes - this.endMinutes);
-    this._activeThumb = distStart <= distEnd ? 'start' : 'end';
+		// Determine which thumb is closer to the click position
+		const distStart = Math.abs(clickMinutes - this.startMinutes);
+		const distEnd = Math.abs(clickMinutes - this.endMinutes);
+		this._activeThumb = distStart <= distEnd ? "start" : "end";
 
-    track.setPointerCapture(e.pointerId);
-    this._updateFromPointer(e);
-  }
+		track.setPointerCapture(e.pointerId);
+		this._updateFromPointer(e);
+	}
 
-  private _handlePointerMove(e: PointerEvent): void {
-    if (this._activeThumb === null) return;
-    this._updateFromPointer(e);
-  }
+	private _handlePointerMove(e: PointerEvent): void {
+		if (this._activeThumb === null) return;
+		this._updateFromPointer(e);
+	}
 
-  private _handlePointerUp(e: PointerEvent): void {
-    if (this._activeThumb === null) return;
+	private _handlePointerUp(e: PointerEvent): void {
+		if (this._activeThumb === null) return;
 
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    this._activeThumb = null;
+		(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+		this._activeThumb = null;
 
-    // Dispatch final change event
-    this._dispatchRangeEvent('ui-time-range-change');
-  }
+		// Dispatch final change event
+		this._dispatchRangeEvent("ui-time-range-change");
+	}
 
-  /**
-   * Update the active thumb position from a pointer event.
-   */
-  private _updateFromPointer(e: PointerEvent): void {
-    const track = (e.currentTarget as HTMLElement) ?? this.renderRoot.querySelector('.range-track');
-    if (!track) return;
+	/**
+	 * Update the active thumb position from a pointer event.
+	 */
+	private _updateFromPointer(e: PointerEvent): void {
+		const track =
+			(e.currentTarget as HTMLElement) ??
+			this.renderRoot.querySelector(".range-track");
+		if (!track) return;
 
-    const rect = track.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const rawMinutes = pct * MAX_MINUTES;
-    const snapped = this._snapToStep(rawMinutes);
+		const rect = track.getBoundingClientRect();
+		const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+		const rawMinutes = pct * MAX_MINUTES;
+		const snapped = this._snapToStep(rawMinutes);
 
-    if (this._activeThumb === 'start') {
-      this.startMinutes = Math.min(snapped, this.endMinutes);
-    } else if (this._activeThumb === 'end') {
-      this.endMinutes = Math.max(snapped, this.startMinutes);
-    }
+		if (this._activeThumb === "start") {
+			this.startMinutes = Math.min(snapped, this.endMinutes);
+		} else if (this._activeThumb === "end") {
+			this.endMinutes = Math.max(snapped, this.startMinutes);
+		}
 
-    // Dispatch interim input event
-    this._dispatchRangeEvent('ui-range-input');
-  }
+		// Dispatch interim input event
+		this._dispatchRangeEvent("ui-range-input");
+	}
 
-  // ─── Keyboard handler ───────────────────────────────────────────────
+	// ─── Keyboard handler ───────────────────────────────────────────────
 
-  private _handleThumbKeydown(e: KeyboardEvent, thumb: 'start' | 'end'): void {
-    if (this.disabled) return;
+	private _handleThumbKeydown(e: KeyboardEvent, thumb: "start" | "end"): void {
+		if (this.disabled) return;
 
-    let handled = true;
+		let handled = true;
 
-    switch (e.key) {
-      case 'ArrowRight':
-      case 'ArrowUp': {
-        if (thumb === 'start') {
-          this.startMinutes = Math.min(this.startMinutes + this.step, this.endMinutes);
-        } else {
-          this.endMinutes = Math.min(this.endMinutes + this.step, MAX_MINUTES);
-        }
-        break;
-      }
-      case 'ArrowLeft':
-      case 'ArrowDown': {
-        if (thumb === 'start') {
-          this.startMinutes = Math.max(this.startMinutes - this.step, 0);
-        } else {
-          this.endMinutes = Math.max(this.endMinutes - this.step, this.startMinutes);
-        }
-        break;
-      }
-      case 'Home': {
-        if (thumb === 'start') {
-          this.startMinutes = 0;
-        } else {
-          this.endMinutes = this.startMinutes;
-        }
-        break;
-      }
-      case 'End': {
-        if (thumb === 'start') {
-          this.startMinutes = this.endMinutes;
-        } else {
-          this.endMinutes = MAX_MINUTES;
-        }
-        break;
-      }
-      default:
-        handled = false;
-    }
+		switch (e.key) {
+			case "ArrowRight":
+			case "ArrowUp": {
+				if (thumb === "start") {
+					this.startMinutes = Math.min(
+						this.startMinutes + this.step,
+						this.endMinutes,
+					);
+				} else {
+					this.endMinutes = Math.min(this.endMinutes + this.step, MAX_MINUTES);
+				}
+				break;
+			}
+			case "ArrowLeft":
+			case "ArrowDown": {
+				if (thumb === "start") {
+					this.startMinutes = Math.max(this.startMinutes - this.step, 0);
+				} else {
+					this.endMinutes = Math.max(
+						this.endMinutes - this.step,
+						this.startMinutes,
+					);
+				}
+				break;
+			}
+			case "Home": {
+				if (thumb === "start") {
+					this.startMinutes = 0;
+				} else {
+					this.endMinutes = this.startMinutes;
+				}
+				break;
+			}
+			case "End": {
+				if (thumb === "start") {
+					this.startMinutes = this.endMinutes;
+				} else {
+					this.endMinutes = MAX_MINUTES;
+				}
+				break;
+			}
+			default:
+				handled = false;
+		}
 
-    if (handled) {
-      e.preventDefault();
-      this._dispatchRangeEvent('ui-time-range-change');
-    }
-  }
+		if (handled) {
+			e.preventDefault();
+			this._dispatchRangeEvent("ui-time-range-change");
+		}
+	}
 
-  // ─── Event dispatch ─────────────────────────────────────────────────
+	// ─── Event dispatch ─────────────────────────────────────────────────
 
-  private _dispatchRangeEvent(eventName: string): void {
-    dispatchCustomEvent<{
-      startMinutes: number;
-      endMinutes: number;
-      startTime: TimeValue;
-      endTime: TimeValue;
-    }>(this, eventName, {
-      startMinutes: this.startMinutes,
-      endMinutes: this.endMinutes,
-      startTime: this._minutesToTimeValue(this.startMinutes),
-      endTime: this._minutesToTimeValue(this.endMinutes),
-    });
-  }
+	private _dispatchRangeEvent(eventName: string): void {
+		dispatchCustomEvent<{
+			startMinutes: number;
+			endMinutes: number;
+			startTime: TimeValue;
+			endTime: TimeValue;
+		}>(this, eventName, {
+			startMinutes: this.startMinutes,
+			endMinutes: this.endMinutes,
+			startTime: this._minutesToTimeValue(this.startMinutes),
+			endTime: this._minutesToTimeValue(this.endMinutes),
+		});
+	}
 
-  // ─── Tick marks ─────────────────────────────────────────────────────
+	// ─── Tick marks ─────────────────────────────────────────────────────
 
-  private _renderTickMarks() {
-    return html`
+	private _renderTickMarks() {
+		return html`
       <div class="tick-marks">
         ${TICK_POSITIONS.map(
-          (minutes) => html`
+					(minutes) => html`
             <span class="tick-label">${this._formatMinutes(minutes)}</span>
           `,
-        )}
+				)}
       </div>
     `;
-  }
+	}
 
-  // ─── Render ─────────────────────────────────────────────────────────
+	// ─── Render ─────────────────────────────────────────────────────────
 
-  override render() {
-    const startPct = (this.startMinutes / MAX_MINUTES) * 100;
-    const endPct = (this.endMinutes / MAX_MINUTES) * 100;
+	override render() {
+		const startPct = (this.startMinutes / MAX_MINUTES) * 100;
+		const endPct = (this.endMinutes / MAX_MINUTES) * 100;
 
-    return html`
+		return html`
       <div class="range-slider-wrapper">
         <div class="range-labels">
           <span class="range-label">${this._formatMinutes(this.startMinutes)}</span>
@@ -359,7 +371,7 @@ export class TimeRangeSlider extends TailwindElement {
             aria-valuenow="${this.startMinutes}"
             aria-valuetext="${this._formatMinutes(this.startMinutes)}"
             style="left: ${startPct}%"
-            @keydown=${(e: KeyboardEvent) => this._handleThumbKeydown(e, 'start')}
+            @keydown=${(e: KeyboardEvent) => this._handleThumbKeydown(e, "start")}
           ></div>
           <div
             class="range-thumb"
@@ -371,18 +383,18 @@ export class TimeRangeSlider extends TailwindElement {
             aria-valuenow="${this.endMinutes}"
             aria-valuetext="${this._formatMinutes(this.endMinutes)}"
             style="left: ${endPct}%"
-            @keydown=${(e: KeyboardEvent) => this._handleThumbKeydown(e, 'end')}
+            @keydown=${(e: KeyboardEvent) => this._handleThumbKeydown(e, "end")}
           ></div>
         </div>
         ${this._renderTickMarks()}
       </div>
     `;
-  }
+	}
 }
 
 // Safe custom element registration for internal component
-if (typeof customElements !== 'undefined') {
-  if (!customElements.get('lui-time-range-slider')) {
-    customElements.define('lui-time-range-slider', TimeRangeSlider);
-  }
+if (typeof customElements !== "undefined") {
+	if (!customElements.get("lui-time-range-slider")) {
+		customElements.define("lui-time-range-slider", TimeRangeSlider);
+	}
 }

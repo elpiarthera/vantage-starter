@@ -84,7 +84,9 @@ function verify() {
 		if (missing.length > 0) {
 			hasIssues = true;
 			console.log(`❌ ${lang}.json is MISSING ${missing.length} keys:`);
-			missing.slice(0, 10).forEach((k) => console.log(`     - ${k}`));
+			missing.slice(0, 10).forEach((k) => {
+				console.log(`     - ${k}`);
+			});
 			if (missing.length > 10) {
 				console.log(`     ... and ${missing.length - 10} more`);
 			}
@@ -96,7 +98,9 @@ function verify() {
 			console.log(
 				`⚠️  ${lang}.json has ${extra.length} EXTRA keys not in en.json:`,
 			);
-			extra.slice(0, 5).forEach((k) => console.log(`     + ${k}`));
+			extra.slice(0, 5).forEach((k) => {
+				console.log(`     + ${k}`);
+			});
 			if (extra.length > 5) {
 				console.log(`     ... and ${extra.length - 5} more`);
 			}

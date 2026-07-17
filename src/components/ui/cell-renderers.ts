@@ -15,8 +15,8 @@
  * - avatarCellRenderer — image with initials fallback
  */
 
-import { html, css, nothing, type TemplateResult } from 'lit';
-import type { CellContext, RowData } from '@tanstack/lit-table';
+import type { CellContext, RowData } from "@tanstack/lit-table";
+import { css, html, nothing, type TemplateResult } from "lit";
 
 // =============================================================================
 // CellRenderer Type
@@ -32,7 +32,7 @@ import type { CellContext, RowData } from '@tanstack/lit-table';
  * @template TValue - Cell value type
  */
 export type CellRenderer<TData extends RowData, TValue = unknown> = (
-  info: CellContext<TData, TValue>
+	info: CellContext<TData, TValue>,
 ) => TemplateResult;
 
 // =============================================================================
@@ -50,11 +50,14 @@ export type CellRenderer<TData extends RowData, TValue = unknown> = (
  * { accessorKey: 'name', header: 'Name', cell: textCellRenderer() }
  * ```
  */
-export function textCellRenderer<TData extends RowData>(): CellRenderer<TData, string> {
-  return (info) => {
-    const value = info.getValue() ?? '';
-    return html`<span class="cell-text">${value}</span>`;
-  };
+export function textCellRenderer<TData extends RowData>(): CellRenderer<
+	TData,
+	string
+> {
+	return (info) => {
+		const value = info.getValue() ?? "";
+		return html`<span class="cell-text">${value}</span>`;
+	};
 }
 
 // =============================================================================
@@ -63,14 +66,14 @@ export function textCellRenderer<TData extends RowData>(): CellRenderer<TData, s
 
 /** Options for the number cell renderer */
 export interface NumberCellRendererOptions {
-  /** Locale for number formatting (e.g. 'en-US', 'de-DE') */
-  locale?: string;
-  /** Number of decimal places */
-  decimals?: number;
-  /** Prefix string (e.g. '$') */
-  prefix?: string;
-  /** Suffix string (e.g. '%') */
-  suffix?: string;
+	/** Locale for number formatting (e.g. 'en-US', 'de-DE') */
+	locale?: string;
+	/** Number of decimal places */
+	decimals?: number;
+	/** Prefix string (e.g. '$') */
+	prefix?: string;
+	/** Suffix string (e.g. '%') */
+	suffix?: string;
 }
 
 /**
@@ -85,18 +88,19 @@ export interface NumberCellRendererOptions {
  * ```
  */
 export function numberCellRenderer<TData extends RowData>(
-  options?: NumberCellRendererOptions
+	options?: NumberCellRendererOptions,
 ): CellRenderer<TData, number> {
-  const formatter = new Intl.NumberFormat(options?.locale, {
-    minimumFractionDigits: options?.decimals ?? 0,
-    maximumFractionDigits: options?.decimals ?? 2,
-  });
-  return (info) => {
-    const value = info.getValue();
-    if (value == null) return html`<span class="cell-number cell-empty">\u2014</span>`;
-    const formatted = `${options?.prefix ?? ''}${formatter.format(value)}${options?.suffix ?? ''}`;
-    return html`<span class="cell-number">${formatted}</span>`;
-  };
+	const formatter = new Intl.NumberFormat(options?.locale, {
+		minimumFractionDigits: options?.decimals ?? 0,
+		maximumFractionDigits: options?.decimals ?? 2,
+	});
+	return (info) => {
+		const value = info.getValue();
+		if (value == null)
+			return html`<span class="cell-number cell-empty">\u2014</span>`;
+		const formatted = `${options?.prefix ?? ""}${formatter.format(value)}${options?.suffix ?? ""}`;
+		return html`<span class="cell-number">${formatted}</span>`;
+	};
 }
 
 // =============================================================================
@@ -105,10 +109,10 @@ export function numberCellRenderer<TData extends RowData>(
 
 /** Options for the date cell renderer */
 export interface DateCellRendererOptions {
-  /** Locale for date formatting (e.g. 'en-US') */
-  locale?: string;
-  /** Intl.DateTimeFormat options */
-  format?: Intl.DateTimeFormatOptions;
+	/** Locale for date formatting (e.g. 'en-US') */
+	locale?: string;
+	/** Intl.DateTimeFormat options */
+	format?: Intl.DateTimeFormatOptions;
 }
 
 /**
@@ -124,25 +128,25 @@ export interface DateCellRendererOptions {
  * ```
  */
 export function dateCellRenderer<TData extends RowData>(
-  options?: DateCellRendererOptions
+	options?: DateCellRendererOptions,
 ): CellRenderer<TData, string | Date> {
-  const defaultFormat: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  };
-  const formatter = new Intl.DateTimeFormat(
-    options?.locale,
-    options?.format ?? defaultFormat
-  );
-  return (info) => {
-    const value = info.getValue();
-    if (!value) return html`<span class="cell-date cell-empty">\u2014</span>`;
-    const date = value instanceof Date ? value : new Date(value);
-    if (isNaN(date.getTime()))
-      return html`<span class="cell-date cell-empty">\u2014</span>`;
-    return html`<span class="cell-date">${formatter.format(date)}</span>`;
-  };
+	const defaultFormat: Intl.DateTimeFormatOptions = {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	};
+	const formatter = new Intl.DateTimeFormat(
+		options?.locale,
+		options?.format ?? defaultFormat,
+	);
+	return (info) => {
+		const value = info.getValue();
+		if (!value) return html`<span class="cell-date cell-empty">\u2014</span>`;
+		const date = value instanceof Date ? value : new Date(value);
+		if (Number.isNaN(date.getTime()))
+			return html`<span class="cell-date cell-empty">\u2014</span>`;
+		return html`<span class="cell-date">${formatter.format(date)}</span>`;
+	};
 }
 
 // =============================================================================
@@ -151,10 +155,10 @@ export function dateCellRenderer<TData extends RowData>(
 
 /** Options for the boolean cell renderer */
 export interface BooleanCellRendererOptions {
-  /** Accessible label for true value (default: 'Yes') */
-  trueLabel?: string;
-  /** Accessible label for false value (default: 'No') */
-  falseLabel?: string;
+	/** Accessible label for true value (default: 'Yes') */
+	trueLabel?: string;
+	/** Accessible label for false value (default: 'No') */
+	falseLabel?: string;
 }
 
 /**
@@ -169,15 +173,15 @@ export interface BooleanCellRendererOptions {
  * ```
  */
 export function booleanCellRenderer<TData extends RowData>(
-  options?: BooleanCellRendererOptions
+	options?: BooleanCellRendererOptions,
 ): CellRenderer<TData, boolean> {
-  return (info) => {
-    const value = info.getValue();
-    if (value) {
-      return html`
+	return (info) => {
+		const value = info.getValue();
+		if (value) {
+			return html`
         <span
           class="cell-boolean cell-boolean--true"
-          aria-label="${options?.trueLabel ?? 'Yes'}"
+          aria-label="${options?.trueLabel ?? "Yes"}"
         >
           <svg
             viewBox="0 0 16 16"
@@ -191,11 +195,11 @@ export function booleanCellRenderer<TData extends RowData>(
           </svg>
         </span>
       `;
-    }
-    return html`
+		}
+		return html`
       <span
         class="cell-boolean cell-boolean--false"
-        aria-label="${options?.falseLabel ?? 'No'}"
+        aria-label="${options?.falseLabel ?? "No"}"
       >
         <svg
           viewBox="0 0 16 16"
@@ -210,7 +214,7 @@ export function booleanCellRenderer<TData extends RowData>(
         </svg>
       </span>
     `;
-  };
+	};
 }
 
 // =============================================================================
@@ -219,10 +223,10 @@ export function booleanCellRenderer<TData extends RowData>(
 
 /** Options for the badge cell renderer */
 export interface BadgeCellRendererOptions {
-  /** Map of cell values to badge color names (e.g. { active: 'green', inactive: 'red' }) */
-  colorMap?: Record<string, string>;
-  /** Default color when value is not in colorMap (default: 'default') */
-  defaultColor?: string;
+	/** Map of cell values to badge color names (e.g. { active: 'green', inactive: 'red' }) */
+	colorMap?: Record<string, string>;
+	/** Default color when value is not in colorMap (default: 'default') */
+	defaultColor?: string;
 }
 
 /**
@@ -239,14 +243,14 @@ export interface BadgeCellRendererOptions {
  * ```
  */
 export function badgeCellRenderer<TData extends RowData>(
-  options?: BadgeCellRendererOptions
+	options?: BadgeCellRendererOptions,
 ): CellRenderer<TData, string> {
-  return (info) => {
-    const value = String(info.getValue() ?? '');
-    const color =
-      options?.colorMap?.[value] ?? options?.defaultColor ?? 'default';
-    return html`<span class="cell-badge cell-badge--${color}">${value}</span>`;
-  };
+	return (info) => {
+		const value = String(info.getValue() ?? "");
+		const color =
+			options?.colorMap?.[value] ?? options?.defaultColor ?? "default";
+		return html`<span class="cell-badge cell-badge--${color}">${value}</span>`;
+	};
 }
 
 // =============================================================================
@@ -255,12 +259,12 @@ export function badgeCellRenderer<TData extends RowData>(
 
 /** Options for the progress cell renderer */
 export interface ProgressCellRendererOptions {
-  /** Maximum value (default: 100) */
-  max?: number;
-  /** Whether to show percentage label beside the bar */
-  showLabel?: boolean;
-  /** Custom color for the progress bar fill */
-  color?: string;
+	/** Maximum value (default: 100) */
+	max?: number;
+	/** Whether to show percentage label beside the bar */
+	showLabel?: boolean;
+	/** Custom color for the progress bar fill */
+	color?: string;
 }
 
 /**
@@ -275,14 +279,14 @@ export interface ProgressCellRendererOptions {
  * ```
  */
 export function progressCellRenderer<TData extends RowData>(
-  options?: ProgressCellRendererOptions
+	options?: ProgressCellRendererOptions,
 ): CellRenderer<TData, number> {
-  const max = options?.max ?? 100;
-  return (info) => {
-    const value = info.getValue() ?? 0;
-    const percent = Math.min(100, Math.max(0, (value / max) * 100));
-    const colorStyle = options?.color ? `background: ${options.color}` : '';
-    return html`
+	const max = options?.max ?? 100;
+	return (info) => {
+		const value = info.getValue() ?? 0;
+		const percent = Math.min(100, Math.max(0, (value / max) * 100));
+		const colorStyle = options?.color ? `background: ${options.color}` : "";
+		return html`
       <div class="cell-progress-wrapper">
         <div
           class="cell-progress"
@@ -296,14 +300,16 @@ export function progressCellRenderer<TData extends RowData>(
             style="width: ${percent}%;${colorStyle}"
           ></div>
         </div>
-        ${options?.showLabel
-          ? html`<span class="cell-progress-label"
+        ${
+					options?.showLabel
+						? html`<span class="cell-progress-label"
               >${Math.round(percent)}%</span
             >`
-          : nothing}
+						: nothing
+				}
       </div>
     `;
-  };
+	};
 }
 
 // =============================================================================
@@ -312,10 +318,10 @@ export function progressCellRenderer<TData extends RowData>(
 
 /** Options for the avatar cell renderer */
 export interface AvatarCellRendererOptions {
-  /** Key in row data to use for the name (for initials fallback) */
-  nameKey?: string;
-  /** Avatar size in pixels (default: 28) */
-  size?: number;
+	/** Key in row data to use for the name (for initials fallback) */
+	nameKey?: string;
+	/** Avatar size in pixels (default: 28) */
+	size?: number;
 }
 
 /**
@@ -330,38 +336,38 @@ export interface AvatarCellRendererOptions {
  * ```
  */
 export function avatarCellRenderer<TData extends RowData>(
-  options?: AvatarCellRendererOptions
+	options?: AvatarCellRendererOptions,
 ): CellRenderer<TData, string> {
-  const size = options?.size ?? 28;
-  return (info) => {
-    const src = info.getValue();
-    const name = options?.nameKey
-      ? String(
-          (info.row.original as Record<string, unknown>)[options.nameKey] ?? ''
-        )
-      : '';
-    const initials = name
-      .split(' ')
-      .map((n) => n[0])
-      .filter(Boolean)
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
-    if (src) {
-      return html`<img
+	const size = options?.size ?? 28;
+	return (info) => {
+		const src = info.getValue();
+		const name = options?.nameKey
+			? String(
+					(info.row.original as Record<string, unknown>)[options.nameKey] ?? "",
+				)
+			: "";
+		const initials = name
+			.split(" ")
+			.map((n) => n[0])
+			.filter(Boolean)
+			.join("")
+			.substring(0, 2)
+			.toUpperCase();
+		if (src) {
+			return html`<img
         class="cell-avatar"
         src="${src}"
         alt="${name}"
         width="${size}"
         height="${size}"
       />`;
-    }
-    return html`<span
+		}
+		return html`<span
       class="cell-avatar cell-avatar--initials"
       style="width:${size}px;height:${size}px"
       >${initials}</span
     >`;
-  };
+	};
 }
 
 // =============================================================================

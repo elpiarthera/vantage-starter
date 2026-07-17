@@ -3,8 +3,9 @@
  * This file is aliased by the esbuild config so components can import from '@lit-ui/core'.
  */
 
-import { type CSSResultGroup, isServer } from 'lit';
-export { TailwindElement } from './tailwind-element';
+import { type CSSResultGroup, isServer } from "lit";
+
+export { TailwindElement } from "./tailwind-element";
 export { isServer };
 
 /**
@@ -18,16 +19,16 @@ export const tailwindBaseStyles: CSSResultGroup[] = [];
  * dispatchCustomEvent — typed event dispatcher used by lit-ui components.
  */
 export function dispatchCustomEvent<T>(
-  el: HTMLElement,
-  name: string,
-  detail: T,
-  options?: { bubbles?: boolean; composed?: boolean; cancelable?: boolean }
+	el: HTMLElement,
+	name: string,
+	detail: T,
+	options?: { bubbles?: boolean; composed?: boolean; cancelable?: boolean },
 ): boolean {
-  const event = new CustomEvent(name, {
-    detail,
-    bubbles: options?.bubbles ?? true,
-    composed: options?.composed ?? true,
-    cancelable: options?.cancelable ?? false,
-  });
-  return el.dispatchEvent(event);
+	const event = new CustomEvent(name, {
+		detail,
+		bubbles: options?.bubbles ?? true,
+		composed: options?.composed ?? true,
+		cancelable: options?.cancelable ?? false,
+	});
+	return el.dispatchEvent(event);
 }

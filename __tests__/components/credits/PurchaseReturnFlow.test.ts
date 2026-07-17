@@ -41,18 +41,12 @@ const usageCreditsTabSource = fs.readFileSync(
 );
 
 const accountTabsSource = fs.readFileSync(
-	path.join(
-		process.cwd(),
-		"components/dashboard/account/AccountTabs.tsx",
-	),
+	path.join(process.cwd(), "components/dashboard/account/AccountTabs.tsx"),
 	"utf-8",
 );
 
 const purchaseSuccessToastSource = fs.readFileSync(
-	path.join(
-		process.cwd(),
-		"hooks/business-logic/usePurchaseSuccessToast.ts",
-	),
+	path.join(process.cwd(), "hooks/business-logic/usePurchaseSuccessToast.ts"),
 	"utf-8",
 );
 
@@ -64,9 +58,7 @@ describe("Issue #188 — return to workflow after credit purchase", () => {
 	});
 
 	test("InsufficientCreditsModal uses useRouter from next/navigation", () => {
-		expect(insufficientCreditsModalSource).toContain(
-			'from "next/navigation"',
-		);
+		expect(insufficientCreditsModalSource).toContain('from "next/navigation"');
 		expect(insufficientCreditsModalSource).toContain("useRouter");
 	});
 
@@ -78,18 +70,14 @@ describe("Issue #188 — return to workflow after credit purchase", () => {
 	});
 
 	test("InsufficientCreditsModal still calls onPurchase when provided (backward compat)", () => {
-		expect(insufficientCreditsModalSource).toContain(
-			"if (onPurchase)",
-		);
+		expect(insufficientCreditsModalSource).toContain("if (onPurchase)");
 		expect(insufficientCreditsModalSource).toContain("onPurchase()");
 	});
 
 	// ── PurchaseCreditsModal ────────────────────────────────────────────────
 
 	test("PurchaseCreditsModal no longer imports CheckoutLink from @convex-dev/polar", () => {
-		expect(purchaseCreditsModalSource).not.toContain(
-			"@convex-dev/polar",
-		);
+		expect(purchaseCreditsModalSource).not.toContain("@convex-dev/polar");
 	});
 
 	test("PurchaseCreditsModal uses useAction to call generateCheckoutLink directly", () => {
@@ -134,15 +122,13 @@ describe("Issue #188 — return to workflow after credit purchase", () => {
 
 	test("AccountTabs initialises with the tab from the URL param", () => {
 		expect(accountTabsSource).toContain("initialTab");
-		expect(accountTabsSource).toContain(
-			"useState<TabId>(initialTab)",
-		);
+		expect(accountTabsSource).toContain("useState<TabId>(initialTab)");
 	});
 
 	// ── usePurchaseSuccessToast ─────────────────────────────────────────────
 
 	test("usePurchaseSuccessToast detects creditsAdded=1 param", () => {
-		expect(purchaseSuccessToastSource).toContain('creditsAdded');
+		expect(purchaseSuccessToastSource).toContain("creditsAdded");
 		expect(purchaseSuccessToastSource).toContain('"1"');
 	});
 

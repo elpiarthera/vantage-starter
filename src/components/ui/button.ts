@@ -20,29 +20,29 @@
  * ```
  */
 
-import { html, css, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { TailwindElement } from '../../lib/lit-ui/tailwind-element';
+import { css, html, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { TailwindElement } from "../../lib/lit-ui/tailwind-element";
 
 /**
  * Button variant types for visual styling
  */
 export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'ghost'
-  | 'destructive';
+	| "primary"
+	| "secondary"
+	| "outline"
+	| "ghost"
+	| "destructive";
 
 /**
  * Button size types for padding and font sizing
  */
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = "sm" | "md" | "lg";
 
 /**
  * Button type for form behavior
  */
-export type ButtonType = 'button' | 'submit' | 'reset';
+export type ButtonType = "button" | "submit" | "reset";
 
 /**
  * A customizable button component with multiple variants and sizes.
@@ -52,69 +52,69 @@ export type ButtonType = 'button' | 'submit' | 'reset';
  * @slot icon-start - Slot for icon before text
  * @slot icon-end - Slot for icon after text
  */
-@customElement('ui-button')
+@customElement("ui-button")
 export class Button extends TailwindElement {
-  /**
-   * Enable form association for this custom element.
-   * This allows the button to participate in form submission/reset.
-   */
-  static formAssociated = true;
+	/**
+	 * Enable form association for this custom element.
+	 * This allows the button to participate in form submission/reset.
+	 */
+	static formAssociated = true;
 
-  /**
-   * ElementInternals for form participation and ARIA.
-   */
-  private internals: ElementInternals;
+	/**
+	 * ElementInternals for form participation and ARIA.
+	 */
+	private internals: ElementInternals;
 
-  /**
-   * The visual style variant of the button.
-   * @default 'primary'
-   */
-  @property({ type: String })
-  variant: ButtonVariant = 'primary';
+	/**
+	 * The visual style variant of the button.
+	 * @default 'primary'
+	 */
+	@property({ type: String })
+	variant: ButtonVariant = "primary";
 
-  /**
-   * The size of the button affecting padding and font size.
-   * @default 'md'
-   */
-  @property({ type: String })
-  size: ButtonSize = 'md';
+	/**
+	 * The size of the button affecting padding and font size.
+	 * @default 'md'
+	 */
+	@property({ type: String })
+	size: ButtonSize = "md";
 
-  /**
-   * The button type for form behavior.
-   * - 'button': No form action (default)
-   * - 'submit': Submits the containing form
-   * - 'reset': Resets the containing form
-   * @default 'button'
-   */
-  @property({ type: String })
-  type: ButtonType = 'button';
+	/**
+	 * The button type for form behavior.
+	 * - 'button': No form action (default)
+	 * - 'submit': Submits the containing form
+	 * - 'reset': Resets the containing form
+	 * @default 'button'
+	 */
+	@property({ type: String })
+	type: ButtonType = "button";
 
-  /**
-   * Whether the button is disabled.
-   * Uses aria-disabled for better screen reader accessibility.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  disabled = false;
+	/**
+	 * Whether the button is disabled.
+	 * Uses aria-disabled for better screen reader accessibility.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	disabled = false;
 
-  /**
-   * Whether the button is in a loading state.
-   * Shows a pulsing dots spinner and prevents interaction.
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  loading = false;
+	/**
+	 * Whether the button is in a loading state.
+	 * Shows a pulsing dots spinner and prevents interaction.
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true })
+	loading = false;
 
-  constructor() {
-    super();
-    this.internals = this.attachInternals();
-  }
+	constructor() {
+		super();
+		this.internals = this.attachInternals();
+	}
 
-  /**
-   * Static styles for focus ring (inner glow) and loading spinner
-   * that cannot be expressed with Tailwind utility classes alone.
-   */
-  static override styles = css`
+	/**
+	 * Static styles for focus ring (inner glow) and loading spinner
+	 * that cannot be expressed with Tailwind utility classes alone.
+	 */
+	static override styles = css`
     :host {
       display: inline-block;
     }
@@ -179,98 +179,98 @@ export class Button extends TailwindElement {
     }
   `;
 
-  /**
-   * Get the Tailwind classes for the current variant.
-   */
-  private getVariantClasses(): string {
-    const variants: Record<ButtonVariant, string> = {
-      primary: 'bg-primary text-primary-foreground hover:opacity-90',
-      secondary: 'bg-secondary text-secondary-foreground hover:bg-accent',
-      outline:
-        'border border-border bg-transparent text-foreground hover:bg-accent',
-      ghost: 'bg-transparent text-foreground hover:bg-accent',
-      destructive:
-        'bg-destructive text-destructive-foreground hover:opacity-90',
-    };
-    return variants[this.variant];
-  }
+	/**
+	 * Get the Tailwind classes for the current variant.
+	 */
+	private getVariantClasses(): string {
+		const variants: Record<ButtonVariant, string> = {
+			primary: "bg-primary text-primary-foreground hover:opacity-90",
+			secondary: "bg-secondary text-secondary-foreground hover:bg-accent",
+			outline:
+				"border border-border bg-transparent text-foreground hover:bg-accent",
+			ghost: "bg-transparent text-foreground hover:bg-accent",
+			destructive:
+				"bg-destructive text-destructive-foreground hover:opacity-90",
+		};
+		return variants[this.variant];
+	}
 
-  /**
-   * Get the Tailwind classes for the current size.
-   * Includes gap for icon spacing.
-   */
-  private getSizeClasses(): string {
-    const sizes: Record<ButtonSize, string> = {
-      sm: 'px-3 py-1.5 text-sm gap-1.5',
-      md: 'px-4 py-2 text-base gap-2',
-      lg: 'px-6 py-3 text-lg gap-2.5',
-    };
-    return sizes[this.size];
-  }
+	/**
+	 * Get the Tailwind classes for the current size.
+	 * Includes gap for icon spacing.
+	 */
+	private getSizeClasses(): string {
+		const sizes: Record<ButtonSize, string> = {
+			sm: "px-3 py-1.5 text-sm gap-1.5",
+			md: "px-4 py-2 text-base gap-2",
+			lg: "px-6 py-3 text-lg gap-2.5",
+		};
+		return sizes[this.size];
+	}
 
-  /**
-   * Get the base classes common to all button variants.
-   */
-  private getBaseClasses(): string {
-    return 'inline-flex items-center justify-center rounded-md font-medium transition-colors duration-150';
-  }
+	/**
+	 * Get the base classes common to all button variants.
+	 */
+	private getBaseClasses(): string {
+		return "inline-flex items-center justify-center rounded-md font-medium transition-colors duration-150";
+	}
 
-  /**
-   * Get classes for the disabled/loading state.
-   */
-  private getDisabledClasses(): string {
-    return this.disabled || this.loading
-      ? 'opacity-50 cursor-not-allowed'
-      : 'cursor-pointer';
-  }
+	/**
+	 * Get classes for the disabled/loading state.
+	 */
+	private getDisabledClasses(): string {
+		return this.disabled || this.loading
+			? "opacity-50 cursor-not-allowed"
+			: "cursor-pointer";
+	}
 
-  /**
-   * Render the pulsing dots spinner.
-   * Uses three dots with staggered animation delays.
-   */
-  private renderSpinner() {
-    return html`<span class="spinner" aria-hidden="true"><span></span></span>`;
-  }
+	/**
+	 * Render the pulsing dots spinner.
+	 * Uses three dots with staggered animation delays.
+	 */
+	private renderSpinner() {
+		return html`<span class="spinner" aria-hidden="true"><span></span></span>`;
+	}
 
-  /**
-   * Handle click events.
-   * Prevents action when disabled or loading.
-   * Triggers form submission or reset based on button type.
-   */
-  private handleClick(e: MouseEvent) {
-    if (this.disabled || this.loading) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
+	/**
+	 * Handle click events.
+	 * Prevents action when disabled or loading.
+	 * Triggers form submission or reset based on button type.
+	 */
+	private handleClick(e: MouseEvent) {
+		if (this.disabled || this.loading) {
+			e.preventDefault();
+			e.stopPropagation();
+			return;
+		}
 
-    // Handle form actions via ElementInternals
-    if (this.type === 'submit' && this.internals.form) {
-      this.internals.form.requestSubmit();
-    } else if (this.type === 'reset' && this.internals.form) {
-      this.internals.form.reset();
-    }
-  }
+		// Handle form actions via ElementInternals
+		if (this.type === "submit" && this.internals.form) {
+			this.internals.form.requestSubmit();
+		} else if (this.type === "reset" && this.internals.form) {
+			this.internals.form.reset();
+		}
+	}
 
-  /**
-   * Combine all classes into a single string.
-   */
-  private getButtonClasses(): string {
-    return [
-      this.getBaseClasses(),
-      this.getVariantClasses(),
-      this.getSizeClasses(),
-      this.getDisabledClasses(),
-    ].join(' ');
-  }
+	/**
+	 * Combine all classes into a single string.
+	 */
+	private getButtonClasses(): string {
+		return [
+			this.getBaseClasses(),
+			this.getVariantClasses(),
+			this.getSizeClasses(),
+			this.getDisabledClasses(),
+		].join(" ");
+	}
 
-  override render() {
-    return html`
+	override render() {
+		return html`
       <button
         class=${this.getButtonClasses()}
         ?aria-disabled=${this.disabled || this.loading}
         ?aria-busy=${this.loading}
-        aria-label=${this.loading ? 'Loading' : nothing}
+        aria-label=${this.loading ? "Loading" : nothing}
         @click=${this.handleClick}
         type="button"
       >
@@ -279,12 +279,12 @@ export class Button extends TailwindElement {
         <slot name="icon-end"></slot>
       </button>
     `;
-  }
+	}
 }
 
 // TypeScript global interface declaration for HTMLElementTagNameMap
 declare global {
-  interface HTMLElementTagNameMap {
-    'ui-button': Button;
-  }
+	interface HTMLElementTagNameMap {
+		"ui-button": Button;
+	}
 }

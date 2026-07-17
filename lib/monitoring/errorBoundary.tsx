@@ -53,6 +53,7 @@ export class ErrorBoundary extends React.Component<
 							the page to try again.
 						</p>
 						<button
+							type="button"
 							onClick={() => window.location.reload()}
 							className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors"
 						>

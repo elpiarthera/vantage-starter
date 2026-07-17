@@ -1,77 +1,77 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-03-19T15:04:26Z",
-  "count": 7,
-  "agents": {
-    "accessibility-audit": {
-      "location": ".claude/agents/accessibility-audit.md",
-      "description": "French RGAA 4.1.2 accessibility audit specialist. Audits websites against all 106 RGAA criteria across 13 themes, scores compliance per theme, generates a déclaration d'accessibilité and a schéma pluriannuel d'accessibilité numérique (3-year plan) for legally obligated entities. Use when the user me",
-      "summary": "RGAA 4.1.2 accessibility auditor. Scores 106 criteria across 13 themes, classifies P0/P1/P2, generates compliance declaration + schéma pluriannuel (3-year plan). French public/private sector complianc",
-      "domain": "seo",
-      "tier": "specialist",
-      "tools": "Read, Bash, Write, Glob, Grep",
-      "model": "default",
-      "memory": "project"
-    },
-    "dev-clerk-expert": {
-      "location": ".claude/agents/dev-clerk-expert.md",
-      "description": "Clerk authentication specialist. Handles auth integration with Next.js middleware, server/client auth patterns, Convex webhook sync, organizations, RBAC, custom sign-in/up flows, appearance customization, session management, and testing. Use for all authentication and authorization work.",
-      "summary": "Clerk authentication specialist. Handles auth integration with Next.js middleware, server/client auth patterns, Convex webhook sync, organizations, RBAC, custom sign-in/up flows, appearance customizat",
-      "domain": "",
-      "tier": "specialist",
-      "tools": "Read, Write, Edit, Bash, Grep, Glob",
-      "model": "sonnet",
-      "memory": "project"
-    },
-    "dev-convex-expert": {
-      "location": ".claude/agents/dev-convex-expert.md",
-      "description": "Convex backend specialist. Handles schema design, queries/mutations/actions, indexes, HTTP endpoints, webhooks, cron jobs, file storage, real-time subscriptions, AI agents (@convex-dev/agent), and components. Use for all backend/data layer work on Convex-powered projects.",
-      "summary": "Convex backend specialist. Handles schema design, queries/mutations/actions, indexes, HTTP endpoints, webhooks, cron jobs, file storage, real-time subscriptions, AI agents (@convex-dev/agent), and com",
-      "domain": "",
-      "tier": "specialist",
-      "tools": "Read, Write, Edit, Bash, Grep, Glob",
-      "model": "sonnet",
-      "memory": "project"
-    },
-    "dev-frontend": {
-      "location": ".claude/agents/dev-frontend.md",
-      "description": "Frontend developer specializing in mobile-first responsive design with shadcn/ui, Tailwind CSS (OKLCH), and Next.js App Router. Handles UI implementation, accessibility, performance optimization, and component development.",
-      "summary": "Frontend developer specializing in mobile-first responsive design with shadcn/ui, Tailwind CSS (OKLCH), and Next.js App Router. Handles UI implementation, accessibility, performance optimization, and ",
-      "domain": "",
-      "tier": "specialist",
-      "tools": "Read, Write, Edit, Bash, Grep, Glob",
-      "model": "sonnet",
-      "memory": "project"
-    },
-    "dev-senior-dev": {
-      "location": ".claude/agents/dev-senior-dev.md",
-      "description": "Senior full-stack developer and architect. Owns codebase structure, reviews PRs, makes technology decisions, designs system architecture. Use for architecture decisions, code reviews, refactoring, and technical leadership on Next.js + Convex + Clerk projects.",
-      "summary": "Senior full-stack developer and architect. Owns codebase structure, reviews PRs, makes technology decisions, designs system architecture. Use for architecture decisions, code reviews, refactoring, and",
-      "domain": "",
-      "tier": "specialist",
-      "tools": "Read, Write, Edit, Bash, Grep, Glob",
-      "model": "sonnet",
-      "memory": "project"
-    },
-    "dev-sentinel": {
-      "location": ".claude/agents/dev-sentinel.md",
-      "description": "Security auditor and vulnerability scanner. Checks OWASP Top 10, dependency vulnerabilities, secrets exposure, CSP headers, input validation, and rate limiting. Use before every deployment and after major code changes.",
-      "summary": "Security auditor and vulnerability scanner. Checks OWASP Top 10, dependency vulnerabilities, secrets exposure, CSP headers, input validation, and rate limiting. Use before every deployment and after m",
-      "domain": "",
-      "tier": "specialist",
-      "tools": "Read, Bash, Grep, Glob, Write",
-      "model": "sonnet",
-      "memory": "project"
-    },
-    "dev-seo": {
-      "location": ".claude/agents/dev-seo.md",
-      "description": "SEO-specialized developer for Next.js sites. Reviews code for SEO bugs (metadata, canonical, schema, sitemap, robots, security headers, hreflang, legal pages) and writes SEO infrastructure (generateMetadata helpers, JSON-LD components, BreadcrumbList, sitemap.ts, robots.ts, OG image generation). Use",
-      "summary": "SEO-specialized developer for Next.js sites. Reviews code for SEO bugs (metadata, canonical, schema, sitemap, robots, security headers, hreflang, legal pages) and writes SEO infrastructure (generateMe",
-      "domain": "",
-      "tier": "specialist",
-      "tools": "Read, Write, Edit, Bash, Grep, Glob",
-      "model": "sonnet",
-      "memory": "project"
-    }
-  }
+	"schemaVersion": 1,
+	"generatedAt": "2026-03-19T15:04:26Z",
+	"count": 7,
+	"agents": {
+		"accessibility-audit": {
+			"location": ".claude/agents/accessibility-audit.md",
+			"description": "French RGAA 4.1.2 accessibility audit specialist. Audits websites against all 106 RGAA criteria across 13 themes, scores compliance per theme, generates a déclaration d'accessibilité and a schéma pluriannuel d'accessibilité numérique (3-year plan) for legally obligated entities. Use when the user me",
+			"summary": "RGAA 4.1.2 accessibility auditor. Scores 106 criteria across 13 themes, classifies P0/P1/P2, generates compliance declaration + schéma pluriannuel (3-year plan). French public/private sector complianc",
+			"domain": "seo",
+			"tier": "specialist",
+			"tools": "Read, Bash, Write, Glob, Grep",
+			"model": "default",
+			"memory": "project"
+		},
+		"dev-clerk-expert": {
+			"location": ".claude/agents/dev-clerk-expert.md",
+			"description": "Clerk authentication specialist. Handles auth integration with Next.js middleware, server/client auth patterns, Convex webhook sync, organizations, RBAC, custom sign-in/up flows, appearance customization, session management, and testing. Use for all authentication and authorization work.",
+			"summary": "Clerk authentication specialist. Handles auth integration with Next.js middleware, server/client auth patterns, Convex webhook sync, organizations, RBAC, custom sign-in/up flows, appearance customizat",
+			"domain": "",
+			"tier": "specialist",
+			"tools": "Read, Write, Edit, Bash, Grep, Glob",
+			"model": "sonnet",
+			"memory": "project"
+		},
+		"dev-convex-expert": {
+			"location": ".claude/agents/dev-convex-expert.md",
+			"description": "Convex backend specialist. Handles schema design, queries/mutations/actions, indexes, HTTP endpoints, webhooks, cron jobs, file storage, real-time subscriptions, AI agents (@convex-dev/agent), and components. Use for all backend/data layer work on Convex-powered projects.",
+			"summary": "Convex backend specialist. Handles schema design, queries/mutations/actions, indexes, HTTP endpoints, webhooks, cron jobs, file storage, real-time subscriptions, AI agents (@convex-dev/agent), and com",
+			"domain": "",
+			"tier": "specialist",
+			"tools": "Read, Write, Edit, Bash, Grep, Glob",
+			"model": "sonnet",
+			"memory": "project"
+		},
+		"dev-frontend": {
+			"location": ".claude/agents/dev-frontend.md",
+			"description": "Frontend developer specializing in mobile-first responsive design with shadcn/ui, Tailwind CSS (OKLCH), and Next.js App Router. Handles UI implementation, accessibility, performance optimization, and component development.",
+			"summary": "Frontend developer specializing in mobile-first responsive design with shadcn/ui, Tailwind CSS (OKLCH), and Next.js App Router. Handles UI implementation, accessibility, performance optimization, and ",
+			"domain": "",
+			"tier": "specialist",
+			"tools": "Read, Write, Edit, Bash, Grep, Glob",
+			"model": "sonnet",
+			"memory": "project"
+		},
+		"dev-senior-dev": {
+			"location": ".claude/agents/dev-senior-dev.md",
+			"description": "Senior full-stack developer and architect. Owns codebase structure, reviews PRs, makes technology decisions, designs system architecture. Use for architecture decisions, code reviews, refactoring, and technical leadership on Next.js + Convex + Clerk projects.",
+			"summary": "Senior full-stack developer and architect. Owns codebase structure, reviews PRs, makes technology decisions, designs system architecture. Use for architecture decisions, code reviews, refactoring, and",
+			"domain": "",
+			"tier": "specialist",
+			"tools": "Read, Write, Edit, Bash, Grep, Glob",
+			"model": "sonnet",
+			"memory": "project"
+		},
+		"dev-sentinel": {
+			"location": ".claude/agents/dev-sentinel.md",
+			"description": "Security auditor and vulnerability scanner. Checks OWASP Top 10, dependency vulnerabilities, secrets exposure, CSP headers, input validation, and rate limiting. Use before every deployment and after major code changes.",
+			"summary": "Security auditor and vulnerability scanner. Checks OWASP Top 10, dependency vulnerabilities, secrets exposure, CSP headers, input validation, and rate limiting. Use before every deployment and after m",
+			"domain": "",
+			"tier": "specialist",
+			"tools": "Read, Bash, Grep, Glob, Write",
+			"model": "sonnet",
+			"memory": "project"
+		},
+		"dev-seo": {
+			"location": ".claude/agents/dev-seo.md",
+			"description": "SEO-specialized developer for Next.js sites. Reviews code for SEO bugs (metadata, canonical, schema, sitemap, robots, security headers, hreflang, legal pages) and writes SEO infrastructure (generateMetadata helpers, JSON-LD components, BreadcrumbList, sitemap.ts, robots.ts, OG image generation). Use",
+			"summary": "SEO-specialized developer for Next.js sites. Reviews code for SEO bugs (metadata, canonical, schema, sitemap, robots, security headers, hreflang, legal pages) and writes SEO infrastructure (generateMe",
+			"domain": "",
+			"tier": "specialist",
+			"tools": "Read, Write, Edit, Bash, Grep, Glob",
+			"model": "sonnet",
+			"memory": "project"
+		}
+	}
 }

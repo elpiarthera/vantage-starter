@@ -17,10 +17,17 @@
 			"!**/.pnpm-store",
 			"!**/tests/x-fade-effects-scripts",
 			"!**/archive",
+			"!**/_archive",
 			"!**/temp",
 			"!**/.next",
 			"!**/dist",
-			"!**/build"
+			"!**/build",
+			"!**/out",
+			"!**/public/lit-ui",
+			"!**/convex/_generated",
+			"!**/.clerk",
+			"!**/test-results",
+			"!**/playwright-report"
 		]
 	}
 }

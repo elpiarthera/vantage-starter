@@ -1,12 +1,12 @@
 {
-  "$schema": "https://lit-ui.dev/schema.json",
-  "mode": "copy-source",
-  "componentsPath": "src/components/ui",
-  "tailwind": {
-    "css": "src/styles/tailwind.css"
-  },
-  "aliases": {
-    "components": "@/components/ui",
-    "base": "@/lib/lit-ui"
-  }
+	"$schema": "https://lit-ui.dev/schema.json",
+	"mode": "copy-source",
+	"componentsPath": "src/components/ui",
+	"tailwind": {
+		"css": "src/styles/tailwind.css"
+	},
+	"aliases": {
+		"components": "@/components/ui",
+		"base": "@/lib/lit-ui"
+	}
 }
