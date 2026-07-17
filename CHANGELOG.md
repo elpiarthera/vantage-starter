@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-17 — phantom-string guard: a bundle grep hit on a vendor-example string is never a config defect)
+
+Ported the fleet guard `enforce-phantom-string-check.py` (+ `.claude/config/known-phantom-strings.json` registry + `.claude/rules/phantom-string-registry.md`) byte-identical from elpi-corp `5959f52`, wired PreToolUse on `send_message`/`create_task`/`block_task`. Closes a real recurrence: a config-defect claim was routed toward a human on a grep hit for `happy-otter-123.convex.cloud` — the Convex SDK's embedded example URL, present in every Convex bundle — when the value Vercel actually RETURNS (`vercel env pull`, Prod + Preview) was already `secret-parakeet-855`. The guard fires at the failure point and demands the paired good-value read (the value the app RETURNS, never a bundle grep); advisory, overridable with `// allow-phantom-cite: <reason>` for a legitimate historical citation. Bipolar bite-probe: warns on phantom-as-defect, silent on good-value/override/clean.
+
 ### Changed (2026-07-17 — CLAUDE.md + AGENTS.md now describe the shipped stack, not a lit-ui-only fiction)
 
 The bible declared a pure lit-ui codebase (No shadcn, No lucide-react, Inline SVGs only, 33 lit-ui skills, a lit-ui landing-migration chantier) while the shipped product is hybrid: shadcn/ui (`components/ui/`, 29 components, lucide-react icons) as the primary UI layer plus lit-ui web components (`src/components/ui/`, 82 source files, `lui-*` tags) on landing/dashboard surfaces. Doc-only alignment: removed the false shadcn/lucide prohibitions, removed fictions (`.claude/skills/lit-ui/` never existed; the landing-migration section was a closed chantier), declared the real hybrid stack, and dropped hand-typed counts that had drifted (7 agents / 33+18 skills). CLASS sweep — `grep -niE "no shadcn|no lucide|inline svgs only|33 skills|skills/lit-ui|CURRENT MIGRATION" CLAUDE.md AGENTS.md` → 0. Every kept lit-ui path verified to exist. No code changed.
