@@ -7,7 +7,19 @@ import { ConvexHttpClient } from "convex/browser";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { api } from "../../convex/_generated/api";
 
-describe("Convex User Functions", () => {
+// TRIPOLAR REFUSAL: "cannot measure" is NOT "red". When NEXT_PUBLIC_CONVEX_URL
+// is absent (e.g. no local Convex dev server running against this box), the
+// whole suite must REFUSE by name — loud, counted as skipped-with-reason,
+// never silently skipped and never failed. When the var IS present, it
+// measures for real and must pass.
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
+if (!CONVEX_URL) {
+	console.warn(
+		"cannot measure: NEXT_PUBLIC_CONVEX_URL not set in environment — skipping Convex User Functions suite",
+	);
+}
+
+describe.skipIf(!CONVEX_URL)("Convex User Functions", () => {
 	let client: ConvexHttpClient;
 
 	beforeEach(() => {

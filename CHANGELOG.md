@@ -4,6 +4,13 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-17 — last env-dependent red closed: `__tests__/convex/users.test.ts` tripolar refusal, mirrors `polar-product-mapping.test.ts`)
+
+CI (`gh run 29597084055` @ `c5c94fd`) showed 7 FAIL, all in `__tests__/convex/users.test.ts` — a box without `NEXT_PUBLIC_CONVEX_URL` set (no local Convex dev server) hit the suite's `beforeEach`, which threw `"NEXT_PUBLIC_CONVEX_URL not set"`, filing genuinely-UNKNOWN under RED. Grepped the whole test tree for env-dependency (`grep -rlE "process\.env\.[A-Z]|import\.meta\.env" __tests__/`) — exactly two suites touch env-gated external services: `polar-product-mapping.test.ts` (already fixed, same branch) and this one. No third hidden suite in this class.
+
+- `__tests__/convex/users.test.ts`: replaced the `beforeEach` throw with a suite-level `describe.skipIf(!CONVEX_URL)(...)` gate. When `NEXT_PUBLIC_CONVEX_URL` is absent, a `console.warn("cannot measure: NEXT_PUBLIC_CONVEX_URL not set in environment — skipping Convex User Functions suite")` fires once and all 7 tests report as named, counted skips (vitest reports them under "skipped", not "failed") — never silent, never red. When the var is present (local Convex dev server running), the suite executes for real against a live Convex deployment and must pass.
+- Same class, same shape as the polar fix already on this branch: tripolar refusal (PASS / FAIL / CANNOT-MEASURE-named), no silent skip, no red-on-missing-secret.
+
 ### Fixed (2026-07-17 — third red closed: `InsufficientCreditsModal` moved onto WARNING OKLCH tokens)
 
 Closes the third, previously-named-not-fixed red from the entry below (`"modal uses semantic color tokens"` asserting a `text-destructive` class the component never used — the modal is WARNING semantics, not destructive).
