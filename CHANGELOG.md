@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-17 — WORKSPACE + Settings pinned to the sidebar bottom)
+
+Moved the WORKSPACE `SidebarGroup` (Settings) out of `SidebarContent`'s flow and into a `SidebarFooter` sibling, so it renders flush at the bottom of the dashboard sidebar instead of hugging OVERVIEW mid-sidebar with ~250px of dead space below. `SidebarContent` is `flex-1` inside a `flex-col` shell (verified in `components/ui/sidebar.tsx`), so a `SidebarFooter` sibling is naturally pushed to the bottom without any manual height math. File: `components/app-sidebar.tsx`.
+
 ### Fixed (2026-07-16 — the dashboard surface is localized; eight guard blind spots closed, none found by design)
 
 **LIVRABLE 2 done, measured with the guard at its strongest:** Control 1 reports **0** hardcoded literals across the whole dashboard surface — `app/[locale]/dashboard/**`, `components/{missions,chat,dashboard,design-system,create}`, `app-sidebar`, `sidebar-user-nav`, `search-modal`, `theme-toggle` — and **0** on both error pages, which were telling French users "An unexpected error occurred. Please try again." Control 4 (called but undefined) PASSes at 0. Cross-locale parity 519 -> 39. Every count here is derived by the script; none is typed.
