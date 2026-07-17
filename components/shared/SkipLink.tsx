@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * SkipLink — WCAG 2.1 AA bypass block (criterion 2.4.1)
  *
@@ -8,12 +6,19 @@
  *
  * Visually hidden until focused (keyboard users only).
  * Becomes visible on focus via the :focus-visible styles below.
+ *
+ * Server component: the label is resolved by the (server) layout via
+ * `getTranslations` and passed as a prop. `useTranslations` cannot run here
+ * because this component is rendered before `NextIntlClientProvider` mounts
+ * (it must stay the very first DOM child of <body> per WCAG 2.4.1), so no
+ * client i18n context is available at this position in the tree.
  */
-import { useTranslations } from "next-intl";
 
-export function SkipLink() {
-	const t = useTranslations("shared");
+type SkipLinkProps = {
+	label: string;
+};
 
+export function SkipLink({ label }: SkipLinkProps) {
 	return (
 		<a
 			href="#main-content"
@@ -31,7 +36,7 @@ export function SkipLink() {
         transition-none
       "
 		>
-			{t("skip_link")}
+			{label}
 		</a>
 	);
 }

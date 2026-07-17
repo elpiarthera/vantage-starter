@@ -2,7 +2,11 @@ import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import {
+	getMessages,
+	getTranslations,
+	setRequestLocale,
+} from "next-intl/server";
 import type React from "react";
 import { LitUILoader } from "@/components/LitUILoader";
 import { RouteAnnouncer } from "@/components/shared/RouteAnnouncer";
@@ -67,6 +71,8 @@ export default async function LocaleLayout({ children, params }: Props) {
 
 	// Load messages for the current locale
 	const messages = await getMessages();
+	const t = await getTranslations({ locale, namespace: "shared" });
+	const skipLinkLabel = t("skip_link");
 
 	return (
 		<html
@@ -97,7 +103,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 			</head>
 			<body>
 				<LitUILoader />
-				<SkipLink />
+				<SkipLink label={skipLinkLabel} />
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="system"
