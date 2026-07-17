@@ -5,11 +5,12 @@
  *
  * Groups:
  *   OVERVIEW  — Dashboard, Chat, Missions, Architect
- *   WORKSPACE — Settings
+ *   WORKSPACE — Settings (pinned to the bottom via SidebarFooter)
  *
  * Mobile: hidden at <md, opens as Sheet drawer via hamburger trigger in layout.
  * Touch targets: all nav items min-h-[44px].
- * Footer removed — org switcher + user profile live in the top header bar.
+ * Footer: org switcher + user profile live in the top header bar;
+ *   SidebarFooter here is reused to pin the WORKSPACE group to the bottom.
  * Active state: subtle bg-accent fill, no border accent.
  */
 
@@ -19,6 +20,7 @@ import { SearchModal } from "@/components/search-modal";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
@@ -438,11 +440,11 @@ export function AppSidebar() {
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
+				</SidebarContent>
 
-					{/* Clean separator between groups */}
+				{/* ─── WORKSPACE (pinned to the bottom) ─── */}
+				<SidebarFooter className="p-0">
 					<SidebarSeparator className="mx-3" />
-
-					{/* ─── WORKSPACE ─── */}
 					<SidebarGroup>
 						<SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
 							{t("workspace_label")}
@@ -485,7 +487,7 @@ export function AppSidebar() {
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
-				</SidebarContent>
+				</SidebarFooter>
 			</Sidebar>
 		</TooltipProvider>
 	);
