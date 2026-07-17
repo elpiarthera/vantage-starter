@@ -11,7 +11,9 @@ export function ActivityFeed() {
 				{t("activity_feed.title")}
 			</h3>
 			{/* TODO: Wire up to product-specific activity data */}
-			<p className="text-sm text-muted-foreground">No recent activity.</p>
+			<p className="text-sm text-muted-foreground">
+				{t("activity_feed.empty")}
+			</p>
 		</div>
 	);
 }

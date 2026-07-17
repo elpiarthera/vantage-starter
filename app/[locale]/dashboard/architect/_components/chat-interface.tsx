@@ -3,6 +3,7 @@
 import type { Spec } from "@json-render/core";
 import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation } from "convex/react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -89,6 +90,7 @@ function AssistantBubble({
 	spec: Spec | null;
 	isStreaming?: boolean;
 }) {
+	const t = useTranslations("architect");
 	return (
 		<div className="flex justify-start">
 			<div className="max-w-[95%] w-full space-y-3">
@@ -118,7 +120,7 @@ function AssistantBubble({
 				{/* Streaming indicator when no text yet */}
 				{!text && !spec && isStreaming && (
 					<div className="flex items-center gap-2 text-xs text-muted-foreground">
-						<output className="sr-only">Thinking</output>
+						<output className="sr-only">{t("thinking")}</output>
 						<StreamingDots />
 					</div>
 				)}
@@ -142,6 +144,7 @@ function ConfirmPlanBar({
 	workspaceId: Id<"workspaces">;
 	onConfirmed: (missionId: Id<"missions">) => void;
 }) {
+	const t = useTranslations("architect");
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -220,7 +223,7 @@ function ConfirmPlanBar({
 	const handleConfirm = async () => {
 		const proposal = extractProposal();
 		if (!proposal) {
-			setError("Could not extract plan data. Try asking the Architect again.");
+			setError(t("extract_proposal_error"));
 			return;
 		}
 
@@ -235,7 +238,7 @@ function ConfirmPlanBar({
 			});
 			onConfirmed(missionId as Id<"missions">);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to create mission");
+			setError(err instanceof Error ? err.message : t("create_mission_error"));
 		} finally {
 			setIsConfirming(false);
 		}
@@ -246,10 +249,10 @@ function ConfirmPlanBar({
 			<div className="flex items-center justify-between gap-4">
 				<div>
 					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
-						Plan ready
+						{t("plan_ready")}
 					</p>
 					<p className="text-xs text-muted-foreground mt-0.5">
-						Confirm to create mission and operations in your workspace.
+						{t("confirm_plan_description")}
 					</p>
 					{error && (
 						<p className="text-xs mt-1" style={{ color: "oklch(0.65 0.2 25)" }}>
@@ -262,9 +265,9 @@ function ConfirmPlanBar({
 					disabled={isConfirming}
 					className="btn-shadow active-scale rounded-full shrink-0 font-medium"
 					size="sm"
-					aria-label="Confirm and create mission"
+					aria-label={t("confirm_and_create_mission_aria")}
 				>
-					{isConfirming ? "Creating..." : "Confirm plan"}
+					{isConfirming ? t("creating") : t("confirm_plan_button")}
 				</Button>
 			</div>
 		</div>
@@ -276,6 +279,7 @@ function ConfirmPlanBar({
 // ============================================================================
 
 function ChatEmptyHint() {
+	const t = useTranslations("architect");
 	return (
 		<div className="flex flex-col items-center justify-center text-center gap-4 py-16">
 			<div className="size-10 rounded-full bg-muted flex items-center justify-center">
@@ -306,10 +310,10 @@ function ChatEmptyHint() {
 			</div>
 			<div className="space-y-1">
 				<h2 className="text-sm font-semibold text-foreground">
-					Describe what you want to accomplish
+					{t("describe_what_you_want_to_accomplish")}
 				</h2>
 				<p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-					I&apos;ll design an agent workforce and execution plan.
+					{t("ai_will_design_workforce")}
 				</p>
 			</div>
 		</div>
@@ -325,6 +329,7 @@ export function ChatInterface({
 	workspaceId,
 	onPlanConfirmed,
 }: ChatInterfaceProps) {
+	const t = useTranslations("architect");
 	const sentinelRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [input, setInput] = useState("");
@@ -434,7 +439,7 @@ export function ChatInterface({
 							submitMessage();
 						}}
 						className="flex items-end gap-2"
-						aria-label="Send a message"
+						aria-label={t("send_a_message_aria")}
 					>
 						<div className="flex-1 relative">
 							<Textarea
@@ -450,14 +455,14 @@ export function ChatInterface({
 									e.target.style.height = `${newH}px`;
 								}}
 								onKeyDown={handleKeyDown}
-								placeholder="Ask the architect anything..."
+								placeholder={t("ask_architect_placeholder")}
 								disabled={isStreaming}
 								rows={1}
 								className={cn(
 									"resize-none overflow-hidden pr-2 min-h-[44px] py-2.5",
 									"leading-relaxed transition-none",
 								)}
-								aria-label="Message to Architect"
+								aria-label={t("message_to_architect_aria")}
 							/>
 						</div>
 
@@ -468,7 +473,7 @@ export function ChatInterface({
 								variant="outline"
 								size="icon"
 								className="shrink-0 size-11 rounded-xl"
-								aria-label="Thinking..."
+								aria-label={t("thinking_ellipsis_aria")}
 								disabled
 							>
 								<svg
@@ -486,7 +491,7 @@ export function ChatInterface({
 								size="icon"
 								disabled={!input.trim()}
 								className="shrink-0 size-11 rounded-xl"
-								aria-label="Send message"
+								aria-label={t("send_message_aria")}
 							>
 								<svg
 									className="size-4"
@@ -506,7 +511,7 @@ export function ChatInterface({
 				</div>
 
 				<p className="text-[11px] text-muted-foreground mt-2 text-center">
-					Press Enter to send · Shift+Enter for new line
+					{t("press_enter_hint")}
 				</p>
 			</div>
 		</div>

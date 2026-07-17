@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,7 @@ interface ChatPageProps {
 }
 
 export function ChatPage({ chatId }: ChatPageProps) {
+	const t = useTranslations("chat");
 	const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
 
 	// v6 useChat: sendMessage replaces handleSubmit+handleInputChange
@@ -97,10 +99,10 @@ export function ChatPage({ chatId }: ChatPageProps) {
 					</div>
 					<div>
 						<h1 className="text-base font-semibold text-foreground">
-							AI Agent
+							{t("page.agentName")}
 						</h1>
 						<p className="text-xs text-muted-foreground">
-							ToolLoopAgent — knowledge base + tools
+							{t("page.agentSubtitle")}
 						</p>
 					</div>
 
@@ -119,7 +121,7 @@ export function ChatPage({ chatId }: ChatPageProps) {
 								className="size-2 rounded-full bg-muted-foreground animate-pulse"
 								aria-hidden="true"
 							/>
-							Generating
+							{t("page.generating")}
 						</output>
 					)}
 				</div>
@@ -129,7 +131,7 @@ export function ChatPage({ chatId }: ChatPageProps) {
 			<section
 				ref={scrollRef}
 				className="flex-1 overflow-y-auto"
-				aria-label="Chat conversation"
+				aria-label={t("page.conversationAriaLabel")}
 			>
 				<MessageList messages={messages} isStreaming={isStreaming} />
 			</section>
@@ -140,8 +142,8 @@ export function ChatPage({ chatId }: ChatPageProps) {
 					role="alert"
 					className="mx-4 mb-2 px-4 py-3 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20"
 				>
-					<span className="font-medium">Error: </span>
-					{error.message ?? "Something went wrong. Please try again."}
+					<span className="font-medium">{t("page.errorLabel")} </span>
+					{error.message ?? t("page.errorGeneric")}
 				</div>
 			)}
 
@@ -151,7 +153,7 @@ export function ChatPage({ chatId }: ChatPageProps) {
 					<form
 						onSubmit={handleFormSubmit}
 						className="flex items-end gap-2"
-						aria-label="Send a message"
+						aria-label={t("page.formAriaLabel")}
 					>
 						<div className="flex-1 relative">
 							<Textarea
@@ -159,10 +161,10 @@ export function ChatPage({ chatId }: ChatPageProps) {
 								value={input}
 								onChange={handleTextareaChange}
 								onKeyDown={handleKeyDown}
-								placeholder="Ask the agent anything..."
+								placeholder={t("page.inputPlaceholder")}
 								rows={1}
 								disabled={isStreaming}
-								aria-label="Message input"
+								aria-label={t("page.inputAriaLabel")}
 								className={cn(
 									"resize-none overflow-hidden pr-2 min-h-[44px] py-2.5",
 									"leading-relaxed transition-none",
@@ -179,7 +181,7 @@ export function ChatPage({ chatId }: ChatPageProps) {
 								size="icon"
 								onClick={stop}
 								className="shrink-0 size-11 rounded-xl"
-								aria-label="Stop generating"
+								aria-label={t("page.stopGenerating")}
 							>
 								<svg
 									className="size-4"
@@ -196,7 +198,7 @@ export function ChatPage({ chatId }: ChatPageProps) {
 								size="icon"
 								disabled={!input.trim()}
 								className="shrink-0 size-11 rounded-xl"
-								aria-label="Send message"
+								aria-label={t("page.sendMessage")}
 							>
 								<svg
 									className="size-4"
@@ -216,7 +218,7 @@ export function ChatPage({ chatId }: ChatPageProps) {
 				</div>
 
 				<p className="text-[11px] text-muted-foreground mt-2 text-center">
-					Press Enter to send · Shift+Enter for new line
+					{t("page.inputHint")}
 				</p>
 			</div>
 		</div>

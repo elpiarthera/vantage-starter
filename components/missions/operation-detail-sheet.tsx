@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "convex/react";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
@@ -20,15 +21,6 @@ interface OperationDetailSheetProps {
 	onOpenChange: (open: boolean) => void;
 	onDelete: () => void;
 }
-
-const STATUS_LABEL: Record<OperationStatus, string> = {
-	pending: "Pending",
-	blocked: "Blocked",
-	in_progress: "In Progress",
-	awaiting_review: "Awaiting Review",
-	completed: "Completed",
-	failed: "Failed",
-};
 
 const STATUS_DOT: Record<OperationStatus, string> = {
 	pending: "bg-muted-foreground",
@@ -53,6 +45,8 @@ export function OperationDetailSheet({
 	onOpenChange,
 	onDelete,
 }: OperationDetailSheetProps) {
+	const t = useTranslations("missions.operation_detail_sheet");
+	const tStatus = useTranslations("missions.detail");
 	const updateStatus = useMutation(api.operations.updateStatus);
 
 	// Close on Escape
@@ -76,9 +70,11 @@ export function OperationDetailSheet({
 	const handleStatusChange = async (next: OperationStatus) => {
 		try {
 			await updateStatus({ id: operation._id, status: next });
-			toast.success(`Status updated to ${STATUS_LABEL[next]}`);
+			toast.success(
+				t("toast_status_updated", { status: tStatus(`status_${next}`) }),
+			);
 		} catch (error) {
-			toast.error("Failed to update status");
+			toast.error(t("toast_status_error"));
 			console.error(error);
 		}
 	};
@@ -106,7 +102,7 @@ export function OperationDetailSheet({
 			{/* Sheet */}
 			<aside
 				className="fixed right-0 inset-y-0 z-50 w-full max-w-[400px] bg-[var(--card)] border-l border-[var(--border)] shadow-lg flex flex-col"
-				aria-label="Operation details"
+				aria-label={t("aria_label")}
 			>
 				{/* Header */}
 				<div className="flex items-start justify-between p-5 border-b border-[var(--border)] shrink-0">
@@ -123,7 +119,7 @@ export function OperationDetailSheet({
 						type="button"
 						onClick={() => onOpenChange(false)}
 						className="ml-3 shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-						aria-label="Close"
+						aria-label={t("close_aria")}
 					>
 						<svg
 							width="20"
@@ -145,10 +141,10 @@ export function OperationDetailSheet({
 					{/* Status + Type row */}
 					<div className="flex items-center gap-3 flex-wrap">
 						<span className="text-xs capitalize px-2.5 py-1 rounded-full border border-[var(--border)] text-[var(--muted-foreground)]">
-							{STATUS_LABEL[status]}
+							{tStatus(`status_${status}`)}
 						</span>
 						<span className="text-xs capitalize px-2.5 py-1 rounded-full border border-[var(--border)] text-[var(--muted-foreground)]">
-							{operation.type === "ai" ? "AI Task" : "Human Task"}
+							{operation.type === "ai" ? t("type_ai") : t("type_human")}
 						</span>
 						{operation.priority && operation.priority !== "medium" && (
 							<span className="text-xs capitalize px-2.5 py-1 rounded-full border border-[var(--border)] text-[var(--muted-foreground)]">
@@ -161,7 +157,7 @@ export function OperationDetailSheet({
 					{operation.description ? (
 						<div>
 							<p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
-								Description
+								{t("description_label")}
 							</p>
 							<p className="text-sm text-[var(--foreground)] leading-relaxed">
 								{operation.description}
@@ -169,7 +165,7 @@ export function OperationDetailSheet({
 						</div>
 					) : (
 						<p className="text-sm text-[var(--muted-foreground)] italic">
-							No description.
+							{t("no_description")}
 						</p>
 					)}
 
@@ -177,7 +173,7 @@ export function OperationDetailSheet({
 					{status === "in_progress" && (
 						<div>
 							<p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
-								Progress
+								{t("progress_label")}
 							</p>
 							<div className="h-2 rounded-full bg-[var(--muted)] overflow-hidden">
 								<div
@@ -190,7 +186,7 @@ export function OperationDetailSheet({
 								/>
 							</div>
 							<p className="text-xs text-[var(--muted-foreground)] mt-1">
-								In progress
+								{t("in_progress")}
 							</p>
 						</div>
 					)}
@@ -199,7 +195,7 @@ export function OperationDetailSheet({
 					{nextStatuses.length > 0 && (
 						<div>
 							<p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
-								Move to
+								{t("move_to")}
 							</p>
 							<div className="flex flex-wrap gap-2">
 								{nextStatuses.map((next) => (
@@ -209,7 +205,7 @@ export function OperationDetailSheet({
 										onClick={() => void handleStatusChange(next)}
 										className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
 									>
-										{STATUS_LABEL[next]}
+										{tStatus(`status_${next}`)}
 									</button>
 								))}
 							</div>
@@ -219,18 +215,22 @@ export function OperationDetailSheet({
 					{/* Timestamps */}
 					<div className="space-y-2">
 						<p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">
-							Timeline
+							{t("timeline")}
 						</p>
 						<dl className="space-y-1.5">
 							<div className="flex justify-between text-sm">
-								<dt className="text-[var(--muted-foreground)]">Created</dt>
+								<dt className="text-[var(--muted-foreground)]">
+									{t("created")}
+								</dt>
 								<dd className="text-[var(--foreground)]">
 									{formatDate(operation.createdAt) ?? "—"}
 								</dd>
 							</div>
 							{operation.startedAt ? (
 								<div className="flex justify-between text-sm">
-									<dt className="text-[var(--muted-foreground)]">Started</dt>
+									<dt className="text-[var(--muted-foreground)]">
+										{t("started")}
+									</dt>
 									<dd className="text-[var(--foreground)]">
 										{formatDate(operation.startedAt)}
 									</dd>
@@ -238,14 +238,18 @@ export function OperationDetailSheet({
 							) : null}
 							{operation.completedAt ? (
 								<div className="flex justify-between text-sm">
-									<dt className="text-[var(--muted-foreground)]">Completed</dt>
+									<dt className="text-[var(--muted-foreground)]">
+										{t("completed")}
+									</dt>
 									<dd className="text-[var(--foreground)]">
 										{formatDate(operation.completedAt)}
 									</dd>
 								</div>
 							) : null}
 							<div className="flex justify-between text-sm">
-								<dt className="text-[var(--muted-foreground)]">Updated</dt>
+								<dt className="text-[var(--muted-foreground)]">
+									{t("updated")}
+								</dt>
 								<dd className="text-[var(--foreground)]">
 									{formatDate(operation.updatedAt) ?? "—"}
 								</dd>
@@ -257,7 +261,7 @@ export function OperationDetailSheet({
 					{operation.output ? (
 						<div>
 							<p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
-								Output
+								{t("output")}
 							</p>
 							<pre className="text-xs text-[var(--foreground)] bg-[var(--muted)] rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
 								{operation.output}
@@ -269,7 +273,7 @@ export function OperationDetailSheet({
 					{operation.error ? (
 						<div>
 							<p className="text-xs font-medium text-destructive uppercase tracking-wide mb-2">
-								Error
+								{t("error")}
 							</p>
 							<pre className="text-xs text-destructive bg-destructive/10 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words border border-destructive/20">
 								{operation.error}
@@ -304,7 +308,7 @@ export function OperationDetailSheet({
 							<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
 							<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
 						</svg>
-						Delete Operation
+						{t("delete")}
 					</button>
 				</div>
 			</aside>

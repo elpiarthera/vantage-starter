@@ -234,8 +234,17 @@ describe("formatRelativeTime's published contract (session-list.tsx)", () => {
 			"@/app/[locale]/dashboard/architect/_components/session-list"
 		);
 
-		const fr = formatRelativeTime(TEN_DAYS_AGO, "fr");
-		const enGb = formatRelativeTime(TEN_DAYS_AGO, "en-GB");
+		// >= 7 days always hits the absolute-date branch, which never reads
+		// `messages` -- these strings would only surface a defect if the
+		// implementation regressed to using them on this branch.
+		const unusedMessages = {
+			justNow: "UNUSED",
+			minutesAgo: () => "UNUSED",
+			hoursAgo: () => "UNUSED",
+			daysAgo: () => "UNUSED",
+		};
+		const fr = formatRelativeTime(TEN_DAYS_AGO, "fr", unusedMessages);
+		const enGb = formatRelativeTime(TEN_DAYS_AGO, "en-GB", unusedMessages);
 
 		const expectedFr = new Intl.DateTimeFormat("fr", {
 			month: "short",

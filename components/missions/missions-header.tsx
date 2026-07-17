@@ -9,6 +9,7 @@
  * - MissionFilters removed — filter toggle simplified to callback prop
  */
 
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { CreateMissionModal } from "./create-mission-modal";
 
@@ -21,6 +22,7 @@ export function MissionsHeader({
 	onCreateSuccess,
 	children,
 }: MissionsHeaderProps) {
+	const t = useTranslations("missions.header");
 	return (
 		<header className="flex items-center justify-between p-4 md:p-6 border-b border-border shrink-0">
 			{/* Left: icon + title */}
@@ -44,9 +46,9 @@ export function MissionsHeader({
 				</div>
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight text-foreground">
-						Mission Control
+						{t("title")}
 					</h1>
-					<p className="text-sm text-muted-foreground">See the factory floor</p>
+					<p className="text-sm text-muted-foreground">{t("subtitle")}</p>
 				</div>
 			</div>
 
@@ -75,7 +77,7 @@ export function MissionsHeader({
 								<path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
 								<path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
 							</svg>
-							New Mission
+							{t("new_mission")}
 						</button>
 					}
 				/>

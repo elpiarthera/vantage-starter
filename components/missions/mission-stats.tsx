@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { useTranslations } from "next-intl";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -172,6 +173,7 @@ interface MissionStatsProps {
 }
 
 export function MissionStats({ workspaceId }: MissionStatsProps) {
+	const t = useTranslations("missions.stats");
 	const stats = useQuery(api.missions.getStats, { workspaceId });
 
 	if (stats === undefined) {
@@ -205,38 +207,48 @@ export function MissionStats({ workspaceId }: MissionStatsProps) {
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 					<StatCard
 						icon={<IconTarget className="size-[18px] text-muted-foreground" />}
-						title="Total Missions"
+						title={t("total")}
 						value={stats.total}
-						comparison="in workspace"
+						comparison={t("in_workspace")}
 						trend="neutral"
 					/>
 					<StatCard
 						icon={<IconCog className="size-[18px] text-muted-foreground" />}
-						title="In Progress"
+						title={t("in_progress")}
 						value={inProgress}
-						comparison="executing or awaiting checkpoint"
+						comparison={t("executing_or_awaiting")}
 						trend={inProgressTrend}
-						change={inProgress > 0 ? `${inProgress} active` : undefined}
+						change={
+							inProgress > 0
+								? t("active_count", { count: inProgress })
+								: undefined
+						}
 					/>
 					<StatCard
 						icon={
 							<IconCheckCircle className="size-[18px] text-muted-foreground" />
 						}
-						title="Completed"
+						title={t("completed")}
 						value={completed}
-						comparison="missions done"
+						comparison={t("missions_done")}
 						trend={completedTrend}
-						change={completed > 0 ? `${completed} done` : undefined}
+						change={
+							completed > 0 ? t("done_count", { count: completed }) : undefined
+						}
 					/>
 					<StatCard
 						icon={
 							<IconAlertTriangle className="size-[18px] text-muted-foreground" />
 						}
-						title="Needs Attention"
+						title={t("needs_attention")}
 						value={needsAttention}
-						comparison="urgent or failed"
+						comparison={t("urgent_or_failed")}
 						trend={needsAttentionTrend}
-						change={needsAttention > 0 ? `${needsAttention} urgent` : undefined}
+						change={
+							needsAttention > 0
+								? t("urgent_count", { count: needsAttention })
+								: undefined
+						}
 					/>
 				</div>
 			</div>

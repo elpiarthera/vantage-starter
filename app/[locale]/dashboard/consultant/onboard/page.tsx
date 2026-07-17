@@ -100,7 +100,10 @@ function StepIndicator({ current }: { current: Step }) {
 	];
 
 	return (
-		<nav aria-label="Onboarding steps" className="flex items-center gap-0 mb-8">
+		<nav
+			aria-label={t("onboardingStepsAriaLabel")}
+			className="flex items-center gap-0 mb-8"
+		>
 			{steps.map((s, i) => (
 				<div key={s.step} className="flex items-center gap-0">
 					<div className="flex items-center gap-2">

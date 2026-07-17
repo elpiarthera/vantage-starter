@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/lib/create/themes";
 
 export function ThemePicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystemSearchParams();
 
 	const availableThemes = React.useMemo(
@@ -54,7 +56,7 @@ export function ThemePicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Theme</div>
+					<div className="text-xs text-muted-foreground">{t("theme")}</div>
 					<div className="text-sm font-medium text-foreground">
 						{currentTheme?.title}
 					</div>

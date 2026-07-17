@@ -11,7 +11,9 @@ export function RecentProjects() {
 				{t("recent_projects.title")}
 			</h3>
 			{/* TODO: Wire up to product-specific data */}
-			<p className="text-sm text-muted-foreground">No items yet.</p>
+			<p className="text-sm text-muted-foreground">
+				{t("recent_projects.empty")}
+			</p>
 		</div>
 	);
 }

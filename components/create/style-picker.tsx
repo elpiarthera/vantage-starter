@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import {
@@ -14,6 +15,7 @@ import { useDesignSystemSearchParams } from "@/lib/create/search-params";
 import { STYLES, type Style, type StyleName } from "@/lib/create/styles";
 
 export function StylePicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystemSearchParams();
 	const currentStyle = STYLES.find((s) => s.name === params.style);
 
@@ -21,7 +23,7 @@ export function StylePicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Style</div>
+					<div className="text-xs text-muted-foreground">{t("style")}</div>
 					<div className="text-sm font-medium text-foreground">
 						{currentStyle?.title}
 					</div>

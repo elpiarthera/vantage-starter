@@ -2,6 +2,7 @@
 
 import { useAction, useQuery } from "convex/react";
 import { Check, CreditCard, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -35,6 +36,7 @@ export function PurchaseCreditsModal({
 	successUrl,
 }: PurchaseCreditsModalProps) {
 	const { isMobile } = useDevice();
+	const t = useTranslations("purchase_credits_modal");
 
 	// Single source of truth — fetched from Convex subscriptionTiers table.
 	// No hardcoded data. Changing credit amounts or prices in Convex = instant UI update.
@@ -78,7 +80,7 @@ export function PurchaseCreditsModal({
 					// Loading state
 					<div className="col-span-2 flex items-center justify-center py-8 text-muted-foreground">
 						<Loader2 className="h-5 w-5 animate-spin mr-2" />
-						<span>Loading packages…</span>
+						<span>{t("loading_packages")}</span>
 					</div>
 				) : (
 					packages.map((pkg) => {
@@ -99,7 +101,7 @@ export function PurchaseCreditsModal({
 							>
 								{isPopular && (
 									<div className="absolute -top-2 right-4 px-2 py-1 bg-primary text-primary-foreground text-xs font-medium rounded">
-										Popular
+										{t("popular_badge")}
 									</div>
 								)}
 
@@ -109,11 +111,11 @@ export function PurchaseCreditsModal({
 											{totalCredits}
 										</span>
 										<span className="text-sm text-muted-foreground">
-											credits
+											{t("credits_unit")}
 										</span>
 										{(pkg.bonusCredits ?? 0) > 0 && (
 											<span className="text-sm text-success font-medium">
-												+{pkg.bonusCredits} bonus
+												{t("bonus_amount", { count: pkg.bonusCredits ?? 0 })}
 											</span>
 										)}
 									</div>
@@ -130,7 +132,7 @@ export function PurchaseCreditsModal({
 									{isSelected && (
 										<div className="flex items-center gap-2 text-primary text-sm font-medium">
 											<Check className="h-4 w-4" />
-											<span>Selected</span>
+											<span>{t("selected_label")}</span>
 										</div>
 									)}
 								</div>
@@ -145,11 +147,10 @@ export function PurchaseCreditsModal({
 				<div className="space-y-3">
 					<div className="flex items-center gap-2 text-sm font-medium">
 						<CreditCard className="h-4 w-4" />
-						<span>Payment Method</span>
+						<span>{t("payment_method_label")}</span>
 					</div>
 					<p className="text-sm text-muted-foreground">
-						You will be redirected to our secure payment processor to complete
-						your purchase.
+						{t("payment_redirect_notice")}
 					</p>
 				</div>
 			</Card>
@@ -161,7 +162,7 @@ export function PurchaseCreditsModal({
 					onClick={onClose}
 					className="min-h-[44px] bg-transparent"
 				>
-					Cancel
+					{t("cancel")}
 				</Button>
 				<Button
 					onClick={handleCheckout}
@@ -173,7 +174,7 @@ export function PurchaseCreditsModal({
 					) : (
 						<CreditCard className="h-4 w-4 mr-2" />
 					)}
-					Purchase Credits
+					{t("purchase_credits_cta")}
 				</Button>
 			</div>
 		</div>
@@ -184,7 +185,7 @@ export function PurchaseCreditsModal({
 			<Drawer open={isOpen} onOpenChange={onClose}>
 				<DrawerContent>
 					<DrawerHeader>
-						<DrawerTitle>Purchase Credits</DrawerTitle>
+						<DrawerTitle>{t("purchase_credits_cta")}</DrawerTitle>
 					</DrawerHeader>
 					<div className="px-4 pb-6">{content}</div>
 				</DrawerContent>
@@ -196,7 +197,7 @@ export function PurchaseCreditsModal({
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>Purchase Credits</DialogTitle>
+					<DialogTitle>{t("purchase_credits_cta")}</DialogTitle>
 				</DialogHeader>
 				{content}
 			</DialogContent>

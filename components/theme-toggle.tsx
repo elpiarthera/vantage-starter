@@ -1,8 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
+	const t = useTranslations("theme_toggle");
 	const { theme, setTheme } = useTheme();
 
 	const isDark = theme === "dark";
@@ -11,8 +13,8 @@ export function ThemeToggle() {
 		<button
 			type="button"
 			onClick={() => setTheme(isDark ? "light" : "dark")}
-			title={isDark ? "Dark mode" : "Light mode"}
-			aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+			title={isDark ? t("dark_mode") : t("light_mode")}
+			aria-label={isDark ? t("switch_to_light") : t("switch_to_dark")}
 			className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 transition-all duration-200 focus-ring overflow-hidden"
 		>
 			{/* Sun icon */}

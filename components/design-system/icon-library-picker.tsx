@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import {
@@ -103,6 +104,7 @@ const logos: Record<string, React.ReactNode> = {
 };
 
 export function IconLibraryPicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();
 	const current =
 		ICON_LIBRARIES[params.iconLibrary as IconLibraryName] ??
@@ -112,7 +114,9 @@ export function IconLibraryPicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Icon Library</div>
+					<div className="text-xs text-muted-foreground">
+						{t("icon_library")}
+					</div>
 					<div className="text-sm font-medium text-foreground">
 						{current.title}
 					</div>

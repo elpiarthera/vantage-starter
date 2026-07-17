@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useDashboardBreadcrumb } from "@/contexts/DashboardBreadcrumbContext";
 import { useDevice } from "@/contexts/DeviceContext";
 
@@ -15,6 +16,7 @@ export function DashboardNav() {
 	const pathname = usePathname();
 	const { isMobile } = useDevice();
 	const breadcrumbContext = useDashboardBreadcrumb();
+	const t = useTranslations("dashboard_nav");
 
 	const paths = pathname.split("/").filter(Boolean);
 
@@ -25,7 +27,7 @@ export function DashboardNav() {
 
 		if (paths.length > 1) {
 			// Add "Dashboard" as first crumb when on a nested page
-			breadcrumbs.push({ label: "Dashboard", href: "/dashboard" });
+			breadcrumbs.push({ label: t("dashboard_crumb"), href: "/dashboard" });
 
 			for (let i = 1; i < paths.length; i++) {
 				const path = paths[i];
@@ -61,7 +63,7 @@ export function DashboardNav() {
 	return (
 		<nav
 			className="flex items-center gap-2 px-4 md:px-6 py-3 text-sm text-muted-foreground border-b border-border"
-			aria-label="Breadcrumb"
+			aria-label={t("breadcrumb_aria")}
 		>
 			{visibleBreadcrumbs.map((breadcrumb, index) => (
 				<div key={breadcrumb.href} className="flex items-center gap-2">

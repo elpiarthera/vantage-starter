@@ -135,6 +135,34 @@ jobs:
           fi
           echo "OK — prebuild leaves the tree clean."
 
+      # Three controls, all derived from the artifacts they measure: hardcoded,
+      # UNTRANSLATED literals (any language — not only English, see
+      # `GATED_ROOTS`/`hasTranslatableText` doc-comments in the script) across
+      # the whole app/+components/ surface (not a hand-picked subset of
+      # directories), key parity across every locale in i18n/routing.ts (not
+      # an en/fr-only check — that shape is exactly what let the `chat`
+      # namespace ship in only 2 of 7 locales for weeks), and fr values
+      # byte-identical to en (forgotten translation / copy-paste).
+      #
+      # Control 1 is a RATCHET, not an all-or-nothing gate: the full product
+      # surface still carries pre-existing literal findings this workflow
+      # does not (yet) fail the build on — gating them today would arrive red
+      # and get this whole step disabled by the end of the week, which is the
+      # exact failure mode documented at the top of this file. Only the roots
+      # listed in `GATED_ROOTS` (scripts/check-translations.js) are proven
+      # clean and gated FOREVER — CI fails the moment a NEW literal lands
+      # there. Every finding outside those roots is still fully scanned and
+      # PRINTED (with its count), never hidden; growing `GATED_ROOTS` until it
+      # covers the whole product is the tracked path to closing the debt.
+      # Controls 2 and 4 gate globally — a missing or called-but-undefined key
+      # is a runtime break no matter which directory it lives in.
+      #
+      # See scripts/check-translations.js for the full contract and README.md
+      # "Translation QA" for usage. Intentionally NOT gated with `|| true`:
+      # a permanent QA script that never turns red protects nothing.
+      - name: Translation QA — check-translations
+        run: node scripts/check-translations.js
+
 # Gates deliberately NOT here yet — declared, not hidden
 # -----------------------------------------------------
 # Each is a tracked root-fix, not a "later". Adding them today would make this

@@ -26,8 +26,8 @@ export function WelcomeHeader({
 				{t("subtitle")}
 			</p>
 			<div className="flex gap-4 text-sm text-muted-foreground pt-2">
-				<span>{creditsRemaining} credits remaining</span>
-				<span>{storageUsed.totalGB.toFixed(2)} GB used</span>
+				<span>{t("credits_remaining", { count: creditsRemaining })}</span>
+				<span>{t("storage_used", { gb: storageUsed.totalGB.toFixed(2) })}</span>
 			</div>
 		</div>
 	);

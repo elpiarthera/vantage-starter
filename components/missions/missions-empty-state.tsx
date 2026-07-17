@@ -8,9 +8,11 @@
  * - Uses local CreateMissionModal
  */
 
+import { useTranslations } from "next-intl";
 import { CreateMissionModal } from "./create-mission-modal";
 
 export function MissionsEmptyState() {
+	const t = useTranslations("missions.empty_state");
 	return (
 		<div className="flex flex-col items-center justify-center h-full min-h-[400px] p-8 text-center">
 			{/* Target icon */}
@@ -32,12 +34,11 @@ export function MissionsEmptyState() {
 			</div>
 
 			<h2 className="text-xl font-semibold tracking-tight text-foreground mb-2">
-				No missions yet
+				{t("title")}
 			</h2>
 
 			<p className="text-sm text-muted-foreground max-w-md mb-6">
-				Missions are goal-driven containers for your AI-powered work. Create
-				your first mission to start orchestrating agents.
+				{t("description")}
 			</p>
 
 			<CreateMissionModal
@@ -61,7 +62,7 @@ export function MissionsEmptyState() {
 							<path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
 							<path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
 						</svg>
-						Create Your First Mission
+						{t("create_cta")}
 					</button>
 				}
 			/>
@@ -85,11 +86,9 @@ export function MissionsEmptyState() {
 						<path d="M10 22h4" />
 					</svg>
 					<div className="text-sm">
-						<p className="font-medium text-foreground">What is a Mission?</p>
+						<p className="font-medium text-foreground">{t("what_title")}</p>
 						<p className="mt-1 text-muted-foreground">
-							A mission contains a brief (shared context for AI), operations
-							(tasks), and flows through stages: Pending → Executing → Awaiting
-							Checkpoint → Completed.
+							{t("what_description")}
 						</p>
 					</div>
 				</div>

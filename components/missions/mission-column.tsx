@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -12,12 +13,12 @@ type MissionStatus =
 	| "completed"
 	| "failed";
 
-const STATUS_LABELS: Record<MissionStatus, string> = {
-	pending: "Pending",
-	executing: "Executing",
-	awaiting_checkpoint: "Awaiting Checkpoint",
-	completed: "Completed",
-	failed: "Failed",
+const STATUS_LABEL_KEYS: Record<MissionStatus, string> = {
+	pending: "column.status_pending",
+	executing: "column.status_executing",
+	awaiting_checkpoint: "column.status_awaiting_checkpoint",
+	completed: "column.status_completed",
+	failed: "column.status_failed",
 };
 
 const STATUS_HEADER_CLASSES: Record<MissionStatus, string> = {
@@ -143,7 +144,9 @@ export function MissionColumn({
 	onDragEnd,
 	onDrop,
 }: MissionColumnProps) {
+	const t = useTranslations("missions");
 	const [isDragOver, setIsDragOver] = useState(false);
+	const statusLabel = t(STATUS_LABEL_KEYS[status]);
 
 	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault();
@@ -167,7 +170,7 @@ export function MissionColumn({
 
 	return (
 		<section
-			aria-label={`${STATUS_LABELS[status]} column`}
+			aria-label={t("column.aria_label", { status: statusLabel })}
 			className={cn(
 				"flex flex-col min-w-[280px] max-w-[320px] shrink-0 rounded-xl transition-colors",
 				isDragOver && "bg-muted/50 ring-2 ring-primary/20",
@@ -184,7 +187,7 @@ export function MissionColumn({
 			>
 				<StatusIcon status={status} />
 				<span className="text-xs font-medium uppercase tracking-wider">
-					{STATUS_LABELS[status]}
+					{statusLabel}
 				</span>
 				<span className="ml-auto text-xs font-medium bg-background/50 px-1.5 py-0.5 rounded-full">
 					{missions.length}
@@ -212,7 +215,7 @@ export function MissionColumn({
 							isDragOver && "border-primary bg-primary/5",
 						)}
 					>
-						{isDragOver ? "Drop here" : "No missions"}
+						{isDragOver ? t("column.drop_here") : t("column.empty")}
 					</div>
 				)}
 			</ul>

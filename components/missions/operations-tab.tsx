@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
@@ -39,13 +40,14 @@ export function OperationsTab({
 	missionId,
 	operationStats,
 }: OperationsTabProps) {
+	const t = useTranslations("missions.operations_tab");
 	const operations = useQuery(api.operations.listByMission, { missionId });
 
 	if (operations === undefined) {
 		return (
 			<div className="flex items-center justify-center py-12">
 				<div className="animate-pulse text-muted-foreground text-sm">
-					Loading operations...
+					{t("loading")}
 				</div>
 			</div>
 		);
@@ -75,10 +77,9 @@ export function OperationsTab({
 						<path d="M13 18h8" />
 					</svg>
 				</div>
-				<h3 className="text-lg font-medium mb-2">No operations yet</h3>
+				<h3 className="text-lg font-medium mb-2">{t("empty_title")}</h3>
 				<p className="text-sm text-muted-foreground mb-6 max-w-[280px]">
-					Operations are the tasks that make up this mission. Add them manually
-					or use the Architect to generate a plan automatically.
+					{t("empty_description")}
 				</p>
 				<div className="flex flex-col gap-3 w-full max-w-[280px]">
 					<CreateOperationModal missionId={missionId} />
@@ -91,8 +92,8 @@ export function OperationsTab({
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
 				<p className="text-sm text-muted-foreground">
-					{operationStats?.completed ?? 0} of {operationStats?.total ?? 0}{" "}
-					complete
+					{operationStats?.completed ?? 0} {t("of")}{" "}
+					{operationStats?.total ?? 0} {t("complete")}
 				</p>
 				<CreateOperationModal missionId={missionId} />
 			</div>
@@ -107,21 +108,22 @@ export function OperationsTab({
 }
 
 function OperationCard({ operation }: { operation: Doc<"operations"> }) {
+	const t = useTranslations("missions.operations_tab");
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const removeOperation = useMutation(api.operations.remove);
 
 	const typeLabels: Record<string, string> = {
-		ai: "AI Task",
-		human: "Human Task",
+		ai: t("type_ai"),
+		human: t("type_human"),
 	};
 
 	const handleDelete = async () => {
 		try {
 			await removeOperation({ id: operation._id });
-			toast.success("Operation deleted");
+			toast.success(t("toast_deleted"));
 		} catch (error) {
-			toast.error("Failed to delete operation");
+			toast.error(t("toast_delete_error"));
 			console.error(error);
 		}
 	};
@@ -130,49 +132,42 @@ function OperationCard({ operation }: { operation: Doc<"operations"> }) {
 
 	return (
 		<>
-			<div
-				className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer group relative"
-				onClick={() => setIsDetailOpen(true)}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") {
-						e.preventDefault();
-						setIsDetailOpen(true);
-					}
-				}}
-				role="button"
-				tabIndex={0}
-				aria-label={`View ${operation.name}`}
-			>
-				{/* Status dot */}
-				<span
-					className={`h-2 w-2 rounded-full shrink-0 ${statusDotClass}`}
-					aria-hidden="true"
-				/>
+			<div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors group relative">
+				<button
+					type="button"
+					className="flex flex-1 min-w-0 items-center gap-3 text-left cursor-pointer"
+					onClick={() => setIsDetailOpen(true)}
+					aria-label={t("view_operation_aria", { name: operation.name })}
+				>
+					{/* Status dot */}
+					<span
+						className={`h-2 w-2 rounded-full shrink-0 ${statusDotClass}`}
+						aria-hidden="true"
+					/>
 
-				<div className="flex-1 min-w-0">
-					<p className="text-sm font-medium truncate">{operation.name}</p>
-					<div className="flex items-center gap-2 text-xs text-muted-foreground">
-						<span>{typeLabels[operation.type] ?? operation.type}</span>
-						<span aria-hidden="true">•</span>
-						<span className="capitalize">
-							{operation.status.replace(/_/g, " ")}
+					<span className="flex-1 min-w-0">
+						<span className="block text-sm font-medium truncate">
+							{operation.name}
 						</span>
-					</div>
-				</div>
-
-				{/* Priority badge — only non-medium */}
-				{operation.priority && operation.priority !== "medium" && (
-					<span className="text-xs capitalize px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-						{operation.priority}
+						<span className="flex items-center gap-2 text-xs text-muted-foreground">
+							<span>{typeLabels[operation.type] ?? operation.type}</span>
+							<span aria-hidden="true">•</span>
+							<span className="capitalize">
+								{operation.status.replace(/_/g, " ")}
+							</span>
+						</span>
 					</span>
-				)}
+
+					{/* Priority badge — only non-medium */}
+					{operation.priority && operation.priority !== "medium" && (
+						<span className="text-xs capitalize px-2 py-0.5 rounded-full border border-border text-muted-foreground shrink-0">
+							{operation.priority}
+						</span>
+					)}
+				</button>
 
 				{/* Actions menu */}
-				<div
-					className="relative"
-					onClick={(e) => e.stopPropagation()}
-					onKeyDown={(e) => e.stopPropagation()}
-				>
+				<div className="relative shrink-0">
 					<button
 						type="button"
 						className="h-8 w-8 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -180,7 +175,7 @@ function OperationCard({ operation }: { operation: Doc<"operations"> }) {
 							e.stopPropagation();
 							setIsMenuOpen((v) => !v);
 						}}
-						aria-label="Operation actions"
+						aria-label={t("actions_aria")}
 						aria-expanded={isMenuOpen}
 					>
 						{/* more-horizontal icon */}
@@ -233,7 +228,7 @@ function OperationCard({ operation }: { operation: Doc<"operations"> }) {
 										<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
 										<circle cx="12" cy="12" r="3" />
 									</svg>
-									View Details
+									{t("view_details")}
 								</button>
 								<hr className="border-border my-1" />
 								<button
@@ -260,7 +255,7 @@ function OperationCard({ operation }: { operation: Doc<"operations"> }) {
 										<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
 										<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
 									</svg>
-									Delete
+									{t("delete")}
 								</button>
 							</div>
 						</>

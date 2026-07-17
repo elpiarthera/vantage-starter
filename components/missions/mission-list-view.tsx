@@ -1,7 +1,7 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import { useFormatter, useTranslations } from "next-intl";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import type { MissionFilterState } from "./mission-filters";
@@ -25,14 +25,6 @@ const STATUS_BADGE_CLASSES: Record<MissionStatus, string> = {
 		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-success/10 text-success",
 	failed:
 		"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-destructive/10 text-destructive",
-};
-
-const STATUS_LABELS: Record<MissionStatus, string> = {
-	pending: "Pending",
-	executing: "Executing",
-	awaiting_checkpoint: "Awaiting Checkpoint",
-	completed: "Completed",
-	failed: "Failed",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -132,6 +124,8 @@ export function MissionListView({
 	filters,
 	onMissionClick,
 }: MissionListViewProps) {
+	const t = useTranslations("missions.list_view");
+	const format = useFormatter();
 	const router = useRouter();
 
 	// Apply filters
@@ -166,7 +160,7 @@ export function MissionListView({
 	if (filteredMissions.length === 0) {
 		return (
 			<div className="flex flex-1 items-center justify-center text-muted-foreground py-12">
-				No missions to display
+				{t("empty")}
 			</div>
 		);
 	}
@@ -191,7 +185,7 @@ export function MissionListView({
 									STATUS_BADGE_CLASSES[status] ?? STATUS_BADGE_CLASSES.pending,
 								)}
 							>
-								{STATUS_LABELS[status] ?? status}
+								{t(`status_${status}`)}
 							</span>
 
 							{/* Name & description */}
@@ -222,9 +216,7 @@ export function MissionListView({
 								<div className="hidden md:flex items-center gap-1 text-xs text-muted-foreground">
 									<IconCalendar className="size-4" />
 									<span>
-										{formatDistanceToNow(new Date(mission.targetDate), {
-											addSuffix: true,
-										})}
+										{format.relativeTime(new Date(mission.targetDate))}
 									</span>
 								</div>
 							)}

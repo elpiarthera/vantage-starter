@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
@@ -9,11 +10,19 @@ import type { Id } from "@/convex/_generated/dataModel";
 type OperationType = "ai" | "human";
 type OperationPriority = "urgent" | "high" | "medium" | "low";
 
+const PRIORITY_VALUES: OperationPriority[] = [
+	"low",
+	"medium",
+	"high",
+	"urgent",
+];
+
 interface CreateOperationModalProps {
 	missionId: Id<"missions">;
 }
 
 export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
+	const t = useTranslations("missions.create_operation_modal");
 	const [open, setOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,11 +49,11 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 
 	const handleSubmit = async () => {
 		if (!name.trim()) {
-			toast.error("Operation name is required");
+			toast.error(t("toast_name_required"));
 			return;
 		}
 		if (!workspaceId) {
-			toast.error("No workspace found");
+			toast.error(t("toast_no_workspace"));
 			return;
 		}
 
@@ -58,10 +67,10 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 				type,
 				priority,
 			});
-			toast.success("Operation created");
+			toast.success(t("toast_success"));
 			handleClose();
 		} catch (error) {
-			toast.error("Failed to create operation");
+			toast.error(t("toast_error"));
 			console.error(error);
 		} finally {
 			setIsSubmitting(false);
@@ -107,7 +116,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 					<path d="M5 12h14" />
 					<path d="M12 5v14" />
 				</svg>
-				<span>Add Operation</span>
+				<span>{t("trigger")}</span>
 			</button>
 
 			{/* Modal */}
@@ -136,17 +145,17 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 										id="create-operation-title"
 										className="text-lg font-semibold text-[var(--foreground)]"
 									>
-										Add Operation
+										{t("title")}
 									</h2>
 									<p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-										Operations are the individual tasks within this mission.
+										{t("subtitle")}
 									</p>
 								</div>
 								<button
 									type="button"
 									onClick={handleClose}
 									className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-									aria-label="Close"
+									aria-label={t("close_aria")}
 								>
 									<svg
 										width="20"
@@ -168,7 +177,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 								{/* Name */}
 								<div>
 									<label htmlFor="operation-name" className={labelClass}>
-										Name{" "}
+										{t("name_label")}{" "}
 										<span className="text-destructive" aria-hidden="true">
 											*
 										</span>
@@ -178,7 +187,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 										type="text"
 										value={name}
 										onChange={(e) => setName(e.target.value)}
-										placeholder="Enter operation name..."
+										placeholder={t("name_placeholder")}
 										className={inputClass}
 										// biome-ignore lint/a11y/noAutofocus: modal autofocus is intentional UX
 										autoFocus
@@ -189,13 +198,13 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 								{/* Description */}
 								<div>
 									<label htmlFor="operation-description" className={labelClass}>
-										Description
+										{t("description_label")}
 									</label>
 									<textarea
 										id="operation-description"
 										value={description}
 										onChange={(e) => setDescription(e.target.value)}
-										placeholder="Describe what needs to be done..."
+										placeholder={t("description_placeholder")}
 										rows={3}
 										className="w-full bg-transparent border border-[var(--border)] rounded-lg px-3 py-2 text-base text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-colors resize-none"
 									/>
@@ -205,7 +214,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 								<div className="grid sm:grid-cols-2 gap-4">
 									<div>
 										<label htmlFor="operation-type" className={labelClass}>
-											Type
+											{t("type_label")}
 										</label>
 										<select
 											id="operation-type"
@@ -213,13 +222,13 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 											onChange={(e) => setType(e.target.value as OperationType)}
 											className={selectClass}
 										>
-											<option value="ai">AI Task</option>
-											<option value="human">Human Task</option>
+											<option value="ai">{t("type_ai")}</option>
+											<option value="human">{t("type_human")}</option>
 										</select>
 									</div>
 									<div>
 										<label htmlFor="operation-priority" className={labelClass}>
-											Priority
+											{t("priority_label")}
 										</label>
 										<select
 											id="operation-priority"
@@ -229,10 +238,11 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 											}
 											className={selectClass}
 										>
-											<option value="low">Low</option>
-											<option value="medium">Medium</option>
-											<option value="high">High</option>
-											<option value="urgent">Urgent</option>
+											{PRIORITY_VALUES.map((value) => (
+												<option key={value} value={value}>
+													{t(`priority_${value}`)}
+												</option>
+											))}
 										</select>
 									</div>
 								</div>
@@ -246,7 +256,7 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 									disabled={isSubmitting}
 									className="flex-1 sm:flex-none px-6 py-2.5 text-sm rounded-lg border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50"
 								>
-									Cancel
+									{t("cancel")}
 								</button>
 								<button
 									type="button"
@@ -254,20 +264,20 @@ export function CreateOperationModal({ missionId }: CreateOperationModalProps) {
 									disabled={isSubmitting || !name.trim()}
 									className="flex-1 px-6 py-2.5 text-sm rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed font-medium"
 								>
-									{isSubmitting ? "Creating..." : "Add Operation"}
+									{isSubmitting ? t("creating") : t("create")}
 								</button>
 							</div>
 
 							{/* Keyboard hint */}
 							<p className="text-[10px] text-center text-[var(--muted-foreground)] mt-3">
-								Press{" "}
+								{t("keyboard_press")}{" "}
 								<kbd className="px-1 py-0.5 rounded bg-[var(--muted)] text-[10px]">
 									⌘
 								</kbd>
 								<kbd className="px-1 py-0.5 rounded bg-[var(--muted)] text-[10px] ml-0.5">
-									Enter
+									{t("keyboard_enter")}
 								</kbd>{" "}
-								to create
+								{t("keyboard_to_create")}
 							</p>
 						</div>
 					</div>

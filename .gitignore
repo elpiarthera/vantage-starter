@@ -90,13 +90,16 @@ package-lock.json
 .claude/**/*.bak.*
 .claude/**/__pycache__/
 
-# Orchestrator-personal config — resolved from the orchestrator workspace, NOT this repo.
-# These eleven were committed as symlinks to absolute VPS paths (/root/coding/elpi-corp/...,
-# /root/coding/vantage-memory/...). A clone anywhere else got eleven DANGLING links: the
-# clone succeeds, the links exist, only resolution fails — silent, on the wrong side.
-# Per rule claude-config-is-code, orchestrator-personal skills/hooks live in the
-# orchestrator workspace, not the product repo. Named here so the repo stops pretending
-# to carry what it does not.
+# NO orchestrator-personal exclusions live here, by decision (PR #14).
+# This block used to name eleven of them — 5 hooks + 6 skills, once committed as
+# symlinks to absolute VPS paths. Every one of those rules is gone: the files are
+# tracked, their content is in the tree, and `git ls-files .claude/` counts them.
+# The eleven were the single cause of three outages in one session: an ignored file
+# is invisible to git, so a checkout deletes it in silence, outside the conflict list.
+# Tracking them is the only fix — git refuses to clobber a tracked file and says so
+# out loud. Two of the eleven rules guarded files that never existed; only deriving
+# the count revealed it, which is why no count is typed by hand here.
+# Anything added below must be per-machine STATE, never configuration.
 
 # Debug screenshots
 *.png

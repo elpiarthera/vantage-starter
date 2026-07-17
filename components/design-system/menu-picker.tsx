@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import type { MenuColorValue } from "@/lib/design-system/config";
@@ -28,19 +29,23 @@ function getMenuColorValue(
 }
 
 const MENU_OPTIONS = [
-	{ value: "default" as MenuColorValue, label: "Default / Solid" },
+	{ value: "default" as MenuColorValue, labelKey: "menu_option_default_solid" },
 	{
 		value: "default-translucent" as MenuColorValue,
-		label: "Default / Translucent",
+		labelKey: "menu_option_default_translucent",
 	},
-	{ value: "inverted" as MenuColorValue, label: "Inverted / Solid" },
+	{
+		value: "inverted" as MenuColorValue,
+		labelKey: "menu_option_inverted_solid",
+	},
 	{
 		value: "inverted-translucent" as MenuColorValue,
-		label: "Inverted / Translucent",
+		labelKey: "menu_option_inverted_translucent",
 	},
-];
+] as const;
 
 export function MenuColorPicker() {
+	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();
 	const lastSolidAccentRef = React.useRef(params.menuAccent);
 	const currentMenu = MENU_OPTIONS.find((m) => m.value === params.menuColor);
@@ -79,9 +84,9 @@ export function MenuColorPicker() {
 		<Picker>
 			<PickerTrigger>
 				<div className="flex flex-col justify-start text-left">
-					<div className="text-xs text-muted-foreground">Menu</div>
+					<div className="text-xs text-muted-foreground">{t("menu")}</div>
 					<div className="line-clamp-1 max-w-[80%] truncate text-sm font-medium text-foreground">
-						{currentMenu?.label}
+						{currentMenu ? t(currentMenu.labelKey) : null}
 					</div>
 				</div>
 				<div className="pointer-events-none absolute top-1/2 right-4 flex size-4 -translate-y-1/2 items-center justify-center text-foreground select-none md:right-2.5">
@@ -105,24 +110,26 @@ export function MenuColorPicker() {
 			</PickerTrigger>
 			<PickerContent>
 				<PickerGroup>
-					<PickerLabel>Color</PickerLabel>
+					<PickerLabel>{t("color")}</PickerLabel>
 					<PickerRadioGroup
 						value={colorChoice}
 						onValueChange={(value) => setColor(value as ColorChoice)}
 					>
-						<PickerRadioItem value="default">Default</PickerRadioItem>
-						<PickerRadioItem value="inverted">Inverted</PickerRadioItem>
+						<PickerRadioItem value="default">{t("default")}</PickerRadioItem>
+						<PickerRadioItem value="inverted">{t("inverted")}</PickerRadioItem>
 					</PickerRadioGroup>
 				</PickerGroup>
 				<PickerSeparator />
 				<PickerGroup>
-					<PickerLabel>Appearance</PickerLabel>
+					<PickerLabel>{t("appearance")}</PickerLabel>
 					<PickerRadioGroup
 						value={surfaceChoice}
 						onValueChange={(value) => setSurface(value as SurfaceChoice)}
 					>
-						<PickerRadioItem value="solid">Solid</PickerRadioItem>
-						<PickerRadioItem value="translucent">Translucent</PickerRadioItem>
+						<PickerRadioItem value="solid">{t("solid")}</PickerRadioItem>
+						<PickerRadioItem value="translucent">
+							{t("translucent")}
+						</PickerRadioItem>
 					</PickerRadioGroup>
 				</PickerGroup>
 			</PickerContent>

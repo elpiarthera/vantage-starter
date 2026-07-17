@@ -2,9 +2,15 @@
 
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+} from "@/components/ui/card";
 
 export default function LocaleError({
 	error,
@@ -13,6 +19,9 @@ export default function LocaleError({
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
+	const t = useTranslations("errors");
+	const tDashboard = useTranslations("dashboard");
+
 	useEffect(() => {
 		console.error(error);
 	}, [error]);
@@ -28,13 +37,13 @@ export default function LocaleError({
 						/>
 					</div>
 					<h1 className="text-xl font-semibold text-foreground text-center">
-						Something went wrong
+						{t("something_went_wrong")}
 					</h1>
 				</CardHeader>
 
 				<CardContent className="text-center pb-2">
 					<p className="text-sm text-muted-foreground leading-relaxed">
-						{error.message || "An unexpected error occurred. Please try again."}
+						{error.message || t("loading_error_description")}
 					</p>
 					{error.digest && (
 						<p className="mt-2 text-xs text-muted-foreground/60 font-mono">
@@ -48,10 +57,10 @@ export default function LocaleError({
 						onClick={reset}
 						className="w-full bg-[oklch(0.72_0.16_75)] hover:bg-[oklch(0.65_0.16_75)] text-white"
 					>
-						Try again
+						{t("try_again_button")}
 					</Button>
 					<Button variant="ghost" className="w-full" asChild>
-						<Link href="/dashboard">Go to dashboard</Link>
+						<Link href="/dashboard">{tDashboard("go_to_dashboard")}</Link>
 					</Button>
 				</CardFooter>
 			</Card>

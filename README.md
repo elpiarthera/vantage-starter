@@ -66,6 +66,21 @@ ELEVENLABS_NARRATOR_VOICE_ID=
 NEXT_PUBLIC_ELEVENLABS_ENABLED=false
 ```
 
+## Translation QA
+
+```bash
+node scripts/check-translations.js
+```
+
+Runs three controls against the whole `app/` + `components/` surface and every locale in `i18n/routing.ts` — never a hand-typed subset:
+
+1. **Hardcoded literal scan** — generic TypeScript-AST pass flagging hardcoded, untranslated JSX text (any language, not only English — a French sentence rendered on the English page is exactly the same defect), `aria-label`/`placeholder`/`title`/`alt` string attributes, and hardcoded locale tags (`toLocaleDateString("en-US", ...)`) anywhere in the derived file inventory. **This control is a ratchet, not all-or-nothing**: only the directories/files listed in `GATED_ROOTS` (top of `scripts/check-translations.js`) fail the build on a new violation — CI is permanently red on day one otherwise, and a permanently red gate gets disabled, protecting nothing. Every finding OUTSIDE `GATED_ROOTS` is still fully scanned and printed, with its count always visible, never hidden. Widening `GATED_ROOTS` is the tracked path to full coverage: clean an area, add its path, and it is gated forever after.
+2. **Key parity across all 7 locales** — every key in every `messages/<locale>.json` must exist in all 7 locale files. Locales are parsed out of `i18n/routing.ts`, not retyped, so a namespace that only ships in `en`/`fr` (and silently ships nowhere else) cannot hide behind an en/fr-only check. Gates globally (no scoping) — a missing key is a runtime break no matter which directory calls it.
+3. **fr === en byte-identical** — flags any key whose French value is a byte-for-byte copy of the English value (forgotten translation or copy-paste). Legitimate exceptions (proper nouns, product names) are declared explicitly in `FR_EN_IDENTICAL_ALLOW` inside the script — never silently skipped. Signaled, never gates the build.
+4. **Called but undefined** — resolves every `t("<key>")` call (including through static label maps / array-of-objects tables) against all 7 locales; a key called in code and absent from every locale is a runtime `MISSING_MESSAGE` that Control 2 alone cannot see (all locales silently agreeing something doesn't exist looks like parity). Gates globally.
+
+Exit 0 when Controls 1 (within `GATED_ROOTS`), 2, and 4 pass. Control 3 is signal-only. Wired into CI (`.github/workflows/quality.yml`) and covered by a bipolar probe (`scripts/__tests__/check-translations.test.js`), including a dedicated ratchet probe that proves an injected violation inside a gated root fails the build while the pre-existing out-of-scope findings do not.
+
 ## Project structure
 
 ```
