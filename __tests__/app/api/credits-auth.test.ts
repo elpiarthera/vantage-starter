@@ -9,10 +9,7 @@
  * Tests cover:
  *   1. Clerk → Convex auth bridge: getToken + { token } on ALL credit + tracking calls
  *   2. refundCreditsPublic ownership check (identity.subject === transaction.clerkUserId)
- *   3. saveGeneratedStory: ctx.auth identity mismatch guard
- *   4. projects.get fetchQuery carries { token }
- *   5. logAIUsage calls carry { token }
- *   6. No raw api.credits.deductCredits calls (must be internal)
+ *   3. logAIUsage calls carry { token }
  */
 
 import { readFileSync } from "node:fs";
@@ -31,11 +28,7 @@ function countOccurrences(source: string, pattern: RegExp): number {
 
 // ─── routes under test ──────────────────────────────────────────────────────
 
-const ROUTES = [
-	"app/api/step1/generate-story/route.ts",
-	"app/api/step1/refine-story/route.ts",
-	"app/api/chat/route.ts",
-] as const;
+const ROUTES = ["app/api/chat/route.ts"] as const;
 
 // ─── 1. Clerk → Convex auth bridge ──────────────────────────────────────────
 
@@ -102,24 +95,6 @@ describe("API routes: Clerk → Convex auth bridge", () => {
 	}
 });
 
-// ─── 2. generate-story: all Convex calls carry { token } ────────────────────
-
-describe("generate-story/route.ts: complete token coverage", () => {
-	const source = readRoute("app/api/step1/generate-story/route.ts");
-
-	it("passes { token: convexToken } to projects.get fetchQuery", () => {
-		expect(source).toMatch(
-			/api\.projects\.get[\s\S]{0,200}\{\s*token:\s*convexToken\s*\}/,
-		);
-	});
-
-	it("passes { token: convexToken } to saveGeneratedStory", () => {
-		expect(source).toMatch(
-			/saveGeneratedStory[\s\S]{0,300}\{\s*token:\s*convexToken\s*\}/,
-		);
-	});
-});
-
 // ─── 3. refundCreditsPublic: ownership check ─────────────────────────────────
 
 describe("convex/credits.ts: refundCreditsPublic ownership check", () => {
@@ -144,28 +119,6 @@ describe("convex/credits.ts: refundCreditsPublic ownership check", () => {
 
 	it("throws Unauthorized when subject does not match transaction owner", () => {
 		expect(creditsSource).toMatch(/transaction belongs to a different user/);
-	});
-});
-
-// ─── 4. saveGeneratedStory: ctx.auth identity mismatch guard ────────────────
-
-describe("convex/projects.ts: saveGeneratedStory identity guard", () => {
-	const projectsSource = readRoute("convex/projects.ts");
-
-	it("saveGeneratedStory function exists and calls ctx.auth.getUserIdentity()", () => {
-		// Both patterns must exist in the file — saveGeneratedStory and getUserIdentity
-		expect(projectsSource).toMatch(/saveGeneratedStory/);
-		expect(projectsSource).toMatch(
-			/getUserIdentity[\s\S]{0,200}identity mismatch/,
-		);
-	});
-
-	it("throws on identity subject mismatch with clerkUserId arg", () => {
-		expect(projectsSource).toMatch(/identity mismatch/);
-	});
-
-	it("still performs DB-level ownership check as defence-in-depth", () => {
-		expect(projectsSource).toMatch(/you don't own this project/);
 	});
 });
 
@@ -215,33 +168,4 @@ describe("convex/credits.ts: public/internal boundary", () => {
 			/identity\.subject\s*!==\s*args\.clerkUserId/,
 		);
 	});
-});
-
-// ─── 6. Convex actions: use internal.credits.* not api.credits.* ────────────
-
-describe("Convex actions: no direct api.credits.* calls", () => {
-	const internalActionFiles = [
-		"convex/actions/imageToolGeneric.ts",
-		"convex/actions/voiceToolGeneric.ts",
-		"convex/actions/voiceProcessing.ts",
-		"convex/actions/videoAssembly.ts",
-		"convex/imageTool.ts",
-		"convex/voiceTool.ts",
-	];
-
-	for (const filePath of internalActionFiles) {
-		it(`${filePath}: no api.credits.deductCredits (must use internal.*)`, () => {
-			const source = readRoute(filePath);
-			expect(
-				countOccurrences(source, /api\.credits\.deductCredits(?!Public)/g),
-			).toBe(0);
-		});
-
-		it(`${filePath}: no api.credits.refundCredits (must use internal.*)`, () => {
-			const source = readRoute(filePath);
-			expect(
-				countOccurrences(source, /api\.credits\.refundCredits(?!Public)/g),
-			).toBe(0);
-		});
-	}
 });

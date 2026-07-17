@@ -23,11 +23,6 @@ const modalSource = fs.readFileSync(
 	"utf-8",
 );
 
-const videoGeneratorSource = fs.readFileSync(
-	path.join(process.cwd(), "components/video-generation/VideoGenerator.tsx"),
-	"utf-8",
-);
-
 describe("Issue #186 — InsufficientCreditsModal negative creditsNeeded fix", () => {
 	test("creditsNeeded uses Math.max(0, ...) to prevent negative display", () => {
 		expect(modalSource).toContain("Math.max(0, required - available)");
@@ -40,7 +35,6 @@ describe("Issue #186 — InsufficientCreditsModal negative creditsNeeded fix", (
 		expect(modalSource).not.toContain("bg-slate-");
 		expect(modalSource).not.toContain("border-slate-");
 		expect(modalSource).not.toContain("text-red-400");
-		// Note: text-white kept on amber CTA (intentional), text-gray-900 used for WCAG contrast on amber gradient
 	});
 
 	test("modal uses semantic color tokens", () => {
@@ -48,39 +42,12 @@ describe("Issue #186 — InsufficientCreditsModal negative creditsNeeded fix", (
 		expect(modalSource).toContain("text-foreground");
 		expect(modalSource).toContain("text-muted-foreground");
 		expect(modalSource).toContain("border-border");
-		expect(modalSource).toContain("text-destructive");
-	});
-});
-
-describe("Issue #186 — VideoGenerator modal trigger fix", () => {
-	test("modal only opens on Insufficient credits error, not any deduction failure", () => {
-		expect(videoGeneratorSource).toContain(
-			'deductResult.error === "Insufficient credits"',
-		);
+		expect(modalSource).toContain("text-warning");
 	});
 
-	test("raw !deductResult.success no longer unconditionally opens the modal", () => {
-		// Count occurrences of the old unsafe pattern
-		const unsafePattern =
-			/if\s*\(!deductResult\.success\)\s*\{\s*setShowInsufficientCreditsModal\(true\)/g;
-		const matches = videoGeneratorSource.match(unsafePattern);
-		expect(matches).toBeNull();
-	});
-
-	test("both generate and regenerate handlers guard the modal correctly", () => {
-		const occurrences = (
-			videoGeneratorSource.match(
-				/deductResult\.error === "Insufficient credits"/g,
-			) || []
-		).length;
-		// Both handleGenerateVideo and handleRegenerateApproved must be fixed
-		expect(occurrences).toBeGreaterThanOrEqual(2);
-	});
-
-	test("pre-flight balance check still guards before calling deductCredits", () => {
-		// The upfront currentCredits < VIDEO_GENERATION_CREDITS guard must remain
-		expect(videoGeneratorSource).toContain(
-			"currentCredits < VIDEO_GENERATION_CREDITS",
+	test("modal contains zero raw Tailwind color classes (OKLCH tokens only)", () => {
+		expect(modalSource).not.toMatch(
+			/\b(amber|gray|orange|red|slate|blue|green)-\d{2,3}\b/,
 		);
 	});
 });

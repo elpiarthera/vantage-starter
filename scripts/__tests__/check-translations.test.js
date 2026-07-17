@@ -37,13 +37,13 @@
 
 const { execSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const {
 	scanFile,
 	deriveTargetFiles,
 	runControl1LiteralScan,
 	runControl2KeyParity,
-	runControl3FrEqualsEn,
 	runControl4CalledButUndefined,
 	isLocaleSensitiveDateFnsPattern,
 	detectDateFnsFormatImportNames,
@@ -68,13 +68,121 @@ function assertRestored(target, original) {
 	expect(reread).toBe(original);
 }
 
+// ---------------------------------------------------------------------------
+// SCRATCH-ROOT ISOLATION — for probes whose target file is ALSO imported
+// (statically or dynamically) by another Jest suite.
+//
+// Jest runs test FILES in parallel worker processes by default; this repo's
+// `jest.config.ts` sets no serialization. A subset of this file's foreign
+// mutation targets are read by OTHER suites while a probe here holds them
+// mutated on disk — a genuine cross-process RACE, not a leakage bug:
+//   - `app/[locale]/dashboard/architect/_components/session-list.tsx` is
+//     dynamically imported by `__tests__/i18n/dashboard-i18n.test.tsx`.
+//   - `components/ui/sidebar.tsx` is dynamically imported by the same file
+//     (via `@/components/ui/sidebar`).
+//   - `messages/en.json` / `messages/fr.json` are statically imported by
+//     `__tests__/i18n/dashboard-i18n.test.tsx` (both) and
+//     `__tests__/components/credits/PurchaseReturnFlow.test.ts` (en.json).
+// While one worker process mutates these files mid-test, another worker
+// reading them concurrently gets broken content for a reason that has
+// nothing to do with its own subject.
+//
+// The fix: never mutate the real file. Copy the real, foreign content into
+// an isolated scratch "repo root" that mirrors the file's real relative path
+// (so `GATED_ROOTS`/`isInGatedScope` string matching behaves identically),
+// mutate the COPY there, and point the scanner at the scratch root via the
+// `CHECK_TRANSLATIONS_ROOT` override already built into
+// `scripts/check-translations.js` for exactly this kind of test isolation.
+// The scanned material is still 100% real, foreign content this test did not
+// author and did not select the shape of — only its on-disk LOCATION changes.
+// No restore step is needed: the real file was never touched.
+function buildScratchRoot() {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "check-translations-foreign-"),
+	);
+	fs.mkdirSync(path.join(dir, "i18n"), { recursive: true });
+	fs.mkdirSync(path.join(dir, "messages"), { recursive: true });
+	fs.mkdirSync(path.join(dir, "app"), { recursive: true });
+	fs.mkdirSync(path.join(dir, "components"), { recursive: true });
+	// Real i18n/routing.ts + messages/*.json, copied wholesale as read-only
+	// references (never mutated by the scratch-root tests below) so Controls
+	// 2/3/4 resolve normally against real locale data.
+	fs.copyFileSync(
+		path.join(ROOT, "i18n", "routing.ts"),
+		path.join(dir, "i18n", "routing.ts"),
+	);
+	for (const f of fs.readdirSync(path.join(ROOT, "messages"))) {
+		fs.copyFileSync(
+			path.join(ROOT, "messages", f),
+			path.join(dir, "messages", f),
+		);
+	}
+	// A single clean, i18n-key-only component so Control 1 always has >0
+	// files to scan (0 files scanned is a FATAL scan-root misconfiguration,
+	// not a pass) even for tests whose subject is Control 2/3/4, not 1.
+	fs.writeFileSync(
+		path.join(dir, "components", "ScratchRootProbe.tsx"),
+		[
+			'import { useTranslations } from "next-intl";',
+			"export function ScratchRootProbe() {",
+			'\tconst t = useTranslations("common");',
+			'\treturn <span>{t("close")}</span>;',
+			"}",
+			"",
+		].join("\n"),
+	);
+	return dir;
+}
+
+// Writes `content` at `relPath` inside `scratchRoot`, creating parent
+// directories as needed, and returns the absolute path written.
+function writeScratchFile(scratchRoot, relPath, content) {
+	const dest = path.join(scratchRoot, relPath);
+	fs.mkdirSync(path.dirname(dest), { recursive: true });
+	fs.writeFileSync(dest, content);
+	return dest;
+}
+
+// Runs the REAL script as a subprocess against `scratchRoot` (never a
+// simulated formula) and returns the parsed `--json` output. The script
+// exits non-zero (1) whenever any GATING control (1/2/4) reports a
+// violation — exactly the case most MUST_BLOCK probes need to observe — so
+// stdout is read from the caught exec error in that case rather than letting
+// `execSync` throw past the assertion.
+function runScriptJson(scratchRoot) {
+	const cmd = `node "${path.join(ROOT, "scripts", "check-translations.js")}" --json`;
+	const opts = {
+		cwd: ROOT,
+		encoding: "utf8",
+		env: { ...process.env, CHECK_TRANSLATIONS_ROOT: scratchRoot },
+	};
+	let out;
+	try {
+		out = execSync(cmd, opts);
+	} catch (err) {
+		// A fatal (exit 2) run prints its message to stderr and never emits
+		// JSON on stdout — that is a genuine test setup bug, never a result to
+		// silently parse around.
+		if (err.status === 2) {
+			throw new Error(
+				`check-translations.js exited FATAL (2) against scratch root ${scratchRoot}: ${err.stderr}`,
+			);
+		}
+		out = err.stdout;
+	}
+	return JSON.parse(out);
+}
+
 describe("check-translations — Control 1 (hardcoded literal scan)", () => {
 	test("MUST_BLOCK: re-injected hardcoded literal on foreign (already-fixed) material turns Control 1 RED", () => {
-		const target = path.join(
-			ROOT,
-			"app/[locale]/dashboard/architect/_components/session-list.tsx",
-		);
-		const original = fs.readFileSync(target, "utf8");
+		// `session-list.tsx` is also dynamically imported by
+		// `__tests__/i18n/dashboard-i18n.test.tsx` — mutating the real file in
+		// place races that suite across Jest's parallel worker processes. This
+		// test mutates an isolated scratch COPY instead (see buildScratchRoot
+		// doc-comment); the real file is never touched.
+		const relPath =
+			"app/[locale]/dashboard/architect/_components/session-list.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const injectedMarker = "___I18N_GUARD_PROBE_MARKER___";
 		const injectedLiteral = `Totally Hardcoded English Sentence ${injectedMarker}`;
@@ -86,24 +194,25 @@ describe("check-translations — Control 1 (hardcoded literal scan)", () => {
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		// Assert the mutation actually landed before reading any verdict.
-		const landed = execSync(`grep -c "${injectedMarker}" "${target}"`, {
-			cwd: ROOT,
+		// Assert the mutation actually landed before reading any verdict —
+		// against the scratch copy, never the real file.
+		const landed = execSync(`grep -c "${injectedMarker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find((v) =>
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find((v) =>
 				v.text.includes(injectedMarker),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -137,11 +246,12 @@ export function Probe() {
 
 describe("check-translations — Control 1 template-literal attr + no-arg locale holes", () => {
 	test("MUST_BLOCK: English static span inside a template-literal `title` attr on foreign material turns Control 1 RED", () => {
-		const target = path.join(
-			ROOT,
-			"app/[locale]/dashboard/architect/_components/session-list.tsx",
-		);
-		const original = fs.readFileSync(target, "utf8");
+		// `session-list.tsx` races `__tests__/i18n/dashboard-i18n.test.tsx`
+		// (dynamic import) across Jest's parallel workers — mutate an isolated
+		// scratch copy instead of the real file (see buildScratchRoot).
+		const relPath =
+			"app/[locale]/dashboard/architect/_components/session-list.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const injectedMarker = "___I18N_TEMPLATE_PROBE_MARKER___";
 		// Inject a template-literal title attribute with an English static
@@ -154,33 +264,34 @@ describe("check-translations — Control 1 template-literal attr + no-arg locale
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${injectedMarker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${injectedMarker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "attr:title:template" && v.text.includes("Loading status"),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
 	test("MUST_BLOCK: no-arg toLocaleDateString() on foreign material turns Control 1 RED as implicit-locale", () => {
-		const target = path.join(
-			ROOT,
-			"app/[locale]/dashboard/architect/_components/session-list.tsx",
-		);
-		const original = fs.readFileSync(target, "utf8");
+		// `session-list.tsx` races `__tests__/i18n/dashboard-i18n.test.tsx`
+		// (dynamic import) across Jest's parallel workers — mutate an isolated
+		// scratch copy instead of the real file (see buildScratchRoot).
+		const relPath =
+			"app/[locale]/dashboard/architect/_components/session-list.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const injectedMarker = "___I18N_NOARG_LOCALE_PROBE_MARKER___";
 		const mutated = original.replace(
@@ -190,28 +301,28 @@ describe("check-translations — Control 1 template-literal attr + no-arg locale
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${injectedMarker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${injectedMarker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
-				(v) =>
-					v.kind === "implicit-locale" &&
-					v.file === path.relative(ROOT, target),
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			// `v.file` is relative to the scratch root (mirrors the real
+			// relative path exactly — see buildScratchRoot).
+			const hit = control1.violations.find(
+				(v) => v.kind === "implicit-locale" && v.file === relPath,
 			);
 			expect(hit).toBeDefined();
 			expect(hit.text).toMatch(
 				/toLocaleDateString\(\) called with no arguments/,
 			);
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -824,31 +935,43 @@ describe("check-translations — Control 2 (key parity across all locales)", () 
 		// production today (the `chat` namespace hole this test used to assert
 		// was fixed this morning — a probe that only goes green because a real
 		// defect got closed is backwards: it must inject the violation itself).
+		//
+		// `messages/en.json` and `messages/fr.json` are ALSO statically
+		// imported by `__tests__/i18n/dashboard-i18n.test.tsx` (both) and
+		// `__tests__/components/credits/PurchaseReturnFlow.test.ts` (en.json)
+		// — mutating them in place races those suites across Jest's parallel
+		// workers. Mutate the scratch-root COPIES instead (see
+		// buildScratchRoot); the real files are never touched.
 		const locales = ["en", "fr", "de", "it", "es", "pt", "ru"];
-		const targets = locales.map((l) =>
-			path.join(ROOT, "messages", `${l}.json`),
-		);
-		const originals = targets.map((t) => fs.readFileSync(t, "utf8"));
+		const scratchRoot = buildScratchRoot();
 
 		try {
-			for (let i = 0; i < locales.length; i++) {
-				const parsed = JSON.parse(originals[i]);
-				if (locales[i] === "en" || locales[i] === "fr") {
+			for (const locale of locales) {
+				const scratchFile = path.join(
+					scratchRoot,
+					"messages",
+					`${locale}.json`,
+				);
+				const parsed = JSON.parse(fs.readFileSync(scratchFile, "utf8"));
+				if (locale === "en" || locale === "fr") {
 					parsed.__probeOnlyNamespace = { greeting: "hi" };
 				} else {
 					delete parsed.__probeOnlyNamespace;
 				}
-				fs.writeFileSync(targets[i], `${JSON.stringify(parsed, null, "\t")}\n`);
+				fs.writeFileSync(
+					scratchFile,
+					`${JSON.stringify(parsed, null, "\t")}\n`,
+				);
 			}
 			// Assert the mutation landed before reading any verdict.
 			const enReread = JSON.parse(
-				fs.readFileSync(path.join(ROOT, "messages", "en.json"), "utf8"),
+				fs.readFileSync(path.join(scratchRoot, "messages", "en.json"), "utf8"),
 			);
 			expect(enReread.__probeOnlyNamespace).toEqual({ greeting: "hi" });
 
-			const result = runControl2KeyParity();
-			expect(result.ok).toBe(false);
-			const violations = result.violations.filter((v) =>
+			const { control2 } = runScriptJson(scratchRoot);
+			expect(control2.ok).toBe(false);
+			const violations = control2.violations.filter((v) =>
 				v.key.startsWith("__probeOnlyNamespace."),
 			);
 			const flaggedLocales = new Set(violations.map((v) => v.locale));
@@ -856,9 +979,7 @@ describe("check-translations — Control 2 (key parity across all locales)", () 
 				expect(flaggedLocales.has(locale)).toBe(true);
 			}
 		} finally {
-			for (let i = 0; i < locales.length; i++) {
-				assertRestored(targets[i], originals[i]);
-			}
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -875,13 +996,17 @@ describe("check-translations — Control 3 (fr value byte-identical to en) — S
 	// `ok` field goes false and the key is named), even though this finding
 	// no longer fails the build (see the gating probe below for that half).
 	test("MUST_BLOCK: copying a real multi-word en sentence into fr for a currently-distinct key still turns Control 3.ok RED and is named", () => {
-		const target = path.join(ROOT, "messages", "fr.json");
-		const original = fs.readFileSync(target, "utf8");
-		const parsed = JSON.parse(original);
-
+		// `messages/fr.json` is also statically imported by
+		// `__tests__/i18n/dashboard-i18n.test.tsx` — mutate the scratch-root
+		// copy instead of the real file (see buildScratchRoot).
 		const enParsed = JSON.parse(
 			fs.readFileSync(path.join(ROOT, "messages", "en.json"), "utf8"),
 		);
+		const original = fs.readFileSync(
+			path.join(ROOT, "messages", "fr.json"),
+			"utf8",
+		);
+		const parsed = JSON.parse(original);
 
 		// Use a real key whose en value is genuine multi-word prose (not a
 		// single cognate token, not ICU, not a URL) so none of the three
@@ -892,20 +1017,23 @@ describe("check-translations — Control 3 (fr value byte-identical to en) — S
 
 		parsed.common.close = enParsed.common.close;
 		const mutated = `${JSON.stringify(parsed, null, "\t")}\n`;
-		fs.writeFileSync(target, mutated);
+
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = path.join(scratchRoot, "messages", "fr.json");
+		fs.writeFileSync(scratchFile, mutated);
 
 		// Assert the mutation landed: fr now equals en for this key.
-		const reread = JSON.parse(fs.readFileSync(target, "utf8"));
+		const reread = JSON.parse(fs.readFileSync(scratchFile, "utf8"));
 		expect(reread.common.close).toBe(enParsed.common.close);
 
 		try {
-			const result = runControl3FrEqualsEn();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find((v) => v.key === "common.close");
+			const { control3 } = runScriptJson(scratchRoot);
+			expect(control3.ok).toBe(false);
+			const hit = control3.violations.find((v) => v.key === "common.close");
 			expect(hit).toBeDefined();
 			expect(hit.value).toBe(enParsed.common.close);
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -1693,8 +1821,13 @@ describe("check-translations — derived inventory", () => {
 	// out-of-scope (not in GATED_ROOTS) file, assert it lands in
 	// `outOfScopeViolations` but never in `gatedViolations`, then restore.
 	test("MUST_BLOCK: an injected hardcoded literal in `components/ui/sidebar.tsx` (out-of-scope, foreign material) is reported by Control 1 but never gates the build", () => {
-		const target = path.join(ROOT, "components/ui/sidebar.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `components/ui/sidebar.tsx` is also dynamically imported by
+		// `__tests__/i18n/dashboard-i18n.test.tsx` — mutate an isolated scratch
+		// copy instead of the real file (see buildScratchRoot). The scratch
+		// root mirrors the file's real relative path, so `GATED_ROOTS`
+		// string-matching behaves identically.
+		const relPath = "components/ui/sidebar.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		expect(GATED_ROOTS.some((root) => root.startsWith("components/ui"))).toBe(
 			false,
@@ -1708,17 +1841,17 @@ describe("check-translations — derived inventory", () => {
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			const sidebarFindings = result.outOfScopeViolations.filter(
+			const { control1 } = runScriptJson(scratchRoot);
+			const sidebarFindings = control1.outOfScopeViolations.filter(
 				(v) => v.file === "components/ui/sidebar.tsx",
 			);
 			expect(sidebarFindings.length).toBeGreaterThan(0);
@@ -1726,13 +1859,13 @@ describe("check-translations — derived inventory", () => {
 			// Reported-not-gating: these findings must never appear in
 			// gatedViolations, and must never flip `ok` to false on their own.
 			expect(
-				result.gatedViolations.some(
+				control1.gatedViolations.some(
 					(v) => v.file === "components/ui/sidebar.tsx",
 				),
 			).toBe(false);
-			expect(result.ok).toBe(true);
+			expect(control1.ok).toBe(true);
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 });
