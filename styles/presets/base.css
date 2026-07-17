@@ -52,4 +52,14 @@
   /* Status */
   --success: oklch(0.696 0.17 162.48);
   --warning: oklch(0.769 0.188 70.08);
+  /* Derived from Tailwind gray-900 (oklch(21% 0.034 264.665)) — the dark
+     foreground previously hardcoded as text-gray-900 on the warning CTA
+     gradient for WCAG contrast. No new color introduced. */
+  --warning-foreground: oklch(0.21 0.034 264.665);
+  /* Second gradient stop, derived from Tailwind orange-500
+     (oklch(70.5% 0.213 47.604)) — previously hardcoded as
+     to-orange-500/hover:from-orange-400 on the same CTA gradient.
+     Kept as its own token so the two-stop warning gradient renders
+     pixel-identically without introducing a new color choice. */
+  --warning-secondary: oklch(0.705 0.213 47.604);
 }

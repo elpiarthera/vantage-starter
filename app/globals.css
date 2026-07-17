@@ -85,6 +85,8 @@
 
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-secondary: var(--warning-secondary);
 
   --color-border: var(--border);
   --color-border-hover: var(--border-hover);

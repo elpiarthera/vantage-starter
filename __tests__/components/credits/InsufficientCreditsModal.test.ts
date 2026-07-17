@@ -35,7 +35,6 @@ describe("Issue #186 — InsufficientCreditsModal negative creditsNeeded fix", (
 		expect(modalSource).not.toContain("bg-slate-");
 		expect(modalSource).not.toContain("border-slate-");
 		expect(modalSource).not.toContain("text-red-400");
-		// Note: text-white kept on amber CTA (intentional), text-gray-900 used for WCAG contrast on amber gradient
 	});
 
 	test("modal uses semantic color tokens", () => {
@@ -43,6 +42,12 @@ describe("Issue #186 — InsufficientCreditsModal negative creditsNeeded fix", (
 		expect(modalSource).toContain("text-foreground");
 		expect(modalSource).toContain("text-muted-foreground");
 		expect(modalSource).toContain("border-border");
-		expect(modalSource).toContain("text-destructive");
+		expect(modalSource).toContain("text-warning");
+	});
+
+	test("modal contains zero raw Tailwind color classes (OKLCH tokens only)", () => {
+		expect(modalSource).not.toMatch(
+			/\b(amber|gray|orange|red|slate|blue|green)-\d{2,3}\b/,
+		);
 	});
 });
