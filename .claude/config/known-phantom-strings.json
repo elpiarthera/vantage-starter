@@ -1,0 +1,17 @@
+{
+	"_doc": "Vendor-example strings that appear inside shipped library/SDK code and served bundles, present in nearly every app that uses that vendor. A grep hit on one of these proves NOTHING about the app's own configuration. Any claim of the form 'artifact X carries wrong value V' where V is listed here is a phantom until the paired GOOD-value read is produced (bipolar search). Seed and extend as new phantoms are identified.",
+	"phantoms": [
+		{
+			"pattern": "happy-otter-123",
+			"vendor": "Convex SDK",
+			"why": "Example deployment subdomain baked into Convex SDK error messages and docs; ships inside every Convex app bundle. A grep match is vendored library text, not the app's CONVEX_URL.",
+			"good_value_check": "vercel env pull / GET project env, OR grep .env.local for the app's real NEXT_PUBLIC_CONVEX_URL — read the value RETURNED, never a bundle grep."
+		},
+		{
+			"pattern": "\\b[a-z]+-[a-z]+-\\d{1,3}\\.convex\\.(cloud|site)\\b",
+			"vendor": "Convex SDK",
+			"why": "The Convex example-URL shape (adjective-animal-number). If it appears in a served bundle it is almost always the SDK example, not the app deployment. Match IN CONTEXT (surrounding line) before calling it configuration.",
+			"good_value_check": "Read the deployment identity the app RETURNS (env pull / convex status), never infer from a bundle string."
+		}
+	]
+}

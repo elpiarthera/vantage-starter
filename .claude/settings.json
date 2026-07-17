@@ -241,6 +241,15 @@
 						"command": "python3 \"/root/coding/vantage-starter/.claude/hooks/enforce-trust-system.py\""
 					}
 				]
+			},
+			{
+				"matcher": "mcp__vantage-peers__send_message|mcp__vantage-peers__create_task|mcp__vantage-peers__block_task",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-phantom-string-check.py\""
+					}
+				]
 			}
 		],
 		"PostToolUse": [
