@@ -83,7 +83,24 @@ export default clerkMiddleware(
 		// Protect non-public routes BEFORE intl middleware
 		if (!isPublic) {
 			const url = new URL(request.url);
-			const signUpUrl = new URL("/sign-up", request.url);
+			// Derive the active locale from the request path so the auth redirect
+			// lands on the sign-up page in the user's own locale. With
+			// localePrefix: "as-needed" the defaultLocale carries NO prefix, so
+			// the sign-up path must omit the prefix entirely when the locale is
+			// the default one -- emitting "/en/sign-up" would 307-loop back to
+			// "/sign-up" under next-intl's "as-needed" rewrite.
+			const segments = pathname.split("/");
+			const maybeLocale = segments[1];
+			const matchedLocale = (routing.locales as readonly string[]).includes(
+				maybeLocale,
+			)
+				? maybeLocale
+				: routing.defaultLocale;
+			const signUpPath =
+				matchedLocale === routing.defaultLocale
+					? "/sign-up"
+					: `/${matchedLocale}/sign-up`;
+			const signUpUrl = new URL(signUpPath, request.url);
 			signUpUrl.searchParams.set("redirect_url", url.toString());
 
 			await auth.protect({
@@ -103,6 +120,14 @@ export default clerkMiddleware(
 		return applyCSP(response);
 	},
 	{
+		// NOTE: these are clerkMiddleware's static top-level fallback URLs,
+		// evaluated once at middleware creation with no access to the incoming
+		// request -- they CANNOT be made locale-aware here. The actual
+		// unauthenticated redirect used on every real page load is the
+		// locale-derived `unauthenticatedUrl` passed to `auth.protect()` above,
+		// which is what determines the URL a French/German user actually sees.
+		// These two remain the English-default fallback Clerk itself would use
+		// if auth.protect() were ever called without an explicit unauthenticatedUrl.
 		signInUrl: "/sign-in",
 		signUpUrl: "/sign-up",
 	},
