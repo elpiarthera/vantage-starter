@@ -1,8 +1,5 @@
 /**
- * Core system prompt utilities for the chat API.
- *
- * Separate from lib/ai/prompts/index.ts which exports domain-specific
- * prompts (audio, video, image, step1). This file is for the chat route only.
+ * Core system prompt utilities for the chat API route only.
  */
 
 export const regularPrompt =
