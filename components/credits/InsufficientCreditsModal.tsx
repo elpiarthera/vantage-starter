@@ -112,7 +112,7 @@ export function InsufficientCreditsModal({
 							<span className="text-muted-foreground">
 								{tCredits("credits_needed")}
 							</span>
-							<span className="text-warning font-bold">
+							<span className="text-warning-accent font-bold">
 								{tCredits("more_credits", { creditsNeeded })}
 							</span>
 						</div>
@@ -121,7 +121,7 @@ export function InsufficientCreditsModal({
 
 				{/* Tip */}
 				<div className="flex items-start gap-2 text-xs text-muted-foreground">
-					<Zap className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
+					<Zap className="w-4 h-4 text-warning-accent flex-shrink-0 mt-0.5" />
 					<p>{tCredits("purchase_tip")}</p>
 				</div>
 			</div>
@@ -130,7 +130,7 @@ export function InsufficientCreditsModal({
 			<div className="flex flex-col gap-3">
 				<Button
 					onClick={handlePurchase}
-					className="w-full min-h-[44px] bg-gradient-to-r from-warning to-warning-secondary hover:brightness-110 text-warning-foreground font-semibold"
+					className="w-full min-h-[44px] bg-gradient-to-r from-warning to-warning-secondary hover:from-warning-accent hover:to-warning-secondary-hover text-warning-foreground font-semibold"
 				>
 					<CreditCard className="w-4 h-4 mr-2" />
 					{tCredits("purchase_button")}

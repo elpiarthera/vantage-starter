@@ -4,6 +4,17 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-17 — `InsufficientCreditsModal` true pixel-identity restored: two amber shades were collapsed into one, hover gradient was approximated)
+
+The previous tokenization (entry below, "moved onto WARNING OKLCH tokens") collapsed `amber-400` and `amber-500` into the single `--warning` token, and replaced the real two-stop `hover:from-amber-400 hover:to-orange-400` gradient with `hover:brightness-110` — both visible deltas from `origin/main`. Fixed by encoding the exact original Tailwind OKLCH values as two new tokens, verbatim, no new color choices:
+
+- `styles/presets/base.css`: added `--warning-accent: oklch(0.828 0.189 84.429)` (= Tailwind `amber-400`, exact) and `--warning-secondary-hover: oklch(0.75 0.183 55.934)` (= Tailwind `orange-400`, exact). No dark-mode override added — `--warning` itself has none in this preset, so neither do its siblings.
+- `app/globals.css`: exposed both as `--color-warning-accent` / `--color-warning-secondary-hover`, mirroring the existing `--color-warning*` lines.
+- `components/credits/InsufficientCreditsModal.tsx:115,124`: `text-warning` → `text-warning-accent` (restores amber-400 on the credits-needed amount and the tip icon; the modal's other `text-warning`/`bg-warning/10` usages on the header icon were already correct amber-500 and are untouched).
+- `components/credits/InsufficientCreditsModal.tsx:133`: `hover:brightness-110` → `hover:from-warning-accent hover:to-warning-secondary-hover` — the real two-stop 400-shade hover gradient, not a brightness filter approximation. Base gradient (`from-warning to-warning-secondary`) unchanged.
+- **Proof**: no isolated render harness exists for this modal (needs Clerk + Convex live providers), so zero-change is proven by value equality, not a screenshot — every one of the 5 color slots' OKLCH value on `origin/main` (raw Tailwind class) now exactly matches the OKLCH value behind the token that replaced it. See PR description / task completion note for the full 5-slot table.
+- `__tests__/components/credits/InsufficientCreditsModal.test.ts`: unchanged — the zero-raw-color regex and the `toContain("text-warning")` substring assertion both still pass against the new `text-warning-accent` classes.
+
 ### Fixed (2026-07-17 — jest.config.ts crashed CI at parse: `next/jest` needs the `.js` extension under ESM)
 
 `jest.config.ts:2` imported `next/jest` extensionless. `next` publishes no exports-map entry for `./jest`, so Node's ESM resolver (the path CI uses) throws `ERR_MODULE_NOT_FOUND: Cannot find module '.../next/jest' — Did you mean "next/jest.js"?` before a single test runs. It resolved locally only because ts-node/CommonJS does extensionless resolution — green on my box, red in CI: the same env-relative verdict this branch exists to kill, this time in the instrument itself. Fixed to `next/jest.js`. (CI-green is proven by the next CI run, not this local note.)

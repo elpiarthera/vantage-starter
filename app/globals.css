@@ -87,6 +87,8 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-secondary: var(--warning-secondary);
+  --color-warning-accent: var(--warning-accent);
+  --color-warning-secondary-hover: var(--warning-secondary-hover);
 
   --color-border: var(--border);
   --color-border-hover: var(--border-hover);
