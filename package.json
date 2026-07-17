@@ -17,18 +17,9 @@
 		"test:coverage": "jest --coverage",
 		"test:convex": "vitest run __tests__/convex",
 		"test:convex:watch": "vitest watch __tests__/convex",
-		"test:image-generator": "vitest run __tests__/components/image-generator",
-		"test:image-generator:watch": "vitest watch __tests__/components/image-generator",
 		"translate": "node scripts/translate.js",
 		"i18n:verify": "node scripts/verify-translations.js",
-		"check-translations": "node scripts/check-translations.js",
-		"test:lang:text": "tsx tests/ai-language-support/test-text-generation.ts",
-		"test:lang:image": "tsx tests/ai-language-support/test-image-generation.ts",
-		"test:lang:video": "tsx tests/ai-language-support/test-video-generation.ts",
-		"test:lang:narration": "tsx tests/ai-language-support/test-narration.ts",
-		"test:lang:music": "tsx tests/ai-language-support/test-music-generation.ts",
-		"test:lang:pipeline": "tsx tests/ai-language-support/run-full-pipeline.ts",
-		"e2e:sprint30-image": "tsx tests/ai-language-support/e2e-image-generator-sprint30.ts"
+		"check-translations": "node scripts/check-translations.js"
 	},
 	"dependencies": {
 		"@ai-sdk/anthropic": "^3.0.58",

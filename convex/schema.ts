@@ -5,7 +5,8 @@ import { v } from "convex/values";
  * VantageStarter — Convex Database Schema
  *
  * Generic SaaS infrastructure tables only.
- * VantageStarter-specific tables archived to _archive/convex/.
+ * MyReelDream-fork-specific tables (video/voice generation domain) were
+ * removed outright — no `_archive/` directory exists in this repo.
  *
  * Tables:
  * 1. organizations - Multi-tenancy root
