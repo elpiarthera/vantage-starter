@@ -6,7 +6,7 @@ All notable changes to VantageStarter are documented in this file.
 
 ### Added (2026-07-17 — fleet rule fix-the-class mirrored into the starter)
 
-`.claude/rules/fix-the-class.md` — English mirror of the canonical fleet rule (elpi-corp `.claude/rules/`). No fix ships without a `CLASSE:` block: general pattern named before the fix, sweep command with pasted output, remaining 0-or-traced. Written to comply with `artifact-language-standard` (English-only, no narrative, no verbatim). Mirror pending byte-exact re-sync when the canonical is reachable.
+`.claude/rules/fix-the-class.md` — byte-exact mirror of the canonical fleet rule (elpi-corp commit `b8a8b273`, sha256 `b99719a4…`; English, `artifact-language-standard`). No fix ships without its class sweep: general pattern named before the fix, sweep command with pasted output, remaining 0-or-traced.
 
 ### Added (2026-07-17 — phantom-string guard: a bundle grep hit on a vendor-example string is never a config defect)
 

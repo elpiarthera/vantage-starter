@@ -1,43 +1,49 @@
-# fix-the-class — close the class, not the instance
+# Fix-the-class — every fix ships its class sweep, or it is not a fix
 
-Always loaded. Fleet rule. Canonical source: elpi-corp `.claude/rules/fix-the-class.md`. This file is a mirror pending byte-exact re-sync (the canonical was not reachable from this host and the registry returned no content at copy time).
+Always loaded. Fleet-wide.
+
+Class of failure addressed: a defect is corrected at the one line the error message names, while sibling instances of the same pattern survive one line below, in the twin config file, or on another branch. The CI/reviewer only surfaces one error at a time, so each missed sibling costs a full extra cycle.
+
+## The rule
+
+**No fix is delivered without its `CLASS:` block.** Every completionNote, [DONE], [STATUS], or PR description announcing a fix MUST carry:
+
+```
+CLASS:
+- definition: <the general pattern the corrected instance belongs to — e.g. "any extension-less relative import in ESM-loaded configs">
+- sweep: <the command that enumerates ALL instances of the class> -> <pasted output>
+- remaining: 0 (or: N instances out of scope, each traced in task k<id>)
+```
+
+Three obligations:
+
+1. **The definition precedes the correction.** Before touching the faulty line, write the general pattern. If the class cannot be named, the bug is not yet understood.
+2. **The sweep is a command, not an intention.** `grep`/`rg` on the pattern, output pasted. A class swept from memory misses siblings.
+3. **`remaining: 0` or traced.** Any instance left behind is traced debt (cf. `no-preexisting-excuse.md`), never silence.
+
+## The test before announcing a fix
+
+"The CI/reviewer shows one error at a time — which one would be NEXT?" If the answer is not "none, here is the sweep proving it", the fix is not finished.
+
+## Banned
+
+- Correcting the line the error names and pushing without a class sweep (one CI cycle costs 10× the grep).
+- A sweep limited to the faulty file when the class crosses files.
+- "I checked, there are no others" without the pasted command.
+- Narrowing the class definition until the sweep comes back empty (the class is defined by the error's MECHANISM, not its site).
+
+## Structural mechanism
+
+| Layer | Component | Role |
+|---|---|---|
+| Doctrine | this file (always-loaded, fleet) | delivery contract visible every cycle |
+| Review gate | Eta/Argus | a fix announced without a `CLASS:` block = form correction required in the verdict (no extra cycle, cf. dispatch-contract) |
+| Dispatch | Pi | every dispatched fix task requires the `CLASS:` block in its completionNote (TESTS section of the brief) |
+
+## Reference
+
+- Cross-ref: `derive-never-type.md` (single-formulation matcher; scope derived from tool output), `measurement-integrity.md` (closure proven by sweep), `no-preexisting-excuse.md` (remaining instances are traced).
 
 ---
 
-## Rule
-
-No fix ships without a `CLASSE:` block in the task description, message, or PR comment, containing all three:
-
-1. **The general pattern, named before the fix** — not "I fixed this line" but "the class is: every relative import without an extension in a config file loaded as ESM by CI".
-2. **The sweep command, with its output pasted** — the `grep` (or equivalent) that enumerates every instance of the class, and what it returns.
-3. **Remaining = 0, or traced** — the sweep proves no instance is left, or names the ones left and why.
-
-## Why
-
-A tool (CI, linter, guard) reports one parse error at a time. Fixing that one **reveals** the next, identical, often one line down — and the round-trip repeats. Correcting the first-named occurrence instead of the whole family is the recurring failure this rule closes.
-
-## Operative test
-
-Before saying "fixed", answer: **"what would the NEXT error the tool shows be?"**
-
-- If the answer is not **"none, sweep attached"**, the fix is not done.
-- "I don't know" means the fix is not done: the sweep was not run.
-
-## Sweep examples
-
-| Class | Sweep command |
-|---|---|
-| Extensionless relative imports (ESM/CI) | `grep -nE 'from "\./' *.config.ts \| grep -v '\.js"'` -> 0 |
-| Test suites reading an env var | `grep -rlE 'process\.env\.[A-Z]\|import\.meta\.env' __tests__/` -> enumerate, keep each tripolar |
-| Hand-typed state value | see `derive-never-type.md` — the parent class |
-| Token vs raw color mapping | `grep -nE '(amber\|gray\|orange)-[0-9]{2,3}' <file>` -> 0 |
-
-## Kinship
-
-Operative sibling of `derive-never-type.md`: where that rule says "do not type a value a tool can read", this one says "do not fix an instance a `grep` can enumerate". Same mono-formulation disease — the fix (or guard) that knows only one form of the thing it treats. See also `measurement-integrity.md`: the proof is the pasted sweep, never the assertion "it's fine".
-
-## Enforcement
-
-- **Reviewers**: a fix shipped without a `CLASSE:` block is a form correction required in the verdict, before any approval.
-- **Dispatchers**: require the `CLASSE:` block in every fix task dispatched.
-- **All**: apply from the next fix.
+*Orchestrator: Pi — VantageOS Team | 2026-07-17*
