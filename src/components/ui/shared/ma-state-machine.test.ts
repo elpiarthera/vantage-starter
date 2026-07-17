@@ -5,12 +5,27 @@
  * The TypeScript compiler validates types; runtime verification is via build.
  *
  * Test cases derived from PLAN 99-01 behavior spec and RESEARCH.md algorithm.
+ *
+ * ORPHAN FIX (2026-07-17): this file was matched by both Jest's and Vitest's
+ * test-file globs by NAME (`*.test.ts`) but called zero test-runner API
+ * (`describe`/`it`/`test`/`expect`) — it only ever DECLARED `runTests()` and
+ * never invoked it anywhere. Under either runner this reports "no tests
+ * found in this file", a load-time failure indistinguishable from every
+ * OTHER load-time failure a runner-territory misconfiguration produces,
+ * which is exactly the class `scripts/derive-test-runner-ownership.js`
+ * exists to name instead of silently swallow. Fixed by wiring `runTests()`
+ * into a real `it()` (Vitest, per this repo's ownership derivation: files
+ * under `src/` importing test-runner APIs are Vitest's), so this file is
+ * now a REAL suite, not an orphan pretending to be one — which surfaced a
+ * SECOND defect in the same orphan: `_typeCheck satisfies () => void;`
+ * referenced a `declare`-only (type-space-only, zero runtime emission)
+ * function as a runtime expression, throwing `ReferenceError: _typeCheck is
+ * not defined` the instant this file actually executed. Never caught before
+ * because the file never executed. Removed — it asserted nothing beyond
+ * what the real `it()` below and `tsc --noEmit` already prove.
  */
+import { it } from "vitest";
 import type { MAStateMachine } from "./ma-state-machine.js";
-
-// Type-level test: ensure MAStateMachine is constructible from MAConfig shape
-declare function _typeCheck(): void;
-_typeCheck satisfies () => void;
 
 // Runtime assertion helper (used in build-time tests via node --input-type=module)
 function assertEqual(actual: unknown, expected: unknown, label: string): void {
@@ -221,5 +236,12 @@ async function runTests(): Promise<void> {
 	console.log("\nAll MAStateMachine tests passed.");
 }
 
-// Export to prevent TypeScript "unused module" warnings
-export { runTests };
+// Not exported: `lint/suspicious/noExportsInTest` forbids exporting from a
+// test file (biome, error severity) now that this file is a real suite
+// (see ORPHAN FIX above) rather than a dead, never-invoked module. Nothing
+// else in the repo imports `runTests` (verified via `grep -rn "runTests"`),
+// so the local reference from the `it()` below is the only call site this
+// function needs.
+it("MAStateMachine behavioral suite (SMA/EMA warm-up, NaN gaps, push/reset/replay parity, values-reference identity) — all inline assertions pass", async () => {
+	await runTests();
+});

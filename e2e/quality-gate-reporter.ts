@@ -42,11 +42,25 @@ class QualityGateReporter implements Reporter {
 		const totalFailed = this.failedTests.length;
 		const totalSkipped = this.skippedTests.length;
 
-		if (totalFailed === 0) {
+		// A vacuous "0 failed" (e.g. `playwright test --list`, which never
+		// executes a single test — every hook still fires) must NEVER write
+		// the marker: `totalFailed === 0` alone is true precisely when
+		// nothing ran at all, which is the exact false-green shape this whole
+		// task exists to close. The marker requires at least one test to have
+		// actually PASSED, not merely zero to have failed.
+		if (totalFailed === 0 && this.passedCount > 0) {
 			const timestamp = new Date().toISOString();
 			fs.writeFileSync(MARKER_PATH, timestamp);
 			console.log(
 				`\nQUALITY GATE: PASSED — marker created (${this.passedCount} tests passed)`,
+			);
+		} else if (totalFailed === 0 && this.passedCount === 0) {
+			// Remove stale marker if it exists
+			if (fs.existsSync(MARKER_PATH)) {
+				fs.unlinkSync(MARKER_PATH);
+			}
+			console.log(
+				"\nQUALITY GATE: INCONCLUSIVE — 0 tests passed and 0 failed (e.g. `--list`, or every test skipped) — marker NOT created, this is not a pass",
 			);
 		} else {
 			// Remove stale marker if it exists
