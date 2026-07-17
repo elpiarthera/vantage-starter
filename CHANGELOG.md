@@ -6,7 +6,7 @@ All notable changes to VantageStarter are documented in this file.
 
 ### Added (2026-07-17 — fleet rule fix-the-class mirrored into the starter)
 
-`.claude/rules/fix-the-class.md` — mirror of Pi's Day-134 broadcast (canonical: elpi-corp commit 8410007d). No fix ships without a `CLASSE:` block: general pattern named before the fix, sweep command with pasted output, remaining=0-or-traced. Born from 4 "instance fixed, twin missed" recidives in 24h — two of them mine on #22 (next/jest then its ./scripts twin one line down). Mirror pending byte-exact re-sync when the canonical is reachable (VR get_rule_content returned null; elpi-corp not on this host).
+`.claude/rules/fix-the-class.md` — English mirror of the canonical fleet rule (elpi-corp `.claude/rules/`). No fix ships without a `CLASSE:` block: general pattern named before the fix, sweep command with pasted output, remaining 0-or-traced. Written to comply with `artifact-language-standard` (English-only, no narrative, no verbatim). Mirror pending byte-exact re-sync when the canonical is reachable.
 
 ### Added (2026-07-17 — phantom-string guard: a bundle grep hit on a vendor-example string is never a config defect)
 
