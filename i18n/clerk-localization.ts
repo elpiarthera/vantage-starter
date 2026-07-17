@@ -1,11 +1,70 @@
 // i18n/clerk-localization.ts
+//
+// Clerk's <SignIn>/<SignUp> widgets render their OWN internal strings
+// ("Email address", "Continue", "Password", etc.) independently of our
+// next-intl `messages/*.json`. Passing only the hand-typed `brandOverrides`
+// below (as this file used to do) covers the "start" screen title/subtitle
+// but leaves every form field label in English -- exactly the gap Laurent's
+// screenshots would have shown even after the routing/path fix. The fix is
+// to load Clerk's OWN full locale packs from `@clerk/localizations` (one
+// per locale, official translations of every widget string) and layer our
+// brand copy ("VantageStarter") on top with a deep merge.
+import { deDE, enUS, esES, frFR, itIT, ptBR, ruRU } from "@clerk/localizations";
 import type { LocalizationResource } from "@clerk/types";
+import { routing } from "@/i18n/routing";
 
-export const clerkLocalizations: Record<
-	string,
-	Partial<LocalizationResource>
+// Keyed by next-intl locale code (routing.locales), NOT by Clerk's own
+// BCP-47 codes -- this is the map next-intl's `locale` param looks up.
+// If routing.locales ever gains an entry with no pack listed here, the
+// `clerkLocalizations` build below throws loudly instead of silently
+// falling back to English.
+const CLERK_LOCALE_PACKS: Partial<
+	Record<(typeof routing.locales)[number], LocalizationResource>
 > = {
-	en: {}, // Use Clerk's default English
+	en: enUS,
+	fr: frFR,
+	de: deDE,
+	it: itIT,
+	es: esES,
+	pt: ptBR,
+	ru: ruRU,
+};
+
+// Deep-merge is limited to the two nested groups we brand (signIn.start /
+// signUp.start) -- every other key comes untouched from the official pack.
+function deepMerge<T extends Record<string, unknown>>(
+	base: T,
+	override: Partial<T>,
+): T {
+	const result: Record<string, unknown> = { ...base };
+	for (const key of Object.keys(override)) {
+		const overrideValue = override[key];
+		const baseValue = base[key];
+		if (
+			overrideValue &&
+			typeof overrideValue === "object" &&
+			!Array.isArray(overrideValue) &&
+			baseValue &&
+			typeof baseValue === "object" &&
+			!Array.isArray(baseValue)
+		) {
+			result[key] = deepMerge(
+				baseValue as Record<string, unknown>,
+				overrideValue as Record<string, unknown>,
+			);
+		} else {
+			result[key] = overrideValue;
+		}
+	}
+	return result as T;
+}
+
+// Brand-specific copy for the "start" screens only. Every other widget
+// string (field labels, buttons, errors, MFA, etc.) is Clerk's own official
+// translation from CLERK_LOCALE_PACKS above -- never hand-retyped here.
+const brandOverrides: Partial<
+	Record<(typeof routing.locales)[number], Partial<LocalizationResource>>
+> = {
 	fr: {
 		signIn: {
 			start: {
@@ -22,10 +81,6 @@ export const clerkLocalizations: Record<
 				actionText: "Déjà un compte ?",
 				actionLink: "Se connecter",
 			},
-		},
-		userButton: {
-			action__signOut: "Déconnexion",
-			action__manageAccount: "Gérer le compte",
 		},
 	},
 	de: {
@@ -45,10 +100,6 @@ export const clerkLocalizations: Record<
 				actionLink: "Anmelden",
 			},
 		},
-		userButton: {
-			action__signOut: "Abmelden",
-			action__manageAccount: "Konto verwalten",
-		},
 	},
 	it: {
 		signIn: {
@@ -66,10 +117,6 @@ export const clerkLocalizations: Record<
 				actionText: "Hai già un account?",
 				actionLink: "Accedi",
 			},
-		},
-		userButton: {
-			action__signOut: "Disconnetti",
-			action__manageAccount: "Gestisci account",
 		},
 	},
 	es: {
@@ -89,10 +136,6 @@ export const clerkLocalizations: Record<
 				actionLink: "Iniciar sesión",
 			},
 		},
-		userButton: {
-			action__signOut: "Cerrar sesión",
-			action__manageAccount: "Gestionar cuenta",
-		},
 	},
 	pt: {
 		signIn: {
@@ -110,10 +153,6 @@ export const clerkLocalizations: Record<
 				actionText: "Já tem uma conta?",
 				actionLink: "Entrar",
 			},
-		},
-		userButton: {
-			action__signOut: "Sair",
-			action__manageAccount: "Gerenciar conta",
 		},
 	},
 	ru: {
@@ -133,9 +172,36 @@ export const clerkLocalizations: Record<
 				actionLink: "Войти",
 			},
 		},
-		userButton: {
-			action__signOut: "Выйти",
-			action__manageAccount: "Управление аккаунтом",
-		},
 	},
 };
+
+function buildClerkLocalizations(): Record<string, LocalizationResource> {
+	const result: Record<string, LocalizationResource> = {};
+	const missingPacks: string[] = [];
+
+	for (const locale of routing.locales) {
+		const pack = CLERK_LOCALE_PACKS[locale];
+		if (!pack) {
+			missingPacks.push(locale);
+			continue;
+		}
+		const override = brandOverrides[locale];
+		result[locale] = override ? deepMerge(pack, override) : pack;
+	}
+
+	if (missingPacks.length > 0) {
+		// Named loudly rather than silently falling back to English --
+		// see .claude/rules/derive-never-type.md ("toute échappatoire
+		// muette est interdite").
+		throw new Error(
+			`clerk-localization: no @clerk/localizations pack mapped for locale(s): ${missingPacks.join(
+				", ",
+			)}. Add an entry to CLERK_LOCALE_PACKS in i18n/clerk-localization.ts.`,
+		);
+	}
+
+	return result;
+}
+
+export const clerkLocalizations: Record<string, LocalizationResource> =
+	buildClerkLocalizations();

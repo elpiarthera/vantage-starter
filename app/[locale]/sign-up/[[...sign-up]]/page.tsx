@@ -1,10 +1,19 @@
 "use client";
 
 import { SignUp } from "@clerk/nextjs";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { routing } from "@/i18n/routing";
+
+// See app/[locale]/sign-in/[[...sign-in]]/page.tsx for the full rationale:
+// Clerk's routing="path" requires `path` to match the actual browser URL,
+// and localePrefix: "as-needed" means the defaultLocale carries no prefix.
+function localizedAuthPath(locale: string, page: "sign-in" | "sign-up") {
+	return locale === routing.defaultLocale ? `/${page}` : `/${locale}/${page}`;
+}
 
 export default function SignUpPage() {
 	const t = useTranslations("sign_up_page");
+	const locale = useLocale();
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -18,7 +27,11 @@ export default function SignUpPage() {
 					</p>
 				</div>
 
-				<SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+				<SignUp
+					routing="path"
+					path={localizedAuthPath(locale, "sign-up")}
+					signInUrl={localizedAuthPath(locale, "sign-in")}
+				/>
 			</div>
 		</div>
 	);
