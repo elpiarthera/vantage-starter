@@ -2638,7 +2638,8 @@
 			"social_proof_micro": "Construit sur Convex. Livré avec Clerk. Propulsé par AI SDK v6.",
 			"badge": "Boilerplate SaaS AI-Native",
 			"copied": "Copié !",
-			"copy_command": "Copier la commande"
+			"copy_command": "Copier la commande",
+			"terminal_label": "Terminal"
 		},
 		"features": {
 			"eyebrow": "Ce que l'ère agentique exige",
@@ -2719,7 +2720,10 @@
 			"res_litui": "lit-ui",
 			"built_with": "Construit avec",
 			"mit_license": "Open source sous licence MIT",
-			"discord": "Discord"
+			"discord": "Discord",
+			"github_sr": "GitHub",
+			"twitter_sr": "X (Twitter)",
+			"copyright_line": "© {year} VantageStarter. Open source sous licence MIT."
 		},
 		"faq": {
 			"heading": "Questions",
@@ -2761,7 +2765,12 @@
 			"heading": "Ce que disent les premiers bâtisseurs",
 			"subheading": "Nous ne faisons que commencer — de vrais témoignages arriveront ici au fur et à mesure que les équipes déploieront VantageStarter.",
 			"placeholder_aria": "Emplacement de témoignage {index}",
-			"placeholder_sr": "Cet emplacement est réservé à un futur témoignage client."
+			"placeholder_sr": "Cet emplacement est réservé à un futur témoignage client.",
+			"eyebrow": "Témoignages"
+		},
+		"decorative": {
+			"tree_title": "Animation d'arbre génératif",
+			"shader_title": "Fond animé"
 		}
 	},
 	"app_sidebar": {
@@ -3271,5 +3280,95 @@
 		"radius": "Rayon",
 		"style": "Style",
 		"theme": "Thème"
+	},
+	"sidebar_ui": {
+		"title": "Barre latérale",
+		"description": "Affiche la barre latérale mobile.",
+		"toggle": "Basculer la barre latérale"
+	},
+	"not_found": {
+		"title": "Page introuvable",
+		"description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+		"cta_home": "Retour à l'accueil"
+	},
+	"legal": {
+		"notice": {
+			"back_home": "← Retour à l'accueil",
+			"title": "Mentions légales",
+			"last_updated": "Dernière mise à jour : mars 2026",
+			"placeholder_notice": "Ceci est un modèle de mentions légales pour VantageStarter. Remplacez ce contenu par vos informations légales réelles (SIRET, adresse de la société, hébergeur) avant la mise en ligne.",
+			"publisher_heading": "Éditeur",
+			"publisher_body": "ElPi Corp — [YOUR_COMPANY_ADDRESS]",
+			"publisher_siret": "SIRET : [YOUR_SIRET]",
+			"hosting_heading": "Hébergement",
+			"hosting_body": "Hébergé par Vercel, Inc. — 340 Pine Street, Suite 400, San Francisco, CA 94104, USA.",
+			"contact_heading": "Contact"
+		},
+		"privacy": {
+			"back_home": "← Retour à l'accueil",
+			"title": "Politique de confidentialité",
+			"last_updated": "Dernière mise à jour : mars 2026",
+			"placeholder_notice": "Ceci est un modèle de politique de confidentialité pour VantageStarter. Remplacez ce contenu par votre politique de confidentialité réelle avant la mise en ligne.",
+			"data_heading": "Données collectées",
+			"data_body": "VantageStarter collecte uniquement les données nécessaires pour fournir le service : informations de compte, données d'utilisation et informations de paiement traitées par Polar.sh.",
+			"contact_heading": "Contact",
+			"contact_intro": "Pour toute question relative à la confidentialité, contactez"
+		},
+		"accessibility_declaration": {
+			"title": "Déclaration d'accessibilité",
+			"conformity_heading": "État de conformité",
+			"conformity_intro": "VantageStarter est",
+			"conformity_status": "partiellement conforme",
+			"conformity_body": "au référentiel général d'amélioration de l'accessibilité (RGAA) version 4.1.2.",
+			"scope_heading": "Périmètre",
+			"scope_body": "Cette déclaration s'applique à VantageStarter à l'adresse",
+			"nonaccessible_heading": "Contenus non accessibles",
+			"nonaccessible_item1": "Les contenus intégrés de tiers (formulaires d'authentification Clerk) peuvent ne pas être pleinement conformes au RGAA 4.1.2.",
+			"nonaccessible_item2": "Certains contenus générés dynamiquement peuvent avoir des attributs ARIA incomplets.",
+			"prepared_heading": "Établissement de cette déclaration",
+			"prepared_intro": "Cette déclaration a été établie le",
+			"prepared_date": "19 mars 2026",
+			"prepared_body": ". Elle est fondée sur une auto-évaluation réalisée par VantageStarter.",
+			"feedback_heading": "Retour d'information et contact",
+			"feedback_body": "Si vous rencontrez un obstacle d'accessibilité, veuillez nous contacter afin que nous puissions vous proposer une alternative accessible ou corriger le problème :",
+			"email_label": "Courriel :",
+			"recourse_heading": "Voies de recours",
+			"recourse_intro": "Si vous ne recevez pas de réponse satisfaisante dans un délai de 30 jours, vous pouvez saisir le",
+			"defenseur_label": "Défenseur des droits",
+			"last_updated_label": "Dernière mise à jour :",
+			"last_updated_date": "19 mars 2026"
+		},
+		"accessibility_plan": {
+			"title": "Schéma pluriannuel d'amélioration de l'accessibilité",
+			"description": "Ce schéma décrit les actions planifiées pour améliorer l'accessibilité de VantageStarter, conformément au RGAA 4.1.2.",
+			"actions_heading": "Actions 2026",
+			"priority": "Priorité",
+			"issue": "Problème",
+			"target_date": "Échéance",
+			"action1": "Compléter l'étiquetage ARIA sur tous les composants interactifs",
+			"action2": "Améliorer la navigation au clavier dans les vues tableau de bord",
+			"action3": "Auditer et corriger les ratios de contraste des couleurs (WCAG 1.4.3)",
+			"action4": "Ajouter un lien « Aller au contenu » sur toutes les pages publiques",
+			"contact_heading": "Contact",
+			"contact_intro": "Questions relatives à ce schéma :",
+			"last_updated_label": "Dernière mise à jour :",
+			"last_updated_date": "19 mars 2026"
+		}
+	},
+	"create_page": {
+		"title": "Système de design",
+		"description": "Personnalisez votre système de design. Les changements se mettent à jour en temps réel via les paramètres d'URL.",
+		"primary": "Primaire",
+		"outline": "Contour",
+		"card_title": "Titre de la carte",
+		"card_description": "Ceci est un aperçu des tokens de votre système de design appliqués à des composants réels.",
+		"color_tokens": "Tokens de couleur",
+		"border_radius_label": "Rayon de bordure — var(--radius)",
+		"typography_heading": "Typographie",
+		"typography_sample1": "Portez ce vieux whisky au juge blond qui fume",
+		"typography_sample2": "Sur un tas de débré — 0123456789"
+	},
+	"shared": {
+		"skip_link": "Aller au contenu principal"
 	}
 }

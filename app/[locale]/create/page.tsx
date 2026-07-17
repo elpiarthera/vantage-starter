@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { Customizer } from "@/components/create/customizer";
@@ -16,6 +17,8 @@ export default function CreatePage() {
 }
 
 function CreatePageContent() {
+	const t = useTranslations("create_page");
+
 	return (
 		<div className="flex min-h-screen bg-background">
 			{/* Sidebar customizer */}
@@ -34,12 +37,9 @@ function CreatePageContent() {
 					<div className="max-w-2xl w-full space-y-6">
 						<div className="space-y-2">
 							<h1 className="text-3xl font-bold tracking-tight text-foreground">
-								Design System
+								{t("title")}
 							</h1>
-							<p className="text-muted-foreground">
-								Customize your design system. Changes update in real-time via
-								URL params.
-							</p>
+							<p className="text-muted-foreground">{t("description")}</p>
 						</div>
 
 						{/* Preview cards */}
@@ -53,24 +53,23 @@ function CreatePageContent() {
 										type="button"
 										className="inline-flex h-9 items-center justify-center rounded-[var(--radius)] bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 									>
-										Primary
+										{t("primary")}
 									</button>
 									<button
 										type="button"
 										className="inline-flex h-9 items-center justify-center rounded-[var(--radius)] border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
 									>
-										Outline
+										{t("outline")}
 									</button>
 								</div>
 							</div>
 
 							<div className="rounded-[var(--radius)] border border-border bg-card p-6 space-y-3">
 								<div className="text-sm font-medium text-card-foreground">
-									Card title
+									{t("card_title")}
 								</div>
 								<div className="text-xs text-muted-foreground">
-									This is a preview of your design system tokens applied to real
-									components.
+									{t("card_description")}
 								</div>
 								<div className="flex items-center gap-2">
 									<div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -86,7 +85,7 @@ function CreatePageContent() {
 							<div className="rounded-[var(--radius)] border border-border bg-muted/50 p-6 col-span-full space-y-3">
 								<div className="flex items-center justify-between">
 									<div className="text-sm font-medium text-foreground">
-										Color Tokens
+										{t("color_tokens")}
 									</div>
 									<div className="text-xs text-muted-foreground">OKLCH</div>
 								</div>
@@ -114,7 +113,7 @@ function CreatePageContent() {
 						{/* Radius preview */}
 						<div className="space-y-2">
 							<p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-								Border Radius — var(--radius)
+								{t("border_radius_label")}
 							</p>
 							<div className="flex items-end gap-3">
 								{["w-8 h-8", "w-12 h-12", "w-16 h-16", "w-20 h-20"].map(
@@ -131,15 +130,16 @@ function CreatePageContent() {
 						{/* Typography preview */}
 						<div className="space-y-2">
 							<p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-								Typography
+								{t("typography_heading")}
 							</p>
 							<div className="space-y-1">
 								<p className="text-2xl font-bold text-foreground">
-									The quick brown fox
+									{t("typography_sample1")}
 								</p>
 								<p className="text-base text-muted-foreground">
-									Jumps over the lazy dog — 0123456789
+									{t("typography_sample2")}
 								</p>
+								{/* Code-syntax sample — literal JS, not sentence content, never translated */}
 								<p className="font-mono text-sm text-muted-foreground">
 									const hello = "world"
 								</p>

@@ -49,7 +49,7 @@ export function TestimonialsSection() {
 			<div className="max-w-6xl mx-auto px-6 lg:px-12">
 				<div ref={headerRef} className="mb-12 md:mb-16 max-w-xl">
 					<p className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-3">
-						Testimonials
+						{t("eyebrow")}
 					</p>
 					<h2
 						id="testimonials-heading"
@@ -100,6 +100,7 @@ function TestimonialPlaceholder({
 
 			<div className="relative">
 				{/* Quote mark */}
+				{/* Decorative quote glyph — punctuation only, no words, never translated */}
 				<div
 					className="text-primary/40 font-serif text-4xl leading-none mb-3 select-none"
 					aria-hidden="true"

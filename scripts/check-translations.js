@@ -2053,5 +2053,8 @@ module.exports = {
 	collectArrayObjectStringProps,
 	isInGatedScope,
 	GATED_ROOTS,
+	FR_EN_IDENTICAL_ALLOW,
+	hasProseContent,
+	isTechnicalIdentifier,
 	main,
 };

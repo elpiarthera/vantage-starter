@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 /* ============================================================================
@@ -20,6 +21,7 @@ interface GenerativeTreeProps {
 }
 
 export function GenerativeTree({ className = "" }: GenerativeTreeProps) {
+	const t = useTranslations("landing.decorative");
 	const iframeRef = useRef<HTMLIFrameElement>(null);
 	const [prefersReduced, setPrefersReduced] = useState(false);
 	const [loaded, setLoaded] = useState(false);
@@ -86,7 +88,7 @@ export function GenerativeTree({ className = "" }: GenerativeTreeProps) {
 			aria-hidden="true"
 			tabIndex={-1}
 			loading="eager"
-			title="Generative tree animation"
+			title={t("tree_title")}
 			onLoad={() => setLoaded(true)}
 		/>
 	);

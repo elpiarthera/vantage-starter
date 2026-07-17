@@ -9,7 +9,11 @@
  * Visually hidden until focused (keyboard users only).
  * Becomes visible on focus via the :focus-visible styles below.
  */
+import { useTranslations } from "next-intl";
+
 export function SkipLink() {
+	const t = useTranslations("shared");
+
 	return (
 		<a
 			href="#main-content"
@@ -27,7 +31,7 @@ export function SkipLink() {
         transition-none
       "
 		>
-			Skip to main content
+			{t("skip_link")}
 		</a>
 	);
 }

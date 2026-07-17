@@ -31,7 +31,7 @@ export function LandingFooter() {
 								rel="noopener noreferrer"
 								className={socialClass}
 							>
-								<span className="sr-only">GitHub</span>
+								<span className="sr-only">{t("github_sr")}</span>
 								<svg
 									className="h-5 w-5"
 									fill="currentColor"
@@ -51,7 +51,7 @@ export function LandingFooter() {
 								rel="noopener noreferrer"
 								className={socialClass}
 							>
-								<span className="sr-only">X (Twitter)</span>
+								<span className="sr-only">{t("twitter_sr")}</span>
 								<svg
 									className="h-5 w-5"
 									fill="currentColor"
@@ -142,7 +142,7 @@ export function LandingFooter() {
 				{/* Copyright bar */}
 				<div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-gray-200/60 dark:border-gray-800/60 pt-8 sm:flex-row">
 					<p className="text-sm text-gray-500 dark:text-gray-400">
-						&copy; {new Date().getFullYear()} VantageStarter. {t("mit_license")}
+						{t("copyright_line", { year: new Date().getFullYear() })}
 					</p>
 					<p className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
 						{t("built_with")}

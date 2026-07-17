@@ -136,6 +136,9 @@ const TECH_STACK: TechItem[] = [
 	},
 	{
 		name: "fal.ai",
+		// Decorative SVG wordmark (brand logotype drawn as <text>, same class as
+		// the vector-path logos above) — aria-hidden, never exposed to AT, never
+		// a translation candidate.
 		icon: (
 			<svg
 				aria-hidden="true"

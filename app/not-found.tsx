@@ -1,8 +1,23 @@
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+} from "@/components/ui/card";
 
+/**
+ * NAMED EXCEPTION (i18n): this root boundary only renders when the locale
+ * segment ITSELF fails validation — `app/[locale]/layout.tsx` calls
+ * `notFound()` before `NextIntlClientProvider` ever mounts, so there is no
+ * resolved locale to translate against here (no `getLocale()` value, no
+ * request-scoped messages). Every normal 404 (unmatched route inside a valid
+ * locale, e.g. `/fr/typo-page`) is caught by the localized
+ * `app/[locale]/not-found.tsx` instead. English is the only defensible
+ * choice for this unreachable-by-navigation edge case.
+ */
 export default function NotFound() {
 	return (
 		<html lang="en">
