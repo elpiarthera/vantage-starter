@@ -4,6 +4,11 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-17 — the SIBLING extensionless import jest.config had, one line below the one I just fixed)
+
+Fixing `next/jest` → `next/jest.js` cleared the first ESM `ERR_MODULE_NOT_FOUND` in CI, and the next CI run surfaced the identical fault one line down: `jest.config.ts` and `vitest.config.ts` both `import { deriveOwnership } from "./scripts/derive-test-runner-ownership"` (extensionless), target `derive-test-runner-ownership.js`. Same disease — resolves under CommonJS/ts-node locally, `ERR_MODULE_NOT_FOUND` under the CI ESM loader. I fixed line 2 and missed its sibling on line 3; the honest CI caught it. Closed the CLASS this time, not the instance: `grep -nE 'from "\./' jest.config.ts vitest.config.ts` → every relative import now carries `.js`. (CI-green proven by the run on this commit, not the local pass.)
+
+
 ### Fixed (2026-07-17 — `InsufficientCreditsModal` true pixel-identity restored: two amber shades were collapsed into one, hover gradient was approximated)
 
 The previous tokenization (entry below, "moved onto WARNING OKLCH tokens") collapsed `amber-400` and `amber-500` into the single `--warning` token, and replaced the real two-stop `hover:from-amber-400 hover:to-orange-400` gradient with `hover:brightness-110` — both visible deltas from `origin/main`. Fixed by encoding the exact original Tailwind OKLCH values as two new tokens, verbatim, no new color choices:

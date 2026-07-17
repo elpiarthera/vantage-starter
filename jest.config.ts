@@ -3,7 +3,7 @@ import type { Config } from "jest";
 // so ESM resolution (used by the CI runner) requires the real filename.
 // Extensionless resolves only under CommonJS/ts-node — green locally, red in CI.
 import nextJest from "next/jest.js";
-import { deriveOwnership } from "./scripts/derive-test-runner-ownership";
+import { deriveOwnership } from "./scripts/derive-test-runner-ownership.js";
 
 const createJestConfig = nextJest({
 	// Provide the path to your Next.js app to load next.config.js and .env files in your test environment

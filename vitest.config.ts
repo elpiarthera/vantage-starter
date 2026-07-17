@@ -1,7 +1,7 @@
 import path from "node:path";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
-import { deriveOwnership } from "./scripts/derive-test-runner-ownership";
+import { deriveOwnership } from "./scripts/derive-test-runner-ownership.js";
 
 // Load all .env.local vars (no prefix filter) so POLAR_* vars are available in tests
 const env = loadEnv("test", process.cwd(), "");
