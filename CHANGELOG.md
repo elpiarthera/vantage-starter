@@ -17,6 +17,28 @@ Also removed, discovered live-code residue of the same dead video/voice-generati
 **Listed for Laurent's call, not guessed**: `components/landing/TechStackSection.tsx:138` markets "fal.ai" as a supported tech-stack item on the landing page, but there is no `fal-ai`/`@fal-ai` package in `package.json` and no live fal.ai integration anywhere in the codebase after this purge — the landing page is advertising a capability the boilerplate does not actually have. Not touched; needs a product call on whether to remove the claim or wire up the integration.
 
 `pnpm test` (jest) suite count: **95 → 35 total, 92 → 32 failed** (measured on `origin/main` @ `e2de838` before vs. after this branch's changes; PR #19, which adds vitest to `pnpm test`, had not landed at time of measurement). All 60 fewer failures are exactly the deleted fork-residue suites — verified by diffing `FAIL` lines before/after. The 32 suites still red after this purge are a separate, pre-existing structural issue unrelated to this fork (`__tests__/convex/polar-*.test.ts`, `__tests__/convex/{credits,users,webhooks}.test.ts`, `__tests__/app/api/credits-auth.test.ts`, `__tests__/components/credits/*`, `__tests__/i18n/dashboard-i18n.test.tsx`, `src/components/ui/*.test.ts` — all vitest-authored suites that jest cannot run standalone — plus `e2e/*.spec.ts`, the real Playwright suite, which jest's `testMatch` glob also picks up and fails to execute). Named explicitly, not silently left uncounted.
+### Fixed (2026-07-17 — an armed hook whose file this repo never carried)
+
+`.claude/settings.local.json` invokes `python3 .../.claude/hooks/enforce-task-quality.py` as a PreToolUse gate on `create_task`. That file was configured but **absent from the tree**, so every `create_task` in this workspace died on `python3: can't open file` — the gate failed closed on its own absence, blocking the legitimate along with the sloppy.
+
+Measured, not supposed:
+
+    git ls-tree origin/main .claude/hooks/enforce-task-quality.py   -> absent
+    git log --all --diff-filter=AD -- <that path>                    -> A in 1a086e4, D in ae0ff4e
+    git merge-base --is-ancestor ae0ff4e origin/main                 -> NO (the deletion lives on a branch, never on main)
+    find /root/coding -name enforce-task-quality.py                  -> present in 10+ sibling workspaces
+
+So the hook was deleted on a branch that never landed, while the config kept pointing at it. Same family as the eleven ghost `.gitignore` rules removed in #14: a file git does not track is a file nobody can see go missing.
+
+- Restored `.claude/hooks/enforce-task-quality.py` and **tracked** it — per `claude-config-is-code`, a hook that is configured must be in the tree. An untracked hook is the bug, not the fix.
+- Content **derived, never typed**: copied from the sibling workspace whose `sha256` equals the VantageRegistry canonical `contentHash` for `enforce-task-quality` v1.0.2 — `56ce20da1323e25d907202e6fbdacf50e0cdac6ddf3ef63381728dadc6d89305`. The placed file's `sha256` matches it exactly. (Drift noted for the fleet, not fixed here: `gaia-workspace` carries `9c506370d2318614…`, which is **not** the canonical.)
+- Bipolar probe, on material this repo did not author:
+
+      description without VERIFICATION/TESTS  -> exit 2   (MUST_BLOCK)
+      description with both sections          -> exit 0   (MUST_PASS)
+      no description at all                   -> exit 2   (MUST_BLOCK)
+
+  The guard bites and it lets the legitimate through — a uni-polar probe would have proved neither.
 
 ### Fixed (2026-07-17 — green base: `tsc --noEmit` 0 errors, `biome check` 0 errors, CI holds it)
 
