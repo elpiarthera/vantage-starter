@@ -74,8 +74,31 @@ async function getUserWorkspace(
 // ============================================================================
 
 /**
+ * Strip the per-agent HTTP auth secret before returning an agent doc to a
+ * client. Same idiom as `get()` below — destructure-and-drop, not a new
+ * "safe agent" abstraction, just shared so every public reader of the
+ * `agents` table applies it identically instead of each reimplementing it.
+ */
+function stripAgentToken<T extends { token?: string; tokenCreatedAt?: number }>(
+	agent: T,
+): Omit<T, "token" | "tokenCreatedAt"> {
+	const {
+		token: _token,
+		tokenCreatedAt: _tokenCreatedAt,
+		...safeAgent
+	} = agent;
+	return safeAgent;
+}
+
+/**
  * List all agents available to the current workspace.
  * Returns workspace-specific agents + global system agents (both active only).
+ *
+ * SECURITY: the `token`/`tokenCreatedAt` fields (per-agent HTTP auth secret)
+ * are stripped before returning — same rule as `get()` below. A caller's own
+ * workspace agents are legitimately theirs to see, but `systemAgents` here
+ * come from a global, cross-tenant index (`by_system`), so an unredacted
+ * secret on this path would leak across every tenant, not just the owner.
  */
 export const list = query({
 	args: { workspaceId: v.optional(v.id("workspaces")) },
@@ -95,7 +118,7 @@ export const list = query({
 			.filter((q) => q.eq(q.field("isActive"), true))
 			.collect();
 
-		return [...systemAgents, ...workspaceAgents];
+		return [...systemAgents, ...workspaceAgents].map(stripAgentToken);
 	},
 });
 
@@ -105,8 +128,10 @@ export const list = query({
  * SECURITY: system (global) agents are readable by any authenticated caller.
  * Workspace-owned agents require the caller to own/belong to the agent's
  * workspace — same rule as update()/remove(). The `token`/`tokenCreatedAt`
- * fields (per-agent HTTP auth secret) are stripped before returning; nothing
- * that mints or reads that secret should be reachable without this check.
+ * fields (per-agent HTTP auth secret) are stripped before returning via
+ * `stripAgentToken` — the SAME helper `list()`/`listSystem()` above use, so
+ * this guarantee holds for every public reader of the `agents` table, not
+ * just this one function.
  */
 export const get = query({
 	args: { agentId: v.id("agents") },
@@ -128,14 +153,8 @@ export const get = query({
 			agent.skillIds.map((skillId) => ctx.db.get(skillId)),
 		);
 
-		const {
-			token: _token,
-			tokenCreatedAt: _tokenCreatedAt,
-			...safeAgent
-		} = agent;
-
 		return {
-			...safeAgent,
+			...stripAgentToken(agent),
 			skills: skills.filter(Boolean),
 		};
 	},
@@ -145,20 +164,31 @@ export const get = query({
  * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
  * filtered strictly to `isSystem === true`, which by design (schema comment)
  * means platform-provided global agents, never tenant-owned rows; no
- * workspace data, tokens, or custom instructions from any organization's
- * agents can be reached through this index. Revisit if `isSystem` rows ever
- * gain per-organization overrides or secrets (e.g. a system agent template
- * that stores an org-specific credential) — at that point this must be
- * scoped or the sensitive fields split out.
+ * workspace data or custom instructions from any organization's agents can
+ * be reached through this index.
+ *
+ * `token`/`tokenCreatedAt` are stripped via `stripAgentToken` (same helper as
+ * `get()`/`list()`) as defense-in-depth: no code path today can set a token
+ * on an `isSystem: true` row — `create()` always inserts `isSystem: false`,
+ * and both `generateToken`/`rotateToken` explicitly throw
+ * "Cannot generate/rotate token for system agents" (verified by reading
+ * both handlers) — so this field is always `undefined` on every row this
+ * query can return today. That is a fact about today's code paths, not a
+ * schema-level guarantee (`token` is `v.optional(v.string())` on every
+ * agent row, system or not), so the strip stays here rather than relying on
+ * "no code sets it yet." Revisit if `isSystem` rows ever gain per-organization
+ * overrides or any path that can populate `token` on a system row.
  */
 export const listSystem = query({
 	args: {},
 	handler: async (ctx) => {
-		return await ctx.db
+		const agents = await ctx.db
 			.query("agents")
 			.withIndex("by_system", (q) => q.eq("isSystem", true))
 			.filter((q) => q.eq(q.field("isActive"), true))
 			.collect();
+
+		return agents.map(stripAgentToken);
 	},
 });
 
