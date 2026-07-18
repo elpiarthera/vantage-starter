@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { lightnessOf } from "./oklch";
 
 /**
  * Theme toggle repaint test
@@ -55,16 +56,11 @@ test.describe("Theme toggle repaint", () => {
 
 		expect(toggledBackground).not.toBe(initialBackground);
 
-		// Extract the OKLCH lightness (first numeric token) from each value
-		// and assert one reads as a light surface and the other as a dark
-		// surface — a raw string inequality alone would pass on any two
-		// distinct-but-still-dark values.
-		const lightnessOf = (oklch: string) => {
-			const match = oklch.match(/oklch\(\s*([\d.]+)/);
-			if (!match) throw new Error(`unparsable oklch value: ${oklch}`);
-			return Number.parseFloat(match[1]);
-		};
-
+		// Extract the OKLCH lightness (percent-aware — this custom property
+		// returns RAW CSS text, which may be `14.5%` or `0.145`; see
+		// e2e/oklch.ts) from each value and assert one reads as a light
+		// surface and the other as a dark surface — a raw string inequality
+		// alone would pass on any two distinct-but-still-dark values.
 		const lightnesses = [initialBackground, toggledBackground].map(lightnessOf);
 		const lightSurface = Math.max(...lightnesses);
 		const darkSurface = Math.min(...lightnesses);

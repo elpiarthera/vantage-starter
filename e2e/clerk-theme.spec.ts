@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { lightnessOf } from "./oklch";
 
 /**
  * Clerk widget theme-follow test
@@ -72,9 +73,22 @@ test.describe("Clerk widget theme follow", () => {
 		// re-serialize oklch() as oklab() on the very next paint with the SAME
 		// numeric value, which would make a naive string-inequality check exit
 		// before the real repaint lands. Compare the parsed lightness instead.
+		// This step runs inside page.evaluate/waitForFunction (browser
+		// context, cannot import e2e/oklch.ts), so the parser is inlined —
+		// kept explicitly percent-aware as hardening: resolved colour
+		// properties serialize as fractions today, but a parser must not
+		// assume which surface feeds it.
+		// This copy's failure mode must match e2e/oklch.ts's `lightnessOf`
+		// exactly: throw on an unparsable value, never return NaN. A silent
+		// NaN loses every comparison downstream, turning a named parse
+		// failure into a plain, uninformative assertion failure.
 		const lightnessOfRaw = (color: string) => {
-			const match = color.match(/okla?[bc]h?\(\s*([\d.]+)/);
-			return match ? Number.parseFloat(match[1]) : Number.NaN;
+			const match = color.match(/okla?[bc]h?\(\s*([\d.]+)(%?)/);
+			if (!match) {
+				throw new Error(`unparsable oklch/oklab value: ${color}`);
+			}
+			const value = Number.parseFloat(match[1]);
+			return match[2] === "%" ? value / 100 : value;
 		};
 		const prevLightness = lightnessOfRaw(before.buttonBg);
 		await page.waitForFunction(
@@ -84,10 +98,12 @@ test.describe("Clerk widget theme follow", () => {
 				);
 				if (!button) return false;
 				const match = getComputedStyle(button).backgroundColor.match(
-					/okla?[bc]h?\(\s*([\d.]+)/,
+					/okla?[bc]h?\(\s*([\d.]+)(%?)/,
 				);
 				if (!match) return false;
-				return Math.abs(Number.parseFloat(match[1]) - prev) > 0.05;
+				const value = Number.parseFloat(match[1]);
+				const parsed = match[2] === "%" ? value / 100 : value;
+				return Math.abs(parsed - prev) > 0.05;
 			},
 			{ prevLightness },
 			{ timeout: 5000 },
@@ -107,17 +123,12 @@ test.describe("Clerk widget theme follow", () => {
 		expect(after.buttonText).not.toBe(before.buttonText);
 		expect(after.cardText).not.toBe(before.cardText);
 
-		// Extract the OKLCH/OKLAB lightness (first numeric token) from each
-		// computed value. Chromium's getComputedStyle normalizes CSS oklch()
-		// input to the oklab() serialization, so match either. A bare
-		// inequality would pass on two near-identical shades; this proves one
-		// pairing is genuinely light-on-dark and the other dark-on-light.
-		const lightnessOf = (oklch: string) => {
-			const match = oklch.match(/okla?[bc]h?\(\s*([\d.]+)/);
-			if (!match) throw new Error(`unparsable oklch value: ${oklch}`);
-			return Number.parseFloat(match[1]);
-		};
-
+		// Extract the OKLCH/OKLAB lightness (percent-aware; see e2e/oklch.ts)
+		// from each computed value. Chromium's getComputedStyle normalizes
+		// CSS oklch() input to the oklab() serialization, so match either. A
+		// bare inequality would pass on two near-identical shades; this
+		// proves one pairing is genuinely light-on-dark and the other
+		// dark-on-light.
 		const buttonLightnesses = [before.buttonBg, after.buttonBg].map(
 			lightnessOf,
 		);
@@ -129,5 +140,16 @@ test.describe("Clerk widget theme follow", () => {
 		// similar mid-tone shades.
 		expect(lightButton).toBeGreaterThan(0.5);
 		expect(darkButton).toBeLessThan(0.4);
+	});
+
+	test("lightnessOf fails loudly, never returns NaN, on an unparsable value", () => {
+		// Neither the percent form (`14.5%`) nor the fraction form (`0.145`)
+		// — a value that is not an oklch/oklab color at all. A silent NaN
+		// here would lose every downstream comparison instead of naming the
+		// cause; the shared helper (and its in-page copy above) must throw.
+		expect(() => lightnessOf("rgb(0, 0, 0)")).toThrow(
+			/unparsable oklch\/oklab value/,
+		);
+		expect(() => lightnessOf("")).toThrow(/unparsable oklch\/oklab value/);
 	});
 });
