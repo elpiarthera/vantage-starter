@@ -54,7 +54,23 @@ Registered **`experimental`, not `active`** — and the distinction is the point
 **Divergence 2 — `@vantageos/mosaic-blocks`, one listed consumer at version 0.5.33-alpha: OPEN, and deliberately not "fixed".**
 The version count is real and the single consumer is real; what is *not* established is which of the two is wrong. Establishing it means reading the actual dependents across fleet repositories, which is a measurement this repository cannot make about others. Adding consumers on the strength of a plausible-looking version number would put a guess into the catalog — precisely the failure being repaired. It stays a traced row.
 
-**Mirror cases checked**: every `plugin` row naming an `@vantageos/*` package was cross-read against npm (12/12 above). No case of *catalogued but never published* was found.
+**Mirror case — catalogued but never published: NONE, on 17/17.**
+
+The earlier version of this sentence said *"every `plugin` row naming an `@vantageos/*` package was cross-read against npm (12/12 above)"*. The conclusion was right and the sentence was not: the catalog carries **17** such rows, not 12. `every` promised a coverage the table underneath did not carry, and the next reader does not recount what a sentence declares already counted.
+
+The twelve above, plus the five the table had never reached — each re-derived here with `npm view <pkg> version`, run in this repository rather than carried from the review that found the gap, because a number moved between sessions without re-derivation is this document's own thesis:
+
+| package | npm version |
+|---|---|
+| @vantageos/vantage-registry-mcp | 1.12.0 |
+| @vantageos/vantage-crm-mcp | 0.2.7 |
+| @vantageos/mcp-frameworks | 1.0.5 |
+| @vantageos/mcp-agent-composer | 1.1.0 |
+| @vantageos/mcp-architect | 1.1.0 |
+
+12 + 5 = **17 of 17**, every one published. No case of *catalogued but never published* exists.
+
+Note the three rows that do NOT belong to this claim and are not silently folded into it: `vantage-peers-mcp`, `vantage-doc-forge-renderer` and `vantage-doc-forge-mcp` are `plugin` rows without the `@vantageos/` scope, so the sentence does not assert anything about them.
 
 ## Method note — the CSP-unification bite test (positive control, not a bare count)
 
