@@ -1,0 +1,90 @@
+{
+	"_README": [
+		"STAGED WIRING — not applied. `.claude/settings.json` is permission-denied to the agents",
+		"that produced this branch, so the six guards below are present and correct in",
+		"`.claude/hooks/` but INVOKED BY NOTHING. Until an operator with write access merges",
+		"these entries into `.claude/settings.json`, they do not run. CLAUDE.md's hooks section",
+		"says so explicitly rather than declaring them active.",
+		"",
+		"APPLY: for each event key below, append its entries to the same event array in",
+		"`.claude/settings.json`. Do not replace the arrays — the guards already wired there",
+		"are unrelated and must survive. Shape matches the existing entries: `type: command`,",
+		"an absolute path, and a timeout.",
+		"",
+		"NOTE ON `type`: enforce-quality-gate.sh is a SHELL script and is invoked with `bash`,",
+		"not `python3`. An earlier attempt at this wiring prefixed it `python3` and would have",
+		"failed at every commit — a guard that errors on invocation blocks everything and gets",
+		"removed within the week.",
+		"",
+		"VERIFY AFTER APPLYING (each command states what it asserts):",
+		"  1. `python3 -c \"import json;json.load(open('.claude/settings.json'))\"`",
+		"     -> asserts the merged file is still valid JSON (a broken settings file silently",
+		"        disables EVERY hook, not just these).",
+		"  2. `grep -c enforce-quality-gate .claude/settings.json` -> asserts the wiring landed;",
+		"     expect 1, not 0.",
+		"  3. Re-derive docs/hooks-inventory.md. Its LIE count and its header total are DERIVED",
+		"     values: applying this patch must move them, and if it does not, the patch did not",
+		"     take effect."
+	],
+	"PreToolUse": [
+		{
+			"matcher": "Bash",
+			"hooks": [
+				{
+					"type": "command",
+					"command": "bash /root/coding/vantage-starter/.claude/hooks/enforce-quality-gate.sh",
+					"timeout": 15
+				}
+			]
+		},
+		{
+			"matcher": "mcp__vantage-peers__create_task",
+			"hooks": [
+				{
+					"type": "command",
+					"command": "python3 /root/coding/vantage-starter/.claude/hooks/enforce-pi-verify-before-dispatch.py",
+					"timeout": 5
+				}
+			]
+		}
+	],
+	"PostToolUse": [
+		{
+			"matcher": "Edit|Write",
+			"hooks": [
+				{
+					"type": "command",
+					"command": "python3 /root/coding/vantage-starter/.claude/hooks/post-tool-use-qa.py",
+					"timeout": 30
+				},
+				{
+					"type": "command",
+					"command": "python3 /root/coding/vantage-starter/.claude/hooks/post-tool-use-validate.py",
+					"timeout": 10
+				}
+			]
+		}
+	],
+	"UserPromptSubmit": [
+		{
+			"hooks": [
+				{
+					"type": "command",
+					"command": "python3 /root/coding/vantage-starter/.claude/hooks/user-prompt-submit-routing.py",
+					"timeout": 5
+				}
+			]
+		}
+	],
+	"SubagentStart": [
+		{
+			"hooks": [
+				{
+					"type": "command",
+					"command": "python3 /root/coding/vantage-starter/.claude/hooks/subagent-start-bootstrap.py",
+					"timeout": 5
+				}
+			]
+		}
+	]
+}

@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 
 COMM_STYLE = """## Communication Style
 - Bullets by default. Lead with the answer. Reasoning after.

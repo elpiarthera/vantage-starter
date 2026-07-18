@@ -13,7 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 
 # Task patterns mapped to agents.
 # Each entry: (phrases_to_match, agent_name, note)

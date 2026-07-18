@@ -40,6 +40,24 @@ if echo "$COMMAND" | grep -qE 'git\s+commit' && ! echo "$COMMAND" | grep -qE -- 
         exit 2
     fi
 
+    # Scope is DERIVED from the diff, never from a word in the commit message
+    # (prose is data, never a flag — .claude/rules/derive-never-type.md).
+    # The e2e suite (e2e/*.spec.ts) only ever exercises rendered Next.js
+    # routes: it drives a browser against app/ pages, which pull in
+    # components/, providers/, middleware.ts, messages/ (next-intl),
+    # styles/, and the lit-ui surfaces under src/components|src/lib and the
+    # built public/lit-ui bundle. A change confined to convex/, docs/,
+    # scripts/, .claude/, lib/ (non-UI), or top-level config touches no
+    # surface any spec asserts on — the marker cannot exist for it because
+    # no spec would move by running it, so demanding one blocks legitimate
+    # backend-only work with no path to green (PRs #38, #39).
+    STAGED_FILES=$(git diff --cached --name-only 2>/dev/null)
+    E2E_SURFACE_TOUCHED=$(echo "$STAGED_FILES" | grep -qE '^(app/|components/|providers/|middleware\.ts$|messages/|styles/|src/components/|src/lib/|public/lit-ui/|e2e/|playwright\.config\.ts$)' && echo "1" || echo "0")
+
+    if [ "$E2E_SURFACE_TOUCHED" = "0" ]; then
+        exit 0
+    fi
+
     # Check quality gate marker
     MARKER="/tmp/.quality-gate-passed"
     # Staleness is derived from the TREE, never from a typed time window.
