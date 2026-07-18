@@ -1,8 +1,10 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -34,9 +36,11 @@ export function ChangePasswordModal({
 	onClose,
 }: ChangePasswordModalProps) {
 	const { isMobile } = useDevice();
+	const { user } = useUser();
 	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 	const [showNewPassword, setShowNewPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [formData, setFormData] = useState({
 		currentPassword: "",
 		newPassword: "",
@@ -77,10 +81,23 @@ export function ChangePasswordModal({
 		return Object.keys(newErrors).length === 0;
 	};
 
-	const handleSubmit = () => {
-		if (validateForm()) {
-			console.log("[v0] Changing password");
-			// TODO: Implement actual password change logic
+	const handleSubmit = async () => {
+		if (!validateForm()) {
+			return;
+		}
+		if (!user) {
+			toast.error(t("change_password_failed_toast"));
+			return;
+		}
+
+		setIsSubmitting(true);
+		try {
+			await user.updatePassword({
+				currentPassword: formData.currentPassword,
+				newPassword: formData.newPassword,
+				signOutOfOtherSessions: true,
+			});
+			toast.success(t("change_password_success_toast"));
 			onClose();
 			setFormData({
 				currentPassword: "",
@@ -88,6 +105,26 @@ export function ChangePasswordModal({
 				confirmPassword: "",
 			});
 			setErrors({});
+		} catch (error) {
+			const clerkError = error as {
+				errors?: Array<{
+					code?: string;
+					message?: string;
+					longMessage?: string;
+				}>;
+			};
+			const firstError = clerkError?.errors?.[0];
+			const message =
+				firstError?.code === "form_password_incorrect"
+					? t("validation.current_password_incorrect")
+					: (firstError?.longMessage ??
+						firstError?.message ??
+						t("change_password_failed_toast"));
+
+			setErrors((prev) => ({ ...prev, currentPassword: message }));
+			toast.error(message);
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -208,13 +245,18 @@ export function ChangePasswordModal({
 					<DrawerFooter>
 						<Button
 							onClick={handleSubmit}
+							disabled={isSubmitting}
 							className="min-h-[44px] w-full active:scale-98"
 						>
+							{isSubmitting && (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							)}
 							{t("change_password_button")}
 						</Button>
 						<Button
 							variant="outline"
 							onClick={handleClose}
+							disabled={isSubmitting}
 							className="min-h-[44px] w-full active:bg-accent bg-transparent"
 						>
 							{tCommon("cancel")}
@@ -239,11 +281,17 @@ export function ChangePasswordModal({
 					<Button
 						variant="outline"
 						onClick={handleClose}
+						disabled={isSubmitting}
 						className="min-h-[44px] bg-transparent"
 					>
 						{tCommon("cancel")}
 					</Button>
-					<Button onClick={handleSubmit} className="min-h-[44px]">
+					<Button
+						onClick={handleSubmit}
+						disabled={isSubmitting}
+						className="min-h-[44px]"
+					>
+						{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						{t("change_password_button")}
 					</Button>
 				</DialogFooter>

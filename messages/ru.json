@@ -744,7 +744,8 @@
 			"new_password_required": "Требуется новый пароль",
 			"password_min_length": "Пароль должен содержать не менее 8 символов",
 			"confirm_password_required": "Пожалуйста, подтвердите ваш пароль",
-			"passwords_do_not_match": "Пароли не совпадают"
+			"passwords_do_not_match": "Пароли не совпадают",
+			"current_password_incorrect": "Ваш текущий пароль неверен"
 		},
 		"current_password_label": "Текущий пароль",
 		"new_password_label": "Новый пароль",
@@ -752,7 +753,9 @@
 		"confirm_new_password_label": "Подтвердите новый пароль",
 		"change_password_title": "Изменить пароль",
 		"change_password_description": "Введите ваш текущий пароль и выберите новый",
-		"change_password_button": "Изменить пароль"
+		"change_password_button": "Изменить пароль",
+		"change_password_success_toast": "Ваш пароль был изменён",
+		"change_password_failed_toast": "Не удалось изменить пароль. Попробуйте снова."
 	},
 	"assets_tab": {
 		"upload_asset": "Загрузить ресурс",

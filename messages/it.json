@@ -744,7 +744,8 @@
 			"new_password_required": "La nuova password è obbligatoria",
 			"password_min_length": "La password deve essere di almeno 8 caratteri",
 			"confirm_password_required": "Per favore conferma la tua password",
-			"passwords_do_not_match": "Le password non corrispondono"
+			"passwords_do_not_match": "Le password non corrispondono",
+			"current_password_incorrect": "La tua password attuale non è corretta"
 		},
 		"current_password_label": "Password Attuale",
 		"new_password_label": "Nuova Password",
@@ -752,7 +753,9 @@
 		"confirm_new_password_label": "Conferma Nuova Password",
 		"change_password_title": "Cambia Password",
 		"change_password_description": "Inserisci la tua password attuale e scegline una nuova",
-		"change_password_button": "Cambia Password"
+		"change_password_button": "Cambia Password",
+		"change_password_success_toast": "La tua password è stata cambiata",
+		"change_password_failed_toast": "Impossibile cambiare la password. Riprova."
 	},
 	"assets_tab": {
 		"upload_asset": "Carica risorsa",

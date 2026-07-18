@@ -744,7 +744,8 @@
 			"new_password_required": "Nova senha é obrigatória",
 			"password_min_length": "Senha deve ter pelo menos 8 caracteres",
 			"confirm_password_required": "Por favor, confirme sua senha",
-			"passwords_do_not_match": "As senhas não coincidem"
+			"passwords_do_not_match": "As senhas não coincidem",
+			"current_password_incorrect": "Sua senha atual está incorreta"
 		},
 		"current_password_label": "Senha Atual",
 		"new_password_label": "Nova Senha",
@@ -752,7 +753,9 @@
 		"confirm_new_password_label": "Confirmar Nova Senha",
 		"change_password_title": "Alterar Senha",
 		"change_password_description": "Digite sua senha atual e escolha uma nova",
-		"change_password_button": "Alterar Senha"
+		"change_password_button": "Alterar Senha",
+		"change_password_success_toast": "Sua senha foi alterada",
+		"change_password_failed_toast": "Não foi possível alterar sua senha. Tente novamente."
 	},
 	"assets_tab": {
 		"upload_asset": "Carregar Recurso",
