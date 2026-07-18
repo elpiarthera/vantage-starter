@@ -4,6 +4,19 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-16 — Clerk widgets were frozen dark, task k172nrg38ap3v9e6f0jry50bws8andg0)
+
+- **`app/ClientProviders.tsx`**: `baseTheme: dark` was **unconditional**, so every Clerk widget stayed dark no matter what. With a theme toggle now in the header, the whole app would flip to light and the auth widget would remain black. The import is gone: every `appearance.variables` entry now points at the live token (`var(--background)`, `var(--card)`, `var(--input)`, `var(--border)`, `var(--foreground)`, `var(--muted-foreground)`, `var(--primary)`, `var(--destructive)`). Base state comes from the tokens themselves, and following light/dark needs **no JS theme read and no client boundary**.
+- **A three-week-old claim, finally measured**: line 9 read *"Clerk appearance API does not accept oklch() — using verified hex approximations"*. That sentence justified **7 hardcoded hex constants** duplicating the OKLCH design tokens — a duplicate that drifts the moment a preset changes. Nobody had ever tested it. **Both halves are now settled by measurement, and the claim was false.** `@clerk/shared` types every colour field as a plain `string`, so `var(--token)` compiles. And clerk-js *does* resolve custom properties at runtime — measured in real Chromium on the public `/en/sign-in` route, waiting for `[class*='cl-formButtonPrimary']` to mount, then reading `getComputedStyle` while toggling the `dark` class:
+
+```
+LIGHT: --background oklch(0.99 0 0)   | button bg oklch(0.3 0 0)   | button text oklch(0.99 0 0)  | card text oklch(0.1 0 0)
+DARK : --background oklch(0.145 0 0)  | button bg oklch(0.922 0 0) | button text oklch(0.205 0 0) | card text oklch(0.985 0 0)
+```
+
+Clerk's computed colours are resolved OKLCH values matching the tokens, and they flip with the theme. The static-inspection dead end (clerk-js ships from a CDN) was real; the mistake was treating it as the end of the investigation instead of switching instrument — the widget's *rendered output* was observable all along, on a public route, with no auth and no paid service. Guarded by `e2e/clerk-theme.spec.ts`, proven to bite: re-freezing the button to hardcoded hex makes it fail.
+- **The 120-page trap, avoided on purpose**: `ClientProviders.tsx` is a Server Component whose `dynamic` prop (l.45) defers Clerk key resolution to request time. Adding `"use client"` to reach `useTheme()` annuls it — Clerk then demands the key at prerender and **120 static pages fail**. That is exactly how PR #8 went red earlier today. Referencing CSS variables sidesteps the need entirely: no `useTheme()`, no client boundary, `dynamic` untouched. Measured: `grep -c '"use client"'` → **0**, `grep -c 'dynamic'` → **1**, `pnpm build` → `✓ Compiled successfully`, `grep -cE '"#[0-9a-fA-F]{6}"'` → **0** hardcoded hex left.
+
 ### Added (2026-07-18 — dark/light toggle now reachable from the authenticated app, not just the landing)
 
 The dashboard had no theme switcher (Laurent, Day-133 review: the app renders dark-only). The dispatched brief said to port `ThemeToggle` from vantage-registry — that premise was wrong, and porting would have duplicated working code: the starter already ships `components/theme-toggle.tsx` (next-themes + `useTranslations("theme_toggle")` + sun/moon SVGs), with `ThemeProvider` already wired at `app/[locale]/layout.tsx:107`. The component was simply never mounted outside `components/landing/LandingNav.tsx:181`. Fix: mount the existing component in `components/dashboard/DashboardHeader.tsx:310`, beside `LanguageSwitcher`, visible on every breakpoint — nothing ported, nothing rewritten.

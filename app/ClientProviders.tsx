@@ -1,28 +1,39 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 import { clerkLocalizations } from "@/i18n/clerk-localization";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
-// Monochrome grayscale palette — pure achromatic equivalents
-// Clerk appearance API does not accept oklch() — using verified hex approximations.
-// oklch(0.95 0 0) → #f0f0f0 (near white — primary button bg)
-// oklch(0.08 0 0) → #141414 (gray-950 — deep background)
-// oklch(0.12 0 0) → #1f1f1f (gray-900 — card/modal/popover surface)
-// oklch(0.16 0 0) → #292929 (gray-850 — input background)
-// oklch(0.22 0 0) → #383838 (between gray-800/700 — border)
-// oklch(0.95 0 0) → #f0f0f0 (near white — primary text)
-// oklch(0.65 0 0) → #a3a3a3 (gray-400 — secondary text / muted)
-
-const CLERK_PRIMARY = "#e8e8e8"; // light gray button (like bg-gray-100)
-const CLERK_BG = "#141414"; // oklch(0.08 0 0) — gray-950
-const CLERK_CARD = "#1f1f1f"; // oklch(0.12 0 0) — gray-900
-const CLERK_INPUT_BG = "#292929"; // oklch(0.16 0 0) — gray-850
-const CLERK_BORDER = "#383838"; // oklch(0.22 0 0) — between gray-800 and gray-700
-const CLERK_TEXT = "#f0f0f0"; // oklch(0.95 0 0) — near white
-const CLERK_TEXT_MUTED = "#a3a3a3"; // oklch(0.65 0 0) — gray-400
-const CLERK_DANGER = "#c0392b"; // keep red for danger
+// Theme-following palette: reference the same CSS custom properties the rest
+// of the app uses (defined in app/globals.css + styles/presets/*.css).
+// VERIFIED (this task, k172nrg38ap3v9e6f0jry50bws8andg0): `@clerk/shared`'s
+// internal appearance types (node_modules/.pnpm/@clerk+shared@4.4.0.../dist/
+// runtime/react/index.d.ts, `internalStripeAppearance`) type every color
+// field as a plain `string`, so `var(--token)` compiles and type-checks.
+// VERIFIED (this task): clerk-js DOES resolve `var(--token)` at runtime.
+// Measured with real Chromium on the public /en/sign-in route, waiting for
+// `[class*='cl-formButtonPrimary']` to mount, then reading
+// `getComputedStyle` while toggling the `dark` class on `<html>`:
+//   LIGHT: token --background oklch(0.99 0 0)   | button bg oklch(0.3 0 0)
+//          button text oklch(0.99 0 0)          | card text oklch(0.1 0 0)
+//   DARK : token --background oklch(0.145 0 0)  | button bg oklch(0.922 0 0)
+//          button text oklch(0.205 0 0)         | card text oklch(0.985 0 0)
+// Clerk's computed colors are resolved OKLCH values that match the tokens
+// and flip with the theme — not a literal "var(" string and not a stale
+// default. Guarded by e2e/clerk-theme.spec.ts, which fails if clerk-js ever
+// stops resolving custom properties.
+// No unconditional `baseTheme` import: with every listed variable
+// point at a live token, base state is provided by the tokens already, and
+// following light/dark requires no JS theme read (no client boundary).
+const CLERK_PRIMARY = "var(--primary)";
+const CLERK_PRIMARY_FOREGROUND = "var(--primary-foreground)";
+const CLERK_BG = "var(--background)";
+const CLERK_CARD = "var(--card)";
+const CLERK_INPUT_BG = "var(--input)";
+const CLERK_BORDER = "var(--border)";
+const CLERK_TEXT = "var(--foreground)";
+const CLERK_TEXT_MUTED = "var(--muted-foreground)";
+const CLERK_DANGER = "var(--destructive)";
 
 // ClerkProvider in @clerk/nextjs v6 is typed as an async Server Component
 // (Promise<React.JSX.Element>), which TS rejects as a JSX component regardless
@@ -51,7 +62,6 @@ export function ClientProviders({
 			signUpFallbackRedirectUrl="/dashboard"
 			localization={localization}
 			appearance={{
-				baseTheme: dark,
 				variables: {
 					colorPrimary: CLERK_PRIMARY,
 					colorBackground: CLERK_BG,
@@ -198,9 +208,9 @@ export function ClientProviders({
 					},
 					formButtonPrimary: {
 						minHeight: "44px",
-						backgroundColor: CLERK_TEXT,
+						backgroundColor: CLERK_PRIMARY,
 						borderRadius: "16px",
-						color: CLERK_BG,
+						color: CLERK_PRIMARY_FOREGROUND,
 						fontWeight: "600",
 					},
 					formButtonReset: {
