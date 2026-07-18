@@ -70,7 +70,7 @@ The twelve above, plus the five the table had never reached — each re-derived 
 
 12 + 5 = **17 of 17**, every one published. No case of *catalogued but never published* exists.
 
-Note the two rows that do NOT belong to this claim and are not silently folded into it: `vantage-peers-mcp`, `vantage-doc-forge-renderer` and `vantage-doc-forge-mcp` are `plugin` rows without the `@vantageos/` scope, so the sentence does not assert anything about them.
+Note the three rows that do NOT belong to this claim and are not silently folded into it: `vantage-peers-mcp`, `vantage-doc-forge-renderer` and `vantage-doc-forge-mcp` are `plugin` rows without the `@vantageos/` scope, so the sentence does not assert anything about them.
 
 ## Method note — the CSP-unification bite test (positive control, not a bare count)
 
