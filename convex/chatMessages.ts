@@ -64,7 +64,13 @@ export const create = mutation({
 });
 
 /**
- * List all chat messages for a project and optional context
+ * List all chat messages for a project and optional context.
+ *
+ * SECURITY: `projectId` is a free-form client-chosen string, not a secret —
+ * filtering by it alone let any authenticated caller from any organization
+ * read another organization's full chat history. Rows are additionally
+ * filtered to the caller's own `organizationId` (set server-side at
+ * `create`-time), matching how the row was written.
  */
 export const list = query({
 	args: {
@@ -77,12 +83,24 @@ export const list = query({
 			return [];
 		}
 
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) =>
+				q.eq("clerkUserId", identity.subject),
+			)
+			.unique();
+		if (!user) {
+			return [];
+		}
+		const callerOrganizationId = user.organizationId || "";
+
 		if (context !== undefined) {
 			const messages = await ctx.db
 				.query("chatMessages")
 				.withIndex("by_project_and_context", (q) =>
 					q.eq("projectId", projectId).eq("context", context),
 				)
+				.filter((q) => q.eq(q.field("organizationId"), callerOrganizationId))
 				.collect();
 
 			return messages.sort((a, b) => a.createdAt - b.createdAt);
@@ -91,6 +109,7 @@ export const list = query({
 		const messages = await ctx.db
 			.query("chatMessages")
 			.withIndex("by_project", (q) => q.eq("projectId", projectId))
+			.filter((q) => q.eq(q.field("organizationId"), callerOrganizationId))
 			.collect();
 
 		return messages.sort((a, b) => a.createdAt - b.createdAt);

@@ -27,6 +27,9 @@ import {
 // ============================================
 /**
  * Get user's credit balance. Auto-initializes if new user.
+ *
+ * SECURITY: self-only — same idiom as deductCreditsPublic/refundCreditsPublic
+ * below (identity.subject must equal args.clerkUserId).
  */
 export const getUserCredits = query({
 	args: {
@@ -34,6 +37,14 @@ export const getUserCredits = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's credits");
+		}
 
 		// Check if user already has credits
 		const existingCredits = await ctx.db
@@ -310,6 +321,8 @@ export const addCredits = internalMutation({
 // ============================================
 /**
  * Quick check if user has enough credits for an action.
+ *
+ * SECURITY: self-only — same idiom as deductCreditsPublic/refundCreditsPublic.
  */
 export const hasEnoughCredits = query({
 	args: {
@@ -318,6 +331,14 @@ export const hasEnoughCredits = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId, actionType } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's credits");
+		}
 
 		// Get credit cost
 		const creditCost = await ctx.db
@@ -369,6 +390,12 @@ export const hasEnoughCredits = query({
 // ============================================
 /**
  * Get the credit cost for a specific action (for UI display).
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * `creditCosts` is a platform-wide pricing table (schema-level: no
+ * clerkUserId/organizationId column), identical for every caller; nothing
+ * user- or tenant-specific is returned. Revisit if per-organization
+ * negotiated pricing is ever introduced on this table.
  */
 export const getCreditCost = query({
 	args: {
@@ -401,6 +428,12 @@ export const getCreditCost = query({
  * Get credit costs for multiple action types in a single query.
  * Used to build creditCosts maps for model selector UIs.
  */
+/**
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * same reasoning as `getCreditCost` above: `creditCosts` is a global,
+ * org-free pricing table. Revisit under the same condition (per-org
+ * negotiated pricing).
+ */
 export const listCreditCostsByTypes = query({
 	args: { actionTypes: v.array(v.string()) },
 	handler: async (ctx, { actionTypes }) => {
@@ -417,6 +450,8 @@ export const listCreditCostsByTypes = query({
 // ============================================
 /**
  * Get user's credit transaction history.
+ *
+ * SECURITY: self-only — same idiom as deductCreditsPublic/refundCreditsPublic.
  */
 export const getTransactionHistory = query({
 	args: {
@@ -425,6 +460,16 @@ export const getTransactionHistory = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId, limit = 50 } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error(
+				"Unauthorized: cannot read another user's transaction history",
+			);
+		}
 
 		const transactions = await ctx.db
 			.query("creditTransactions")

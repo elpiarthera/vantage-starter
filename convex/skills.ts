@@ -13,7 +13,13 @@
 
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, mutation, query } from "./_generated/server";
+import {
+	action,
+	internalMutation,
+	internalQuery,
+	mutation,
+	query,
+} from "./_generated/server";
 import { requireAuth, requireAuthWithWorkspace, requireUser } from "./lib/auth";
 
 // ============================================================================
@@ -93,13 +99,43 @@ export const list = query({
 	},
 });
 
+/**
+ * Get a single skill by ID.
+ *
+ * SECURITY: system (global) skills are readable by any authenticated caller.
+ * Workspace-owned skills require the caller to own/belong to the skill's
+ * workspace — same rule as update()/remove() — since `instructions` is the
+ * proprietary SKILL.md body and must not leak across tenants regardless of
+ * `visibility`.
+ */
 export const get = query({
 	args: { skillId: v.id("skills") },
 	handler: async (ctx, args) => {
-		return await ctx.db.get(args.skillId);
+		const skill = await ctx.db.get(args.skillId);
+		if (!skill) return null;
+
+		if (!skill.isSystem) {
+			if (!skill.workspaceId) {
+				throw new Error("Skill has no workspace to authorize against");
+			}
+			await requireAuthWithWorkspace(ctx, skill.workspaceId);
+		} else {
+			await requireAuth(ctx);
+		}
+
+		return skill;
 	},
 });
 
+/**
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * filtered strictly to `isSystem === true`, i.e. platform-provided global
+ * skills, never a tenant-owned or `visibility: "private"` row; no
+ * organization's proprietary skill `instructions` can be reached through
+ * this index. Revisit if `isSystem` skills ever gain per-organization
+ * variants or embed org-specific secrets — at that point this must be
+ * scoped.
+ */
 export const listSystem = query({
 	args: {},
 	handler: async (ctx) => {
@@ -262,16 +298,66 @@ export const remove = mutation({
 export const incrementUsage = mutation({
 	args: { skillId: v.id("skills") },
 	handler: async (ctx, args) => {
-		// Telemetry write — any authenticated user may bump usage counters.
-		await requireAuth(ctx);
-
 		const skill = await ctx.db.get(args.skillId);
 		if (!skill) return;
+
+		if (skill.isSystem) {
+			// System skills are global — any authenticated caller may bump usage.
+			await requireAuth(ctx);
+		} else {
+			if (!skill.workspaceId) {
+				throw new Error("Skill has no workspace to authorize against");
+			}
+			// Same ownership rule as update()/remove(): caller must own or belong
+			// to the skill's workspace — prevents cross-tenant counter tampering.
+			await requireAuthWithWorkspace(ctx, skill.workspaceId);
+		}
 
 		await ctx.db.patch(args.skillId, {
 			usageCount: skill.usageCount + 1,
 			updatedAt: Date.now(),
 		});
+	},
+});
+
+// ============================================================================
+// INTERNAL QUERY — called by importFromUrl action to validate workspace access
+// before writing (actions cannot use ctx.db directly, so the ownership check
+// must run through a runQuery round-trip). Same ownership rule as
+// requireAuthWithWorkspace: caller must own the workspace or share its org.
+// ============================================================================
+
+export const assertWorkspaceAccessInternal = internalQuery({
+	args: {
+		clerkUserId: v.string(),
+		workspaceId: v.id("workspaces"),
+	},
+	handler: async (ctx, args) => {
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) =>
+				q.eq("clerkUserId", args.clerkUserId),
+			)
+			.unique();
+		if (!user) {
+			throw new Error("Unauthorized: user not found");
+		}
+
+		const workspace = await ctx.db.get(args.workspaceId);
+		if (!workspace) {
+			throw new Error("Workspace not found");
+		}
+
+		const isOwner = workspace.ownerId === user.clerkUserId;
+		const isOrgMember =
+			workspace.organizationId != null &&
+			workspace.organizationId === user.organizationId;
+
+		if (!isOwner && !isOrgMember) {
+			throw new Error("Unauthorized: no access to this workspace");
+		}
+
+		return null;
 	},
 });
 
@@ -354,6 +440,14 @@ export const importFromUrl = action({
 		// Auth — actions use requireUser (returns identity, not DB user)
 		const identity = await requireUser(ctx);
 		const userId = identity.subject;
+
+		// Ownership check — the caller must own or belong to args.workspaceId.
+		// Actions cannot use ctx.db, so this runs as an internalQuery round-trip
+		// (same ownership rule as requireAuthWithWorkspace used by create/update/remove).
+		await ctx.runQuery(internal.skills.assertWorkspaceAccessInternal, {
+			clerkUserId: userId,
+			workspaceId: args.workspaceId,
+		});
 
 		// Convert GitHub blob URLs to raw URLs
 		let fetchUrl = args.url;

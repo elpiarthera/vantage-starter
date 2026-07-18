@@ -2,7 +2,13 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 /**
- * List all shared links for a resource
+ * List all shared links for a resource.
+ *
+ * SECURITY: `resourceId` is a free-form client-chosen string, not a secret —
+ * filtering by it alone let any authenticated caller from any organization
+ * read another organization's shared-link rows, including the plaintext
+ * `password` field. Rows are additionally filtered to the caller's own
+ * `organizationId` (set server-side at `create`-time).
  */
 export const list = query({
 	args: {
@@ -14,9 +20,21 @@ export const list = query({
 			throw new Error("Not authenticated");
 		}
 
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) =>
+				q.eq("clerkUserId", identity.subject),
+			)
+			.unique();
+		if (!user) {
+			throw new Error("User not found");
+		}
+		const callerOrganizationId = user.organizationId || "";
+
 		const links = await ctx.db
 			.query("sharedLinks")
 			.withIndex("by_resource", (q) => q.eq("resourceId", args.resourceId))
+			.filter((q) => q.eq(q.field("organizationId"), callerOrganizationId))
 			.collect();
 
 		return links;
@@ -24,12 +42,15 @@ export const list = query({
 });
 
 /**
- * Create a new shared link
+ * Create a new shared link.
+ *
+ * SECURITY: `organizationId` is derived from the caller's own resolved user
+ * row, never trusted verbatim from client args — otherwise any caller could
+ * attribute a shared link to an arbitrary organization.
  */
 export const create = mutation({
 	args: {
 		resourceId: v.string(),
-		organizationId: v.string(),
 		expiresAt: v.optional(v.number()),
 		password: v.optional(v.string()),
 		allowDownload: v.boolean(),
@@ -40,13 +61,29 @@ export const create = mutation({
 			throw new Error("Not authenticated");
 		}
 
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) =>
+				q.eq("clerkUserId", identity.subject),
+			)
+			.unique();
+		if (!user) {
+			throw new Error("User not found");
+		}
+
 		const userId = identity.subject;
 
-		// Generate unique token
-		const token = `share_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+		// Generate unique token — CSPRNG, same idiom as convex/agents.ts token
+		// generation. This token is the ONLY authorization check performed by
+		// `getByToken` below, so it must be unguessable, not merely unique.
+		const tokenBytes = new Uint8Array(32);
+		crypto.getRandomValues(tokenBytes);
+		const token = `share_${Array.from(tokenBytes)
+			.map((b) => b.toString(16).padStart(2, "0"))
+			.join("")}`;
 
 		const linkId = await ctx.db.insert("sharedLinks", {
-			organizationId: args.organizationId,
+			organizationId: user.organizationId || "",
 			resourceId: args.resourceId,
 			userId,
 			token,
@@ -92,6 +129,23 @@ export const remove = mutation({
 
 /**
  * Get a shared link by token (public access)
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. This is
+ * the token-gated public sharing feature the `sharedLinks` table exists for
+ * (schema comment: "Token-gated public URL sharing pattern") — possession of
+ * the unguessable `token` value itself IS the intended access control, not
+ * an oversight. Safety depends entirely on `token` being unguessable, which
+ * this function cannot itself enforce.
+ *
+ * SAFETY BASIS: `create` above generates the token from `crypto.getRandomValues`
+ * (32 bytes, hex-encoded — same idiom as `convex/agents.ts`'s agent tokens),
+ * so the token is unguessable and non-enumerable today. This remains true
+ * only for as long as (a) `create`'s token generation stays CSPRNG-based —
+ * never derived from `Date.now()`, `Math.random()`, or any other
+ * non-cryptographic source — and (b) link rows carry no secret beyond what
+ * the token holder is entitled to see. If either condition changes, this
+ * function's public-by-design classification must be re-audited before
+ * shipping.
  */
 export const getByToken = query({
 	args: {

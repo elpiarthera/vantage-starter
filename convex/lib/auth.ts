@@ -66,6 +66,21 @@ export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
 /**
  * Require admin or owner access — throws if user is not authorized.
  * Returns the user object.
+ *
+ * SCHEMA GAP (declared, not fixed here — see org-scoping audit,
+ * analysis/org-scoping-group-a.md): `role` is a GLOBAL field on `users`.
+ * This check verifies the caller's own role only; it does NOT verify that
+ * the caller and the target of an admin action share an organization,
+ * because this schema has no org-scoped role/membership table to check
+ * against. Every function gated solely by `requireAdmin` (see
+ * convex/adminHelpers.ts) therefore lets any admin/owner in ANY organization
+ * act on users in ANY other organization — promote/demote roles, enumerate
+ * admins, and look up any user's full profile by email. Closing this
+ * properly requires adding an org-scoped membership/role table (or an
+ * `organizationId` equality check against the target row) — a data-model
+ * change, out of scope for a per-function auth fix. Do not assume this
+ * function provides organization-level isolation; it only proves global
+ * role.
  */
 export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
 	const user = await requireAuth(ctx);

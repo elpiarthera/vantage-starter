@@ -134,11 +134,25 @@ export const syncUser = mutation({
 });
 
 /**
- * Get user by Clerk ID (for internal use)
+ * Get user by Clerk ID.
+ *
+ * SECURITY: self-only — the caller may only resolve their own user document.
+ * `clerkUserId` values are visible in many other API responses across this
+ * codebase (e.g. assets.userId, chatMessages.userId), so accepting an
+ * arbitrary value here without an identity check would leak any user's full
+ * profile (email, organizationId, role) to anyone who can guess it.
  */
 export const getUserByClerkId = query({
 	args: { clerkUserId: v.string() },
 	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== args.clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's account");
+		}
+
 		const user = await ctx.db
 			.query("users")
 			.withIndex("by_clerk_user_id", (q) =>
