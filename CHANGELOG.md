@@ -4,6 +4,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — theme-repaint.spec.ts OKLCH parser ignored `%`, broke against a live preview)
+
+`e2e/theme-repaint.spec.ts` read the `--background` CSS custom property via `getComputedStyle(...).getPropertyValue()`, which returns the token's RAW authored text — `oklch(14.5% 0 0)` on a live preview. The parser matched only the leading digits and dropped the trailing `%`, so `14.5%` was compared as `14.5` against a `< 0.3` threshold and the guard failed (`Received 14.5`), proven RED before any edit. Locally the guard happened to pass only because the dev server serves the fractional form (`oklch(0.145 0 0)`) — the guard was broken against exactly the surface it exists to protect (this is the guard PR #26 introduced).
+
+Fix: extracted one shared, percent-aware `lightnessOf()` helper into `e2e/oklch.ts` (`okla?[bc]h?\(\s*([\d.]+)(%?)`, divides by 100 when `%` is captured) and pointed `theme-repaint.spec.ts` at it. Proven GREEN on both serialization forms: `oklch(14.5% 0 0)` -> `0.145` and `oklch(0.145 0 0)` -> `0.145` (a percent-only parser would have broken the fractional form — the mirror failure, also checked).
+
+### Hardening (2026-07-18 — clerk-theme.spec.ts's two inline parsers made percent-aware defensively, not broken today)
+
+`e2e/clerk-theme.spec.ts` reads *resolved* colour properties (`backgroundColor`, `color`), which the browser always serializes as bare fractions — measured on a live preview (`oklch(0.3 0 0)`, `oklch(0.922 0 0)`). Both inline parsers (line ~76, and the one duplicated inside `page.waitForFunction`'s browser-context callback at ~87, which cannot import a module) passed 9/9 runs and were not defective. They were made percent-aware anyway — a parser must not assume which DOM surface feeds it, and the assumption is exactly what broke `theme-repaint.spec.ts`. The `page.waitForFunction` callback keeps its own inlined copy (documented in-file) because Playwright browser-context callbacks cannot `import` `e2e/oklch.ts`; the top-level parser now imports the shared `lightnessOf()` from `e2e/oklch.ts`.
+
+`grep -rn 'match(/okl' e2e/` confirms exactly two remaining regex sites: the shared helper itself (`e2e/oklch.ts:25`) and the one browser-context-inlined copy in `clerk-theme.spec.ts:82` that structurally cannot import it.
+
 ### Changed (2026-07-18 — Browserbase e2e path made dormant, local Chromium is nominal)
 
 `.github/workflows/e2e.yml` no longer injects `BROWSERBASE_API_KEY`/`BROWSERBASE_PROJECT_ID`/`BB_CONTEXT_ID` at workflow `env:` level — that injection was the one thing making CI silently route through a banned paid service. `e2e/fixtures.ts` header and branch order inverted: local Chromium is now documented and coded as the primary, tested path; the Browserbase opt-in only activates when both keys are explicitly set, which no workflow in this repo does. No code or dependency deleted (`@browserbasehq/sdk`, `@browserbasehq/stagehand` remain in `package.json`) — operator decision (Laurent): reactivate when budget allows rather than rebuild. Verified: no-keys run passes on local Chromium; partial-keys run (API key set, project id unset) also runs the declared local path, not a crash or silent skip. `grep -rn -i 'browserbase|BB_CONTEXT_ID'` across `.ts/.yml/.json/.mjs` confirms zero remaining secret-injection sites outside the disabled re-enable comment.
