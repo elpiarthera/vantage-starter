@@ -15,7 +15,7 @@ export function ThemeToggle() {
 			onClick={() => setTheme(isDark ? "light" : "dark")}
 			title={isDark ? t("dark_mode") : t("light_mode")}
 			aria-label={isDark ? t("switch_to_light") : t("switch_to_dark")}
-			className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 transition-all duration-200 focus-ring overflow-hidden"
+			className="relative p-2 min-h-[44px] min-w-[44px] rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 focus-ring overflow-hidden"
 		>
 			{/* Sun icon */}
 			<svg
