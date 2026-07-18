@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-18 — Browserbase e2e path made dormant, local Chromium is nominal)
+
+`.github/workflows/e2e.yml` no longer injects `BROWSERBASE_API_KEY`/`BROWSERBASE_PROJECT_ID`/`BB_CONTEXT_ID` at workflow `env:` level — that injection was the one thing making CI silently route through a banned paid service. `e2e/fixtures.ts` header and branch order inverted: local Chromium is now documented and coded as the primary, tested path; the Browserbase opt-in only activates when both keys are explicitly set, which no workflow in this repo does. No code or dependency deleted (`@browserbasehq/sdk`, `@browserbasehq/stagehand` remain in `package.json`) — operator decision (Laurent): reactivate when budget allows rather than rebuild. Verified: no-keys run passes on local Chromium; partial-keys run (API key set, project id unset) also runs the declared local path, not a crash or silent skip. `grep -rn -i 'browserbase|BB_CONTEXT_ID'` across `.ts/.yml/.json/.mjs` confirms zero remaining secret-injection sites outside the disabled re-enable comment.
+
 ### Added (2026-07-18 — T0 production-readiness audit, read-only)
 
 `analysis/production-readiness-audit-vantage-starter.md` — full audit of `ef3aa0d`, every count derived by sweep. Inventory: 239 Convex exports (177 public, 54 internal, 8 httpAction). Auth classification of the 177 public: 96 enforced, 45 soft, **36 with no auth reference at all — 12 of them mutations**. Two verified by hand and reproduced in full: `agents.remove` soft-deletes any non-system agent by id with no identity check, and `subscriptions.cancel` cancels any subscription by its Polar id with no auth whatsoever. Records a false alarm caught before publication (a first classifier reported 132 unauthenticated because it did not follow the `convex/lib/auth.ts` helper layer) and corrects the dispatch brief's tenant premise: `projects.ts` does honour org membership on `ef3aa0d`, so the defect is inconsistency (91/177 reference a tenant id) rather than absence. Nothing fixed inline; findings become tasks.
