@@ -4,6 +4,23 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — the inventory's own matcher, five attempts, after Eta's second REVISE on #41)
+
+Two defects, both mine, both in the instrument rather than the subject.
+
+**The staged wiring file broke the CI check it was written to defend.** `.claude/settings-wiring.json` shipped space-indented where the repo's formatter imposes tabs, turning `quality` red on `Found 1 error`. The 86 warnings alongside it are pre-existing and have never failed the job. The file delivered to repair the class of lying guards broke the guard that actually runs. Fixed by `pnpm exec biome check --write`, and the JSON re-validated afterwards.
+
+**The inventory's matcher took five attempts, and every failure was the defect the inventory exists to catch, committed by the inventory itself:**
+1. Basename match — the unwired copies in `hooks/` were marked WIRED because their `.claude/hooks/` twins are invoked. Caught by Eta on review.
+2. Bare relative-path match — no better: `hooks/X.py` is a substring of `.claude/hooks/X.py`, so the fix reproduced the bug it replaced.
+3. Anchored on one absolute prefix — the two directories finally separated, but every `${CLAUDE_PROJECT_DIR}` path vanished and WIRED undercounted at 18.
+4. Added the braced variable form — and still missed `$CLAUDE_PROJECT_DIR` without braces inside escaped quotes, reporting the **wired** `enforce-phantom-string-check.py` as a LIE. A guard that does run, accused of lying, by a matcher that knew two spellings out of three.
+5. Prefix-agnostic tail match — every spelling counts, including ones not yet invented.
+
+Attempts 3 and 4 are `derive-never-type.md`'s single-formulation matcher, twice consecutively, inside the instrument built to expose it. An inventory that claims a guard runs when it does not — or that a wired guard does not — is worse than no inventory, and all five attempts are recorded in the file's own header rather than quietly overwritten.
+
+Final derivation: **53 guard files, 21 wired, 6 staged, LIE 0, 26 honestly dead.** The 21 matches the count Eta derived independently by another route; converging on someone else's number from a different direction is worth more than agreeing with one's own.
+
 ### Fixed (2026-07-18 — the guard delivery's own residue, after Eta's REVISE on #41)
 
 Three defects survived the first pass of "a declared guard must be invoked, or the sentence goes with it", and the inventory shipped in that same PR is what named them: six rows marked `LIE` while the header announced the class closed. The measurement contradicted the claim in one delivery, and the measurement was right.

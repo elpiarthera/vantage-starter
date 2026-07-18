@@ -1,12 +1,19 @@
 # Hooks inventory — derived, not hand-typed
 
-Every value below is DERIVED by the script embedded in this file's git history and re-runnable from the PR description of `tau/quality-gate-guard-decision`. No row is hand-typed.
+Every value below is DERIVED by script and re-runnable; no row is hand-typed.
 
-**Sources of truth:** WIRED = `.claude/settings.json`. STAGED = `.claude/settings-wiring.json` (a real patch file, not a promise). DECLARED = `CLAUDE.md`, `AGENTS.md`, `docs/**.md`, `.claude/rules/**.md` — **excluding this file**: an inventory NAMES guards, it does not DECLARE them active, and counting itself as a declaration made every guard look declared (measured: it inflated LIE from 0 to 24).
+**Sources of truth:** WIRED = the hook paths actually invoked by `.claude/settings.json`. STAGED = `.claude/settings-wiring.json`, a real patch file rather than a promise. DECLARED = `CLAUDE.md`, `AGENTS.md`, `docs/**.md`, `.claude/rules/**.md` — **excluding this file only**: an inventory NAMES guards, it does not DECLARE them active. Excluding a self-reference is not narrowing the class; excluding `CLAUDE.md` would have been, and it is still scanned.
 
-**Totals:** 53 guard files. Wired: 23. Staged but not applied: 6. **LIE (declared active, invoked by nothing): 0.** Honestly dead (never declared, ordinary debt, out of the class by its own definition): 24.
+**The matcher is PREFIX-AGNOSTIC: it matches the repo-relative tail wherever it appears, and never assumes how the prefix is spelled.** Getting here took five attempts, and all five are recorded because each was the very defect this table exists to catch, committed by the table itself:
+1. Basename match — marked the unwired copies in `hooks/` as WIRED because their `.claude/hooks/` twins are invoked. Caught by Eta on review.
+2. Bare relative-path match — no better: `hooks/X.py` is a SUBSTRING of `.claude/hooks/X.py`, so the fix reproduced the bug it replaced.
+3. Anchored on one absolute prefix — the directories finally separated, but every `${CLAUDE_PROJECT_DIR}` path went missing and WIRED undercounted.
+4. Added the braced variable form — and still missed `$CLAUDE_PROJECT_DIR` without braces inside escaped quotes, which reported the wired `enforce-phantom-string-check.py` as a LIE. A guard that IS wired, accused of lying, by a matcher that knew two spellings out of three.
+5. Prefix-agnostic tail match — every spelling counts, present and future.
 
-A LIE count of 0 is the number this branch had to reach and reach honestly — not by narrowing what counts as a declaration.
+Attempts 3 and 4 are the single-formulation matcher of `derive-never-type.md`, twice in a row, inside the instrument built to expose it. An inventory that claims a guard runs when it does not — or that a wired guard does not run — is worse than no inventory.
+
+**Totals:** 53 guard files. Wired: 21. Staged but not applied: 6. **LIE (declared active, invoked by nothing): 0.** Honestly dead (never declared — ordinary debt, out of the class by its own definition): 26.
 
 | File | Wired in settings.json? | Declared in | Class |
 |---|---|---|---|
@@ -56,9 +63,9 @@ A LIE count of 0 is the number this branch had to reach and reach honestly — n
 | `.claude/hooks/validate-github-comment.py` | NO | — | dead (never declared — ordinary debt) |
 | `.claude/hooks/verify-before-claim.py` | NO | — | dead (never declared — ordinary debt) |
 | `.claude/hooks/verify-breadcrumb.py` | NO | — | dead (never declared — ordinary debt) |
-| `hooks/block-orchestrator-code-edits.py` | yes | — | WIRED |
+| `hooks/block-orchestrator-code-edits.py` | NO | — | dead (never declared — ordinary debt) |
 | `hooks/enforce-agent-rules.py` | NO | — | dead (never declared — ordinary debt) |
-| `hooks/enforce-brief-template.py` | yes | — | WIRED |
+| `hooks/enforce-brief-template.py` | NO | — | dead (never declared — ordinary debt) |
 | `hooks/enforce-peer-brief-format.py` | NO | — | dead (never declared — ordinary debt) |
 | `hooks/post-agent-qa.py` | NO | — | dead (never declared — ordinary debt) |
 | `hooks/post-agent-review.py` | NO | — | dead (never declared — ordinary debt) |
