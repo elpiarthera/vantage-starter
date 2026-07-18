@@ -41,7 +41,7 @@ describe("Subscription Lifecycle: create", () => {
 		await seedUser(t);
 		await seedTier(t, { tierKey: "tier_1", monthlyCredits: 1000 });
 
-		const result = await t.mutation(api.subscriptions.create, BASE_ARGS);
+		const result = await t.mutation(internal.subscriptions.create, BASE_ARGS);
 		expect(result.success).toBe(true);
 
 		const sub = await t.run(async (ctx) => {
@@ -67,7 +67,7 @@ describe("Subscription Lifecycle: getByClerkUserId", () => {
 		const t = makeT();
 		await seedUser(t);
 		await seedTier(t, { tierKey: "tier_1", monthlyCredits: 1000 });
-		await t.mutation(api.subscriptions.create, BASE_ARGS);
+		await t.mutation(internal.subscriptions.create, BASE_ARGS);
 
 		const sub = await t.query(api.subscriptions.getByClerkUserId, {
 			clerkUserId: TEST_USER_ID,
@@ -120,7 +120,7 @@ describe("Subscription Lifecycle: cancel – status", () => {
 		const t = makeT();
 		await seedSubscription(t);
 
-		await t.mutation(api.subscriptions.cancel, {
+		await t.mutation(internal.subscriptions.cancel, {
 			polarSubscriptionId: TEST_SUB_ID,
 		});
 
@@ -157,7 +157,7 @@ describe("Subscription Lifecycle: cancel – credits retained", () => {
 			});
 		});
 
-		await t.mutation(api.subscriptions.cancel, {
+		await t.mutation(internal.subscriptions.cancel, {
 			polarSubscriptionId: TEST_SUB_ID,
 		});
 
@@ -185,12 +185,12 @@ describe("Subscription Lifecycle: multi-user isolation", () => {
 		await seedUser(t, { clerkUserId: USER_B, organizationId: ORG_B });
 		await seedTier(t, { tierKey: "tier_1", monthlyCredits: 1000 });
 
-		await t.mutation(api.subscriptions.create, {
+		await t.mutation(internal.subscriptions.create, {
 			...BASE_ARGS,
 			clerkUserId: USER_A,
 			polarSubscriptionId: "sub_a",
 		});
-		await t.mutation(api.subscriptions.create, {
+		await t.mutation(internal.subscriptions.create, {
 			...BASE_ARGS,
 			clerkUserId: USER_B,
 			polarSubscriptionId: "sub_b",

@@ -8,7 +8,7 @@
  */
 
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { polar } from "./polar";
 
 /**
@@ -137,9 +137,15 @@ export const getFormattedSubscription = query({
 });
 
 /**
- * Create subscription record (called from UI on successful checkout)
+ * Create subscription record.
+ *
+ * SECURITY: internal-only. Zero client callers (verified — grep across
+ * app/components/hooks/lib/convex returns none); the Polar webhook path uses
+ * internal.subscriptions.updateTierByWebhook instead (see convex/http.ts).
+ * A public version of this mutation would let anyone attach an arbitrary
+ * Polar subscription/customer ID to any Clerk user by ID.
  */
-export const create = mutation({
+export const create = internalMutation({
 	args: {
 		clerkUserId: v.string(),
 		polarSubscriptionId: v.string(),
@@ -314,9 +320,13 @@ export const updateTierByWebhook = internalMutation({
 });
 
 /**
- * Cancel subscription
+ * Cancel subscription.
+ *
+ * SECURITY: internal-only — see create() above for rationale. A public
+ * version would let anyone cancel any subscription by guessing/enumerating
+ * a polarSubscriptionId, with no ownership check.
  */
-export const cancel = mutation({
+export const cancel = internalMutation({
 	args: {
 		polarSubscriptionId: v.string(),
 	},

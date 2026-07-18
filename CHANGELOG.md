@@ -4,6 +4,16 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Security (2026-07-18 — 12 public Convex mutations were callable by anyone with the deployment URL)
+
+Surfaced by the T0 audit. Convex `mutation` exports are reachable by any client holding the deployment URL; these 12 carried no identity reference and no ownership check. Worst case: `agents.generateToken` took any `agentId`, minted a 32-byte credential, wrote it to the agent and **returned the token plaintext to the caller**, invalidating the previous one — unauthenticated credential theft plus denial of service in one call. `subscriptions.cancel` set any subscription to `canceled` from a `polarSubscriptionId`, with no identity, ownership or signature check.
+
+Measured before touching anything, and it made the fix safe: **11 of the 12 had zero callers** in `app/ components/ hooks/ lib/ convex/`, and the Polar webhook uses `internal.subscriptions.updateTierByWebhook` (`convex/http.ts:234`) rather than the public `subscriptions.create/cancel`. Orphan attack surface — unreachable by the product, fully reachable by a third party.
+
+Fixed per function, reusing `convex/lib/auth.ts` rather than inventing a rule: `agents.generateToken`, `agents.rotateToken`, `subscriptions.create`, `subscriptions.cancel` and `workspaces.ensureDefault` became `internalMutation` (a public mutation must never mint or return a secret); `agents.update/remove` and `skills.update/remove` gained `requireAuthWithWorkspace` matching the scoping their neighbouring `create` already used; the two `incrementUsage` telemetry writes gained `requireAuth`; and `users.syncUser` — the only one with a real caller (`components/UserSyncProvider.tsx:75`) — now rejects any attempt to sync a Clerk identity other than the caller's own.
+
+Sweep before → after: **12 → 0** public mutations with no auth reference (85 public mutations remain, 5 having become internal). The 24 unauthenticated *queries* are deliberately NOT in this change — several are legitimately public (`sharedLinks.getByToken`, `subscriptionTiers.*`) and each needs its own read.
+
 ### Fixed (2026-07-16 — Clerk widgets were frozen dark, task k172nrg38ap3v9e6f0jry50bws8andg0)
 
 - **`app/ClientProviders.tsx`**: `baseTheme: dark` was **unconditional**, so every Clerk widget stayed dark no matter what. With a theme toggle now in the header, the whole app would flip to light and the auth widget would remain black. The import is gone: every `appearance.variables` entry now points at the live token (`var(--background)`, `var(--card)`, `var(--input)`, `var(--border)`, `var(--foreground)`, `var(--muted-foreground)`, `var(--primary)`, `var(--destructive)`). Base state comes from the tokens themselves, and following light/dark needs **no JS theme read and no client boundary**.
