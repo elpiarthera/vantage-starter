@@ -23,7 +23,9 @@ export interface RendiVideoResult {
 	error?: string;
 }
 
-// All 46 verified working xfade transitions (see docs/MVP/x-fade-effects-tests.md)
+// FFmpeg xfade transition names supported by this module's filter builders.
+// Count is the length of this union (46 as of this writing) — not an
+// external claim; verify by counting the members below if this list changes.
 export type XfadeTransitionType =
 	// Fades
 	| "fade"

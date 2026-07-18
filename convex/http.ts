@@ -10,7 +10,6 @@ const http = httpRouter();
  * Register Polar webhook routes with custom credit allocation handlers
  *
  * Pattern from: /home/laurentperello/polar/example/convex/http.ts
- * Credit handlers from: docs/MVP/Todo/sprint-10-implementation.md
  *
  * The component handles:
  * - Built-in events: subscription.created, subscription.updated, product.created, etc.

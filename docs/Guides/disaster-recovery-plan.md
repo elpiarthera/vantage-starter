@@ -117,7 +117,7 @@ Understanding the costs helps you plan for sustainable recovery.
 
 **Recommendation**: Start with free tier. Handles all billing, webhooks, and customer portal.
 
-**References**: See `docs/MVP/Todo/pre-sprint-10-setup.md` for full Polar sandbox setup guide.
+**References**: See `docs/Guides/polar-subscription-setup-guide.md` for the Polar sandbox setup.
 
 #### Rendi (Video Assembly)
 - **Free Tier**: 50 GB/month processed volume (~161 videos)
@@ -1390,7 +1390,10 @@ Polar handles subscription billing, credit purchases, and the customer portal.
 
 ### 10.2 Create Products
 
-Follow the detailed guide in `docs/MVP/Todo/pre-sprint-10-setup.md` for copy-paste ready product configurations.
+Product configurations are specific to whatever you are selling — see
+`docs/Guides/polar-subscription-setup-guide.md` for the setup mechanics. The
+list below is the shape this template's own Polar account used; treat it as an
+example to replace, not a checklist to reproduce.
 
 **Create 7 products total:**
 
@@ -1488,7 +1491,10 @@ Test the full billing flow using the test card `4242 4242 4242 4242`:
 - [ ] Cancel via portal works (credits preserved)
 - [ ] Delete account cancels subscription in Polar
 
-See `docs/MVP/ManualTesting/Sprint-10-polar-manual-tests.md` for the complete 11-test checklist.
+No manual-test checklist ships with the template for this flow — the one this
+section used to point at described another product's sprint and was removed
+with it. Exercise the billing flow against your own Polar sandbox before
+trusting it.
 
 **Time**: 30 minutes
 
