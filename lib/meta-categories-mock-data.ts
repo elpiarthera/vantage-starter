@@ -656,10 +656,10 @@ export const mockTargetedAds: TargetedAd[] = [
 	},
 	{
 		id: "ad-cat-2-1",
-		title: "Premium IDE License",
-		baseline: "Save 50% on JetBrains tools",
+		title: "Premium IDE Bundle",
+		baseline: "Save 50% on developer tooling",
 		imageUrl: "/placeholder.svg?height=400&width=600",
-		linkUrl: "/promotions/jetbrains",
+		linkUrl: "/promotions/developer-tooling",
 		categoryId: "cat-2-1",
 		order: 1,
 		isActive: true,
