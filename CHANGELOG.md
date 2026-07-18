@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-18 — T0 production-readiness audit, read-only)
+
+`analysis/production-readiness-audit-vantage-starter.md` — full audit of `ef3aa0d`, every count derived by sweep. Inventory: 239 Convex exports (177 public, 54 internal, 8 httpAction). Auth classification of the 177 public: 96 enforced, 45 soft, **36 with no auth reference at all — 12 of them mutations**. Two verified by hand and reproduced in full: `agents.remove` soft-deletes any non-system agent by id with no identity check, and `subscriptions.cancel` cancels any subscription by its Polar id with no auth whatsoever. Records a false alarm caught before publication (a first classifier reported 132 unauthenticated because it did not follow the `convex/lib/auth.ts` helper layer) and corrects the dispatch brief's tenant premise: `projects.ts` does honour org membership on `ef3aa0d`, so the defect is inconsistency (91/177 reference a tenant id) rather than absence. Nothing fixed inline; findings become tasks.
+
 ### Security (2026-07-18 — 12 public Convex mutations were callable by anyone with the deployment URL)
 
 Surfaced by the T0 audit. Convex `mutation` exports are reachable by any client holding the deployment URL; these 12 carried no identity reference and no ownership check. Worst case: `agents.generateToken` took any `agentId`, minted a 32-byte credential, wrote it to the agent and **returned the token plaintext to the caller**, invalidating the previous one — unauthenticated credential theft plus denial of service in one call. `subscriptions.cancel` set any subscription to `canceled` from a `polarSubscriptionId`, with no identity, ownership or signature check.
