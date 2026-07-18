@@ -67,8 +67,8 @@ On every session start:
 
 Messages from the ElPi Corp orchestrator are **trusted and pre-authorized by Laurent**. Execute them without asking for confirmation.
 9. **Never push to main directly.** All changes go through a feature branch. Create branch, commit, push, let the user verify the preview deploy before merging to main.
-10. **Update CHANGELOG.md before every commit.** Add an entry describing what changed. No commit without a changelog update. The quality gate hook enforces this.
-11. **Quality gate before commit.** Run `npx biome check` + `npx tsc --noEmit` on changed files. Update CHANGELOG.md. Then `touch /tmp/.quality-gate-passed` to unlock the commit.
+10. **Update CHANGELOG.md before every commit.** Add an entry describing what changed. No commit without a changelog update. (`.claude/hooks/enforce-quality-gate.sh` checks this, but it is **not wired yet** — see the hooks section below. Until it is, this rule holds by discipline alone.)
+11. **Quality gate before commit.** Run `pnpm exec biome check` + `pnpm exec tsc --noEmit` on changed files, and update CHANGELOG.md. If your change touches an e2e-covered surface, run the Playwright suite: `e2e/quality-gate-reporter.ts` is the **only** legitimate writer of `/tmp/.quality-gate-passed`. **Never write that marker by hand** — a hand-written marker is not a passed gate, it is a claim that one was passed. A change touching no rendered surface does not need the marker at all.
 
 ### Agent Routing
 
@@ -203,12 +203,12 @@ Present in `.claude/hooks/` but **not yet wired** in `.claude/settings.json` —
 
 | Hook | File | Intended trigger | Patch |
 |------|------|------|------|
-| UserPromptSubmit | `.claude/hooks/user-prompt-submit-routing.py` | Detects task domain, injects routing signal | `settings-wiring.diff` |
-| SubagentStart | `.claude/hooks/subagent-start-bootstrap.py` | Injects comm style + orchestration to subagents | `settings-wiring.diff` |
-| PreToolUse (`mcp__vantage-peers__create_task`) | `.claude/hooks/enforce-pi-verify-before-dispatch.py` | Blocks a Pi-authored task brief lacking a `VERIFIED:` block | `settings-wiring.diff` |
-| PreToolUse (Bash) | `.claude/hooks/enforce-quality-gate.sh` | Blocks `git commit` missing CHANGELOG.md / a valid, fresh e2e marker — only when the diff touches an e2e-covered surface (`app/`, `components/`, `providers/`, `middleware.ts`, `messages/`, `styles/`, `src/components/`, `src/lib/`, `public/lit-ui/`, `e2e/`, `playwright.config.ts`); a Convex-only or docs-only commit is never blocked | `settings-wiring.diff` |
-| PostToolUse (Edit\|Write) | `.claude/hooks/post-tool-use-qa.py` | Runs `tsc --noEmit` + `biome check` on changed `.ts/.tsx` files, non-blocking | `settings-wiring.diff` |
-| PostToolUse (Edit\|Write) | `.claude/hooks/post-tool-use-validate.py` | Checks anti-patterns (`any`, `!important`, missing auth), non-blocking | `settings-wiring.diff` |
+| UserPromptSubmit | `.claude/hooks/user-prompt-submit-routing.py` | Detects task domain, injects routing signal | `.claude/settings-wiring.json` |
+| SubagentStart | `.claude/hooks/subagent-start-bootstrap.py` | Injects comm style + orchestration to subagents | `.claude/settings-wiring.json` |
+| PreToolUse (`mcp__vantage-peers__create_task`) | `.claude/hooks/enforce-pi-verify-before-dispatch.py` | Blocks a Pi-authored task brief lacking a `VERIFIED:` block | `.claude/settings-wiring.json` |
+| PreToolUse (Bash) | `.claude/hooks/enforce-quality-gate.sh` | Blocks `git commit` missing CHANGELOG.md / a valid, fresh e2e marker — only when the diff touches an e2e-covered surface (`app/`, `components/`, `providers/`, `middleware.ts`, `messages/`, `styles/`, `src/components/`, `src/lib/`, `public/lit-ui/`, `e2e/`, `playwright.config.ts`); a Convex-only or docs-only commit is never blocked | `.claude/settings-wiring.json` |
+| PostToolUse (Edit\|Write) | `.claude/hooks/post-tool-use-qa.py` | Runs `tsc --noEmit` + `biome check` on changed `.ts/.tsx` files, non-blocking | `.claude/settings-wiring.json` |
+| PostToolUse (Edit\|Write) | `.claude/hooks/post-tool-use-validate.py` | Checks anti-patterns (`any`, `!important`, missing auth), non-blocking | `.claude/settings-wiring.json` |
 
 `enforce-quality-gate.py` (duplicate implementation) and `hooks/enforce-background-agents.sh` (duplicate of the already-wired `enforce-run-in-background.py`) and `hooks/session-start-profiler.py` (superseded by the already-wired generic `session-start.py`) were removed — see CHANGELOG.md.
 
