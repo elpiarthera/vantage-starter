@@ -2,43 +2,16 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
+import { buildCsp } from "@/lib/csp.mjs";
 
 // Create the intl middleware
 const intlMiddleware = createIntlMiddleware(routing);
 
-// Clerk requires https://challenges.cloudflare.com for Turnstile CAPTCHA:
-//   - script-src: to load the Turnstile JS
-//   - frame-src: to render the Turnstile iframe
-// script-src-elem must explicitly mirror script-src to suppress "not explicitly set" browser warnings.
-// This is set in middleware (not just next.config.mjs) so it is applied on every Vercel Edge response,
-// including cases where Next.js skips the config headers() for static/rewrite paths.
-const SCRIPT_SRC_HOSTS = [
-	"'self'",
-	"'unsafe-eval'",
-	"'unsafe-inline'",
-	"https://*.clerk.accounts.dev",
-	"https://clerk.myreeldream.ai",
-	"https://challenges.cloudflare.com",
-	"https://vercel.live",
-].join(" ");
-
-const CSP = [
-	"default-src 'self'",
-	`script-src ${SCRIPT_SRC_HOSTS}`,
-	`script-src-elem ${SCRIPT_SRC_HOSTS}`,
-	"worker-src 'self' blob:",
-	"style-src 'self' 'unsafe-inline' https:",
-	"img-src 'self' data: blob: https:",
-	"media-src 'self' blob: data: https:",
-	"font-src 'self' data: https:",
-	"connect-src 'self' blob: https: wss: https://r.resend.com https://click.resend.com",
-	"frame-src 'self' https://challenges.cloudflare.com https://clerk.myreeldream.ai https://*.clerk.accounts.dev https://vercel.live https://polar.sh https://sandbox.polar.sh",
-	"object-src 'none'",
-	"base-uri 'self'",
-	"form-action 'self' https:",
-	"frame-ancestors 'self'",
-	"upgrade-insecure-requests",
-].join("; ");
+// The policy itself lives in lib/csp.mjs — one source shared with next.config.mjs.
+// It is applied here (not only via next.config headers()) so it lands on every
+// Vercel Edge response, including static/rewrite paths where Next.js skips the
+// config headers().
+const CSP = buildCsp();
 
 function applyCSP(response: NextResponse): NextResponse {
 	response.headers.set("Content-Security-Policy", CSP);

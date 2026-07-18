@@ -4,6 +4,27 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — fork residue: the CSP no longer hardcodes another tenant's Clerk domain)
+
+`middleware.ts` and `next.config.mjs` each carried their own copy of a Content-Security-Policy naming `https://clerk.myreeldream.ai` — a Clerk custom/satellite domain belonging to the product this starter was forked from — in both `script-src` and `frame-src`. Every fork of this template inherited another product's identity in a live security header, and shipped a CSP that allowlists a third-party origin its own auth never uses.
+
+**CLASS**:
+- definition: a hardcoded tenant/brand/domain literal in shipped code that a fork would inherit.
+- sweep: `grep -rniE 'myreeldream|alorsonsort|elpiarthera|clerk\.[a-z0-9-]+\.(ai|com|io)' --include=*.ts --include=*.tsx --include=*.mjs --include=*.json app/ components/ convex/ lib/ hooks/ providers/ src/ middleware.ts next.config.mjs package.json` → one surviving hit, `convex/schema.ts:8`, a comment recording which fork-specific tables were removed. Accurate history, asserts no guarantee the code does not hold, left as-is per the rule that dated prose is content, not state.
+- remaining: 0.
+
+The grep pattern under-states its own class: it caught `meta-alorsonsort` in `lib/admin-mock-data.ts` but not the two sibling real-business names on adjacent lines (`meta-shopinfrance`, `meta-bfamous`), which belong to the same class and were found only by reading the file. All three are now `meta-alpha`/`meta-beta`/`meta-gamma`. That file is a demo fixture with **zero importers** (`grep -rn 'admin-mock-data' --include=*.ts --include=*.tsx .` → no matches); the app does not serve it.
+
+**Fix**: new `lib/csp.mjs` is the single source of the policy, imported by both `middleware.ts` and `next.config.mjs` (`.mjs` + a sibling `lib/csp.d.mts` because `next.config.mjs` is plain ESM and cannot import TypeScript). Two copies of one contract diverge, and these two already had — `next.config.mjs`'s `connect-src` was missing the Resend hosts that `middleware.ts` shipped; the shared builder resolves to the middleware's (effective, since it applies on every Edge response) superset.
+
+The tenant-specific host now comes from `NEXT_PUBLIC_CLERK_DOMAIN`, following the existing `CLERK_JWT_ISSUER_DOMAIN` "Clerk domain as config" convention rather than inventing a parallel scheme; it is accepted with or without a scheme. `https://*.clerk.accounts.dev` (Clerk's shared development domain, correct for every tenant) is always emitted, so a fork works with the variable unset. When unset, blank, or whitespace, the custom-domain source is **omitted entirely** — never emitted as an empty string or a literal `undefined`, which would produce a malformed directive and silently break auth in production where no local test would catch it.
+
+**Mutation proof** (headers printed, not asserted): with `NEXT_PUBLIC_CLERK_DOMAIN=clerk.MUTATION-PROBE-XYZ.example`, the probe value appears in `script-src`, `script-src-elem`, and `frame-src`. Unset — and separately, set to the empty string — those three directives are byte-identical to each other and contain no probe, no empty token, and no double space; `frame-src` reads `'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://vercel.live https://polar.sh https://sandbox.polar.sh`, well-formed. `node -e 'import("./next.config.mjs")'` confirms the config still loads.
+
+`.env.example` documents the variable and states explicitly that leaving it unset is correct for a fork on Clerk's development domain.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check` on changed files: 0 errors (3 `noStaticOnlyClass` warnings in `lib/admin-mock-data.ts` are pre-existing — verified identical on `main` via `git stash`). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
 ### Fixed (2026-07-18 — `sharedLinks.getByToken`/`sharedLinks.list` no longer leak the plaintext `password`, class re-derived from the schema)
 
 Third site of the "public function returns a secret" class, closed with the CLASS re-derived from `convex/schema.ts` instead of from the one file (`convex/agents.ts`) where it was first found — the class is "any public function returning a row from a table carrying a secret-shaped field," and the schema (`grep -nE '^\s*(token|password)\s*:\s*v\.' convex/schema.ts`) shows exactly two tables qualify: `agents` (`token`, closed already on this branch) and `sharedLinks` (`token`, `password` — open until this commit).
