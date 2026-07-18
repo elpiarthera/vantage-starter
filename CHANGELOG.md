@@ -4,6 +4,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — FAQ accordion e2e spec, order-dependent race on lit-ui upgrade)
+
+`e2e/landing.spec.ts:51` ("FAQ section is visible with accordion items") asserted `faqSection.getByRole("button").count() > 0` immediately after the section became visible — a one-shot `.count()` read, no retry. `<lui-accordion-item>` (`components/landing/FAQSection.tsx`) renders its `<button>` only in shadow DOM, after the custom element upgrades (bundle fetch + `customElements.define` + Lit render), so the read raced the upgrade. It passed in a warm full suite where the bundle had already resolved and failed cold/isolated — exactly the order-dependence reported. Fixed by replacing the one-shot count with `expect.poll(() => accordionTriggers.count()).toBeGreaterThan(0)`, which retries until the upgrade lands and still times out red if the accordion genuinely stops rendering (verified by a deliberate temporary break, restored byte-for-byte — `git diff` empty). CLASS sweep: `e2e/*.spec.ts` for any `lui-*` element assertion using a non-retrying `.count()` — 1 site total, now fixed, 0 remaining.
+
 ### Fixed (2026-07-18 — the inventory's own matcher, five attempts, after Eta's second REVISE on #41)
 
 Two defects, both mine, both in the instrument rather than the subject.
