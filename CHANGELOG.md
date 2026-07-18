@@ -4,6 +4,16 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-18 — dark/light toggle now reachable from the authenticated app, not just the landing)
+
+The dashboard had no theme switcher (Laurent, Day-133 review: the app renders dark-only). The dispatched brief said to port `ThemeToggle` from vantage-registry — that premise was wrong, and porting would have duplicated working code: the starter already ships `components/theme-toggle.tsx` (next-themes + `useTranslations("theme_toggle")` + sun/moon SVGs), with `ThemeProvider` already wired at `app/[locale]/layout.tsx:107`. The component was simply never mounted outside `components/landing/LandingNav.tsx:181`. Fix: mount the existing component in `components/dashboard/DashboardHeader.tsx:310`, beside `LanguageSwitcher`, visible on every breakpoint — nothing ported, nothing rewritten.
+
+Same change removes the 6 hardcoded `gray-*` classes that component carried (a CLAUDE.md anti-pattern that cannot follow the theme): `text-gray-500`/`dark:text-gray-400` → `text-muted-foreground`, `hover:bg-gray-100`/`dark:hover:bg-gray-800` → `hover:bg-muted`, `hover:text-gray-900`/`dark:hover:text-gray-100` → `hover:text-foreground`, every `dark:` override deleted since OKLCH tokens flip on their own. Touch target raised to 44×44 to match the neighbouring header controls.
+
+CLASS sweep — `grep -rnoE "\b(dark:)?(text|bg|border|from|to|via|ring|divide|placeholder)-gray-[0-9]{2,3}\b" app/ components/ src/` → `theme-toggle.tsx` now 0, but **246 occurrences remain across 11 files** (233 of them on the landing). Not silently dropped: traced in task `k17cgbh3tq71y1pgts0dk9f8m58asc72`, to be split into a landing PR (needs Laurent's two-theme visual GO) and a 13-occurrence app PR.
+
+Not sourced from `@vantageos/mosaic-tokens@0.3.0` as the brief required: the task installing that package (`k172nrg38ap3v9e6f0jry50bws8andg0`) is BLOCKED, and this PR does not take a dependency on blocked work. Uses the starter's existing OKLCH tokens; the gap is declared, not hidden.
+
 ### Added (2026-07-17 — fleet rule fix-the-class mirrored into the starter)
 
 `.claude/rules/fix-the-class.md` — byte-exact mirror of the canonical fleet rule (elpi-corp commit `b8a8b273`, sha256 `b99719a4…`; English, `artifact-language-standard`). No fix ships without its class sweep: general pattern named before the fix, sweep command with pasted output, remaining 0-or-traced.

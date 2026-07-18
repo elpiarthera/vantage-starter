@@ -1,11 +1,87 @@
 /*
   Preset: Base (v0.app)
   Source: v0.app/chat/design-systems/v0example-base
-  Character: v0.app dark-first achromatic
-  WCAG: muted-foreground L=0.708 minimum (verified)
+  Character: v0.app achromatic — light + dark
+  WCAG: muted-foreground L=0.708 minimum in dark mode (verified)
+        muted-foreground L=0.52 in light mode, on background L=0.99 (verified,
+        same combo reused across every sibling preset — see mono.css/emerald.css)
+
+  Light-value sourcing (Day-135 theme-toggle fix, PR #26):
+    - 14 tokens shared by every sibling preset (background/foreground/card/
+      card-foreground/popover/popover-foreground/primary/primary-foreground/
+      muted/muted-foreground/accent/accent-foreground/border/ring): copied
+      verbatim from styles/presets/mono.css :root — base.css is documented
+      "achromatic" and mono.css is the zero-chroma reference for this family.
+    - secondary/secondary-foreground/destructive/destructive-foreground/input/
+      sidebar-*: shadcn/ui canonical light-theme values (this repo already
+      follows shadcn's canonical dark palette for these token names).
+    - chart-1..5: shadcn/ui canonical "chart-01" light palette.
+    - card-hover/border-hover: authored — one step darker than card/border
+      respectively (light-mode hover darkens; dark-mode hover lightens,
+      mirroring the existing dark values below).
+    - success/warning/warning-foreground/warning-secondary/warning-accent/
+      warning-secondary-hover: unchanged from dark. These back a CTA gradient
+      component (credits/upgrade banner) rendered as a solid filled surface
+      with its own --warning-foreground text already contrast-verified
+      against it (see comments in .dark below) — the fill is brand color,
+      independent of page background, so it does not need a page-theme
+      variant.
 */
 
 :root {
+  /* Core colors — mono.css :root (achromatic reference, same family) */
+  --primary: oklch(0.3 0 0);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.97 0 0); /* shadcn light */
+  --secondary-foreground: oklch(0.205 0 0); /* shadcn light */
+  --accent: oklch(0.92 0 0);
+  --accent-foreground: oklch(0.2 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.52 0 0);
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.1 0 0);
+  --card: oklch(0.97 0 0);
+  --card-foreground: oklch(0.1 0 0);
+  --popover: oklch(0.97 0 0);
+  --popover-foreground: oklch(0.1 0 0);
+  --destructive: oklch(0.577 0.245 27.325); /* shadcn light */
+  --destructive-foreground: oklch(0.985 0 0); /* shadcn light */
+  --border: oklch(0.88 0 0);
+  --input: oklch(0.922 0 0); /* shadcn light */
+  --ring: oklch(0.3 0 0);
+
+  /* Layout */
+  --radius: 0.625rem;
+  --card-hover: oklch(0.94 0 0); /* authored: one step darker than --card */
+  --border-hover: oklch(0.78 0 0); /* authored: one step darker than --border */
+
+  /* Charts — shadcn "chart-01" light palette */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Sidebar — shadcn light */
+  --sidebar-background: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Status — authored: unchanged from dark, see header comment */
+  --success: oklch(0.696 0.17 162.48);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.21 0.034 264.665);
+  --warning-secondary: oklch(0.705 0.213 47.604);
+  --warning-accent: oklch(0.828 0.189 84.429);
+  --warning-secondary-hover: oklch(0.75 0.183 55.934);
+}
+
+.dark {
   /* Core colors */
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -28,7 +104,6 @@
   --ring: oklch(0.556 0 0);
 
   /* Layout */
-  --radius: 0.625rem;
   --card-hover: oklch(0.269 0 0);
   --border-hover: oklch(1 0 0 / 20%);
 

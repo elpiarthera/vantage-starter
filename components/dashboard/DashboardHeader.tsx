@@ -6,6 +6,7 @@ import type React from "react";
 import { useState } from "react";
 import { PurchaseCreditsModal } from "@/components/dashboard/account/modals/PurchaseCreditsModal";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -305,6 +306,9 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 
 					{/* Right: Language Switcher + Credits + Notifications + User Menu */}
 					<div className="flex items-center gap-2 md:gap-4">
+						{/* Theme Toggle — visible on all breakpoints */}
+						<ThemeToggle />
+
 						{/* Language Switcher — visible on all breakpoints */}
 						<div>
 							<LanguageSwitcher />
