@@ -67,26 +67,39 @@ export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
  * Require admin or owner access — throws if user is not authorized.
  * Returns the user object.
  *
- * SCHEMA GAP (declared, not fixed here — see org-scoping audit,
- * analysis/org-scoping-group-a.md): `role` is a GLOBAL field on `users`.
- * This check verifies the caller's own role only; it does NOT verify that
- * the caller and the target of an admin action share an organization,
- * because this schema has no org-scoped role/membership table to check
- * against. Every function gated solely by `requireAdmin` (see
- * convex/adminHelpers.ts) therefore lets any admin/owner in ANY organization
- * act on users in ANY other organization — promote/demote roles, enumerate
- * admins, and look up any user's full profile by email. Closing this
- * properly requires adding an org-scoped membership/role table (or an
- * `organizationId` equality check against the target row) — a data-model
- * change, out of scope for a per-function auth fix. Do not assume this
- * function provides organization-level isolation; it only proves global
- * role.
+ * ORG DIMENSION (schema.ts: `users.organizationId` is `v.optional(v.string())`
+ * with no default — org-less rows are a REAL tenant bucket, not a schema
+ * artifact: personal/solo-account users genuinely carry `organizationId:
+ * undefined` (see the seed helpers in __tests__/convex/org-scoping.test.ts
+ * and auth-required.test.ts). There is no separate membership table; role
+ * is carried directly on the user row alongside `organizationId`.
+ *
+ * Callers that gate an operation touching an org-scoped row (e.g.
+ * convex/adminHelpers.ts acting on another `users` row) MUST pass
+ * `{ targetOrganizationId: <that row's organizationId> }` — including when
+ * that value IS `undefined` — as `orgScope`, so this function can verify
+ * the caller's own `organizationId` matches it EXACTLY (org-less only
+ * matches org-less; `org_a` never matches `undefined`). Omitting `orgScope`
+ * entirely (no second argument at all) skips the org check altogether and
+ * only proves global role — reserved for the global-catalog case
+ * (convex/aiModels.ts, no `organizationId` column at all on that table)
+ * where no org check is possible or meaningful. The distinction is
+ * deliberately structural (arg omitted vs. `{ targetOrganizationId:
+ * undefined }` passed) so "org-less target" can never be silently
+ * mistaken for "no target dimension to check".
  */
-export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
+export async function requireAdmin(
+	ctx: QueryCtx | MutationCtx,
+	orgScope?: { targetOrganizationId: string | undefined },
+) {
 	const user = await requireAuth(ctx);
 
 	if (user.role !== "admin" && user.role !== "owner") {
 		throw new Error("Forbidden: Admin access required");
+	}
+
+	if (orgScope && user.organizationId !== orgScope.targetOrganizationId) {
+		throw new Error("Forbidden: Admin access required for this organization");
 	}
 
 	return user;
