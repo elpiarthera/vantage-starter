@@ -78,9 +78,15 @@ test.describe("Clerk widget theme follow", () => {
 		// kept explicitly percent-aware as hardening: resolved colour
 		// properties serialize as fractions today, but a parser must not
 		// assume which surface feeds it.
+		// This copy's failure mode must match e2e/oklch.ts's `lightnessOf`
+		// exactly: throw on an unparsable value, never return NaN. A silent
+		// NaN loses every comparison downstream, turning a named parse
+		// failure into a plain, uninformative assertion failure.
 		const lightnessOfRaw = (color: string) => {
 			const match = color.match(/okla?[bc]h?\(\s*([\d.]+)(%?)/);
-			if (!match) return Number.NaN;
+			if (!match) {
+				throw new Error(`unparsable oklch/oklab value: ${color}`);
+			}
 			const value = Number.parseFloat(match[1]);
 			return match[2] === "%" ? value / 100 : value;
 		};
@@ -134,5 +140,16 @@ test.describe("Clerk widget theme follow", () => {
 		// similar mid-tone shades.
 		expect(lightButton).toBeGreaterThan(0.5);
 		expect(darkButton).toBeLessThan(0.4);
+	});
+
+	test("lightnessOf fails loudly, never returns NaN, on an unparsable value", () => {
+		// Neither the percent form (`14.5%`) nor the fraction form (`0.145`)
+		// — a value that is not an oklch/oklab color at all. A silent NaN
+		// here would lose every downstream comparison instead of naming the
+		// cause; the shared helper (and its in-page copy above) must throw.
+		expect(() => lightnessOf("rgb(0, 0, 0)")).toThrow(
+			/unparsable oklch\/oklab value/,
+		);
+		expect(() => lightnessOf("")).toThrow(/unparsable oklch\/oklab value/);
 	});
 });

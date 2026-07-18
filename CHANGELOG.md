@@ -4,6 +4,12 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — clerk-theme.spec.ts's inlined lightness parser returned `NaN` on an unparsable value instead of throwing)
+
+The browser-context-inlined copy of the lightness parser in `e2e/clerk-theme.spec.ts` (`lightnessOfRaw`, ~line 82; kept inline because `page.evaluate` callbacks cannot `import` `e2e/oklch.ts`) did `if (!match) return Number.NaN;`. `NaN` silently loses every downstream comparison, turning an unparsable-value failure into a plain, uninformative assertion failure instead of a named cause — while the shared `e2e/oklch.ts` `lightnessOf()` already `throw`s. Two copies of one contract must not disagree about their failure mode.
+
+Fix: the inlined copy now `throw`s an `Error` naming the offending value, matching `e2e/oklch.ts`'s message shape exactly. Normalization strategy unchanged — still keys on the literal `%` character, never on a numeric threshold. Added a test proving the shared helper throws (not NaN) on `lightnessOf("rgb(0, 0, 0)")` and `lightnessOf("")`, neither the percent nor fraction oklch/oklab form. `grep -rn 'Number.NaN' e2e/` returns no matches — no silent-NaN path remains.
+
 ### Fixed (2026-07-18 — theme-repaint.spec.ts OKLCH parser ignored `%`, broke against a live preview)
 
 `e2e/theme-repaint.spec.ts` read the `--background` CSS custom property via `getComputedStyle(...).getPropertyValue()`, which returns the token's RAW authored text — `oklch(14.5% 0 0)` on a live preview. The parser matched only the leading digits and dropped the trailing `%`, so `14.5%` was compared as `14.5` against a `< 0.3` threshold and the guard failed (`Received 14.5`), proven RED before any edit. Locally the guard happened to pass only because the dev server serves the fractional form (`oklch(0.145 0 0)`) — the guard was broken against exactly the surface it exists to protect (this is the guard PR #26 introduced).
