@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import type {
 	FullConfig,
 	FullResult,
@@ -14,11 +15,40 @@ class QualityGateReporter implements Reporter {
 	private failedTests: string[] = [];
 	private skippedTests: string[] = [];
 	private passedCount = 0;
+	private declaredSpecFiles: Set<string> = new Set();
+	private scopedSpecFiles: Set<string> = new Set();
 
-	onBegin(_config: FullConfig, _suite: Suite): void {
+	onBegin(config: FullConfig, suite: Suite): void {
 		this.failedTests = [];
 		this.skippedTests = [];
 		this.passedCount = 0;
+
+		// The threshold for "this is the full suite" is DERIVED from the
+		// filesystem, never typed: every *.spec.ts file that actually lives in
+		// each project's testDir, read fresh on every run. A run is only
+		// eligible to unlock the commit gate when the set of spec files it
+		// scheduled (suite.allTests()[].location.file — already filtered by
+		// any CLI file arg / --grep BEFORE onBegin fires) equals that set.
+		this.declaredSpecFiles = new Set();
+		for (const project of config.projects) {
+			let entries: string[];
+			try {
+				entries = fs.readdirSync(project.testDir);
+			} catch {
+				// testDir unreadable — cannot derive a threshold from it; skip
+				// this project rather than silently trusting an empty set.
+				continue;
+			}
+			for (const entry of entries) {
+				if (entry.endsWith(".spec.ts")) {
+					this.declaredSpecFiles.add(path.join(project.testDir, entry));
+				}
+			}
+		}
+
+		this.scopedSpecFiles = new Set(
+			suite.allTests().map((test) => test.location.file),
+		);
 	}
 
 	onTestEnd(test: TestCase, result: TestResult): void {
@@ -42,18 +72,43 @@ class QualityGateReporter implements Reporter {
 		const totalFailed = this.failedTests.length;
 		const totalSkipped = this.skippedTests.length;
 
+		// A run is only "the full suite" when every declared spec FILE was
+		// scheduled — not merely when every scheduled test passed. This is
+		// what closes the hole: `pnpm exec playwright test
+		// e2e/theme-repaint.spec.ts` schedules 1 of 8 declared files, passes
+		// its 1 test, and used to satisfy `totalFailed === 0 && passedCount >
+		// 0` — which is exactly the false-green shape this task exists to
+		// close, just one level up from the `--list` case already handled
+		// below. Missing/extra files are named explicitly, never silently
+		// summarised as a count.
+		const missingFiles = [...this.declaredSpecFiles].filter(
+			(f) => !this.scopedSpecFiles.has(f),
+		);
+		const isFullSuite = missingFiles.length === 0;
+
 		// A vacuous "0 failed" (e.g. `playwright test --list`, which never
 		// executes a single test — every hook still fires) must NEVER write
 		// the marker: `totalFailed === 0` alone is true precisely when
 		// nothing ran at all, which is the exact false-green shape this whole
 		// task exists to close. The marker requires at least one test to have
 		// actually PASSED, not merely zero to have failed.
-		if (totalFailed === 0 && this.passedCount > 0) {
+		if (totalFailed === 0 && this.passedCount > 0 && isFullSuite) {
 			const timestamp = new Date().toISOString();
 			fs.writeFileSync(MARKER_PATH, timestamp);
 			console.log(
-				`\nQUALITY GATE: PASSED — marker created (${this.passedCount} tests passed)`,
+				`\nQUALITY GATE: PASSED — marker created (${this.passedCount} tests passed, ${this.scopedSpecFiles.size}/${this.declaredSpecFiles.size} spec files ran)`,
 			);
+		} else if (totalFailed === 0 && this.passedCount > 0 && !isFullSuite) {
+			// Remove stale marker if it exists
+			if (fs.existsSync(MARKER_PATH)) {
+				fs.unlinkSync(MARKER_PATH);
+			}
+			console.log(
+				`\nQUALITY GATE: INCONCLUSIVE — SCOPED RUN (${this.scopedSpecFiles.size}/${this.declaredSpecFiles.size} spec files ran) — marker NOT created, this run cannot vouch for the files it did not schedule:`,
+			);
+			for (const missing of missingFiles) {
+				console.log(`  - ${path.relative(process.cwd(), missing)}`);
+			}
 		} else if (totalFailed === 0 && this.passedCount === 0) {
 			// Remove stale marker if it exists
 			if (fs.existsSync(MARKER_PATH)) {

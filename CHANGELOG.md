@@ -4,6 +4,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — quality gate marker unlocked commits on a single trivial passing spec)
+
+`e2e/quality-gate-reporter.ts` created `/tmp/.quality-gate-passed` whenever `totalFailed === 0 && passedCount > 0` — true for `pnpm exec playwright test e2e/theme-repaint.spec.ts` alone (1 test, 1 of 8 declared spec files). Proven RED against `main`@`064bac80`: one trivial spec unlocked the commit gate.
+
+Fix: `onBegin` now derives the full set of declared `*.spec.ts` files fresh from each project's `testDir` on disk (never a typed count) and records the set of files `suite.allTests()` actually scheduled — already filtered by any CLI file arg or `--grep` before `onBegin` fires. The marker is only created when the scheduled set equals the declared set (`isFullSuite`); a scoped run that passes everything it ran now prints `QUALITY GATE: INCONCLUSIVE — SCOPED RUN (N/M spec files ran)`, names every missing file, and removes any stale marker instead of leaving it untouched. Proven GREEN: full suite (8/8 files, 0 failures) creates the marker; the same single-spec run no longer does. Pre-existing correct cases (`--list`, a failing run, stale marker + failing run) re-proven unregressed.
+
+Sharper hole found and only partially closeable from the reporter: `--reporter=list` on the CLI replaces `playwright.config.ts`'s configured reporter list outright, so `quality-gate-reporter.ts` never runs — it can neither create nor clean the marker, so a stale marker from an earlier good run silently survives a run that would have failed. Proven: injected a failing test, ran with `--reporter=list`, a pre-seeded stale marker was untouched. This cannot be fixed inside a reporter that never executes; `hooks/enforce-quality-gate.sh` now enforces a 30-minute freshness window on the marker's own ISO timestamp (generous headroom over the ~2-3 minute observed full-suite runtime) and treats an unparsable or expired timestamp as absent, closing the surviving-stale-marker case at the one place that can still see it.
+
 ### Fixed (2026-07-18 — clerk-theme.spec.ts's inlined lightness parser returned `NaN` on an unparsable value instead of throwing)
 
 The browser-context-inlined copy of the lightness parser in `e2e/clerk-theme.spec.ts` (`lightnessOfRaw`, ~line 82; kept inline because `page.evaluate` callbacks cannot `import` `e2e/oklch.ts`) did `if (!match) return Number.NaN;`. `NaN` silently loses every downstream comparison, turning an unparsable-value failure into a plain, uninformative assertion failure instead of a named cause — while the shared `e2e/oklch.ts` `lightnessOf()` already `throw`s. Two copies of one contract must not disagree about their failure mode.

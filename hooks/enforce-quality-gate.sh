@@ -42,7 +42,35 @@ if echo "$COMMAND" | grep -qE 'git\s+commit' && ! echo "$COMMAND" | grep -qE -- 
 
     # Check quality gate marker
     MARKER="/tmp/.quality-gate-passed"
+    # Freshness window: a `pnpm exec playwright test --reporter=list` run
+    # REPLACES the config's reporter list entirely, so
+    # e2e/quality-gate-reporter.ts never fires — it can neither create NOR
+    # clean the marker for that run. A stale marker from an earlier good run
+    # would otherwise silently survive a run that would have failed. The
+    # reporter cannot defend against this from inside itself (it never runs);
+    # this hook is the one place that CAN still catch it, by refusing to
+    # trust a marker older than a full suite run plausibly takes. 30 minutes
+    # is generous headroom over the observed ~2-3 minute full-suite runtime.
+    MAX_MARKER_AGE_SECONDS=1800
     if [ -f "$MARKER" ]; then
+        MARKER_TIMESTAMP=$(cat "$MARKER" 2>/dev/null)
+        MARKER_EPOCH=$(date -d "$MARKER_TIMESTAMP" +%s 2>/dev/null)
+        NOW_EPOCH=$(date +%s)
+        if [ -z "$MARKER_EPOCH" ]; then
+            rm -f "$MARKER"
+            echo "BLOCKED: Quality gate marker is unreadable/not a valid timestamp — treating as untrusted."
+            echo "Re-run: pnpm test:e2e (full suite, no --reporter override) then retry commit."
+            exit 2
+        fi
+        MARKER_AGE=$((NOW_EPOCH - MARKER_EPOCH))
+        if [ "$MARKER_AGE" -gt "$MAX_MARKER_AGE_SECONDS" ] || [ "$MARKER_AGE" -lt 0 ]; then
+            rm -f "$MARKER"
+            echo "BLOCKED: Quality gate marker is stale (${MARKER_AGE}s old, max ${MAX_MARKER_AGE_SECONDS}s)."
+            echo "A run with --reporter=list (or similar) bypasses e2e/quality-gate-reporter.ts entirely and"
+            echo "cannot refresh or clear this marker — it must not be trusted past its freshness window."
+            echo "Re-run: pnpm test:e2e (full suite, no --reporter override) then retry commit."
+            exit 2
+        fi
         rm -f "$MARKER"
         exit 0
     else
@@ -51,7 +79,7 @@ if echo "$COMMAND" | grep -qE 'git\s+commit' && ! echo "$COMMAND" | grep -qE -- 
         echo "2. Run npx tsc --noEmit"
         echo "3. Run npx convex dev (if backend changed)"
         echo "4. Update CHANGELOG.md"
-        echo "5. Then: touch /tmp/.quality-gate-passed"
+        echo "5. Then: pnpm test:e2e (full suite — this is what creates the marker, never hand-write it)"
         exit 2
     fi
 fi
