@@ -1,26 +1,22 @@
 /// <reference types="vite/client" />
 /**
- * sharedLinks.getByToken / sharedLinks.list must never return the plaintext
- * `password` field.
+ * `sharedLinks.password` no longer exists — schema, mutation, and response
+ * shape.
  *
- * CLASS (re-derived from `convex/schema.ts`, not from one file): any public
- * function returning a row from a table carrying a secret-shaped field.
- * `agents.token` was the first instance closed (this PR's sibling fix,
- * `stripAgentToken`). `sharedLinks.token` / `sharedLinks.password` are the
- * second table on this list. `getByToken` is PUBLIC-BY-DESIGN (possession of
- * `token` IS the authorization) — that classification is about AUTH, not
- * about which FIELDS the row exposes once returned. Returning the plaintext
- * `password` to an unauthenticated caller who already holds the token is a
- * distinct, narrower defect: this file's own header comment (PR #33) already
- * names "the plaintext password field" as the thing that must stop leaking,
- * and only closed it for scoping, not for this field.
+ * HISTORY: this file previously asserted that `getByToken`/`list` stripped
+ * a plaintext `password` field before returning a row. Day-of-this-fix
+ * decision (see CHANGELOG.md — "remove decorative share password"): the
+ * field was stored in plaintext, never compared server-side by any code
+ * path, and had no product caller — a field named `password` that protects
+ * nothing is a false guarantee carved into a template repo. Stripping it on
+ * read is a weaker guarantee than never accepting or storing it at all, so
+ * the field itself was removed instead of merely redacted.
  *
- * `list` returns the same row shape from the same table to an authenticated,
- * within-tenant caller — same mechanism, same fields, so it is covered here
- * too rather than treated as a second, unrelated bug.
- *
- * These tests assert the ABSENCE of `password` (and `token` on `list`) on
- * every returned object, never merely that the function returns something.
+ * CLASS (re-derived from `convex/schema.ts`, not from one call site): any
+ * field whose NAME asserts a guarantee no code path holds. This test
+ * asserts the field's total absence — from `create`'s accepted args, from
+ * the inserted row, and from every reader's response shape — not merely
+ * that one reader redacts it.
  */
 
 import { convexTest } from "convex-test";
@@ -38,7 +34,7 @@ function makeT() {
 	return convexTest(schema, modules);
 }
 
-const OWNER_CLERK_ID = "user_shared_links_password_owner";
+const OWNER_CLERK_ID = "user_shared_links_no_password_owner";
 
 async function seedUserAndLink(t: ReturnType<typeof makeT>) {
 	const now = Date.now();
@@ -54,40 +50,50 @@ async function seedUserAndLink(t: ReturnType<typeof makeT>) {
 
 	const asOwner = t.withIdentity({ subject: OWNER_CLERK_ID });
 	const { token } = await asOwner.mutation(api.sharedLinks.create, {
-		resourceId: "resource-password-test",
-		password: "super-secret-plaintext-password",
+		resourceId: "resource-no-password-test",
 		allowDownload: true,
 	});
 
 	return { asOwner, token };
 }
 
-describe("sharedLinks.getByToken never returns the plaintext password", () => {
-	it("strips `password` even though this query requires no auth at all (public-by-design)", async () => {
+describe("sharedLinks carries no `password` field anywhere", () => {
+	it("create() accepts no `password` argument — TypeScript would reject it at the call site above; this asserts the runtime shape matches", async () => {
 		const t = makeT();
 		const { token } = await seedUserAndLink(t);
 
-		// No withIdentity() — this call is unauthenticated on purpose.
 		const link = await t.query(api.sharedLinks.getByToken, { token });
 
 		expect(link).not.toBeNull();
 		expect(link).not.toHaveProperty("password");
 	});
-});
 
-describe("sharedLinks.list never returns `password` or `token`", () => {
-	it("strips `password` and `token` from every row returned to the owning caller", async () => {
+	it("list() never returns a `password` field on any row", async () => {
 		const t = makeT();
 		const { asOwner } = await seedUserAndLink(t);
 
 		const links = await asOwner.query(api.sharedLinks.list, {
-			resourceId: "resource-password-test",
+			resourceId: "resource-no-password-test",
 		});
 
 		expect(links.length).toBeGreaterThan(0);
 		for (const link of links) {
 			expect(link).not.toHaveProperty("password");
-			expect(link).not.toHaveProperty("token");
 		}
+	});
+
+	it("the inserted row itself carries no `password` key at rest, not merely on the redacted response", async () => {
+		const t = makeT();
+		const { token } = await seedUserAndLink(t);
+
+		const rawRow = await t.run(async (ctx) => {
+			return await ctx.db
+				.query("sharedLinks")
+				.withIndex("by_token", (q) => q.eq("token", token))
+				.unique();
+		});
+
+		expect(rawRow).not.toBeNull();
+		expect(rawRow).not.toHaveProperty("password");
 	});
 });

@@ -36,6 +36,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_rag from "../lib/rag.js";
 import type * as memory from "../memory.js";
 import type * as messages from "../messages.js";
+import type * as migrations_clearSharedLinkPassword from "../migrations/clearSharedLinkPassword.js";
 import type * as missions from "../missions.js";
 import type * as operations from "../operations.js";
 import type * as orchestration from "../orchestration.js";
@@ -92,6 +93,7 @@ declare const fullApi: ApiFromModules<{
   "lib/rag": typeof lib_rag;
   memory: typeof memory;
   messages: typeof messages;
+  "migrations/clearSharedLinkPassword": typeof migrations_clearSharedLinkPassword;
   missions: typeof missions;
   operations: typeof operations;
   orchestration: typeof orchestration;
