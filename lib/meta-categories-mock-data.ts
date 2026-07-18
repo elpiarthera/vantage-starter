@@ -65,13 +65,13 @@ export interface WallItem {
 }
 
 // ============================================
-// MOCK DATA - Real Multi-Vertical Examples
+// MOCK DATA - Illustrative multi-vertical examples (fictional)
 // ============================================
 
 export const mockMetaCategories: MetaCategory[] = [
 	{
 		id: "meta-1",
-		name: "Alors On Sort",
+		name: "Going Out",
 		description: "Events, concerts, nightlife, cinema",
 		imageUrl: "/nightlife-events-concerts-cinema.jpg",
 		icon: "🎉",
@@ -82,7 +82,7 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-2",
-		name: "EasyVibeCoding",
+		name: "Dev Toolbox",
 		description: "Dev Tools, AI/SaaS Resources, Hosting/Deployment",
 		imageUrl: "/coding-development-tools-programming.jpg",
 		icon: "💻",
@@ -93,7 +93,7 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-3",
-		name: "AchetezVotreVoiture",
+		name: "Auto Market",
 		description: "Used Cars Buy/Sell, Services (insurance, repair, tires)",
 		imageUrl: "/cars-automobiles-vehicles.jpg",
 		icon: "🚗",
@@ -104,7 +104,7 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-4",
-		name: "LouezUnAppartement",
+		name: "Home Rentals",
 		description: "Apartment Rentals, Listings, Real Estate Agencies",
 		imageUrl: "/apartment-rental-real-estate-home.jpg",
 		icon: "🏠",
@@ -115,7 +115,7 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-5",
-		name: "Everything Web3",
+		name: "Web3 & Crypto",
 		description: "Blockchain Tools, Crypto Resources, DeFi/NFTs",
 		imageUrl: "/blockchain-cryptocurrency-web3-nft.jpg",
 		icon: "⚡",
@@ -126,7 +126,7 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-6",
-		name: "Alors On Mange",
+		name: "Food & Dining",
 		description: "Food Delivery, Restaurants, Recipes/Reviews",
 		imageUrl: "/food-restaurant-dining-cuisine.jpg",
 		icon: "🍽️",
@@ -137,10 +137,10 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-7",
-		name: "ShopInFrance.xyz",
-		description: "Products Made in France, Artisan/Local Goods",
-		imageUrl: "/french-products-artisan-local-goods.jpg",
-		icon: "🇫🇷",
+		name: "Local Marketplace",
+		description: "Locally made products, artisan and regional goods",
+		imageUrl: "/local-artisan-goods-marketplace.jpg",
+		icon: "🛍️",
 		order: 7,
 		isActive: true,
 		createdAt: "2024-01-15T10:00:00Z",
@@ -148,7 +148,7 @@ export const mockMetaCategories: MetaCategory[] = [
 	},
 	{
 		id: "meta-8",
-		name: "BFamous",
+		name: "Style & Beauty",
 		description: "Fashion Trends, Beauty Products, Styling Advice",
 		imageUrl: "/fashion-beauty-style-trendy.jpg",
 		icon: "✨",
@@ -160,7 +160,7 @@ export const mockMetaCategories: MetaCategory[] = [
 ];
 
 export const mockCategories: Category[] = [
-	// Alors On Sort categories
+	// Going Out categories
 	{
 		id: "cat-1-1",
 		metaCategoryId: "meta-1",
@@ -206,7 +206,7 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// EasyVibeCoding categories
+	// Dev Toolbox categories
 	{
 		id: "cat-2-1",
 		metaCategoryId: "meta-2",
@@ -241,7 +241,7 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// AchetezVotreVoiture categories
+	// Auto Market categories
 	{
 		id: "cat-3-1",
 		metaCategoryId: "meta-3",
@@ -276,7 +276,7 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// LouezUnAppartement categories
+	// Home Rentals categories
 	{
 		id: "cat-4-1",
 		metaCategoryId: "meta-4",
@@ -300,7 +300,7 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// Everything Web3 categories
+	// Web3 & Crypto categories
 	{
 		id: "cat-5-1",
 		metaCategoryId: "meta-5",
@@ -324,7 +324,7 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// Alors On Mange categories
+	// Food & Dining categories
 	{
 		id: "cat-6-1",
 		metaCategoryId: "meta-6",
@@ -359,12 +359,12 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// ShopInFrance.xyz categories
+	// Local Marketplace categories
 	{
 		id: "cat-7-1",
 		metaCategoryId: "meta-7",
 		name: "Artisan Products",
-		baseline: "Handcrafted French goods",
+		baseline: "Handcrafted regional goods",
 		imageUrl: "/placeholder.svg?height=400&width=600",
 		order: 1,
 		isActive: true,
@@ -375,7 +375,7 @@ export const mockCategories: Category[] = [
 		id: "cat-7-2",
 		metaCategoryId: "meta-7",
 		name: "Local Goods",
-		baseline: "Products made in France",
+		baseline: "Locally manufactured products",
 		imageUrl: "/placeholder.svg?height=400&width=600",
 		order: 2,
 		isActive: true,
@@ -383,7 +383,7 @@ export const mockCategories: Category[] = [
 		updatedAt: "2024-01-15T10:00:00Z",
 	},
 
-	// BFamous categories
+	// Style & Beauty categories
 	{
 		id: "cat-8-1",
 		metaCategoryId: "meta-8",
@@ -610,7 +610,7 @@ export const mockSubCategories: SubCategory[] = [
 		id: "sub-7-1-1",
 		categoryId: "cat-7-1",
 		name: "Furniture & Decor",
-		baseline: "Handcrafted French furniture",
+		baseline: "Handcrafted artisan furniture",
 		imageUrl: "/placeholder.svg?height=400&width=600",
 		order: 1,
 		isActive: true,
@@ -621,7 +621,7 @@ export const mockSubCategories: SubCategory[] = [
 		id: "sub-7-1-2",
 		categoryId: "cat-7-1",
 		name: "Textiles & Fabrics",
-		baseline: "French linens and textiles",
+		baseline: "Woven linens and textiles",
 		imageUrl: "/placeholder.svg?height=400&width=600",
 		order: 2,
 		isActive: true,
@@ -632,7 +632,7 @@ export const mockSubCategories: SubCategory[] = [
 		id: "sub-7-1-3",
 		categoryId: "cat-7-1",
 		name: "Ceramics & Pottery",
-		baseline: "Handmade French ceramics",
+		baseline: "Handmade studio ceramics",
 		imageUrl: "/placeholder.svg?height=400&width=600",
 		order: 3,
 		isActive: true,
@@ -656,10 +656,10 @@ export const mockTargetedAds: TargetedAd[] = [
 	},
 	{
 		id: "ad-cat-2-1",
-		title: "Premium IDE License",
-		baseline: "Save 50% on JetBrains tools",
+		title: "Premium IDE Bundle",
+		baseline: "Save 50% on developer tooling",
 		imageUrl: "/placeholder.svg?height=400&width=600",
-		linkUrl: "/promotions/jetbrains",
+		linkUrl: "/promotions/developer-tooling",
 		categoryId: "cat-2-1",
 		order: 1,
 		isActive: true,

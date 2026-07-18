@@ -111,7 +111,7 @@ export const mockAdminAds: AdminAd[] = [
 		order: 1,
 		isActive: true,
 		targets: [
-			{ level: "meta-category", id: "meta-alorsonsort" },
+			{ level: "meta-category", id: "meta-alpha" },
 			{ level: "category", id: "cat-nightlife" },
 		],
 		createdAt: "2024-03-01T10:00:00Z",
@@ -126,7 +126,7 @@ export const mockAdminAds: AdminAd[] = [
 		order: 2,
 		isActive: true,
 		targets: [
-			{ level: "meta-category", id: "meta-shopinfrance" },
+			{ level: "meta-category", id: "meta-beta" },
 			{ level: "category", id: "cat-artisan" },
 			{ level: "subcategory", id: "sub-ceramics" },
 		],
@@ -141,7 +141,7 @@ export const mockAdminAds: AdminAd[] = [
 		linkUrl: "/sale",
 		order: 3,
 		isActive: false,
-		targets: [{ level: "meta-category", id: "meta-bfamous" }],
+		targets: [{ level: "meta-category", id: "meta-gamma" }],
 		createdAt: "2024-03-01T10:00:00Z",
 		updatedAt: "2024-03-01T10:00:00Z",
 	},

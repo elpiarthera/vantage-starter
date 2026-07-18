@@ -87,8 +87,8 @@ export interface RefinementSession {
 // Mock Refinement Flows
 const mockRefinementFlows: RefinementFlow[] = [
 	{
-		id: "rf-alors-on-sort",
-		name: "Alors On Sort - Event Discovery",
+		id: "rf-going-out",
+		name: "Going Out - Event Discovery",
 		description: "Guides users to find the perfect event",
 		triggerLevel: "meta-category",
 		targetLevel: "meta-category",

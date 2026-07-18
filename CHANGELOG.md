@@ -4,6 +4,81 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — `meta-7`'s flag and image path no longer assert the national identity of a brand that is gone)
+
+Finishing an inconsistency introduced two commits below, not widening the round. `meta-7` had its name and taglines genericised from `ShopInFrance.xyz` to `Local Marketplace`, but kept `icon: "🇫🇷"` and `imageUrl: "/french-products-artisan-local-goods.jpg"` — the name changed, its identity did not. The other seven records all carry a generic subject pictogram (`🎉 💻 🚗 🏠 ⚡ 🍽️ ✨`); only this one carried a national flag, which is what made it visible as residue rather than as a design choice. Now `icon: "🛍️"` and `imageUrl: "/local-artisan-goods-marketplace.jpg"`.
+
+The path still points at a file absent from `public/`. That is the pre-existing dangling-asset defect affecting all eight records, unchanged and deliberately not addressed here — the fix is only that the path's *name* no longer asserts a brand that has been removed.
+
+**Diff is two lines**, both inside the `meta-7` literal: `git diff` reports `1 file changed, 2 insertions(+), 2 deletions(-)`. The other seven records, the generic offers, and the factual tool references are untouched (`git diff` on `lib/admin-mock-data.ts`: **0 lines**).
+
+**Both sweeps re-run, with mutation proof.** Sweep 1 (identity, separator-tolerant) — proposition: *no real third-party identity known to this fork appears in shipped code, under any separator*; scope `lib/ app/ components/ convex/ hooks/ providers/ src/ middleware.ts next.config.mjs`; result 1 hit, the assessed historical note at `convex/schema.ts:8`; `remaining: 0`. Sweep 2 (ad class, structural) — proposition: *no promotional record, i.e. any object literal carrying `linkUrl:`, attaches a commercial claim to a real company*; scope derived to `lib/admin-mock-data.ts lib/meta-categories-mock-data.ts`; result `promotional records asserted: 7`, exit 0.
+
+Four violations injected across both files and both classes — spaced (`Alors On Sort`) and dotted (`ShopInFrance.xyz`) for sweep 1, `JetBrains` and `Adobe` inside promotional records for sweep 2 — each asserted landed via `grep -c` (1/1/1/1). Sweep 1 went **RED** 1 → 3 hits naming both sites by line; sweep 2 went **RED** naming both records and both vendors (`ad-cat-2-1 vendor=JetBrains`, `ad-3 vendor=Adobe`). After restore: all four `grep -c` at 0, sweep 1 back to its single historical hit, sweep 2 exit 0, and the working tree diff reduced to exactly the two intended `meta-7` lines.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check lib/meta-categories-mock-data.ts`: 0 errors (4 `noStaticOnlyClass` warnings pre-existing). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
+### Fixed (2026-07-18 — a demo ad no longer invents a discount for a real company)
+
+`lib/meta-categories-mock-data.ts` shipped a promotional record reading `"Save 50% on JetBrains tools"` with `linkUrl: "/promotions/jetbrains"` — a fabricated commercial claim attributed to a real vendor, in a public template that every fork copies and serves as a live offer. This is a sharper defect than the brand names closed in the entry below: those were an identity sitting in demo data, this asserts a specific discount that a real company never offered. Now `"Premium IDE Bundle"` / `"Save 50% on developer tooling"` / `/promotions/developer-tooling`. No vendor was substituted — inventing a plausible company name risks colliding with a real one, and a generic offer naming nobody is the safe form. Record `id`, `categoryId`, `order` and timestamps are byte-identical.
+
+**CLASS**:
+- definition: a promotional record attaching a commercial claim to a REAL company. The defect is the **conjunction**, not either half — a generic offer naming nobody is fine, and naming a real tool factually with no claim attached is ordinary reference.
+- sweep: because the class is a conjunction, a flat identifier grep cannot express it — adding `jetbrains` to the identity pattern below would go red on the legitimate `JetBrains Mono` font entries. The scope is instead derived **structurally**: a promotional record is any object literal carrying a `linkUrl:` field, extracted by a balanced-brace match across `git grep -l 'linkUrl' -- lib/ app/ components/ convex/`, then checked for a real-vendor name **within the same record**. Fails closed and asserts nothing if zero records are located.
+- remaining: 0. `promotional records asserted: 7`, exit 0.
+
+**The first version of this sweep was fail-open, and it is worth recording why.** It selected files by matching ad-array *names* (`mockTargetedAds`, `mockAdminAds`). The selector regex matched only `lib/admin-mock-data.ts` — it never opened `lib/meta-categories-mock-data.ts`, the file containing the actual defect — while printing `ad arrays asserted: 2`. A count that reads like coverage while covering the wrong thing is worse than no guard: run against the JetBrains violation still injected, it returned **exit 0**. It was caught only because the mutation proof demanded it go red and it did not. This is the same failure shape as the pattern it was written to close — a matcher keyed on the names its author happened to think of — which is why the replacement keys on **structure** (`linkUrl` presence) instead of names. A second, smaller bug in the same guard printed `vendor=ad-cat-2-1`: the `id` capture clobbered `$1` before it was read, so the guard misreported *what* it had found even when correctly red.
+
+**Mutation proof** (bipolar, both files): `"Save 50% on JetBrains tools"` re-injected into `meta-categories-mock-data.ts` and `"Up to 40% off Adobe licences"` into `admin-mock-data.ts`, each asserted landed via `grep -c` (1/1). Sweep **RED**, naming both records and both vendors correctly — `ad-cat-2-1 vendor=JetBrains`, `ad-3 vendor=Adobe`. Restored: `grep -c` 0/0, sweep **GREEN**, `exit 0`. MUST_PASS control: the legitimate factual mentions survive untouched and unflagged — `JetBrains Mono` in `lib/create/fonts.ts:118` and `lib/design-system/fonts.ts:129`, and `VS Code, Sublime, Atom` / `Git, GitHub, GitLab` / `Chrome DevTools, debuggers` at `:474`/`:485`/`:496`.
+
+**Deliberately untouched**: the three neighbouring generic offers (`"Get 20% off all festival tickets"`, `"Up to 40% off selected items"`, `"Warranty included, low mileage"`) name no real company and are correct demo data — `git diff` on `lib/admin-mock-data.ts` is **0 lines**. The identity sweep from the entry below still returns its single assessed historical hit.
+
+**Still open, reported not acted on**: `meta-7` keeps `icon: "🇫🇷"` while its name and taglines were genericised to `Local Marketplace` in the entry below — residue of the same brand positioning, left for the maintainer's call rather than widened unilaterally. And the eight `imageUrl` paths in this module still point at `.jpg` files absent from `public/`; a demo dataset referencing images that do not exist is a separate defect that needs an owner.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check lib/meta-categories-mock-data.ts`: 0 errors (4 `noStaticOnlyClass` warnings pre-existing). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
+### Fixed (2026-07-18 — fork residue: the mock-data fixtures no longer name real businesses, and the sweep pattern now tolerates separators)
+
+`lib/meta-categories-mock-data.ts` named **eight** real properties, not the two the previous sweep reported. The prior pattern (`alorsonsort|shopinfrance|bfamous`) is concatenated-only, so it matched `ShopInFrance.xyz` and `BFamous` while walking straight past `Alors On Sort` and `Alors On Mange` — the same brand family, separated by spaces — on lines 74 and 129 of the file it was pointed at. A pattern that cannot match the spaced form of the name it was written for under-reports its own class by construction.
+
+**CLASS**:
+- definition: a real third-party identity named in shipped code that every fork of this public template inherits, in **any** orthography — spaced, dotted, hyphenated, or concatenated.
+- sweep: `git grep -niE 'alors[ ._-]*on[ ._-]*(sort|mange)|shop[ ._-]*in[ ._-]*france|bfamous|easy[ ._-]*vibe[ ._-]*coding|achetez[ ._-]*votre[ ._-]*voiture|louez[ ._-]*un[ ._-]*appartement|everything[ ._-]*web3|myreeldream' -- lib/ app/ components/ convex/ hooks/ providers/ src/ middleware.ts next.config.mjs`. Asserts: no real third-party identity known to this fork appears in shipped code, under any separator.
+- remaining: 0. One surviving hit, `convex/schema.ts:8`, is a comment recording which fork-specific tables were *removed* — a citation of a past state, content not state, left as-is per the same rule applied in the CSP fix above.
+
+The separator-tolerant pattern found a **sixth** site the concatenated pattern could not reach: `lib/refinement-flow-store.ts:90-91` (`id: "rf-alors-on-sort"`, `name: "Alors On Sort - Event Discovery"`). It is closed here rather than deferred, because a class sweep that leaves a known instance standing is not a sweep.
+
+**Fix**: the eight meta-category names become vertical-descriptive fictions (`Going Out`, `Dev Toolbox`, `Auto Market`, `Home Rentals`, `Web3 & Crypto`, `Food & Dining`, `Local Marketplace`, `Style & Beauty`), their eight mirrored section comments follow, and the `rf-` flow slug becomes `rf-going-out`. The five `French`/`France` baselines under `meta-7` were that brand's positioning copy transposed ("Products made in France" was its tagline) and are genericised with it. **Shape is untouched**: no exported type, no `id` field, no ordering, no record count changed — `tsc` proves the module still typechecks and the suite is unmoved.
+
+**Mutation proof**: three violations injected at three distinct sites in three different orthographies — spaced (`Alors On Sort`), dotted (`ShopInFrance.xyz`), and concatenated in the second file (`BFamous`). Each injection asserted landed via `grep -c` (1/1/1 — a sweep run against a mutation that never applied proves nothing). The sweep then went **RED naming all three sites by file and line**, 1 hit → 4. After restore, all three `grep -c` read 0 and the sweep returned to its single assessed historical hit.
+
+**Importers**: `git grep -l 'meta-categories-mock-data' -- '*.ts' '*.tsx'` → **no matches**. The module is dead like `admin-mock-data.ts`; its only references are two dated design docs. Deletion may well be the better answer, but that is a call for the maintainer, not this commit — nothing was deleted.
+
+**Not acted on, reported for judgement**: `lib/meta-categories-mock-data.ts:660` ships an ad reading *"Save 50% on JetBrains tools"* with `linkUrl: "/promotions/jetbrains"` — a fabricated commercial claim about a real company, arguably a sharper instance of this class than the names just fixed, since a fork ships it as a live offer. Three further baselines name real tools factually and neutrally (`VS Code, Sublime, Atom`; `Git, GitHub, GitLab`; `Chrome DevTools, debuggers`) — ordinary technical reference, no claim attached. The eight `imageUrl` paths name no business, but **all eight referenced `.jpg` assets are absent from `public/`** (`/nightlife-events-concerts-cinema.jpg` and siblings) — a pre-existing dangling-asset defect in this dead module, out of this class and untouched. The two docs (`TOOL-SELECTION-WALL-FEATURE.md`, `TOOL-SELECTION-WALL-IMPLEMENTATION-PLAN.md`) were checked and quote **none** of the real names; they were not edited.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check` on both changed files: 0 errors (5 `noStaticOnlyClass` warnings are pre-existing — proven identical by running biome against the `HEAD` copies of the same two files: 5 before, 5 after). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
+### Fixed (2026-07-18 — fork residue: the CSP no longer hardcodes another tenant's Clerk domain)
+
+`middleware.ts` and `next.config.mjs` each carried their own copy of a Content-Security-Policy naming `https://clerk.myreeldream.ai` — a Clerk custom/satellite domain belonging to the product this starter was forked from — in both `script-src` and `frame-src`. Every fork of this template inherited another product's identity in a live security header, and shipped a CSP that allowlists a third-party origin its own auth never uses.
+
+**CLASS**:
+- definition: a hardcoded tenant/brand/domain literal in shipped code that a fork would inherit.
+- sweep: `grep -rniE 'myreeldream|alorsonsort|elpiarthera|clerk\.[a-z0-9-]+\.(ai|com|io)' --include=*.ts --include=*.tsx --include=*.mjs --include=*.json app/ components/ convex/ lib/ hooks/ providers/ src/ middleware.ts next.config.mjs package.json` → one surviving hit, `convex/schema.ts:8`, a comment recording which fork-specific tables were removed. Accurate history, asserts no guarantee the code does not hold, left as-is per the rule that dated prose is content, not state.
+- remaining: 0.
+
+The grep pattern under-states its own class: it caught `meta-alorsonsort` in `lib/admin-mock-data.ts` but not the two sibling real-business names on adjacent lines (`meta-shopinfrance`, `meta-bfamous`), which belong to the same class and were found only by reading the file. All three are now `meta-alpha`/`meta-beta`/`meta-gamma`. That file is a demo fixture with **zero importers** (`grep -rn 'admin-mock-data' --include=*.ts --include=*.tsx .` → no matches); the app does not serve it.
+
+**Fix**: new `lib/csp.mjs` is the single source of the policy, imported by both `middleware.ts` and `next.config.mjs` (`.mjs` + a sibling `lib/csp.d.mts` because `next.config.mjs` is plain ESM and cannot import TypeScript). Two copies of one contract diverge, and these two already had — `next.config.mjs`'s `connect-src` was missing the Resend hosts that `middleware.ts` shipped; the shared builder resolves to the middleware's (effective, since it applies on every Edge response) superset.
+
+The tenant-specific host now comes from `NEXT_PUBLIC_CLERK_DOMAIN`, following the existing `CLERK_JWT_ISSUER_DOMAIN` "Clerk domain as config" convention rather than inventing a parallel scheme; it is accepted with or without a scheme. `https://*.clerk.accounts.dev` (Clerk's shared development domain, correct for every tenant) is always emitted, so a fork works with the variable unset. When unset, blank, or whitespace, the custom-domain source is **omitted entirely** — never emitted as an empty string or a literal `undefined`, which would produce a malformed directive and silently break auth in production where no local test would catch it.
+
+**Mutation proof** (headers printed, not asserted): with `NEXT_PUBLIC_CLERK_DOMAIN=clerk.MUTATION-PROBE-XYZ.example`, the probe value appears in `script-src`, `script-src-elem`, and `frame-src`. Unset — and separately, set to the empty string — those three directives are byte-identical to each other and contain no probe, no empty token, and no double space; `frame-src` reads `'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://vercel.live https://polar.sh https://sandbox.polar.sh`, well-formed. `node -e 'import("./next.config.mjs")'` confirms the config still loads.
+
+`.env.example` documents the variable and states explicitly that leaving it unset is correct for a fork on Clerk's development domain.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check` on changed files: 0 errors (3 `noStaticOnlyClass` warnings in `lib/admin-mock-data.ts` are pre-existing — verified identical on `main` via `git stash`). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
 ### Fixed (2026-07-18 — `sharedLinks.getByToken`/`sharedLinks.list` no longer leak the plaintext `password`, class re-derived from the schema)
 
 Third site of the "public function returns a secret" class, closed with the CLASS re-derived from `convex/schema.ts` instead of from the one file (`convex/agents.ts`) where it was first found — the class is "any public function returning a row from a table carrying a secret-shaped field," and the schema (`grep -nE '^\s*(token|password)\s*:\s*v\.' convex/schema.ts`) shows exactly two tables qualify: `agents` (`token`, closed already on this branch) and `sharedLinks` (`token`, `password` — open until this commit).
