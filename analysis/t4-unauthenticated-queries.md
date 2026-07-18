@@ -27,7 +27,7 @@ All 15 candidates were already reviewed in `analysis/org-scoping-group-{a,b,c}.m
 | 7 | `aiModels.getDefault` | `aiModels.ts:190` | None. | `aiModels`, same schema, platform-wide "default" flag | **PUBLIC-BY-DESIGN** | Matches group-a. Reason + revisit present (`aiModels.ts:185-188`). Holds. |
 | 8 | `credits.getCreditCost` | `credits.ts:400` | None. | `creditCosts` — platform-wide pricing table; no `clerkUserId`/`organizationId` column (verified: the returned projection at `credits.ts:415-422` and the table's own schema definition carry no such field) | **PUBLIC-BY-DESIGN** | Matches group-c. Reason + revisit present (`credits.ts:391-397`): revisit "if per-organization negotiated pricing is ever introduced." Holds. |
 | 9 | `credits.listCreditCostsByTypes` | `credits.ts:437` | None. | `creditCosts`, same global table, filtered client-side by `actionTypes` array (no user/org filter needed — table has none) | **PUBLIC-BY-DESIGN** | Matches group-c. Reason + revisit present (`credits.ts:428-432`). Holds. |
-| 10 | `sharedLinks.getByToken` | `sharedLinks.ts:150` | None — by design. Possession of the `token` argument itself is the access control. | `sharedLinks` single row by `token` (`by_token` index), plus expiry check | **PUBLIC-BY-DESIGN** | Matches group-a. Reason + revisit condition present (`sharedLinks.ts:119-135`), and the revisit condition's premise was independently verified: `sharedLinks.create` (`sharedLinks.ts:75-79`) generates the token via `crypto.getRandomValues(new Uint8Array(32))`, hex-encoded — a CSPRNG, not `Date.now()`/`Math.random()` (that weak generator was replaced in the same PR #33, per `CHANGELOG.md`). The comment's safety claim holds against the code as it exists today. |
+| 10 | `sharedLinks.getByToken` | `sharedLinks.ts:150` (pre field-fix) | None — by design. Possession of the `token` argument itself is the access control. | `sharedLinks` single row by `token` (`by_token` index), plus expiry check | **PUBLIC-BY-DESIGN (auth), FIELD-LEVEL DEFECT (now fixed)** | AUTH classification unchanged from prior passes — matches group-a, reason + revisit condition present (`sharedLinks.ts:119-135`), revisit premise re-verified (`create` mints via `crypto.getRandomValues`, CSPRNG). **This row is corrected in place**: every prior pass, including this file's own first version, evaluated AUTH only and stopped there. PUBLIC-BY-DESIGN is a statement about *who may call this function*; it says nothing about *which fields of the row it is then allowed to return*. The row returned unredacted, including the plaintext `password` — the exact class this same PR closed for `agents.token` (see "Field-level redaction sweep" section below, re-derived from the schema for both tables). Both properties are now stated separately, as required: **organization-scoped: n/a for this function** (it is intentionally NOT organization-scoped — the token itself is the authorization, by design, and that remains correct) — **returns a secret: yes, was the defect** — `password` is fixed via `stripSharedLinkPassword()`; `sharedLinks.list` (row not in the original 15, see below) had the identical field-level gap and is fixed in the same commit. |
 | 11 | `skills.list` | `skills.ts:82` | Local helper `getUserWorkspace(ctx, args.workspaceId)` (`skills.ts:32`) → `ctx.auth.getUserIdentity()` at `skills.ts:36`; same ownership/org-membership check as `agents.ts`'s helper. | `skills` — workspace-owned rows (including `instructions`, the proprietary SKILL.md body) + global `isSystem` rows | **SCOPED** | Matches group-b (`list`, SCOPED). No disagreement. |
 | 12 | `skills.listSystem` | `skills.ts:139` | None — filters `isSystem === true` only. | `skills` — only `isSystem === true` rows | **PUBLIC-BY-DESIGN** | Matches group-b. Reason + revisit condition present (`skills.ts:131-137`): revisit "if `isSystem` skills ever gain per-organization variants or embed org-specific secrets." Verified: the query only ever returns `isSystem: true` rows, and a private/`visibility: "private"` workspace-owned skill can never have `isSystem: true` (schema-level distinct fields, not overlapping in `create`'s validator). Holds. |
 | 13 | `skills.listByCategory` | `skills.ts:149` | Same local helper as row 11, `getUserWorkspace(ctx, args.workspaceId)` (`skills.ts:162`); result additionally filtered in-query to `workspaceId === result.workspaceId \|\| isSystem === true`. | `skills`, same scoping as `list` | **SCOPED** | Matches group-b. No disagreement. |
@@ -100,16 +100,101 @@ Schema check (`convex/schema.ts:417-445`, the `skills` table definition): fields
 
 `instructions` (the proprietary SKILL.md body) is content, not a credential — its exposure is already governed by the workspace-scoping verdicts in the 15-row table above (`skills.list`/`skills.listByCategory` = SCOPED, `skills.listSystem` = PUBLIC-BY-DESIGN, all independently re-verified), not by a field-redaction question. **No field-level redaction defect exists in `convex/skills.ts` — there is no secret-bearing field on the table for a redaction to miss.** No change made to this file.
 
+## CLASS re-derived from the schema (not from `convex/agents.ts` alone)
+
+The `agents.ts` sweep above named the class by the table where it was first found ("an `agents` row returned without stripping `token`"). Re-derived from the mechanism instead of the table: **any public function returning a row from a table carrying a secret-shaped field.**
+
+Derivation, not assumption — every secret-shaped field in the schema:
+
+```
+$ grep -nE '^\s*(token|password)\s*:\s*v\.' convex/schema.ts
+233:		token: v.string(),
+235:		password: v.optional(v.string()),
+550:		token: v.optional(v.string()),
+```
+
+Mapped to their owning tables (`convex/schema.ts`): `sharedLinks` (`token` line 233, `password` line 235) and `agents` (`token` line 550). **Exactly two tables in the whole schema carry a secret-shaped field.** `agents.token` was closed above. `sharedLinks.token`/`password` was open — this section closes it.
+
+### Sweep — every public function reachable by a client that reads either table, across all of `convex/` recursively
+
+```
+$ grep -rln '"agents"\|"sharedLinks"' convex/*.ts convex/http/*.ts
+convex/agents.ts
+convex/operations.ts
+convex/missions.ts
+convex/schema.ts
+convex/sharedLinks.ts
+convex/http/orchestration.ts
+
+$ grep -rn '\.query("agents")\|\.query("sharedLinks")' convex/ --include="*.ts" | grep -v _generated
+convex/sharedLinks.ts:70:  .query("sharedLinks")
+convex/sharedLinks.ts:217: .query("sharedLinks")
+convex/agents.ts:110:   .query("agents")
+convex/agents.ts:116:   .query("agents")
+convex/agents.ts:186:   .query("agents")
+convex/agents.ts:205:   .query("agents")
+convex/agents.ts:211:   .query("agents")
+```
+
+`operations.ts`/`missions.ts` only hold `Id<"agents">` references (`assignedAgentId: v.optional(v.id("agents"))`), never query or return the `agents` doc itself — traced (`grep -n 'db\.get(.*[Aa]gent\|assignedAgent\b' convex/operations.ts convex/missions.ts` → no matches). `convex/http/orchestration.ts` calls `requireAgentAuth` and reads `Doc<"agents">` for auth checks only; every `jsonResponse({...})` in that file was read and none spreads the `agent` object or any of its fields into the response (`grep -n 'agent\b' convex/http/orchestration.ts | grep -i 'jsonResponse\|return\|\.\.\.agent\b'` → no hits — only comment lines). `convex/agents.ts:233 getById` and `convex/lib/agentComposer.ts:composeAgentSystemPrompt` are both `internalQuery` (server-to-server, not client-reachable) — out of the public-function scope by construction, confirmed by reading their declarations.
+
+**Positive control** — proving the sweep pattern actually bites, not merely that it is silent:
+
+```
+$ grep -c stripAgentToken convex/agents.ts
+6
+$ grep -c stripSharedLinkPassword convex/sharedLinks.ts
+5
+```
+
+Mutation proof on `convex/sharedLinks.ts` (the file this section fixes) — the pre-fix leak reinjected, proven landed, sweep proven RED, then restored:
+
+```
+$ sed -i 's/return stripSharedLinkPassword(link);/return link;/' convex/sharedLinks.ts
+$ grep -n "return link;" convex/sharedLinks.ts
+230:		return link;                                    # mutation landed
+$ ./sweep_sharedlinks.sh
+VIOLATION: convex/sharedLinks.ts:getByToken returns a raw sharedLinks row/array without stripSharedLinkPassword
+exit=1                                                    # sweep goes RED on the injected violation
+$ cp sharedLinks.ts.bak convex/sharedLinks.ts             # restore
+$ diff sharedLinks.ts.bak convex/sharedLinks.ts && echo RESTORE CONFIRMED IDENTICAL
+RESTORE CONFIRMED IDENTICAL
+$ ./sweep_sharedlinks.sh; echo "exit=$?"
+exit=0                                                    # clean again on restored (fixed) code
+```
+
+**Two offending sites found in `convex/sharedLinks.ts`, both fixed in this section:**
+
+| function | returns a `sharedLinks` row? | redacted `password`? (before) | redacted `password`? (after) | `token` also redacted? |
+|---|---|---|---|---|
+| `getByToken` (public, unauthenticated) | yes — full row | **no** | yes, via `stripSharedLinkPassword()` | not redacted — the caller already possesses `token` as its own argument, so echoing it back leaks nothing new (documented at the call site) |
+| `list` (authenticated, within-tenant) | yes — full rows via `.collect()` | **no** | yes, via `stripSharedLinkPassword()` | yes — list-specific additional strip; a management/list view has no legitimate reason to re-expose the access credential once minted (`create`'s return value is the one-time place a caller learns it) |
+| `create` (mutation) | no — returns `{ linkId, token }` only, by design (one-time token disclosure) | n/a | n/a | n/a |
+| `remove` (mutation) | no — returns `{ success: true }` only | n/a | n/a | n/a |
+
+**remaining: 0**, measured on the full recursive `convex/` scope stated above (not narrowed to `convex/sharedLinks.ts` alone) — no third table and no third site found.
+
+### The product question, decided from evidence
+
+```
+$ grep -rn 'password' convex/*.ts | grep -v schema.ts
+sharedLinks.ts:<comment lines citing this exact grep>
+sharedLinks.ts:93:  password: v.optional(v.string()),   # create's args declaration
+sharedLinks.ts:129: password: args.password,             # the insert
+```
+
+Exactly 3 hits, none a comparison. **No server-side password check exists anywhere in this codebase.** `password` is, today, write-only and unverified: possession of the unguessable `token` alone grants full access to whatever `getByToken` returns, regardless of what `password` holds. Removing `password` from the response breaks no caller — `grep -rn 'getByToken\|sharedLinks' app/ components/ hooks/ lib/ src/` returns no product caller anywhere in this repo today — and does not itself make the password protection work; it stops the response from leaking the one field a real implementation would need to keep secret. Building actual verification (accept a caller-supplied password, compare server-side against a hash, return null/error on mismatch instead of the row) is a product/UX decision out of scope here and is called out in code (`convex/sharedLinks.ts`, `getByToken`'s docstring) as a named follow-up, not silently deferred.
+
 ## Summary
 
 - **SCOPED (auth/tenant boundary): 5** — `agents.list`, `agents.listForAssignment`, `skills.list`, `skills.listByCategory` (all via the local `getUserWorkspace` helper the pattern's blind spot warned about — followed and confirmed authenticating).
 - **PUBLIC-BY-DESIGN (auth/tenant boundary): 10** — `agents.listSystem`, `skills.listSystem`, `aiModels.{list,listAll,getByModelId,getDefault}`, `credits.{getCreditCost,listCreditCostsByTypes}`, `subscriptionTiers.{listCreditPackages,listSubscriptionPlans}`, `sharedLinks.getByToken`. Every one already carries a written reason + revisit condition in code (added by PR #33, commit `484c4ff`), and every comment's safety claim was independently re-verified against the current code — none found to overclaim.
 - **UNSCOPED-DEFECT (auth/tenant boundary): 0**
-- **UNSCOPED-DEFECT (field-level redaction, found during coordinator review, not the original 15-row sweep): 1** — `agents.list` returned the raw `agents` doc (including `token`/`tokenCreatedAt`) through a public surface, unlike its sibling `get`, which redacts the same field. `agents.listSystem` had the identical gap, hardened as defense-in-depth even though no code path can populate a token on an `isSystem: true` row today (measured, not assumed — see the dedicated sweep section above). **Fixed** in this commit.
+- **UNSCOPED-DEFECT (field-level redaction, CLASS re-derived from the schema, not from one file): 3** — `agents.list` (raw `token`/`tokenCreatedAt`), `sharedLinks.getByToken` (raw `password`), `sharedLinks.list` (raw `password` and `token`). `agents.listSystem` had the identical `agents` gap, hardened as defense-in-depth even though no code path can populate a token on an `isSystem: true` row today (measured, not assumed). Schema-derived sweep (`grep -nE '^\s*(token|password)\s*:\s*v\.' convex/schema.ts`) confirms exactly two tables in the whole schema carry a secret-shaped field (`agents.token`, `sharedLinks.token`/`password`) — no third table exists. **All three sites fixed** — `agents` in an earlier commit on this branch, both `sharedLinks` sites in this commit, via `stripSharedLinkPassword()`.
 
-Correction to the original pass of this file: row 1 (`agents.list`) was initially called SCOPED with a "caveat, flagged as a follow-up, not a T4 defect" — that framing was wrong per coordinator review, and is corrected in the table above. The auth/tenant-boundary verdict for `agents.list` (SCOPED) does not change; a second, narrower verdict (field-level redaction) is now tracked alongside it, because a function can be correctly tenant-scoped and still leak one specific field it should never have returned.
+Correction to the original pass of this file: row 1 (`agents.list`) was initially called SCOPED with a "caveat, flagged as a follow-up, not a T4 defect" — that framing was wrong per coordinator review, and is corrected in the table above. Row 10 (`sharedLinks.getByToken`) was initially evaluated on AUTH alone and called clean; re-derived from the schema, it is now split into two separately-stated properties: **organization-scoped: n/a by design** (the token itself is the authorization — unchanged, still correct) and **returns a secret: yes, was the defect** (fixed). Neither correction changes the AUTH/tenant-boundary verdict for either function (`agents.list` = SCOPED, `sharedLinks.getByToken` = PUBLIC-BY-DESIGN) — a second, narrower verdict (field-level redaction) is now tracked alongside each, because a function can be correctly scoped/public-by-design on auth and still leak one specific field it should never have returned.
 
-**No disagreement with the prior classifications** (`analysis/org-scoping-group-{a,b,c}.md`) on the auth/tenant-boundary verdict for any of these 15 rows — every one of those groups' audits also called `agents.list`/`listSystem` SCOPED/PUBLIC-BY-DESIGN respectively, and none of the three prior group audits checked field-level redaction either (their derivation asked "can this row be read cross-tenant," not "does this field leak within an otherwise-correct read"). That gap is now closed here, not attributed as a disagreement with the prior work.
+**No disagreement with the prior classifications** (`analysis/org-scoping-group-{a,b,c}.md`) on the auth/tenant-boundary verdict for any of these 15 rows — every one of those groups' audits also called `agents.list`/`listSystem`/`sharedLinks.getByToken` SCOPED/PUBLIC-BY-DESIGN respectively, and none of the three prior group audits checked field-level redaction either (their derivation asked "can this row be read cross-tenant," not "does this field leak within an otherwise-correct read"). That gap is now closed here, not attributed as a disagreement with the prior work.
 
 **Fix applied**: `convex/agents.ts` gained a shared `stripAgentToken()` helper (same destructure-and-drop idiom `get()` already used, reused rather than reinvented) and both `list()` and `listSystem()` now map every returned row through it. `get()`'s comment was rewritten to point at the shared helper rather than implying a guarantee that held only for itself. New test file `__tests__/convex/agents-token-redaction.test.ts` (3 tests) — RED proven on the pre-fix code (all 3 fail, exposing the raw token), GREEN on the fixed code (all 3 pass). See CHANGELOG.md for the pasted RED/GREEN and full verification counts.
 
