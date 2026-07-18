@@ -45,6 +45,14 @@ export const getByPolarProductId = internalQuery({
  * Public query — used by PurchaseCreditsModal.tsx.
  * Returns all active one-time credit packages sorted by sortOrder.
  * Fields used by UI: tierKey, displayName, priceUsd, initialCredits, bonusCredits, polarProductId.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * this is the pricing/package list meant to be shown pre-purchase, including
+ * to logged-out visitors on a pricing page; `subscriptionTiers` has no
+ * organizationId/userId column (schema-level global pricing catalog).
+ * Revisit if per-organization pricing or negotiated rates are ever added —
+ * at that point this must become scoped or split into a public/authenticated
+ * variant.
  */
 export const listCreditPackages = query({
 	args: {},
@@ -62,6 +70,11 @@ export const listCreditPackages = query({
  * Public query — used by SubscriptionTab / ManageSubscriptionModal.
  * Returns all active subscription plans sorted by sortOrder.
  * Fields used by UI: tierKey, displayName, priceUsd, monthlyCredits, initialCredits, polarProductId.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * same reasoning as `listCreditPackages` above: global, org-free pricing
+ * catalog meant to be visible pre-purchase. Revisit under the same
+ * condition (per-organization pricing ever introduced).
  */
 export const listSubscriptionPlans = query({
 	args: {},

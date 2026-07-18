@@ -127,6 +127,15 @@ export const get = query({
 	},
 });
 
+/**
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * filtered strictly to `isSystem === true`, i.e. platform-provided global
+ * skills, never a tenant-owned or `visibility: "private"` row; no
+ * organization's proprietary skill `instructions` can be reached through
+ * this index. Revisit if `isSystem` skills ever gain per-organization
+ * variants or embed org-specific secrets — at that point this must be
+ * scoped.
+ */
 export const listSystem = query({
 	args: {},
 	handler: async (ctx) => {

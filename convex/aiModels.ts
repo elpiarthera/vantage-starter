@@ -106,6 +106,13 @@ const CATEGORY_ORDER: ModelCategory[] = [
  * Get all enabled AI models (for model selector UI).
  * Sorted by category order, then orderPosition.
  * No auth required — unauthenticated pages can display the model list.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe
+ * because `aiModels` is a platform-wide catalog (schema-level: no
+ * organizationId/userId column) — every caller, tenant or anonymous, sees
+ * the identical model list. No tenant secret or per-org pricing lives here.
+ * Revisit if a per-organization model allowlist or price override is ever
+ * added to this table — at that point this must become scoped.
  */
 export const list = query({
 	args: {},
@@ -129,6 +136,12 @@ export const list = query({
 /**
  * Get all AI models including disabled (for admin panel).
  * Sorted by category order, then orderPosition.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe for
+ * the same reason as `list` above — same global, org-free catalog, only
+ * additionally including disabled rows (still no user/tenant data). Revisit
+ * if disabled-model visibility is ever meant to be admin-only, or if the
+ * table gains a per-organization dimension.
  */
 export const listAll = query({
 	args: {},
@@ -148,6 +161,11 @@ export const listAll = query({
 
 /**
  * Get a single model by its modelId string.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * same global catalog as `list`/`listAll`; the returned document carries no
+ * user or organization data, only model specs. Revisit if this table ever
+ * gains a per-organization override.
  */
 export const getByModelId = query({
 	args: { modelId: v.string() },
@@ -163,6 +181,11 @@ export const getByModelId = query({
 /**
  * Get the platform default model.
  * Priority: isDefault flag → first "balanced" → first enabled.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * same global catalog, the "default" is a platform-wide setting, not a
+ * per-user or per-organization preference. Revisit if per-organization
+ * default models are ever introduced.
  */
 export const getDefault = query({
 	args: {},
@@ -189,6 +212,17 @@ export const getDefault = query({
 
 /**
  * Create a new AI model. Admin only.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping): intentionally gated by global admin role
+ * (`requireAdmin`) rather than by organization. Safe because `aiModels` is a
+ * schema-level global table (no organizationId column) — there is no tenant
+ * boundary to enforce here, only a role boundary, and that role boundary is
+ * enforced. This is NOT the same class of gap as `adminHelpers.ts`, where a
+ * global-admin check guards an org-scoped table (see
+ * `analysis/org-scoping-group-a.md`). Revisit if `aiModels` ever gains a
+ * per-organization catalog (e.g. org-specific model allowlists) — at that
+ * point `requireAdmin` alone stops being sufficient and an org-membership
+ * check must be added.
  */
 export const create = mutation({
 	args: {
@@ -244,6 +278,10 @@ export const create = mutation({
 /**
  * Update an AI model. Admin only.
  * modelId is intentionally not updatable — it is a stable reference key.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping): same reasoning as `create` above — global
+ * admin role gate is correct because `aiModels` has no organization
+ * dimension. Revisit under the same condition (per-organization catalog).
  */
 export const update = mutation({
 	args: {
@@ -289,6 +327,10 @@ export const update = mutation({
 /**
  * Toggle a model enabled/disabled. Admin only.
  * Returns the new enabled state.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping): same reasoning as `create` above — global
+ * admin role gate is correct because `aiModels` has no organization
+ * dimension. Revisit under the same condition (per-organization catalog).
  */
 export const toggle = mutation({
 	args: { id: v.id("aiModels") },
@@ -312,6 +354,11 @@ export const toggle = mutation({
  * Set a model as the platform default. Admin only.
  * Clears the existing default first, then marks the new one.
  * Also force-enables the new default (a disabled model cannot be default).
+ *
+ * PUBLIC-BY-DESIGN (org-scoping): same reasoning as `create` above — global
+ * admin role gate is correct because `aiModels` has no organization
+ * dimension, and "default model" is a platform-wide setting by design.
+ * Revisit if per-organization default models are ever introduced.
  */
 export const setDefault = mutation({
 	args: { id: v.id("aiModels") },
@@ -343,6 +390,10 @@ export const setDefault = mutation({
 
 /**
  * Delete an AI model. Admin only.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping): same reasoning as `create` above — global
+ * admin role gate is correct because `aiModels` has no organization
+ * dimension. Revisit under the same condition (per-organization catalog).
  */
 export const remove = mutation({
 	args: { id: v.id("aiModels") },

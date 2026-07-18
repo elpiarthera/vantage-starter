@@ -141,6 +141,16 @@ export const get = query({
 	},
 });
 
+/**
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * filtered strictly to `isSystem === true`, which by design (schema comment)
+ * means platform-provided global agents, never tenant-owned rows; no
+ * workspace data, tokens, or custom instructions from any organization's
+ * agents can be reached through this index. Revisit if `isSystem` rows ever
+ * gain per-organization overrides or secrets (e.g. a system agent template
+ * that stores an org-specific credential) — at that point this must be
+ * scoped or the sensitive fields split out.
+ */
 export const listSystem = query({
 	args: {},
 	handler: async (ctx) => {

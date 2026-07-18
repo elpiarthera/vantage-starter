@@ -4,6 +4,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Documented (2026-07-18 — every PUBLIC-BY-DESIGN function now carries its reason, in code, at the call site)
+
+Comment-only change (`git diff` on `convex/` is provably comment-lines-only). Every function classified `PUBLIC-BY-DESIGN` in `analysis/org-scoping-group-{a,b,c}.md` now carries, above its declaration: that it is intentionally callable without authentication (or without org-scoping, for the two role-gated `aiModels.ts` admin cases), concretely why that is safe (what a caller can obtain, why it carries no tenant secret), and the condition under which the decision must be revisited.
+
+22 functions annotated: `aiModels.{list,listAll,getByModelId,getDefault,create,update,toggle,setDefault,remove}` (global platform catalog, `create`/`update`/`toggle`/`setDefault`/`remove` gated by global `requireAdmin` — correct because the table has no organization dimension), `registry.{listTeams,getTeam,listAgentsByTeam,listSkillsByTeam,getRecommendationsForPains,listSkills}` (global vantage-registry catalog, no organizationId column), `subscriptionTiers.{listCreditPackages,listSubscriptionPlans}` (global pricing catalog, must be visible pre-purchase to logged-out visitors), `sharedLinks.getByToken` (token-gated public sharing — flagged honestly: `create`'s token generator uses `Date.now()` + `Math.random()`, not a CSPRNG, so the "token is unguessable" safety assumption is only partially true today), `agents.listSystem` / `skills.listSystem` (filtered strictly to `isSystem === true`, never tenant-owned rows), `credits.{getCreditCost,listCreditCostsByTypes}` (global pricing table, no user/org column).
+
+No misclassification found — every PUBLIC-BY-DESIGN row from the three audits could be honestly justified. `pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check` on changed files: 0 errors (3 pre-existing `noNonNullAssertion` warnings in `registry.ts`, unrelated lines, unchanged by this diff). `pnpm exec vitest run`: 318 passed, 7 skipped (pre-existing, missing Polar env vars), 0 failed.
+
 ### Fixed (2026-07-18 — 16 cross-tenant defects closed uniformly across three classes, org-scoping audit follow-up)
 
 Three read-only audits (`analysis/org-scoping-group-{a,b,c}.md`, 176 public functions surveyed) found 16 cross-tenant defects across three classes, each closed by the class idiom already present in the codebase — never a bespoke fix:

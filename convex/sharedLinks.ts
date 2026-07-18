@@ -123,6 +123,24 @@ export const remove = mutation({
 
 /**
  * Get a shared link by token (public access)
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. This is
+ * the token-gated public sharing feature the `sharedLinks` table exists for
+ * (schema comment: "Token-gated public URL sharing pattern") — possession of
+ * the unguessable `token` value itself IS the intended access control, not
+ * an oversight. Safety depends entirely on `token` being unguessable, which
+ * this function cannot itself enforce.
+ *
+ * CAVEAT (not invented, flagging honestly): the token generated in `create`
+ * above (`share_${Date.now()}_${Math.random()...}`) is NOT cryptographically
+ * random — `Date.now()` is guessable/enumerable and `Math.random()` is not a
+ * CSPRNG. This does not change the classification (the design intent — a
+ * public, token-gated lookup — is correct), but it does mean the safety
+ * assumption this comment relies on ("token is unguessable") is only
+ * partially true today. Revisit — and this stops being safe — the moment
+ * someone relies on this token as a strong secret without first switching
+ * `create`'s token generation to a CSPRNG (e.g. crypto.randomUUID() or
+ * equivalent).
  */
 export const getByToken = query({
 	args: {

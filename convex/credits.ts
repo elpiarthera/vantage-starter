@@ -390,6 +390,12 @@ export const hasEnoughCredits = query({
 // ============================================
 /**
  * Get the credit cost for a specific action (for UI display).
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * `creditCosts` is a platform-wide pricing table (schema-level: no
+ * clerkUserId/organizationId column), identical for every caller; nothing
+ * user- or tenant-specific is returned. Revisit if per-organization
+ * negotiated pricing is ever introduced on this table.
  */
 export const getCreditCost = query({
 	args: {
@@ -421,6 +427,12 @@ export const getCreditCost = query({
 /**
  * Get credit costs for multiple action types in a single query.
  * Used to build creditCosts maps for model selector UIs.
+ */
+/**
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication. Safe —
+ * same reasoning as `getCreditCost` above: `creditCosts` is a global,
+ * org-free pricing table. Revisit under the same condition (per-org
+ * negotiated pricing).
  */
 export const listCreditCostsByTypes = query({
 	args: { actionTypes: v.array(v.string()) },

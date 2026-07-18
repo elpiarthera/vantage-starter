@@ -64,6 +64,13 @@ const skillValidator = v.object({
 /**
  * List all registry teams.
  * Optionally filter by category.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping, not auth-free): gated by `requireAuth` only,
+ * never by organization. Safe because `registryTeams` has no organizationId
+ * column (schema-level: a shared catalog seeded from vantage-registry,
+ * identical for every organization). Revisit if this table ever gains a
+ * per-organization customization (e.g. an org can hide/reorder teams) — at
+ * that point auth alone stops being sufficient.
  */
 export const listTeams = query({
 	args: {
@@ -95,6 +102,10 @@ export const listTeams = query({
 
 /**
  * Get a single team by its stable slug ID.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping, not auth-free): same reasoning as
+ * `listTeams` above — `registryTeams` is a global, org-free catalog.
+ * Revisit under the same condition (per-organization team customization).
  */
 export const getTeam = query({
 	args: { teamId: v.string() },
@@ -111,6 +122,10 @@ export const getTeam = query({
 
 /**
  * List all agents belonging to a team.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping, not auth-free): same reasoning as
+ * `listTeams` above — `registryAgents` has no organizationId column,
+ * global catalog. Revisit if this table ever gains per-organization agents.
  */
 export const listAgentsByTeam = query({
 	args: { teamId: v.string() },
@@ -127,6 +142,12 @@ export const listAgentsByTeam = query({
 
 /**
  * List all skills belonging to a team.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping, not auth-free): same reasoning as
+ * `listTeams` above — `registrySkills` has no organizationId column, global
+ * catalog. Revisit if this table ever gains per-organization skills. (Not
+ * to be confused with the org-owned `skills` table in `convex/skills.ts`,
+ * which IS workspace-scoped — this is the read-only global registry.)
  */
 export const listSkillsByTeam = query({
 	args: { teamId: v.string() },
@@ -149,6 +170,12 @@ export const listSkillsByTeam = query({
  *
  * Returns teams sorted by priority (high first), with their agents and skills
  * pre-loaded. The consultant onboarding UI renders this directly.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping, not auth-free): gated by `requireAuth` only.
+ * Safe — this is a pure read-through over the same global, org-free registry
+ * catalog (`registryTeams`/`registryAgents`/`registrySkills`), computed from
+ * a static in-code mapping table; no per-user or per-organization data is
+ * touched. Revisit under the same condition as `listTeams` above.
  */
 export const getRecommendationsForPains = query({
 	args: {
@@ -262,6 +289,10 @@ export const getRecommendationsForPains = query({
 
 /**
  * List all skills, optionally filtered by category.
+ *
+ * PUBLIC-BY-DESIGN (org-scoping, not auth-free): same reasoning as
+ * `listTeams` above — `registrySkills` has no organizationId column, global
+ * catalog. Revisit under the same condition.
  */
 export const listSkills = query({
 	args: {
