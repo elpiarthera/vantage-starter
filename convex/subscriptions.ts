@@ -3,8 +3,6 @@
  *
  * Handles subscription queries and mutations for Polar integration
  * Pattern from: /home/laurentperello/polar/example/
- *
- * @see docs/MVP/Todo/sprint-10-implementation.md Task 4
  */
 
 import { v } from "convex/values";

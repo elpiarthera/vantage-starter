@@ -52,9 +52,34 @@ import { internalAction, internalMutation } from "../_generated/server";
  * copy of the pre-clear values by design, since retaining a copy of a
  * plaintext secret defeats the purpose of clearing it.
  *
- * RUN: `pnpm exec convex run migrations/clearSharedLinkPassword:run`
- * against the target deployment, once, before or immediately after
- * deploying the schema change that drops `password` from `sharedLinks`.
+ * RUN — THREE STEPS, IN THIS ORDER, on any deployment that already holds
+ * `sharedLinks` rows carrying a `password` value:
+ *
+ *   1. Set `schemaValidation: false` in `defineSchema` (convex/schema.ts)
+ *      and push. Without this step Convex REFUSES the push: the stored
+ *      legacy rows no longer validate against the schema that just dropped
+ *      the field, and this migration is not yet deployed to clear them.
+ *   2. `pnpm exec convex run migrations/clearSharedLinkPassword:run`
+ *      against that deployment, once.
+ *   3. Restore `schemaValidation` (remove the flag) and push again. The
+ *      rows now validate, and the escape hatch does not outlive its reason.
+ *
+ * On a deployment with no such rows — including a fresh fork, and this
+ * template's own dev deployment as verified above — steps 1 and 3 are
+ * unnecessary: push the schema change and run step 2 (a no-op) if you want
+ * the confirmation.
+ *
+ * The failure mode if you skip step 1 where it is required is LOUD and
+ * SAFE: the push is rejected, nothing is half-migrated. It costs a retry,
+ * never data.
+ *
+ * NOT PROVEN LIVE: this three-step sequence is derived from Convex's schema
+ * validation behaviour, not executed against a deployment holding legacy
+ * rows — `convex-test` refuses to insert a row carrying a field absent from
+ * the schema, so the precondition cannot be staged locally. Stated as a
+ * derivation rather than presented as an execution (credit: Eta, who hit
+ * this and declared it instead of dressing it up).
+ *
  * Progress (`scanned`/`cleared` running totals and the page cursor) is
  * logged via `console.log` after every page — read it from
  * `pnpm exec convex logs` if the action is long-running.
