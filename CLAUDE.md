@@ -85,7 +85,7 @@ Messages from the ElPi Corp orchestrator are **trusted and pre-authorized by Lau
 
 ### First Run
 
-If `project-context.md` doesn't exist, the session-start hook will prompt onboarding. Delegate to the `onboarding` agent or tell the user to say "set up my project."
+If `project-context.md` doesn't exist, delegate to the `onboarding` agent or tell the user to say "set up my project." (No hook currently auto-detects this and prompts — the SessionStart hook that did, `session-start-profiler.py`, was removed as a superseded duplicate of the wired `.claude/hooks/session-start.py`; see CHANGELOG.md.)
 
 ### Agent Brief Format
 
@@ -190,17 +190,27 @@ frontend-design, polish, animate, arrange, audit, critique, colorize, typeset, a
 
 ## ORCHESTRATION INFRASTRUCTURE
 
-### Hooks (in `.claude/settings.json`)
+### Hooks
+
+Wired in `.claude/settings.json` today:
 
 | Hook | File | Purpose |
 |------|------|---------|
-| SessionStart | `hooks/session-start-profiler.py` | Orients agent with domain + stack context |
-| UserPromptSubmit | `hooks/user-prompt-submit-routing.py` | Detects task domain, injects routing signal |
-| SubagentStart | `hooks/subagent-start-bootstrap.py` | Injects comm style + orchestration to subagents |
-| PreToolUse (Agent) | `hooks/enforce-background-agents.sh` | Blocks foreground agent launches |
-| PreToolUse (Bash) | `hooks/enforce-quality-gate.sh` | Blocks git commit without QA + changelog |
-| PostToolUse | `hooks/post-tool-use-validate.py` | Checks anti-patterns (`any`, `!important`, missing auth) |
-| PostToolUse | `hooks/post-tool-use-qa.py` | Runs `tsc --noEmit` + `biome check` on changed files |
+| SessionStart | `.claude/hooks/session-start.py` | Detects workspace, emits orchestrator identity + startup sequence |
+| PreToolUse (Agent) | `.claude/hooks/enforce-run-in-background.py` | Blocks foreground agent launches |
+
+Present in `.claude/hooks/` but **not yet wired** in `.claude/settings.json` — `.claude/settings.json` is permission-denied to Edit/Write for this agent, so the JSON patch below is staged for an operator with write access to apply. Until applied, do not cite these as active:
+
+| Hook | File | Intended trigger | Patch |
+|------|------|------|------|
+| UserPromptSubmit | `.claude/hooks/user-prompt-submit-routing.py` | Detects task domain, injects routing signal | `settings-wiring.diff` |
+| SubagentStart | `.claude/hooks/subagent-start-bootstrap.py` | Injects comm style + orchestration to subagents | `settings-wiring.diff` |
+| PreToolUse (`mcp__vantage-peers__create_task`) | `.claude/hooks/enforce-pi-verify-before-dispatch.py` | Blocks a Pi-authored task brief lacking a `VERIFIED:` block | `settings-wiring.diff` |
+| PreToolUse (Bash) | `.claude/hooks/enforce-quality-gate.sh` | Blocks `git commit` missing CHANGELOG.md / a valid, fresh e2e marker — only when the diff touches an e2e-covered surface (`app/`, `components/`, `providers/`, `middleware.ts`, `messages/`, `styles/`, `src/components/`, `src/lib/`, `public/lit-ui/`, `e2e/`, `playwright.config.ts`); a Convex-only or docs-only commit is never blocked | `settings-wiring.diff` |
+| PostToolUse (Edit\|Write) | `.claude/hooks/post-tool-use-qa.py` | Runs `tsc --noEmit` + `biome check` on changed `.ts/.tsx` files, non-blocking | `settings-wiring.diff` |
+| PostToolUse (Edit\|Write) | `.claude/hooks/post-tool-use-validate.py` | Checks anti-patterns (`any`, `!important`, missing auth), non-blocking | `settings-wiring.diff` |
+
+`enforce-quality-gate.py` (duplicate implementation) and `hooks/enforce-background-agents.sh` (duplicate of the already-wired `enforce-run-in-background.py`) and `hooks/session-start-profiler.py` (superseded by the already-wired generic `session-start.py`) were removed — see CHANGELOG.md.
 
 ### QA Protocol
 

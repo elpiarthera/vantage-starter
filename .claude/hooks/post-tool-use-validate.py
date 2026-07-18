@@ -13,7 +13,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 
 # Rules: (pattern_to_detect, message, severity, applies_to_extensions)
 # Pattern match = violation (anti-pattern present in file)
