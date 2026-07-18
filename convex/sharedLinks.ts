@@ -73,8 +73,14 @@ export const create = mutation({
 
 		const userId = identity.subject;
 
-		// Generate unique token
-		const token = `share_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+		// Generate unique token — CSPRNG, same idiom as convex/agents.ts token
+		// generation. This token is the ONLY authorization check performed by
+		// `getByToken` below, so it must be unguessable, not merely unique.
+		const tokenBytes = new Uint8Array(32);
+		crypto.getRandomValues(tokenBytes);
+		const token = `share_${Array.from(tokenBytes)
+			.map((b) => b.toString(16).padStart(2, "0"))
+			.join("")}`;
 
 		const linkId = await ctx.db.insert("sharedLinks", {
 			organizationId: user.organizationId || "",
@@ -131,16 +137,15 @@ export const remove = mutation({
  * an oversight. Safety depends entirely on `token` being unguessable, which
  * this function cannot itself enforce.
  *
- * CAVEAT (not invented, flagging honestly): the token generated in `create`
- * above (`share_${Date.now()}_${Math.random()...}`) is NOT cryptographically
- * random — `Date.now()` is guessable/enumerable and `Math.random()` is not a
- * CSPRNG. This does not change the classification (the design intent — a
- * public, token-gated lookup — is correct), but it does mean the safety
- * assumption this comment relies on ("token is unguessable") is only
- * partially true today. Revisit — and this stops being safe — the moment
- * someone relies on this token as a strong secret without first switching
- * `create`'s token generation to a CSPRNG (e.g. crypto.randomUUID() or
- * equivalent).
+ * SAFETY BASIS: `create` above generates the token from `crypto.getRandomValues`
+ * (32 bytes, hex-encoded — same idiom as `convex/agents.ts`'s agent tokens),
+ * so the token is unguessable and non-enumerable today. This remains true
+ * only for as long as (a) `create`'s token generation stays CSPRNG-based —
+ * never derived from `Date.now()`, `Math.random()`, or any other
+ * non-cryptographic source — and (b) link rows carry no secret beyond what
+ * the token holder is entitled to see. If either condition changes, this
+ * function's public-by-design classification must be re-audited before
+ * shipping.
  */
 export const getByToken = query({
 	args: {
