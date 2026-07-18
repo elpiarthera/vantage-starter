@@ -3,11 +3,16 @@ name: E2E Tests
 on:
   deployment_status:
 
-env:
-  BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
-  BROWSERBASE_PROJECT_ID: ${{ secrets.BROWSERBASE_PROJECT_ID }}
-  BB_CONTEXT_ID: ${{ secrets.BB_CONTEXT_ID }}
-
+# Remote-browser path (Browserbase) is intentionally NOT wired into CI.
+# This is a budget decision, not breakage: the service is banned fleet-wide
+# for now and the human is the visual verifier. CI runs entirely on the
+# local Chromium installed by the "Install Playwright browsers" step below —
+# that is the nominal, tested path (see e2e/fixtures.ts header comment).
+# To re-enable the remote path when budget allows, re-add:
+#   env:
+#     BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
+#     BROWSERBASE_PROJECT_ID: ${{ secrets.BROWSERBASE_PROJECT_ID }}
+#     BB_CONTEXT_ID: ${{ secrets.BB_CONTEXT_ID }}
 jobs:
   e2e:
     if: >-
