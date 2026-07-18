@@ -638,7 +638,6 @@ export default defineSchema({
     userId: v.string(),
     token: v.string(),
     expiresAt: v.optional(v.number()),
-    password: v.optional(v.string()),
     allowDownload: v.boolean(),
     viewCount: v.number(),
     lastViewedAt: v.optional(v.number()),

@@ -263,7 +263,6 @@ VantageStarter Database (Convex)
     ├── userId: string (indexed) → users.clerkUserId
     ├── token: string (unique, indexed)
     ├── expiresAt: number (optional)
-    ├── password: string (optional, hashed)
     ├── allowDownload: boolean
     ├── viewCount: number
     ├── lastViewedAt: number (optional)
@@ -315,7 +314,7 @@ This document defines the complete Convex database schema for VantageStarter. Th
 - **Real-time collaboration**: Convex's built-in real-time subscriptions
 - **Usage-based billing**: Credit tracking with Polar integration
 - **File storage**: Convex file storage for all media assets
-- **Video sharing**: Secure link sharing with optional password protection
+- **Video sharing**: Token-gated link sharing (unguessable CSPRNG token, no password field)
 
 ---
 

@@ -398,7 +398,7 @@ describe("Class 2: chatMessages.list cross-tenant", () => {
 });
 
 describe("Class 2: sharedLinks.list / sharedLinks.create cross-tenant", () => {
-	it("list does not return another organization's shared links (incl. password) for a guessed resourceId", async () => {
+	it("list does not return another organization's shared links for a guessed resourceId", async () => {
 		const t = makeT();
 		const now = Date.now();
 		const SHARED_RESOURCE_ID = "shared-guessable-resource-id";
@@ -416,7 +416,6 @@ describe("Class 2: sharedLinks.list / sharedLinks.create cross-tenant", () => {
 				resourceId: SHARED_RESOURCE_ID,
 				userId: OWNER_A,
 				token: "org-a-token",
-				password: "org-a-plaintext-password",
 				allowDownload: true,
 				viewCount: 0,
 				createdAt: now,
