@@ -4,6 +4,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — `meta-7`'s flag and image path no longer assert the national identity of a brand that is gone)
+
+Finishing an inconsistency introduced two commits below, not widening the round. `meta-7` had its name and taglines genericised from `ShopInFrance.xyz` to `Local Marketplace`, but kept `icon: "🇫🇷"` and `imageUrl: "/french-products-artisan-local-goods.jpg"` — the name changed, its identity did not. The other seven records all carry a generic subject pictogram (`🎉 💻 🚗 🏠 ⚡ 🍽️ ✨`); only this one carried a national flag, which is what made it visible as residue rather than as a design choice. Now `icon: "🛍️"` and `imageUrl: "/local-artisan-goods-marketplace.jpg"`.
+
+The path still points at a file absent from `public/`. That is the pre-existing dangling-asset defect affecting all eight records, unchanged and deliberately not addressed here — the fix is only that the path's *name* no longer asserts a brand that has been removed.
+
+**Diff is two lines**, both inside the `meta-7` literal: `git diff` reports `1 file changed, 2 insertions(+), 2 deletions(-)`. The other seven records, the generic offers, and the factual tool references are untouched (`git diff` on `lib/admin-mock-data.ts`: **0 lines**).
+
+**Both sweeps re-run, with mutation proof.** Sweep 1 (identity, separator-tolerant) — proposition: *no real third-party identity known to this fork appears in shipped code, under any separator*; scope `lib/ app/ components/ convex/ hooks/ providers/ src/ middleware.ts next.config.mjs`; result 1 hit, the assessed historical note at `convex/schema.ts:8`; `remaining: 0`. Sweep 2 (ad class, structural) — proposition: *no promotional record, i.e. any object literal carrying `linkUrl:`, attaches a commercial claim to a real company*; scope derived to `lib/admin-mock-data.ts lib/meta-categories-mock-data.ts`; result `promotional records asserted: 7`, exit 0.
+
+Four violations injected across both files and both classes — spaced (`Alors On Sort`) and dotted (`ShopInFrance.xyz`) for sweep 1, `JetBrains` and `Adobe` inside promotional records for sweep 2 — each asserted landed via `grep -c` (1/1/1/1). Sweep 1 went **RED** 1 → 3 hits naming both sites by line; sweep 2 went **RED** naming both records and both vendors (`ad-cat-2-1 vendor=JetBrains`, `ad-3 vendor=Adobe`). After restore: all four `grep -c` at 0, sweep 1 back to its single historical hit, sweep 2 exit 0, and the working tree diff reduced to exactly the two intended `meta-7` lines.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check lib/meta-categories-mock-data.ts`: 0 errors (4 `noStaticOnlyClass` warnings pre-existing). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
 ### Fixed (2026-07-18 — a demo ad no longer invents a discount for a real company)
 
 `lib/meta-categories-mock-data.ts` shipped a promotional record reading `"Save 50% on JetBrains tools"` with `linkUrl: "/promotions/jetbrains"` — a fabricated commercial claim attributed to a real vendor, in a public template that every fork copies and serves as a live offer. This is a sharper defect than the brand names closed in the entry below: those were an identity sitting in demo data, this asserts a specific discount that a real company never offered. Now `"Premium IDE Bundle"` / `"Save 50% on developer tooling"` / `/promotions/developer-tooling`. No vendor was substituted — inventing a plausible company name risks colliding with a real one, and a generic offer naming nobody is the safe form. Record `id`, `categoryId`, `order` and timestamps are byte-identical.
