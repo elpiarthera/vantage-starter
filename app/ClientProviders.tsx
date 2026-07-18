@@ -10,12 +10,18 @@ import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 // internal appearance types (node_modules/.pnpm/@clerk+shared@4.4.0.../dist/
 // runtime/react/index.d.ts, `internalStripeAppearance`) type every color
 // field as a plain `string`, so `var(--token)` compiles and type-checks.
-// NOT VERIFIED: whether Clerk's runtime color-derivation logic (clerk-js,
-// loaded from CDN — not present in node_modules, so it could not be
-// statically inspected) can compute shades/contrast from an unresolved
-// `var(...)` reference, or only from a browser-computed color. This can
-// only be confirmed by looking at the rendered widget in both themes on the
-// preview deploy — `pnpm build` proves compilation, not rendering.
+// VERIFIED (this task): clerk-js DOES resolve `var(--token)` at runtime.
+// Measured with real Chromium on the public /en/sign-in route, waiting for
+// `[class*='cl-formButtonPrimary']` to mount, then reading
+// `getComputedStyle` while toggling the `dark` class on `<html>`:
+//   LIGHT: token --background oklch(0.99 0 0)   | button bg oklch(0.3 0 0)
+//          button text oklch(0.99 0 0)          | card text oklch(0.1 0 0)
+//   DARK : token --background oklch(0.145 0 0)  | button bg oklch(0.922 0 0)
+//          button text oklch(0.205 0 0)         | card text oklch(0.985 0 0)
+// Clerk's computed colors are resolved OKLCH values that match the tokens
+// and flip with the theme — not a literal "var(" string and not a stale
+// default. Guarded by e2e/clerk-theme.spec.ts, which fails if clerk-js ever
+// stops resolving custom properties.
 // No unconditional `baseTheme` import: with every listed variable
 // point at a live token, base state is provided by the tokens already, and
 // following light/dark requires no JS theme read (no client boundary).
