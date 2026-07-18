@@ -4,6 +4,27 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — fork residue: the mock-data fixtures no longer name real businesses, and the sweep pattern now tolerates separators)
+
+`lib/meta-categories-mock-data.ts` named **eight** real properties, not the two the previous sweep reported. The prior pattern (`alorsonsort|shopinfrance|bfamous`) is concatenated-only, so it matched `ShopInFrance.xyz` and `BFamous` while walking straight past `Alors On Sort` and `Alors On Mange` — the same brand family, separated by spaces — on lines 74 and 129 of the file it was pointed at. A pattern that cannot match the spaced form of the name it was written for under-reports its own class by construction.
+
+**CLASS**:
+- definition: a real third-party identity named in shipped code that every fork of this public template inherits, in **any** orthography — spaced, dotted, hyphenated, or concatenated.
+- sweep: `git grep -niE 'alors[ ._-]*on[ ._-]*(sort|mange)|shop[ ._-]*in[ ._-]*france|bfamous|easy[ ._-]*vibe[ ._-]*coding|achetez[ ._-]*votre[ ._-]*voiture|louez[ ._-]*un[ ._-]*appartement|everything[ ._-]*web3|myreeldream' -- lib/ app/ components/ convex/ hooks/ providers/ src/ middleware.ts next.config.mjs`. Asserts: no real third-party identity known to this fork appears in shipped code, under any separator.
+- remaining: 0. One surviving hit, `convex/schema.ts:8`, is a comment recording which fork-specific tables were *removed* — a citation of a past state, content not state, left as-is per the same rule applied in the CSP fix above.
+
+The separator-tolerant pattern found a **sixth** site the concatenated pattern could not reach: `lib/refinement-flow-store.ts:90-91` (`id: "rf-alors-on-sort"`, `name: "Alors On Sort - Event Discovery"`). It is closed here rather than deferred, because a class sweep that leaves a known instance standing is not a sweep.
+
+**Fix**: the eight meta-category names become vertical-descriptive fictions (`Going Out`, `Dev Toolbox`, `Auto Market`, `Home Rentals`, `Web3 & Crypto`, `Food & Dining`, `Local Marketplace`, `Style & Beauty`), their eight mirrored section comments follow, and the `rf-` flow slug becomes `rf-going-out`. The five `French`/`France` baselines under `meta-7` were that brand's positioning copy transposed ("Products made in France" was its tagline) and are genericised with it. **Shape is untouched**: no exported type, no `id` field, no ordering, no record count changed — `tsc` proves the module still typechecks and the suite is unmoved.
+
+**Mutation proof**: three violations injected at three distinct sites in three different orthographies — spaced (`Alors On Sort`), dotted (`ShopInFrance.xyz`), and concatenated in the second file (`BFamous`). Each injection asserted landed via `grep -c` (1/1/1 — a sweep run against a mutation that never applied proves nothing). The sweep then went **RED naming all three sites by file and line**, 1 hit → 4. After restore, all three `grep -c` read 0 and the sweep returned to its single assessed historical hit.
+
+**Importers**: `git grep -l 'meta-categories-mock-data' -- '*.ts' '*.tsx'` → **no matches**. The module is dead like `admin-mock-data.ts`; its only references are two dated design docs. Deletion may well be the better answer, but that is a call for the maintainer, not this commit — nothing was deleted.
+
+**Not acted on, reported for judgement**: `lib/meta-categories-mock-data.ts:660` ships an ad reading *"Save 50% on JetBrains tools"* with `linkUrl: "/promotions/jetbrains"` — a fabricated commercial claim about a real company, arguably a sharper instance of this class than the names just fixed, since a fork ships it as a live offer. Three further baselines name real tools factually and neutrally (`VS Code, Sublime, Atom`; `Git, GitHub, GitLab`; `Chrome DevTools, debuggers`) — ordinary technical reference, no claim attached. The eight `imageUrl` paths name no business, but **all eight referenced `.jpg` assets are absent from `public/`** (`/nightlife-events-concerts-cinema.jpg` and siblings) — a pre-existing dangling-asset defect in this dead module, out of this class and untouched. The two docs (`TOOL-SELECTION-WALL-FEATURE.md`, `TOOL-SELECTION-WALL-IMPLEMENTATION-PLAN.md`) were checked and quote **none** of the real names; they were not edited.
+
+`pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check` on both changed files: 0 errors (5 `noStaticOnlyClass` warnings are pre-existing — proven identical by running biome against the `HEAD` copies of the same two files: 5 before, 5 after). `pnpm exec vitest run`: 29 files, 325 passed, 7 skipped, 0 failed.
+
 ### Fixed (2026-07-18 — fork residue: the CSP no longer hardcodes another tenant's Clerk domain)
 
 `middleware.ts` and `next.config.mjs` each carried their own copy of a Content-Security-Policy naming `https://clerk.myreeldream.ai` — a Clerk custom/satellite domain belonging to the product this starter was forked from — in both `script-src` and `frame-src`. Every fork of this template inherited another product's identity in a live security header, and shipped a CSP that allowlists a third-party origin its own auth never uses.
