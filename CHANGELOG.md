@@ -4,6 +4,12 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-18 — the mutation-proof standard moves from someone's head into the brief templates)
+
+`docs/brief-ui.md` and `docs/brief-backend.md` now carry a **MUTATION PROOF** section, so every delegated task inherits it instead of depending on the orchestrator remembering. Four steps, with the one everyone skips called out: inject the defect, **assert the injection landed**, confirm the red names the right reason, restore and prove it with an empty `git diff`.
+
+Written because the class hit three different readers in a single day, once inside the very probe meant to close it: a mutation script silently failed to apply its own edit and the suite stayed green — a green that proved nothing. A probe that does not verify its own mutation is not a probe. The templates also prefer mutating a site the test author did not choose (a guard re-reading the case it was shown proves it can read, not that it protects), and the UI template adds: assert computed values rather than presence, and remember jsdom cannot cascade an external stylesheet.
+
 ### Security (2026-07-18 — 12 public Convex mutations were callable by anyone with the deployment URL)
 
 Surfaced by the T0 audit. Convex `mutation` exports are reachable by any client holding the deployment URL; these 12 carried no identity reference and no ownership check. Worst case: `agents.generateToken` took any `agentId`, minted a 32-byte credential, wrote it to the agent and **returned the token plaintext to the caller**, invalidating the previous one — unauthenticated credential theft plus denial of service in one call. `subscriptions.cancel` set any subscription to `canceled` from a `polarSubscriptionId`, with no identity, ownership or signature check.
