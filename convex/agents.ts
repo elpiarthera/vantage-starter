@@ -101,6 +101,12 @@ export const list = query({
 
 /**
  * Get a single agent by ID, with resolved skills.
+ *
+ * SECURITY: system (global) agents are readable by any authenticated caller.
+ * Workspace-owned agents require the caller to own/belong to the agent's
+ * workspace — same rule as update()/remove(). The `token`/`tokenCreatedAt`
+ * fields (per-agent HTTP auth secret) are stripped before returning; nothing
+ * that mints or reads that secret should be reachable without this check.
  */
 export const get = query({
 	args: { agentId: v.id("agents") },
@@ -108,12 +114,28 @@ export const get = query({
 		const agent = await ctx.db.get(args.agentId);
 		if (!agent) return null;
 
+		if (!agent.isSystem) {
+			if (!agent.workspaceId) {
+				throw new Error("Agent has no workspace to authorize against");
+			}
+			await requireAuthWithWorkspace(ctx, agent.workspaceId);
+		} else {
+			// System agents are global, but still require an authenticated caller.
+			await requireAuth(ctx);
+		}
+
 		const skills = await Promise.all(
 			agent.skillIds.map((skillId) => ctx.db.get(skillId)),
 		);
 
+		const {
+			token: _token,
+			tokenCreatedAt: _tokenCreatedAt,
+			...safeAgent
+		} = agent;
+
 		return {
-			...agent,
+			...safeAgent,
 			skills: skills.filter(Boolean),
 		};
 	},
@@ -328,11 +350,20 @@ export const remove = mutation({
 export const incrementUsage = mutation({
 	args: { agentId: v.id("agents") },
 	handler: async (ctx, args) => {
-		// Telemetry write — any authenticated user may bump usage counters.
-		await requireAuth(ctx);
-
 		const agent = await ctx.db.get(args.agentId);
 		if (!agent) return;
+
+		if (agent.isSystem) {
+			// System agents are global — any authenticated caller may bump usage.
+			await requireAuth(ctx);
+		} else {
+			if (!agent.workspaceId) {
+				throw new Error("Agent has no workspace to authorize against");
+			}
+			// Same ownership rule as update()/remove(): caller must own or belong
+			// to the agent's workspace — prevents cross-tenant counter tampering.
+			await requireAuthWithWorkspace(ctx, agent.workspaceId);
+		}
 
 		await ctx.db.patch(args.agentId, {
 			usageCount: agent.usageCount + 1,

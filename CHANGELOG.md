@@ -4,6 +4,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-18 — 16 cross-tenant defects closed uniformly across three classes, org-scoping audit follow-up)
+
+Three read-only audits (`analysis/org-scoping-group-{a,b,c}.md`, 176 public functions surveyed) found 16 cross-tenant defects across three classes, each closed by the class idiom already present in the codebase — never a bespoke fix:
+
+- **Class 1 — no auth at all on a public read**, closed with `requireAuth`/`requireAuthWithWorkspace` (or a self-only equality check): `agents.get` (also stopped leaking the per-agent HTTP `token`/`tokenCreatedAt`), `skills.get`, `files.getFileUrl` (now requires the caller to own the `assets` row for the storageId), `users.getUserByClerkId` (self-only).
+- **Class 2 — authenticated but never checks the row belongs to the caller**, closed with `requireAuthWithWorkspace` on the row's own `workspaceId`, or an org/ownership-derived filter: `agents.incrementUsage`, `skills.incrementUsage`, `files.deleteFile` (now requires asset ownership before delete), `chatMessages.list` (filtered by caller's own `organizationId`, not just client-supplied `projectId`), `sharedLinks.list` (same org filter; rows carry a plaintext `password` field), `skills.importFromUrl` (new `assertWorkspaceAccessInternal` internalQuery closes the actions-can't-use-ctx.db gap), `sharedLinks.create` (`organizationId` now derived from the caller's resolved user row, never trusted from client args — the arg was removed from the mutation's signature).
+- **Class 3 — accepts `clerkUserId` as a plain arg, never compares to caller identity**, closed with the `identity.subject !== args.clerkUserId` idiom already used by `credits.deductCreditsPublic`/`refundCreditsPublic`: `credits.getUserCredits`, `credits.hasEnoughCredits`, `credits.getTransactionHistory`, `subscriptions.getByClerkUserId` (leaked `polarCustomerId` billing PII), `subscriptions.getFormattedSubscription` (same).
+
+Admin gap declared, not silently fixed: `requireAdmin` (`convex/lib/auth.ts`) checks a **global** `role` field — this schema has no org-scoped membership table, so every function gated solely by `requireAdmin` (`convex/adminHelpers.ts`) lets an admin/owner in any organization act on any other organization's users. Documented in a comment at `requireAdmin` itself; behavior unchanged; closing it properly requires a data-model change (org-scoped membership/role table), out of scope for a per-function auth fix.
+
+No product caller (`grep -rn 'api\.<fn>' app/ components/ hooks/ lib/`) currently exists for any of the 16 fixed functions — flagged for the record, not deleted.
+
+New regression suite `__tests__/convex/org-scoping.test.ts` (24 tests) — one test per defect (an unauthenticated or wrong-tenant caller must be rejected), plus 2 sanity tests proving the legitimate owner still succeeds. RED proven against pre-fix code (22/24 failed, exposing every leak); GREEN proven after the fix (24/24 passed). `__tests__/convex/polar-subscriptions.test.ts` updated (3 call sites) to authenticate as the resource owner, now required by the `subscriptions.getByClerkUserId` self-only check. `pnpm exec tsc --noEmit`: 0 errors. `pnpm exec biome check`: 0 errors on all changed files.
+
 ### Fixed (2026-07-18 — quality gate marker unlocked commits on a single trivial passing spec)
 
 `e2e/quality-gate-reporter.ts` created `/tmp/.quality-gate-passed` whenever `totalFailed === 0 && passedCount > 0` — true for `pnpm exec playwright test e2e/theme-repaint.spec.ts` alone (1 test, 1 of 8 declared spec files). Proven RED against `main`@`064bac80`: one trivial spec unlocked the commit gate.

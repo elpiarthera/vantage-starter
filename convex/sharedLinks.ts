@@ -2,7 +2,13 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 /**
- * List all shared links for a resource
+ * List all shared links for a resource.
+ *
+ * SECURITY: `resourceId` is a free-form client-chosen string, not a secret —
+ * filtering by it alone let any authenticated caller from any organization
+ * read another organization's shared-link rows, including the plaintext
+ * `password` field. Rows are additionally filtered to the caller's own
+ * `organizationId` (set server-side at `create`-time).
  */
 export const list = query({
 	args: {
@@ -14,9 +20,21 @@ export const list = query({
 			throw new Error("Not authenticated");
 		}
 
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) =>
+				q.eq("clerkUserId", identity.subject),
+			)
+			.unique();
+		if (!user) {
+			throw new Error("User not found");
+		}
+		const callerOrganizationId = user.organizationId || "";
+
 		const links = await ctx.db
 			.query("sharedLinks")
 			.withIndex("by_resource", (q) => q.eq("resourceId", args.resourceId))
+			.filter((q) => q.eq(q.field("organizationId"), callerOrganizationId))
 			.collect();
 
 		return links;
@@ -24,12 +42,15 @@ export const list = query({
 });
 
 /**
- * Create a new shared link
+ * Create a new shared link.
+ *
+ * SECURITY: `organizationId` is derived from the caller's own resolved user
+ * row, never trusted verbatim from client args — otherwise any caller could
+ * attribute a shared link to an arbitrary organization.
  */
 export const create = mutation({
 	args: {
 		resourceId: v.string(),
-		organizationId: v.string(),
 		expiresAt: v.optional(v.number()),
 		password: v.optional(v.string()),
 		allowDownload: v.boolean(),
@@ -40,13 +61,23 @@ export const create = mutation({
 			throw new Error("Not authenticated");
 		}
 
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) =>
+				q.eq("clerkUserId", identity.subject),
+			)
+			.unique();
+		if (!user) {
+			throw new Error("User not found");
+		}
+
 		const userId = identity.subject;
 
 		// Generate unique token
 		const token = `share_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
 		const linkId = await ctx.db.insert("sharedLinks", {
-			organizationId: args.organizationId,
+			organizationId: user.organizationId || "",
 			resourceId: args.resourceId,
 			userId,
 			token,

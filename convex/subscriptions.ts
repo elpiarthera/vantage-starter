@@ -16,6 +16,10 @@ import { polar } from "./polar";
  * Used by UI to display current subscription
  *
  * REQUIRES: Compound index "by_organization_and_status" ["organizationId", "status"]
+ *
+ * SECURITY: self-only — same idiom as credits.deductCreditsPublic/
+ * refundCreditsPublic (identity.subject must equal args.clerkUserId).
+ * Returns `polarCustomerId` (billing PII) so this must never leak cross-tenant.
  */
 export const getByClerkUserId = query({
 	args: {
@@ -23,6 +27,14 @@ export const getByClerkUserId = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's subscription");
+		}
 
 		// Find user first to get organizationId
 		const user = await ctx.db
@@ -58,6 +70,10 @@ export const getByClerkUserId = query({
  *
  * Tier data is resolved dynamically from subscriptionTiers by polarProductId.
  * Adding a new product only requires a new row in subscriptionTiers — no code change.
+ *
+ * SECURITY: self-only — same idiom as credits.deductCreditsPublic/
+ * refundCreditsPublic. Returns `polarCustomerId` (billing PII) so this must
+ * never leak cross-tenant.
  */
 export const getFormattedSubscription = query({
 	args: {
@@ -65,6 +81,14 @@ export const getFormattedSubscription = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's subscription");
+		}
 
 		const user = await ctx.db
 			.query("users")

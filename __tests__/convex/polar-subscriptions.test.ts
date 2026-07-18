@@ -69,9 +69,11 @@ describe("Subscription Lifecycle: getByClerkUserId", () => {
 		await seedTier(t, { tierKey: "tier_1", monthlyCredits: 1000 });
 		await t.mutation(internal.subscriptions.create, BASE_ARGS);
 
-		const sub = await t.query(api.subscriptions.getByClerkUserId, {
-			clerkUserId: TEST_USER_ID,
-		});
+		const sub = await t
+			.withIdentity({ subject: TEST_USER_ID })
+			.query(api.subscriptions.getByClerkUserId, {
+				clerkUserId: TEST_USER_ID,
+			});
 
 		expect(sub).not.toBeNull();
 		expect(sub?.polarSubscriptionId).toBe(TEST_SUB_ID);
@@ -82,9 +84,11 @@ describe("Subscription Lifecycle: getByClerkUserId", () => {
 		const t = makeT();
 		await seedUser(t);
 
-		const sub = await t.query(api.subscriptions.getByClerkUserId, {
-			clerkUserId: TEST_USER_ID,
-		});
+		const sub = await t
+			.withIdentity({ subject: TEST_USER_ID })
+			.query(api.subscriptions.getByClerkUserId, {
+				clerkUserId: TEST_USER_ID,
+			});
 
 		expect(sub).toBeNull();
 	});
@@ -196,12 +200,16 @@ describe("Subscription Lifecycle: multi-user isolation", () => {
 			polarSubscriptionId: "sub_b",
 		});
 
-		const subA = await t.query(api.subscriptions.getByClerkUserId, {
-			clerkUserId: USER_A,
-		});
-		const subB = await t.query(api.subscriptions.getByClerkUserId, {
-			clerkUserId: USER_B,
-		});
+		const subA = await t
+			.withIdentity({ subject: USER_A })
+			.query(api.subscriptions.getByClerkUserId, {
+				clerkUserId: USER_A,
+			});
+		const subB = await t
+			.withIdentity({ subject: USER_B })
+			.query(api.subscriptions.getByClerkUserId, {
+				clerkUserId: USER_B,
+			});
 
 		expect(subA?.polarSubscriptionId).toBe("sub_a");
 		expect(subB?.polarSubscriptionId).toBe("sub_b");

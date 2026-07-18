@@ -78,19 +78,50 @@ export const saveFileMetadata = mutation({
 });
 
 /**
- * Get file URL by storage ID
+ * Get file URL by storage ID.
+ *
+ * SECURITY: requires the caller to own the `assets` row referencing this
+ * storageId — a bare storageId is not a secret and must never be resolvable
+ * to a URL by an unauthenticated or cross-tenant caller.
  */
 export const getFileUrl = query({
 	args: {
 		storageId: v.string(),
 	},
 	handler: async (ctx, args) => {
-		return await ctx.storage.getUrl(args.storageId);
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Not authenticated");
+		}
+
+		const url = await ctx.storage.getUrl(args.storageId);
+		if (!url) {
+			return null;
+		}
+
+		// Assets are indexed by userId; ownership is verified by re-deriving the
+		// asset row that matches both this storageId's resolved URL AND this user.
+		const owned = await ctx.db
+			.query("assets")
+			.withIndex("by_user", (q) => q.eq("userId", identity.subject))
+			.filter((q) => q.eq(q.field("url"), url))
+			.unique();
+		if (!owned) {
+			throw new Error(
+				"Unauthorized — you don't own a file with this storage ID",
+			);
+		}
+
+		return url;
 	},
 });
 
 /**
- * Delete file from storage
+ * Delete file from storage.
+ *
+ * SECURITY: requires the caller to own the `assets` row referencing this
+ * storageId (verified via url match, since assets stores `url` not
+ * `storageId` directly) before deleting from storage AND the metadata row.
  */
 export const deleteFile = mutation({
 	args: {
@@ -102,8 +133,26 @@ export const deleteFile = mutation({
 			throw new Error("Not authenticated");
 		}
 
+		const url = await ctx.storage.getUrl(args.storageId);
+		if (!url) {
+			throw new Error("File not found");
+		}
+
+		const asset = await ctx.db
+			.query("assets")
+			.withIndex("by_user", (q) => q.eq("userId", identity.subject))
+			.filter((q) => q.eq(q.field("url"), url))
+			.unique();
+
+		if (!asset) {
+			throw new Error(
+				"Unauthorized — you don't own a file with this storage ID",
+			);
+		}
+
 		// Delete from storage
 		await ctx.storage.delete(args.storageId);
+		await ctx.db.delete(asset._id);
 
 		return { success: true };
 	},

@@ -27,6 +27,9 @@ import {
 // ============================================
 /**
  * Get user's credit balance. Auto-initializes if new user.
+ *
+ * SECURITY: self-only — same idiom as deductCreditsPublic/refundCreditsPublic
+ * below (identity.subject must equal args.clerkUserId).
  */
 export const getUserCredits = query({
 	args: {
@@ -34,6 +37,14 @@ export const getUserCredits = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's credits");
+		}
 
 		// Check if user already has credits
 		const existingCredits = await ctx.db
@@ -310,6 +321,8 @@ export const addCredits = internalMutation({
 // ============================================
 /**
  * Quick check if user has enough credits for an action.
+ *
+ * SECURITY: self-only — same idiom as deductCreditsPublic/refundCreditsPublic.
  */
 export const hasEnoughCredits = query({
 	args: {
@@ -318,6 +331,14 @@ export const hasEnoughCredits = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId, actionType } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot read another user's credits");
+		}
 
 		// Get credit cost
 		const creditCost = await ctx.db
@@ -417,6 +438,8 @@ export const listCreditCostsByTypes = query({
 // ============================================
 /**
  * Get user's credit transaction history.
+ *
+ * SECURITY: self-only — same idiom as deductCreditsPublic/refundCreditsPublic.
  */
 export const getTransactionHistory = query({
 	args: {
@@ -425,6 +448,16 @@ export const getTransactionHistory = query({
 	},
 	handler: async (ctx, args) => {
 		const { clerkUserId, limit = 50 } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error(
+				"Unauthorized: cannot read another user's transaction history",
+			);
+		}
 
 		const transactions = await ctx.db
 			.query("creditTransactions")
