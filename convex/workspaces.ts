@@ -8,7 +8,7 @@
  */
 
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId, requireAuth } from "./lib/auth";
 
 // ============================================================================
@@ -175,10 +175,14 @@ export const create = mutation({
 });
 
 /**
- * Ensure a user has a default workspace.
- * Called during user sync (Clerk webhook). Safe to call multiple times.
+ * Ensure a user has a default workspace, by arbitrary clerkUserId.
+ *
+ * SECURITY: internal-only. Zero client/internal callers today (verified —
+ * grep across app/components/hooks/lib/convex returns none); the client
+ * uses the auth-gated ensureMyWorkspace() below instead. A public version
+ * would let anyone create workspace rows owned by any Clerk user ID.
  */
-export const ensureDefault = mutation({
+export const ensureDefault = internalMutation({
 	args: {
 		clerkUserId: v.string(),
 		organizationId: v.optional(v.string()),

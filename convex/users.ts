@@ -51,6 +51,18 @@ export const syncUser = mutation({
 	},
 	returns: v.id("users"),
 	handler: async (ctx, args) => {
+		// Caller must be syncing THEMSELVES — reject any attempt to write a
+		// user row for a different Clerk identity. Without this check, any
+		// signed-in caller (or anyone spoofing a JWT-less request) could
+		// create/overwrite an arbitrary user's profile by ID.
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== args.clerkUserId) {
+			throw new Error("Unauthorized: cannot sync a different user's account");
+		}
+
 		// Check if user already exists
 		const existingUser = await ctx.db
 			.query("users")

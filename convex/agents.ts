@@ -21,7 +21,7 @@ import {
 	mutation,
 	query,
 } from "./_generated/server";
-import { requireAuthWithWorkspace } from "./lib/auth";
+import { requireAuth, requireAuthWithWorkspace } from "./lib/auth";
 
 // ============================================================================
 // HELPER: Resolve user + workspace (query/mutation ctx)
@@ -277,6 +277,13 @@ export const update = mutation({
 		if (agent.isSystem) {
 			throw new Error("Cannot modify system agents");
 		}
+		if (!agent.workspaceId) {
+			throw new Error("Agent has no workspace to authorize against");
+		}
+
+		// Same ownership rule as create(): caller must own or belong to the
+		// agent's workspace (owner or org member) — see requireAuthWithWorkspace.
+		await requireAuthWithWorkspace(ctx, agent.workspaceId);
 
 		const cleanUpdates = Object.fromEntries(
 			Object.entries(updates).filter(([, v]) => v !== undefined),
@@ -303,6 +310,13 @@ export const remove = mutation({
 		if (agent.isSystem) {
 			throw new Error("Cannot delete system agents");
 		}
+		if (!agent.workspaceId) {
+			throw new Error("Agent has no workspace to authorize against");
+		}
+
+		// Same ownership rule as create()/update(): caller must own or belong
+		// to the agent's workspace.
+		await requireAuthWithWorkspace(ctx, agent.workspaceId);
 
 		await ctx.db.patch(args.agentId, {
 			isActive: false,
@@ -314,6 +328,9 @@ export const remove = mutation({
 export const incrementUsage = mutation({
 	args: { agentId: v.id("agents") },
 	handler: async (ctx, args) => {
+		// Telemetry write — any authenticated user may bump usage counters.
+		await requireAuth(ctx);
+
 		const agent = await ctx.db.get(args.agentId);
 		if (!agent) return;
 
@@ -333,8 +350,14 @@ export const incrementUsage = mutation({
 /**
  * Generate a token for an existing agent that has none.
  * Returns the token plaintext — show once, not retrievable.
+ *
+ * SECURITY: internal-only. This mint-and-return-plaintext mutation has zero
+ * client callers (verified — grep across app/components/hooks/lib/convex
+ * returns none) and must never be reachable by an unauthenticated caller
+ * holding only the deployment URL. Wrap with an authenticated + ownership
+ * check the day a real caller needs this from the client.
  */
-export const generateToken = mutation({
+export const generateToken = internalMutation({
 	args: { agentId: v.id("agents") },
 	handler: async (ctx, args) => {
 		const agent = await ctx.db.get(args.agentId);
@@ -364,8 +387,10 @@ export const generateToken = mutation({
 /**
  * Rotate the token for an agent — invalidates the previous token immediately.
  * Returns the new token plaintext — show once, not retrievable.
+ *
+ * SECURITY: internal-only — see generateToken() above for rationale.
  */
-export const rotateToken = mutation({
+export const rotateToken = internalMutation({
 	args: { agentId: v.id("agents") },
 	handler: async (ctx, args) => {
 		const agent = await ctx.db.get(args.agentId);

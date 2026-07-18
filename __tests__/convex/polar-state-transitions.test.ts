@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { api, internal } from "../../convex/_generated/api";
+import { internal } from "../../convex/_generated/api";
 import {
 	makeT,
 	seedSubscription,
@@ -159,7 +159,7 @@ describe("State transition: cancel preserves userCredits", () => {
 		});
 
 		// Cancel the subscription
-		await t.mutation(api.subscriptions.cancel, {
+		await t.mutation(internal.subscriptions.cancel, {
 			polarSubscriptionId: TEST_SUB_ID,
 		});
 

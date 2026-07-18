@@ -14,7 +14,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query } from "./_generated/server";
-import { requireAuthWithWorkspace, requireUser } from "./lib/auth";
+import { requireAuth, requireAuthWithWorkspace, requireUser } from "./lib/auth";
 
 // ============================================================================
 // HELPER: Resolve user + workspace for query/mutation context
@@ -217,6 +217,13 @@ export const update = mutation({
 		if (skill.isSystem) {
 			throw new Error("Cannot modify system skills");
 		}
+		if (!skill.workspaceId) {
+			throw new Error("Skill has no workspace to authorize against");
+		}
+
+		// Same ownership rule as create(): caller must own or belong to the
+		// skill's workspace (owner or org member) — see requireAuthWithWorkspace.
+		await requireAuthWithWorkspace(ctx, skill.workspaceId);
 
 		const cleanUpdates = Object.fromEntries(
 			Object.entries(updates).filter(([, v]) => v !== undefined),
@@ -240,6 +247,13 @@ export const remove = mutation({
 		if (skill.isSystem) {
 			throw new Error("Cannot delete system skills");
 		}
+		if (!skill.workspaceId) {
+			throw new Error("Skill has no workspace to authorize against");
+		}
+
+		// Same ownership rule as create()/update(): caller must own or belong
+		// to the skill's workspace.
+		await requireAuthWithWorkspace(ctx, skill.workspaceId);
 
 		await ctx.db.delete(args.skillId);
 	},
@@ -248,6 +262,9 @@ export const remove = mutation({
 export const incrementUsage = mutation({
 	args: { skillId: v.id("skills") },
 	handler: async (ctx, args) => {
+		// Telemetry write — any authenticated user may bump usage counters.
+		await requireAuth(ctx);
+
 		const skill = await ctx.db.get(args.skillId);
 		if (!skill) return;
 
