@@ -6,6 +6,11 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Docs (2026-07-19 — json-render 0.14.1 vs upstream 0.19.0 gap, analysis only)
+
+`docs/audits/json-render-upstream-gap-2026-07-19.md` — six-section gap map between our pinned `@json-render/core`/`@json-render/react` `^0.14.1` and upstream `0.19.0` (confirmed via `npm view`). Analysis only: no dependency bump, no code change. Findings: the catalog/`validateSpec` machinery we don't use already existed at our own pin (a wiring gap, not a version gap); hand-rolled duplication is nearly empty except one spec-tree walker (`ConfirmPlanBar.extractProposal`, `chat-interface.tsx:151-218`) that would become redundant if validation were wired; all 26 upstream skills enumerated and scored for applicability; zero changelog-labeled breaking changes across the five-minor-version gap (verified against the project's own "breaking" label, which it does use elsewhere, just not in this range).
+
+
 ### Changed (2026-07-19 — the dead product's name leaves the prose the template ships)
 
 Sixteen documents that serve any fork, cleaned of a video product this template is not. The instruction that shaped the work was the prohibition, not the goal: **a blind string replacement was forbidden.** "Recover the video renders from the old product" does not become true by swapping the name — it becomes a lie about the template. Every occurrence was read in its sentence, then rewritten if it was generically useful, or **deleted outright** if it only made sense for the video product. Laundering a false sentence into a plausible one would have been worse than leaving it.
