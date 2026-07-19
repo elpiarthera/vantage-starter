@@ -52,10 +52,15 @@ test.describe("Landing page", () => {
 		const faqSection = page.locator("#faq");
 		await expect(faqSection).toBeVisible();
 
-		// Accordion items render as buttons with aria-expanded
+		// Accordion items render as buttons with aria-expanded, but only once
+		// the `lui-accordion-item` custom element upgrades and renders its
+		// shadow root — that upgrade is async (bundle fetch + define + render),
+		// so `.count()` read once (no retry) races it and is order-dependent
+		// on suite warm-up. `expect.poll` retries the count until the
+		// upgrade lands (or the assertion genuinely times out if the
+		// accordion stops rendering — this must still fail on a dead FAQ).
 		const accordionTriggers = faqSection.getByRole("button");
-		const count = await accordionTriggers.count();
-		expect(count).toBeGreaterThan(0);
+		await expect.poll(() => accordionTriggers.count()).toBeGreaterThan(0);
 	});
 
 	test("nav Features link scrolls to features section", async ({ page }) => {
