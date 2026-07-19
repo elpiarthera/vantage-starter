@@ -92,6 +92,14 @@ const CONVEX_KINDS = ["dev", "preview", "prod"];
 const DEPLOYMENT_KIND_SHAPE = new RegExp(
 	`^(${CONVEX_KINDS.join("|")}):([a-z0-9][a-z0-9-]*)$`,
 );
+// Case-insensitive twin of the shape above. Used ONLY to tell "no identity here"
+// apart from "an identity the CLI would never have written". Two states printing
+// the same thing is the defect this guard exists to catch, so it must not commit
+// that defect itself.
+const DEPLOYMENT_KIND_SHAPE_LOOSE = new RegExp(
+	`^(${CONVEX_KINDS.join("|")}):([a-z0-9][a-z0-9-]*)$`,
+	"i",
+);
 const DEPLOYMENT_URL_SHAPE =
 	/^https:\/\/([a-z0-9-]+)\.convex\.(cloud|site)\/?$/;
 
@@ -147,6 +155,7 @@ function loadEnvironment(filePath) {
 function scanForDeploymentIdentities(env) {
 	const findings = [];
 	const unresolved = [];
+	const miscased = [];
 	const slugToKind = new Map();
 
 	// First pass — CONVEX_DEPLOYMENT-shaped values carry their kind directly
@@ -158,6 +167,15 @@ function scanForDeploymentIdentities(env) {
 			const [, kind, slug] = m;
 			findings.push({ key, value, kind, via: "prefix" });
 			slugToKind.set(slug, kind);
+			continue;
+		}
+		// Shape recognised, case is not what the CLI writes. Reported as its own
+		// refusal rather than normalised: the CLI only ever emits lowercase, so an
+		// uppercase prefix means the value was TYPED BY HAND. Accepting it silently
+		// would hide exactly the class this repository's doctrine names — a value a
+		// tool could have derived, written by a human instead.
+		if (DEPLOYMENT_KIND_SHAPE_LOOSE.test(value)) {
+			miscased.push({ key, value });
 		}
 	}
 
@@ -178,7 +196,7 @@ function scanForDeploymentIdentities(env) {
 		}
 	}
 
-	return { findings, unresolved };
+	return { findings, unresolved, miscased };
 }
 
 function parseArgs(argv) {
@@ -202,6 +220,31 @@ function main() {
 		process.exit(2);
 	}
 
+	// APPLICABILITY IS DECIDED BEFORE MEASURABILITY, and the order is the whole
+	// point. This rule constrains PRODUCTION-scoped variables only. Outside that
+	// scope there is nothing it could refuse, so "I found no deployment identity"
+	// is not a measurement failure — there was no measurement owed.
+	//
+	// Deciding this AFTER the scan is what broke the build for everyone: prebuild
+	// runs `--scope="${VERCEL_ENV:-development}"`, so a fresh clone of this
+	// TEMPLATE — no Convex variables yet, by definition — hit COULD NOT MEASURE
+	// and exited 2. A correct refusal, on a path where nothing was at stake,
+	// reads as "this repository does not build". A gate a legitimate build
+	// cannot satisfy gets bypassed, then disabled.
+	//
+	// This is a REORDER, never a downgrade: inside production scope, COULD NOT
+	// MEASURE still fails with exit 2 below. Folding a refusal into a pass where
+	// the rule DOES apply is the exact defect this script exists to catch, and
+	// doing it here to quiet a red would be that defect wearing the fix's name.
+	if (scope !== "production") {
+		console.log(
+			`check-production-env: scope=${scope} is not production-scoped — rule does not apply, ` +
+				"nothing was measured because nothing was owed. " +
+				"See analysis/t8-environment-audit.md for why this is scoped to production only.",
+		);
+		process.exit(0);
+	}
+
 	const { source, env, readError } = loadEnvironment(file);
 
 	if (readError) {
@@ -214,7 +257,24 @@ function main() {
 		process.exit(2);
 	}
 
-	const { findings, unresolved } = scanForDeploymentIdentities(env);
+	const { findings, unresolved, miscased } = scanForDeploymentIdentities(env);
+
+	if (miscased.length > 0) {
+		console.error(
+			`check-production-env: COULD NOT MEASURE — ${miscased.length} variable(s) in "${source}" ` +
+				"carry a deployment-identity SHAPE the CLI would never write " +
+				"(the kind prefix is not lowercase), so their kind cannot be trusted:",
+		);
+		for (const mc of miscased) {
+			console.error(`  - ${mc.key}=${mc.value}`);
+		}
+		console.error(
+			"The CLI only emits lowercase prefixes. A different case means the value was " +
+				"typed by hand — reported rather than normalised, because guessing what a " +
+				"hand-typed value meant is how the wrong backend reaches production.",
+		);
+		process.exit(2);
+	}
 
 	if (findings.length === 0 && unresolved.length === 0) {
 		console.error(
@@ -241,14 +301,6 @@ function main() {
 	console.log(`check-production-env: scope=${scope} source=${source}`);
 	for (const f of findings) {
 		console.log(`  ${f.key}=${f.value} -> kind="${f.kind}" (via ${f.via})`);
-	}
-
-	if (scope !== "production") {
-		console.log(
-			`check-production-env: scope=${scope} is not production-scoped — rule does not apply. ` +
-				"See analysis/t8-environment-audit.md for why this is scoped to production only.",
-		);
-		process.exit(0);
 	}
 
 	const offenders = findings.filter((f) => NON_PRODUCTION_KINDS.has(f.kind));
