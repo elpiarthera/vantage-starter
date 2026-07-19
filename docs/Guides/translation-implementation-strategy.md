@@ -1,7 +1,7 @@
 Starting time: 19h08 Paris time
-# MyShortReel i18n Implementation Strategy
+# i18n Implementation Strategy
 
-This is the **Production-Ready Master Implementation Plan** for MyShortReel.
+This is the **Production-Ready Master Implementation Plan** for internationalizing this app.
 
 It incorporates **next-intl** for App Router, **Clerk middleware composition**, and handles the project's **100% Client Component architecture**.
 
@@ -760,7 +760,7 @@ app/api/                     ← ALL files here
 └── step3b/chat/route.ts
 ```
 
-**Why?** Translating prompts like "You are the AI Director for MyShortReel..." into German will **break the AI's persona and instruction adherence**. The AI models are trained primarily on English instructions.
+**Why?** Translating a system prompt like "You are a helpful assistant..." into German will **break the AI's persona and instruction adherence**. The AI models are trained primarily on English instructions.
 
 ### Hidden Strings in Constants
 
@@ -1021,8 +1021,8 @@ import type React from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MyShortReel",
-  description: "Create stunning AI-powered video in minutes",
+  title: "Your App",
+  description: "Your app description",
 };
 
 export default function RootLayout({
@@ -1141,7 +1141,7 @@ Move the content of the old `.cursorrules` into this new file:
 **File: `.cursor/rules/i18n-rules.mdc`**
 
 ```markdown
-# i18n Refactoring Rules for MyShortReel (Next.js 14 + next-intl)
+# i18n Refactoring Rules (Next.js 14 + next-intl)
 
 We are refactoring this codebase to use `next-intl`. Follow these strict rules:
 
@@ -1715,7 +1715,7 @@ export const clerkLocalizations: Record<string, Partial<LocalizationResource>> =
     signIn: {
       start: {
         title: 'Connexion',
-        subtitle: 'Connectez-vous pour continuer vers MyShortReel',
+        subtitle: 'Connectez-vous pour continuer',
         actionText: 'Pas encore de compte ?',
         actionLink: "S'inscrire",
       },
@@ -1723,7 +1723,7 @@ export const clerkLocalizations: Record<string, Partial<LocalizationResource>> =
     signUp: {
       start: {
         title: 'Créer un compte',
-        subtitle: 'Inscrivez-vous pour commencer avec MyShortReel',
+        subtitle: 'Inscrivez-vous pour commencer',
         actionText: 'Déjà un compte ?',
         actionLink: 'Se connecter',
       },
@@ -1737,7 +1737,7 @@ export const clerkLocalizations: Record<string, Partial<LocalizationResource>> =
     signIn: {
       start: {
         title: 'Anmelden',
-        subtitle: 'Melden Sie sich an, um zu MyShortReel fortzufahren',
+        subtitle: 'Melden Sie sich an, um fortzufahren',
         actionText: 'Noch kein Konto?',
         actionLink: 'Registrieren',
       },
@@ -1748,7 +1748,7 @@ export const clerkLocalizations: Record<string, Partial<LocalizationResource>> =
     signIn: {
       start: {
         title: 'Accedi',
-        subtitle: 'Accedi per continuare su MyShortReel',
+        subtitle: 'Accedi per continuare',
         actionText: 'Non hai un account?',
         actionLink: 'Registrati',
       },
@@ -1759,7 +1759,7 @@ export const clerkLocalizations: Record<string, Partial<LocalizationResource>> =
     signIn: {
       start: {
         title: 'Iniciar sesión',
-        subtitle: 'Inicia sesión para continuar a MyShortReel',
+        subtitle: 'Inicia sesión para continuar',
         actionText: '¿No tienes cuenta?',
         actionLink: 'Regístrate',
       },
@@ -1995,7 +1995,7 @@ grep -r "Your task" lib/ai/prompts/
 - [ ] Test `/api/step1/generate-story` - Generated story quality unchanged
 - [ ] Test Step 2 chat - AI Director personality unchanged
 
-**Why this matters:** If you see "Sie sind der KI-Direktor für MyShortReel" (German) instead of "You are the AI Director for MyShortReel", the AI's instruction adherence will break completely.
+**Why this matters:** If a system prompt gets translated into German instead of staying in English, the AI's instruction adherence will break completely.
 
 ### 10.6 Edge Cases to Test
 
@@ -2292,7 +2292,7 @@ jobs:
 After adding new keys or running the translation script, always verify that all language files have the same keys. Run this verification script:
 
 ```bash
-cd /home/laurentperello/myshortreel-alpha && node -e "
+cd /path/to/your/repo && node -e "
 const fs = require('fs');
 const path = require('path');
 
@@ -2419,4 +2419,4 @@ Create `scripts/verify-translations.js` with the verification logic above for ea
 
 ---
 
-This plan is **safe**, **automated**, and **scalable** for the MyShortReel codebase.
+This plan is **safe**, **automated**, and **scalable** for this codebase.

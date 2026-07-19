@@ -1,9 +1,9 @@
 # 🏗️ Feature Implementation Best Practices
 
-*Comprehensive guide to proper feature implementation patterns for MyShortReel to maintain code quality and architectural integrity*
+*Comprehensive guide to proper feature implementation patterns for this template, to maintain code quality and architectural integrity*
 
 **Last Updated**: January 11, 2025  
-**Purpose**: Prevent architectural mistakes and ensure consistent, maintainable code for video generation features
+**Purpose**: Prevent architectural mistakes and ensure consistent, maintainable code
 
 ---
 
@@ -76,7 +76,7 @@ export default function VideoCreationMegaComponent() {
 
 **Good Example**:
 \`\`\`tsx
-// DO: Modular approach following MyShortReel's pattern
+// DO: Modular approach following the recommended pattern
 // app/guided/step-3/page.tsx
 export default function SceneCreationPage() {
   return <SceneCreationLayout />
@@ -110,7 +110,7 @@ export function AIAssistantPanel() {
 ## 📁 File Organization Patterns
 
 ### **3. Feature-Based Directory Structure**
-**✅ MyShortReel Pattern**:
+**✅ Recommended Pattern**:
 \`\`\`
 app/
 ├── guided/
@@ -168,7 +168,7 @@ hooks/
 \`\`\`
 
 ### **4. Component Naming Conventions**
-**✅ MyShortReel Patterns**:
+**✅ Recommended Patterns**:
 - **Page components**: `[Feature]Page.tsx` (in app directory)
 - **Layout components**: `[Feature]Layout.tsx`
 - **Feature components**: `[Feature][Component].tsx`
@@ -181,7 +181,7 @@ hooks/
 ## 🎯 Implementation Workflow
 
 ### **5. Feature Implementation Steps**
-**✅ MyShortReel Process**:
+**✅ Recommended Process**:
 
 1. **Create Route Structure**:
    \`\`\`bash
@@ -238,7 +238,7 @@ hooks/
    \`\`\`
 
 ### **6. Component Responsibility Matrix**
-**✅ MyShortReel Separation**:
+**✅ Recommended Separation**:
 
 | Component Type | Responsibility | Example |
 |---|---|---|
@@ -289,7 +289,7 @@ export type { VideoScene, SceneEditorProps }
 \`\`\`
 
 ### **8. State Management Patterns**
-**✅ MyShortReel Patterns**:
+**✅ Recommended Patterns**:
 
 \`\`\`tsx
 // DO: Local state for component-specific data
@@ -389,7 +389,7 @@ export async function generateVideoFromScenes(scenes: VideoScene[]) {
 ## 🎨 Design System Integration
 
 ### **10. Consistent Styling Patterns**
-**✅ MyShortReel Standards**:
+**✅ Recommended Standards**:
 
 \`\`\`tsx
 // DO: Use design tokens from globals.css
@@ -409,7 +409,7 @@ export async function generateVideoFromScenes(scenes: VideoScene[]) {
 \`\`\`
 
 ### **11. Component Composition**
-**✅ MyShortReel Patterns**:
+**✅ Recommended Patterns**:
 
 \`\`\`tsx
 // DO: Composable video creation components
@@ -550,7 +550,7 @@ describe('videoGeneration service', () => {
 
 ## 🚨 Common Anti-Patterns to Avoid
 
-### **14. What NOT to Do in MyShortReel**
+### **14. What NOT to Do**
 
 **❌ Mixing Video Generation Logic in UI Components**:
 \`\`\`tsx
@@ -781,9 +781,9 @@ return (
 
 ---
 
-## 📚 MyShortReel Specific Patterns
+## 📚 Reference Patterns
 
-### **Guided Flow Pattern**:
+### **Multi-Step Flow Pattern**:
 \`\`\`tsx
 // Each step follows this pattern:
 // 1. Page component (route entry)
@@ -797,20 +797,6 @@ components/step-[n]/[Feature]Component.tsx
 
 // 4. Shared components (reusable)
 components/shared/[Component].tsx
-\`\`\`
-
-### **Video Workflow Pattern**:
-\`\`\`tsx
-// 1. User input (Steps 1-2)
-Event Type → Event Details
-
-// 2. Content creation (Steps 3-4)
-Scene Creation → Asset Management
-
-// 3. Preview and generation (Steps 5-6)
-Video Preview → Video Generation
-
-// Each step should be independent but connected through stores
 \`\`\`
 
 ### **State Flow Pattern**:
@@ -833,4 +819,4 @@ const data = useFeatureStore(state => state.data)
 
 ---
 
-*This document serves as the definitive guide for feature implementation in MyShortReel. Following these patterns ensures maintainable, scalable, and high-quality code that provides an excellent video creation experience across all devices.*
+*This document serves as the definitive guide for feature implementation in this template. Following these patterns ensures maintainable, scalable, high-quality code across all devices.*

@@ -1,7 +1,6 @@
 # Convex Backend Implementation Plan
-## MyShortReel - Production-Ready MVP Backend
+## Production-Ready MVP Backend
 
-**Project**: MyShortReel (AI-powered video invitation generator)  
 **Backend**: Convex (reactive database + serverless functions)  
 **Integration**: Clerk Authentication (see auth-implementation-plan.md)  
 **Developer**: Solo Developer  
@@ -1944,7 +1943,7 @@ export const generateChatResponse = action({
       const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
         {
           role: "system",
-          content: `You are a helpful AI assistant for MyShortReel, an AI-powered video invitation generator. You are assisting the user with project "${project.name}". The current context is related to scene "${args.sceneId || 'general project'}"`,
+          content: `You are a helpful AI assistant. You are assisting the user with project "${project.name}".`,
         },
         // Consider fetching previous messages for a full conversation history
         // For now, sending only the user's current message for simplicity.

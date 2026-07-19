@@ -1,4 +1,4 @@
-# 🚨 MyShortReel - HOTFIX: Critical User Sync Implementation
+# 🚨 HOTFIX: Critical User Sync Implementation
 
 **Date**: November 24, 2025  
 **Priority**: 🔴 **CRITICAL** - Blocking all user functionality  
@@ -7,8 +7,7 @@
 **Estimated Time**: 1.5 hours  
 **Dependencies**: Sprint 1 & Sprint 2 complete ✅  
 **Issue**: Users signing up with Clerk are NOT synced to Convex  
-**Impact**: Project creation, asset uploads, and all features requiring user lookup fail  
-**Reference**: `docs/Guides/updated clerk users in convex.md` (Analysis + Solutions)
+**Impact**: Project creation, asset uploads, and all features requiring user lookup fail
 
 ---
 
@@ -224,8 +223,6 @@ import { api } from "@/convex/_generated/api";
  * 2. Calls syncUser mutation with user data from Clerk
  * 3. Only syncs once per session (prevents duplicate calls)
  * 4. Resets on sign-out (allows sync on next sign-in)
- * 
- * @see docs/Guides/updated clerk users in convex.md for full analysis
  */
 export function UserSyncProvider({ children }: { children: React.ReactNode }) {
   const { isSignedIn } = useAuth();
@@ -333,8 +330,8 @@ import { UserSyncProvider } from "@/components/UserSyncProvider"; // 🆕 NEW
 import "./globals.css";
 
 export const metadata: Metadata = {
-	title: "MyShortReel",
-	description: "Create stunning AI-powered video in minutes",
+	title: "Your App",
+	description: "Your app description",
 };
 
 export default function RootLayout({
@@ -960,9 +957,6 @@ export function UserSyncProvider({ children }) {
 
 ### **Reference Documents**
 
-- `docs/Guides/updated clerk users in convex.md` - Full analysis + 3 solutions
-- `docs/MVP/Done/sprint-1-implementation.md` - Clerk + Convex setup
-- `docs/MVP/Done/sprint-2-implementation.md` - User sync function implementation
 - `convex/users.ts` - syncUser mutation implementation
 - `convex/schema.ts` - Users table schema
 

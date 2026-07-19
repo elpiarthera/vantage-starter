@@ -1,6 +1,7 @@
 # Troubleshooting Guide
 
-Common errors, solutions, and debug patterns for MyShortReel.
+Common errors, solutions, and debug patterns for this stack: Next.js, Convex,
+Clerk, and Polar.
 
 ## Authentication Issues
 
@@ -599,6 +600,3 @@ If you can't resolve an issue:
    - Clerk: support@clerk.com
    - Vercel: vercel.com/help
 \`\`\`
-
-```md file="docs/state-management-issue.md" isDeleted="true" isMoved="true" isMovedTo="docs/Archive/state-management-issue.md"
-...moved to docs/Archive/state-management-issue.md...

@@ -4,6 +4,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-19 — the dead product's name leaves the prose the template ships)
+
+Sixteen documents that serve any fork, cleaned of a video product this template is not. The instruction that shaped the work was the prohibition, not the goal: **a blind string replacement was forbidden.** "Recover the video renders from MyShortReel" does not become true by swapping the name — it becomes a lie about the template. Every occurrence was read in its sentence, then rewritten if it was generically useful, or **deleted outright** if it only made sense for the video product. Laundering a false sentence into a plausible one would have been worse than leaving it.
+
+Deleted rather than rewritten, listed so nothing load-bearing vanishes quietly: the "Video Workflow Pattern" block in `feature-implementation-best-practices.md` (Event Type → Scene → Video Generation); the i18n guide's provenance line citing 987 keys from the old app; `docs/Implementation/README.md`'s "Completed Work" section and all its hour estimates; three "Maintained By: … Development Team" footers; three dangling references in `sprint-hotfix-user-sync.md` whose targets no longer exist; and a stray editor artifact in `troubleshooting-guide.md` that left an unclosed code fence.
+
+`analysis/production-readiness-audit-vantage-starter.md` kept both of its findings but dropped a literal hostname: the class ("a hardcoded upstream Clerk domain in the CSP") is load-bearing, the hostname is not — and it is verifiably gone from `middleware.ts` and `next.config.mjs`.
+
+`convex/schema.ts:8` is included even though it is a **comment**, not behaviour. No test can cover it, so it was treated as prose. It matters because the final sweep asserts over every file type, not markdown alone — a comment is exactly where a zero goes quietly wrong.
+
+**Two files deliberately NOT cleaned, and this is a decision rather than an omission.** `CHANGELOG.md` — its mentions ARE the record of removing that product, including the evidence command of an earlier audit. Erasing the name there does not clean history, it falsifies a dated trail; that is CONTENT, which does not expire, not STATE. `docs/Guides/disaster-recovery-plan.md` — it does not survive a rewrite: it recovers a specific running production application, which a template does not have, and its salvageable parts already duplicate `convex-setup.md` and `deployment-guide.md`. Both are escalated, neither is forced.
+
 ### Fixed (2026-07-18 — FAQ accordion e2e spec, order-dependent race on lit-ui upgrade)
 
 `e2e/landing.spec.ts:51` ("FAQ section is visible with accordion items") asserted `faqSection.getByRole("button").count() > 0` immediately after the section became visible — a one-shot `.count()` read, no retry. `<lui-accordion-item>` (`components/landing/FAQSection.tsx`) renders its `<button>` only in shadow DOM, after the custom element upgrades (bundle fetch + `customElements.define` + Lit render), so the read raced the upgrade. It passed in a warm full suite where the bundle had already resolved and failed cold/isolated — exactly the order-dependence reported. Fixed by replacing the one-shot count with `expect.poll(() => accordionTriggers.count()).toBeGreaterThan(0)`, which retries until the upgrade lands and still times out red if the accordion genuinely stops rendering (verified by a deliberate temporary break, restored byte-for-byte — `git diff` empty). CLASS sweep: `e2e/*.spec.ts` for any `lui-*` element assertion using a non-retrying `.count()` — 1 site total, now fixed, 0 remaining.

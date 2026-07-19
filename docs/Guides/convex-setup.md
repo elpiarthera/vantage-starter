@@ -41,7 +41,7 @@ This will:
 Follow the prompts:
 \`\`\`
 ? Create a new project? Yes
-? Project name: myshortreel (or your app name)
+? Project name: your-app-name
 ? Choose a region: us-east-1 (or closest to your users)
 \`\`\`
 

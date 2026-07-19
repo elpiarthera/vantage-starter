@@ -522,6 +522,5 @@ CONVEX_DEPLOY_KEY="prod:xxx|token" CONVEX_URL=https://xxx.convex.cloud pnpm run 
 
 **Document Version**: 1.0  
 **Last Verified**: November 17, 2025  
-**Next Review**: Before production launch  
-**Maintained By**: MyShortReel Development Team
+**Next Review**: Before production launch
 
