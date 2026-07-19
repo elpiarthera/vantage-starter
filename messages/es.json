@@ -744,7 +744,8 @@
 			"new_password_required": "La nueva contraseña es obligatoria",
 			"password_min_length": "La contraseña debe tener al menos 8 caracteres",
 			"confirm_password_required": "Por favor, confirma tu contraseña",
-			"passwords_do_not_match": "Las contraseñas no coinciden"
+			"passwords_do_not_match": "Las contraseñas no coinciden",
+			"current_password_incorrect": "Tu contraseña actual es incorrecta"
 		},
 		"current_password_label": "Contraseña Actual",
 		"new_password_label": "Nueva Contraseña",
@@ -752,7 +753,9 @@
 		"confirm_new_password_label": "Confirmar Nueva Contraseña",
 		"change_password_title": "Cambiar Contraseña",
 		"change_password_description": "Ingresa tu contraseña actual y elige una nueva",
-		"change_password_button": "Cambiar Contraseña"
+		"change_password_button": "Cambiar Contraseña",
+		"change_password_success_toast": "Tu contraseña ha sido cambiada",
+		"change_password_failed_toast": "No se pudo cambiar tu contraseña. Inténtalo de nuevo."
 	},
 	"assets_tab": {
 		"upload_asset": "Subir activo",

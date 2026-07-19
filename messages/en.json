@@ -744,7 +744,8 @@
 			"new_password_required": "New password is required",
 			"password_min_length": "Password must be at least 8 characters",
 			"confirm_password_required": "Please confirm your password",
-			"passwords_do_not_match": "Passwords do not match"
+			"passwords_do_not_match": "Passwords do not match",
+			"current_password_incorrect": "Your current password is incorrect"
 		},
 		"current_password_label": "Current Password",
 		"new_password_label": "New Password",
@@ -752,7 +753,9 @@
 		"confirm_new_password_label": "Confirm New Password",
 		"change_password_title": "Change Password",
 		"change_password_description": "Enter your current password and choose a new one",
-		"change_password_button": "Change Password"
+		"change_password_button": "Change Password",
+		"change_password_success_toast": "Your password has been changed",
+		"change_password_failed_toast": "Could not change your password. Please try again."
 	},
 	"assets_tab": {
 		"upload_asset": "Upload Asset",

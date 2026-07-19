@@ -744,7 +744,8 @@
 			"new_password_required": "Neues Passwort ist erforderlich",
 			"password_min_length": "Passwort muss mindestens 8 Zeichen lang sein",
 			"confirm_password_required": "Bitte bestätigen Sie Ihr Passwort",
-			"passwords_do_not_match": "Passwörter stimmen nicht überein"
+			"passwords_do_not_match": "Passwörter stimmen nicht überein",
+			"current_password_incorrect": "Ihr aktuelles Passwort ist falsch"
 		},
 		"current_password_label": "Aktuelles Passwort",
 		"new_password_label": "Neues Passwort",
@@ -752,7 +753,9 @@
 		"confirm_new_password_label": "Neues Passwort bestätigen",
 		"change_password_title": "Passwort ändern",
 		"change_password_description": "Geben Sie Ihr aktuelles Passwort ein und wählen Sie ein neues",
-		"change_password_button": "Passwort ändern"
+		"change_password_button": "Passwort ändern",
+		"change_password_success_toast": "Ihr Passwort wurde geändert",
+		"change_password_failed_toast": "Passwort konnte nicht geändert werden. Bitte versuchen Sie es erneut."
 	},
 	"assets_tab": {
 		"upload_asset": "Asset hochladen",
