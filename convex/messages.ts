@@ -18,6 +18,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
+import { deriveTitleFromContent } from "./lib/titles";
 import { rateLimiter } from "./ratelimit";
 
 // Tool call schema for reuse.
@@ -180,6 +181,23 @@ export const save = mutation({
 			throw new Error("Forbidden");
 		}
 
+		// Auto-title: derive the chat's display name from its own first user
+		// message, unless the user has already renamed it (isTitleCustom).
+		// Checked BEFORE insert so "first message" means "no prior message".
+		let titlePatch: { title: string } | undefined;
+		if (args.role === "user" && !chat.isTitleCustom) {
+			const priorMessages = await ctx.db
+				.query("messages")
+				.withIndex("by_chat_created", (q) => q.eq("chatId", args.chatId))
+				.take(1);
+			if (priorMessages.length === 0) {
+				const derived = deriveTitleFromContent(args.content);
+				if (derived.length > 0) {
+					titlePatch = { title: derived };
+				}
+			}
+		}
+
 		const messageId = await ctx.db.insert("messages", {
 			chatId: args.chatId,
 			role: args.role,
@@ -190,8 +208,11 @@ export const save = mutation({
 			createdAt: Date.now(),
 		});
 
-		// Update chat's updatedAt
-		await ctx.db.patch(args.chatId, { updatedAt: Date.now() });
+		// Update chat's updatedAt (and auto-title, if derived above)
+		await ctx.db.patch(args.chatId, {
+			updatedAt: Date.now(),
+			...titlePatch,
+		});
 
 		return messageId;
 	},

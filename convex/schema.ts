@@ -719,6 +719,9 @@ export default defineSchema({
 		),
 		createdBy: v.string(), // Clerk user ID
 		title: v.optional(v.string()),
+		// isTitleCustom: true once the user has explicitly renamed the session —
+		// the automatic first-exchange title mechanism never overwrites it again.
+		isTitleCustom: v.optional(v.boolean()),
 		// projectId intentionally omitted — projects table is post-MVP
 		createdAt: v.number(),
 		updatedAt: v.number(),
@@ -874,6 +877,9 @@ export default defineSchema({
 			v.union(v.literal("private"), v.literal("workspace")),
 		),
 		isPinned: v.optional(v.boolean()),
+		// isTitleCustom: true once the user has explicitly renamed the chat —
+		// the automatic first-exchange title mechanism never overwrites it again.
+		isTitleCustom: v.optional(v.boolean()),
 		enabledToolkits: v.optional(
 			v.array(
 				v.object({

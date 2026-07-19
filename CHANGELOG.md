@@ -6,6 +6,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-19 — a session's name is a property of its own content, not a constant)
+
+Nine "New chat" rows and eight "New session" rows on the first screen a customer sees, indistinguishable from one another, were traced to one class wearing two shapes: `chats` burned a translated literal into `title` at CREATION (`app/[locale]/dashboard/chat/page.tsx`), `architectSessions` applied a translated literal at DISPLAY when `title` was empty (`session-list.tsx`). Both are now named from their own first user message via a generic, domain-agnostic `deriveTitleFromContent` (`convex/lib/titles.ts`) — it takes a string, returns a string, and carries no knowledge of "chat" or "architect".
+
+Precedence between the automatic mechanism and a user's own rename is recorded in the data, not in call order: a new `isTitleCustom` boolean on both tables. `chats.update` and `architectSessions.updateTitle` (the latter already existed, unwired — now wired) set it; `messages.save` and `architectSessions.addMessage` check it before ever touching `title`, and only on the row's first user message. Rename is now reachable from both list surfaces (`chat/page.tsx`, `session-list.tsx`) and from inside an open session (`components/chat/ChatPage.tsx` header; the Architect sidebar is already visible alongside the open session).
+
+`__tests__/convex/session-auto-title.test.ts` is the consumer test (outside `convex/`, via `convex-test`) proving both surfaces: RED before this change (2/4 failing against unmodified `main` at `389ab97`), GREEN after (4/4). i18n: `chat.rename` already existed in all seven locales and is reused for the chat rename control; `architect.rename_session_aria` was added to all seven (`en`, `de`, `es`, `fr`, `it`, `pt`, `ru`).
+
 ### Changed (2026-07-19 — the dead product's name leaves the prose the template ships)
 
 Sixteen documents that serve any fork, cleaned of a video product this template is not. The instruction that shaped the work was the prohibition, not the goal: **a blind string replacement was forbidden.** "Recover the video renders from the old product" does not become true by swapping the name — it becomes a lie about the template. Every occurrence was read in its sentence, then rewritten if it was generically useful, or **deleted outright** if it only made sense for the video product. Laundering a false sentence into a plausible one would have been worse than leaving it.

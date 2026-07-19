@@ -1,10 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { useMutation, useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { MessageList } from "./MessageList";
 import { ModelSelector } from "./ModelSelector";
@@ -16,6 +19,22 @@ interface ChatPageProps {
 export function ChatPage({ chatId }: ChatPageProps) {
 	const t = useTranslations("chat");
 	const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
+
+	// Chat metadata — used to show + rename the chat's own display title.
+	const chat = useQuery(
+		api.chats.getById,
+		chatId ? { id: chatId as Id<"chats"> } : "skip",
+	);
+	const updateChatTitle = useMutation(api.chats.update);
+	const [isRenamingTitle, setIsRenamingTitle] = useState(false);
+	const [titleDraft, setTitleDraft] = useState("");
+
+	async function commitTitleRename() {
+		setIsRenamingTitle(false);
+		const trimmed = titleDraft.trim();
+		if (!chatId || trimmed.length === 0) return;
+		await updateChatTitle({ id: chatId as Id<"chats">, title: trimmed });
+	}
 
 	// v6 useChat: sendMessage replaces handleSubmit+handleInputChange
 	// transport defaults to DefaultChatTransport → /api/chat
@@ -97,10 +116,53 @@ export function ChatPage({ chatId }: ChatPageProps) {
 							/>
 						</svg>
 					</div>
-					<div>
-						<h1 className="text-base font-semibold text-foreground">
-							{t("page.agentName")}
-						</h1>
+					<div className="min-w-0">
+						{isRenamingTitle ? (
+							<input
+								type="text"
+								value={titleDraft}
+								onChange={(e) => setTitleDraft(e.target.value)}
+								onBlur={commitTitleRename}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.currentTarget.blur();
+									} else if (e.key === "Escape") {
+										setIsRenamingTitle(false);
+									}
+								}}
+								ref={(el) => el?.focus()}
+								aria-label={t("rename")}
+								className="text-base font-semibold text-foreground bg-transparent border-b border-primary focus:outline-none"
+							/>
+						) : (
+							<button
+								type="button"
+								onClick={() => {
+									setTitleDraft(chat?.title ?? "");
+									setIsRenamingTitle(true);
+								}}
+								disabled={!chat}
+								className="group flex items-center gap-1.5 text-left disabled:cursor-default"
+								aria-label={t("rename")}
+							>
+								<h1 className="text-base font-semibold text-foreground truncate">
+									{chat?.title || t("page.agentName")}
+								</h1>
+								{chat && (
+									<svg
+										className="size-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+										aria-hidden="true"
+									>
+										<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+										<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+									</svg>
+								)}
+							</button>
+						)}
 						<p className="text-xs text-muted-foreground">
 							{t("page.agentSubtitle")}
 						</p>

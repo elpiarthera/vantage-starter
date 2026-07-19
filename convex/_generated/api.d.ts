@@ -34,6 +34,7 @@ import type * as lib_agentComposer from "../lib/agentComposer.js";
 import type * as lib_agentTokens from "../lib/agentTokens.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_rag from "../lib/rag.js";
+import type * as lib_titles from "../lib/titles.js";
 import type * as memory from "../memory.js";
 import type * as messages from "../messages.js";
 import type * as migrations_clearSharedLinkPassword from "../migrations/clearSharedLinkPassword.js";
@@ -91,6 +92,7 @@ declare const fullApi: ApiFromModules<{
   "lib/agentTokens": typeof lib_agentTokens;
   "lib/auth": typeof lib_auth;
   "lib/rag": typeof lib_rag;
+  "lib/titles": typeof lib_titles;
   memory: typeof memory;
   messages: typeof messages;
   "migrations/clearSharedLinkPassword": typeof migrations_clearSharedLinkPassword;

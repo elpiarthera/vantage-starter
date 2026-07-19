@@ -77,6 +77,11 @@ export default function ChatListPage() {
 	const [selectedProjectId, setSelectedProjectId] = useState<
 		Id<"projects"> | ""
 	>("");
+	const [renamingChatId, setRenamingChatId] = useState<Id<"chats"> | null>(
+		null,
+	);
+	const [renameValue, setRenameValue] = useState("");
+	const updateChat = useMutation(api.chats.update);
 
 	// All chats — used when no project filter is active
 	const allChatsResult = useQuery(
@@ -119,13 +124,28 @@ export default function ChatListPage() {
 		try {
 			const chatId = await createChat({
 				workspaceId: defaultWorkspaceId,
-				title: t("newChat"),
+				// No title constant burned in at creation — the chat's first
+				// exchange derives its own name (see convex/messages.ts save()).
+				// The UI falls back to a translated placeholder until then.
+				title: "",
 				projectId: selectedProjectId !== "" ? selectedProjectId : undefined,
 			});
 			router.push(`/${locale}/dashboard/chat/${chatId}`);
 		} finally {
 			setCreating(false);
 		}
+	}
+
+	function startRenaming(chatId: Id<"chats">, currentTitle: string) {
+		setRenamingChatId(chatId);
+		setRenameValue(currentTitle);
+	}
+
+	async function commitRename(chatId: Id<"chats">) {
+		const trimmed = renameValue.trim();
+		setRenamingChatId(null);
+		if (trimmed.length === 0) return;
+		await updateChat({ id: chatId, title: trimmed });
 	}
 
 	const hasProjects = projects !== undefined && projects.length > 0;
@@ -292,27 +312,72 @@ export default function ChatListPage() {
 											: undefined
 									}
 								>
-									<Link
-										href={`/${locale}/dashboard/chat/${chat._id}`}
-										className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/50 transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-									>
-										<div className="flex items-center gap-2 min-w-0">
-											{chat.isPinned && (
-												<span
-													className="text-primary shrink-0"
-													title={t("pinned")}
-												>
-													<PinIcon />
+									<div className="flex items-center justify-between gap-2 px-4 py-3 hover:bg-muted/50 transition-colors duration-100">
+										{renamingChatId === chat._id ? (
+											<input
+												type="text"
+												value={renameValue}
+												onChange={(e) => setRenameValue(e.target.value)}
+												onBlur={() => commitRename(chat._id)}
+												onKeyDown={(e) => {
+													if (e.key === "Enter") {
+														e.currentTarget.blur();
+													} else if (e.key === "Escape") {
+														setRenamingChatId(null);
+													}
+												}}
+												ref={(el) => el?.focus()}
+												aria-label={t("rename")}
+												className="flex-1 min-w-0 rounded-md border border-primary bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+											/>
+										) : (
+											<Link
+												href={`/${locale}/dashboard/chat/${chat._id}`}
+												className="flex flex-1 items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary rounded-md"
+											>
+												{chat.isPinned && (
+													<span
+														className="text-primary shrink-0"
+														title={t("pinned")}
+													>
+														<PinIcon />
+													</span>
+												)}
+												<span className="truncate text-sm font-medium text-foreground">
+													{chat.title || t("newChat")}
 												</span>
-											)}
-											<span className="truncate text-sm font-medium text-foreground">
-												{chat.title}
-											</span>
-										</div>
+											</Link>
+										)}
 										<span className="shrink-0 text-xs text-muted-foreground">
 											{formatDate(chat.updatedAt ?? chat._creationTime)}
 										</span>
-									</Link>
+										{renamingChatId !== chat._id && (
+											<button
+												type="button"
+												onClick={() =>
+													startRenaming(chat._id, chat.title || "")
+												}
+												aria-label={t("rename")}
+												className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="14"
+													height="14"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2"
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													aria-hidden="true"
+												>
+													<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+													<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+												</svg>
+											</button>
+										)}
+									</div>
 								</li>
 							))}
 						</ul>

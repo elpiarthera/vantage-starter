@@ -2985,6 +2985,7 @@
 		"sessions_title": "Sessions",
 		"start_new_session_aria": "Start a new Architect session",
 		"new_session": "New session",
+		"rename_session_aria": "Rename session",
 		"plan_prefix": "Plan: {name}",
 		"no_workspace_found": "No workspace found",
 		"create_workspace_to_use_architect": "Create a workspace to use the Architect.",
