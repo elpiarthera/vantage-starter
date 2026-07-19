@@ -4,20 +4,6 @@ This folder contains implementation plans that are **pending** or **in progress*
 
 ## Current Plans
 
-### 1. Convex Backend Implementation
-**File:** `convex-implementation-plan.md`  
-**Status:** Not Started  
-**Estimated Time:** 14-18 hours  
-**Priority:** High (Foundation)
-
-**What it does:**
-- Migrates from client-side storage to Convex backend
-- Sets up real-time database with reactive queries
-- Implements file storage for images/videos
-- Integrates AI service calls via Convex actions
-
-**Prerequisites:**
-- None (can start immediately)
 
 ---
 
@@ -39,21 +25,6 @@ This folder contains implementation plans that are **pending** or **in progress*
 
 ---
 
-### 3. AI Models Integration
-**File:** `ai-models-implementation-plan.md`  
-**Status:** Not Started  
-**Estimated Time:** 18-24 hours  
-**Priority:** Medium (Core Features)
-
-**What it does:**
-- Integrates OpenAI GPT-4o for chat and script generation
-- Implements Runway Gen-3 for video generation
-- Adds Kling AI as backup video provider
-- Sets up cost optimization and error handling
-
-**Prerequisites:**
-- Convex backend must be implemented first
-- Authentication recommended but not required for testing
 
 ---
 

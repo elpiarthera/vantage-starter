@@ -117,7 +117,7 @@ Not verified here: whether `user.organizationId` is kept in sync with the active
 
 ## 4. Other production blockers
 
-**Fork residue — another product's auth domain is in our CSP.** `middleware.ts:20,35` and `next.config.mjs:25,67` both allow `https://clerk.myreeldream.ai` in `connect-src` and `frame-src`. This is a third party's Clerk instance trusted by our Content-Security-Policy. It should be configuration, never a literal.
+**Fork residue — another product's auth domain is in our CSP.** `middleware.ts:20,35` and `next.config.mjs:25,67` both allowed a hardcoded upstream Clerk custom domain in `connect-src` and `frame-src`. This trusted a third party's Clerk instance in our Content-Security-Policy. It should be configuration, never a literal.
 
 **Zero error tracking.** `grep -cE "sentry|posthog|betterstack|@logtail" package.json` -> **0**. Nothing reports a production exception. (T3 targets Better Stack; its token is provisioned, and it stays in `.env.local` and the hosting environment — never a repo, a served page, or a subagent prompt.)
 
@@ -424,7 +424,7 @@ Every exported function, as required. Counts derived by the sweep above.
 | B | 45 SOFT functions need a per-function read: does the null identity actually stop the branch? | high |
 | C | tenant scoping present in 91/177 — make it uniform and prove it per function (re-scopes T1) | high |
 | D | `user.organizationId` sync with the active Clerk org — unverified | high |
-| E | `clerk.myreeldream.ai` out of CSP; tenant values become configuration (T2) | medium |
+| E | hardcoded upstream Clerk domain out of CSP; tenant values become configuration (T2) | medium |
 | F | no error tracking (T3) | medium |
 
 ---

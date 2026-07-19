@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-Complete checklist and guide for deploying MyShortReel to production.
+Complete checklist and guide for deploying this app to production.
 
 ## Prerequisites
 
@@ -62,21 +62,21 @@ Complete checklist and guide for deploying MyShortReel to production.
 
 1. In Clerk Dashboard > **Paths**, set production URLs:
    \`\`\`
-   Sign-in: https://myshortreel.com/sign-in
-   Sign-up: https://myshortreel.com/sign-up
-   After sign-in: https://myshortreel.com/dashboard
-   After sign-up: https://myshortreel.com/dashboard
+   Sign-in: https://your-app.com/sign-in
+   Sign-up: https://your-app.com/sign-up
+   After sign-in: https://your-app.com/dashboard
+   After sign-up: https://your-app.com/dashboard
    \`\`\`
 
 2. In Clerk Dashboard > **Domain**, add custom domain (optional):
-   - Add: `accounts.myshortreel.com`
+   - Add: `accounts.your-app.com`
    - Configure DNS records as shown
 
 ### Step 3: Configure Production Webhooks
 
 1. Update webhook endpoint URL:
    \`\`\`
-   https://myshortreel.com/api/webhooks/clerk
+   https://your-app.com/api/webhooks/clerk
    \`\`\`
 
 2. Verify webhook signing secret updated in environment variables
@@ -146,7 +146,7 @@ Production deployment: https://your-project.convex.cloud
 1. Go to Vercel Dashboard
 2. Click **"Add New"** > **"Project"**
 3. Import GitHub repository
-4. Select repository: `your-username/myshortreel`
+4. Select repository: `your-username/your-app`
 
 ### Step 2: Configure Build Settings
 
@@ -199,7 +199,7 @@ TAVUS_API_KEY=xxxxx
 #### Other
 \`\`\`bash
 NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://myshortreel.com
+NEXT_PUBLIC_APP_URL=https://your-app.com
 \`\`\`
 
 ### Step 4: Deploy
@@ -211,7 +211,7 @@ NEXT_PUBLIC_APP_URL=https://myshortreel.com
 ### Step 5: Configure Custom Domain
 
 1. In Vercel Dashboard, go to **Settings** > **Domains**
-2. Add custom domain: `myshortreel.com`
+2. Add custom domain: `your-app.com`
 3. Configure DNS records:
    \`\`\`
    Type: A

@@ -1,6 +1,6 @@
 # Environment Variables Reference
 
-Complete reference for all environment variables needed in MyShortReel.
+Complete reference for all environment variables this template needs.
 
 **Last Updated**: November 2025
 
@@ -409,7 +409,7 @@ Copy this template to get started:
 
 \`\`\`env
 # ==================================================
-# MyShortReel Environment Variables
+# Environment Variables
 # ==================================================
 
 # --------------------------------------------------
@@ -453,6 +453,5 @@ FAL_KEY=your_key_id:your_key_secret
 
 ---
 
-**Maintained By**: MyShortReel Development Team  
 **Last Updated**: December 19, 2025  
 **Version**: 1.1

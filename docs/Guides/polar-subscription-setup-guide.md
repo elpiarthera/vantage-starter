@@ -1,4 +1,4 @@
-# Polar.sh Sandbox Setup Guide - MyShortReel
+# Polar.sh Sandbox Setup Guide
 
 **For**: Non-technical team members  
 **Time**: 20 minutes  
@@ -10,7 +10,7 @@
 
 1. Go to https://sandbox.polar.sh
 2. Sign up with your email
-3. Create organization: **MyShortReel Test**
+3. Create organization: **&lt;Your App&gt; Test**
 4. Verify email
 
 ---
@@ -186,7 +186,7 @@ webhook secret: polar_whs_GC3GmyEGe1YUm0JjhUVQu7iR7okGKV32I2iWu2Q2NxK
 2. Click **"Developers"** section
 3. Under "Organization access tokens", click **"Create token"** button
 4. Fill in the form:
-   - **Name**: `MyShortReel Sandbox`
+   - **Name**: `<Your App> Sandbox`
    - **Expiration**: Select `30 days` (or your preference)
    - **Scopes**: Check ALL permission boxes shown
 5. Click **"Create"** button at the bottom
@@ -252,7 +252,7 @@ NEXT_PUBLIC_POLAR_PRODUCT_CREDITS_ENTERPRISE=19c982fd-3106-45f2-833d-07b573b45c2
 Copy this template and fill in your actual IDs:
 
 ```
-POLAR SANDBOX - MyShortReel
+POLAR SANDBOX - <Your App>
 ============================
 
 API Token: polar_oat_[copy from Step 4]

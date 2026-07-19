@@ -1,6 +1,6 @@
 # 📱 Mobile-First Architecture & Best Practices
 
-*Complete reference guide for mobile-first development in MyShortReel*
+*Complete reference guide for mobile-first development in this template*
 
 **Last Updated**: October 11, 2025  
 **Implementation Status**: ✅ Production-Ready - Core patterns tested and documented  
@@ -26,7 +26,7 @@
 ### **Complete Mobile-First File Tree**
 
 \`\`\`
-MyShortReel/
+your-app/
 │
 ├── 📱 MOBILE-FIRST CORE SYSTEM
 │   ├── config/
@@ -136,8 +136,6 @@ MyShortReel/
         ├── README.md                                    # Implementation guide
         ├── ToDo/                                        # Pending implementations
         │   ├── auth-implementation-plan.md             # Clerk auth plan
-        │   ├── convex-implementation-plan.md           # Convex backend plan
-        │   └── ai-models-implementation-plan.md        # AI models plan
         └── Done/                                        # Completed implementations
 \`\`\`
 
@@ -203,7 +201,7 @@ app/guided/
 
 ### **Design Philosophy**
 
-MyShortReel follows a **mobile-first, progressive enhancement** architecture:
+This template follows a **mobile-first, progressive enhancement** architecture:
 
 1. **Base Layer**: Mobile experience (320px - 767px)
 2. **Enhanced Layer**: Tablet experience (768px - 1023px)
@@ -922,8 +920,6 @@ Border: #223649
 - **Feature Best Practices**: `docs/Best-Practices/feature-implementation-best-practices.md`
 - **Implementation Plans**: `docs/Implementation/ToDo/`
   - Auth Implementation: `auth-implementation-plan.md`
-  - Convex Backend: `convex-implementation-plan.md`
-  - AI Models: `ai-models-implementation-plan.md`
 - **WCAG Guidelines**: https://www.w3.org/WAI/WCAG21/quickref/
 - **Touch Target Guidance**: https://www.w3.org/WAI/WCAG21/Understanding/target-size.html
 - **Tailwind CSS Docs**: https://tailwindcss.com/docs
@@ -945,10 +941,9 @@ Border: #223649
 - None (frontend mobile-first implementation complete)
 
 ### **📋 Pending**
-- Backend integration (Convex) - See `docs/Implementation/ToDo/convex-implementation-plan.md`
+- Backend integration (Convex) - See `docs/Guides/convex-setup.md`
 - Authentication (Clerk) - See `docs/Implementation/ToDo/auth-implementation-plan.md`
-- AI models integration - See `docs/Implementation/ToDo/ai-models-implementation-plan.md`
 
 ---
 
-*Last updated: October 11, 2025 - This document is the definitive guide for mobile-first development in MyShortReel. All patterns are production-tested and actively used across the application.*
+*Last updated: October 11, 2025 - This document is the definitive guide for mobile-first development in this template. All patterns are production-tested.*

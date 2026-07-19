@@ -494,7 +494,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
 
 Once the local environment is running:
 
-- See `docs/Guides/convex-database-schema.md` for the full database structure
+- See `convex/schema.ts` for the full database structure — the schema itself, not a description of it
 - See `docs/Guides/polar-subscription-setup-guide.md` for billing configuration details
 - See `docs/Guides/deployment-guide.md` for deploying to Vercel
 - See `docs/Guides/HOW-TO-SET-ADMIN.md` to grant admin access to your account

@@ -1425,5 +1425,4 @@ This guide covered the complete implementation of a production-ready i18n system
 
 *Document version: 1.0*
 *Last updated: December 2024*
-*Based on: MyShortReel implementation with 987 translation keys across 7 languages*
 

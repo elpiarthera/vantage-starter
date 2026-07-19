@@ -1,9 +1,9 @@
 # 🏗️ Feature Implementation Best Practices
 
-*Comprehensive guide to proper feature implementation patterns for MyShortReel to maintain code quality and architectural integrity*
+*Comprehensive guide to proper feature implementation patterns for this template, to maintain code quality and architectural integrity*
 
 **Last Updated**: January 11, 2025  
-**Purpose**: Prevent architectural mistakes and ensure consistent, maintainable code for video generation features
+**Purpose**: Prevent architectural mistakes and ensure consistent, maintainable code
 
 ---
 
@@ -15,7 +15,7 @@
 
 **Bad Example**:
 \`\`\`tsx
-// DON'T: Adding video editor to dashboard
+// DON'T: Adding a record editor and a browser to the dashboard
 export default function DashboardPage() {
   const [showEditor, setShowEditor] = useState(false)
   const [showGallery, setShowGallery] = useState(false)
@@ -45,12 +45,12 @@ export default function DashboardPage() {
 // DO: Create dedicated routes
 // app/editor/page.tsx
 export default function EditorPage() {
-  return <VideoEditorLayout />
+  return <RecordEditorLayout />
 }
 
-// app/gallery/page.tsx
-export default function GalleryPage() {
-  return <VideoGalleryLayout />
+// app/library/page.tsx
+export default function LibraryPage() {
+  return <RecordLibraryLayout />
 }
 
 // app/dashboard/page.tsx (stays focused)
@@ -66,40 +66,40 @@ export default function DashboardPage() {
 **Bad Example**:
 \`\`\`tsx
 // DON'T: 1000+ line component with everything
-export default function VideoCreationMegaComponent() {
-  // 30+ state variables for scenes, assets, videos
-  // 50+ functions for AI, video generation, uploads
-  // Complex JSX with nested video players, editors, chat
+export default function RecordCreationMegaComponent() {
+  // 30+ state variables for the form, its attachments, its history
+  // 50+ functions for validation, persistence, uploads
+  // Complex JSX with nested editors, pickers, chat
   // Multiple responsibilities mixed together
 }
 \`\`\`
 
 **Good Example**:
 \`\`\`tsx
-// DO: Modular approach following MyShortReel's pattern
-// app/guided/step-3/page.tsx
-export default function SceneCreationPage() {
-  return <SceneCreationLayout />
+// DO: Modular approach following the recommended pattern
+// app/[locale]/dashboard/records/[id]/page.tsx
+export default function RecordEditorPage() {
+  return <RecordEditorLayout />
 }
 
-// components/scene-creation/SceneCreationLayout.tsx
-export function SceneCreationLayout() {
+// components/record-editor/RecordEditorLayout.tsx
+export function RecordEditorLayout() {
   return (
-    <div className="scene-creation-layout">
-      <SceneCreationHeader />
-      <SceneCanvas />
-      <SceneControls />
+    <div className="record-editor-layout">
+      <RecordEditorHeader />
+      <RecordForm />
+      <RecordActions />
       <AIAssistantPanel />
     </div>
   )
 }
 
-// components/scene-creation/SceneCanvas.tsx
-export function SceneCanvas() {
-  // Single responsibility: scene visualization
+// components/record-editor/RecordForm.tsx
+export function RecordForm() {
+  // Single responsibility: field rendering and validation
 }
 
-// components/scene-creation/AIAssistantPanel.tsx
+// components/record-editor/AIAssistantPanel.tsx
 export function AIAssistantPanel() {
   // Single responsibility: AI chat integration
 }
@@ -110,35 +110,29 @@ export function AIAssistantPanel() {
 ## 📁 File Organization Patterns
 
 ### **3. Feature-Based Directory Structure**
-**✅ MyShortReel Pattern**:
+**✅ Recommended Pattern**:
 \`\`\`
 app/
-├── guided/
-│   ├── step-1/
-│   │   └── page.tsx              # Event type selection
-│   ├── step-2/
-│   │   └── page.tsx              # Event details input
-│   ├── step-3/
-│   │   └── page.tsx              # Scene creation
-│   ├── step-4/
-│   │   └── page.tsx              # Asset management
-│   ├── step-5/
-│   │   └── page.tsx              # Video preview
-│   └── step-6/
-│       └── page.tsx              # Video generation
-├── dashboard/
-│   └── page.tsx                  # User dashboard
-└── page.tsx                      # Landing page
+└── [locale]/
+    ├── dashboard/
+    │   ├── page.tsx              # Dashboard home
+    │   └── records/
+    │       ├── page.tsx          # Record list
+    │       └── [id]/
+    │           └── page.tsx      # Record editor
+    ├── onboarding/
+    │   └── page.tsx              # Post-signup setup
+    └── page.tsx                  # Landing page
 
 components/
-├── video-creation/
-│   ├── EventTypeSelector.tsx     # Step 1 component
-│   ├── EventDetailsForm.tsx      # Step 2 component
-│   └── VideoPreview.tsx          # Step 5 component
-├── scene-management/
-│   ├── SceneCanvas.tsx
-│   ├── SceneEditor.tsx
-│   └── SceneTimeline.tsx
+├── record-editor/
+│   ├── RecordEditorLayout.tsx
+│   ├── RecordForm.tsx
+│   └── RecordActions.tsx
+├── record-list/
+│   ├── RecordTable.tsx
+│   ├── RecordFilters.tsx
+│   └── RecordCard.tsx
 ├── asset-management/
 │   ├── AssetUploader.tsx
 │   ├── AssetGallery.tsx
@@ -149,26 +143,27 @@ components/
 │   └── SuggestionPanel.tsx
 └── user-dashboard.tsx
 
+convex/
+├── records.ts                    # Record queries + mutations
+├── assets.ts                     # Asset metadata + storage
+└── aiChat.ts                     # AI actions (external API calls)
+
 services/
-├── aiChat.ts                     # AI chat integration
-├── videoGeneration.ts            # Video generation API
-├── assetUpload.ts                # Asset upload handling
-└── storage.ts                    # Local storage management
+├── aiChat.ts                     # Client-side AI chat wrapper
+└── assetUpload.ts                # Upload orchestration
 
 stores/
-├── video-store.ts                # Video state management
-└── scene-store.ts                # Scene state management
+└── record-store.ts               # Ephemeral UI state (selection, drafts)
 
 hooks/
 ├── business-logic/
-│   ├── useVideoWorkflow.ts       # Video workflow logic
-│   ├── useSceneManagement.ts     # Scene management logic
+│   ├── useRecordWorkflow.ts      # Record workflow logic
 │   └── useAssetManagement.ts     # Asset management logic
 └── use-hydration.ts              # Client-side hydration
 \`\`\`
 
 ### **4. Component Naming Conventions**
-**✅ MyShortReel Patterns**:
+**✅ Recommended Patterns**:
 - **Page components**: `[Feature]Page.tsx` (in app directory)
 - **Layout components**: `[Feature]Layout.tsx`
 - **Feature components**: `[Feature][Component].tsx`
@@ -181,7 +176,7 @@ hooks/
 ## 🎯 Implementation Workflow
 
 ### **5. Feature Implementation Steps**
-**✅ MyShortReel Process**:
+**✅ Recommended Process**:
 
 1. **Create Route Structure**:
    \`\`\`bash
@@ -238,17 +233,17 @@ hooks/
    \`\`\`
 
 ### **6. Component Responsibility Matrix**
-**✅ MyShortReel Separation**:
+**✅ Recommended Separation**:
 
 | Component Type | Responsibility | Example |
 |---|---|---|
-| **Page Component** | Route entry, layout composition | `app/guided/step-3/page.tsx` |
-| **Layout Component** | Structure, responsive behavior | `SceneCreationLayout.tsx` |
-| **Feature Component** | Specific functionality | `SceneCanvas.tsx` |
+| **Page Component** | Route entry, layout composition | `app/[locale]/dashboard/records/[id]/page.tsx` |
+| **Layout Component** | Structure, responsive behavior | `RecordEditorLayout.tsx` |
+| **Feature Component** | Specific functionality | `RecordForm.tsx` |
 | **UI Component** | Reusable interface elements | `Button.tsx`, `Card.tsx` |
-| **Service** | API calls, external integrations | `videoGeneration.ts` |
-| **Store** | Global state management | `video-store.ts` |
-| **Hook** | Business logic, side effects | `useVideoWorkflow.ts` |
+| **Service** | API calls, external integrations | `assetUpload.ts` |
+| **Store** | Global state management | `record-store.ts` |
+| **Hook** | Business logic, side effects | `useRecordWorkflow.ts` |
 
 ---
 
@@ -258,99 +253,95 @@ hooks/
 **✅ Required Standards**:
 
 \`\`\`tsx
-// DO: Proper TypeScript interfaces for video features
-interface VideoScene {
-  id: string
-  title: string
-  description: string
-  duration: number
-  assets: Asset[]
-  transitions: Transition[]
+// DO: Derive entity types from the Convex schema, never redeclare them
+import type { Doc } from "@/convex/_generated/dataModel"
+
+type Record = Doc<"records">
+
+// DO: Declare explicit prop contracts for components
+interface RecordEditorProps {
+  record: Record
+  onRecordUpdate: (record: Record) => void
+  onAssetAdd: (asset: Doc<"assets">) => void
+  isSaving?: boolean
 }
 
-interface SceneEditorProps {
-  scene: VideoScene
-  onSceneUpdate: (scene: VideoScene) => void
-  onAssetAdd: (asset: Asset) => void
-  isGenerating?: boolean
-}
-
-export function SceneEditor({ 
-  scene, 
-  onSceneUpdate, 
+export function RecordEditor({
+  record,
+  onRecordUpdate,
   onAssetAdd,
-  isGenerating = false 
-}: SceneEditorProps) {
+  isSaving = false
+}: RecordEditorProps) {
   // Implementation
 }
 
 // DO: Export types for reuse
-export type { VideoScene, SceneEditorProps }
+export type { Record, RecordEditorProps }
 \`\`\`
 
 ### **8. State Management Patterns**
-**✅ MyShortReel Patterns**:
+**✅ Recommended Patterns**:
 
 \`\`\`tsx
 // DO: Local state for component-specific data
 const [isEditing, setIsEditing] = useState(false)
 const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
 
-// DO: Zustand stores for global state
-import { useVideoStore } from '@/stores/video-store'
-const { currentVideo, updateVideo, addScene } = useVideoStore()
+// DO: Convex queries/mutations for ALL persisted data
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+const record = useQuery(api.records.get, { id: recordId })
+const updateRecord = useMutation(api.records.update)
+
+// DO: Zustand stores for ephemeral cross-component UI state only
+import { useRecordStore } from '@/stores/record-store'
+const { selectedId, select } = useRecordStore()
 
 // DO: Custom hooks for complex business logic
-import { useVideoWorkflow } from '@/hooks/business-logic/useVideoWorkflow'
-const { 
-  generateVideo, 
-  isGenerating, 
-  progress 
-} = useVideoWorkflow()
-
-// DO: Service layer for API calls
-import { generateVideoFromScenes } from '@/services/videoGeneration'
-const result = await generateVideoFromScenes(scenes)
+import { useRecordWorkflow } from '@/hooks/business-logic/useRecordWorkflow'
+const {
+  submitRecord,
+  isSubmitting,
+  progress
+} = useRecordWorkflow()
 \`\`\`
 
 ### **9. Error Handling Standards**
 **✅ Required Implementation**:
 
 \`\`\`tsx
-// DO: Comprehensive error handling for video operations
-export function VideoGenerationComponent() {
+// DO: Comprehensive error handling around long-running operations
+export function RecordSubmitComponent({ recordId }: { recordId: Id<"records"> }) {
+  const t = useTranslations('records')
+  const submitRecord = useMutation(api.records.submit)
   const [error, setError] = useState<string | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleGenerate = async () => {
+  const handleSubmit = async () => {
     try {
-      setIsGenerating(true)
+      setIsSubmitting(true)
       setError(null)
-      
-      const result = await generateVideoFromScenes(scenes)
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Video generation failed')
-      }
-      
+
+      await submitRecord({ id: recordId })
+
       // Handle success
     } catch (err) {
-      console.error('[Video Generation Error]:', err)
+      console.error('[Record Submit Error]:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
-      
+
       // Show user-friendly error message
-      toast.error('Failed to generate video. Please try again.')
+      toast.error(t('submit_failed'))
     } finally {
-      setIsGenerating(false)
+      setIsSubmitting(false)
     }
   }
 
   if (error) {
     return (
-      <ErrorState 
-        message={error} 
-        onRetry={handleGenerate}
-        icon={<VideoIcon className="text-destructive" />}
+      <ErrorState
+        message={error}
+        onRetry={handleSubmit}
+        icon={<AlertCircleIcon className="text-destructive" />}
       />
     )
   }
@@ -360,28 +351,20 @@ export function VideoGenerationComponent() {
   )
 }
 
-// DO: Service-level error handling
-export async function generateVideoFromScenes(scenes: VideoScene[]) {
-  try {
-    const response = await fetch('/api/video/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenes })
-    })
+// DO: Server-level error handling — throw with context, let the caller surface it
+export const submit = mutation({
+  args: { id: v.id('records') },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthenticated')
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`)
-    }
+    const record = await ctx.db.get(args.id)
+    if (!record) throw new Error('Record not found')
+    if (record.userId !== identity.subject) throw new Error('Unauthorized')
 
-    return await response.json()
-  } catch (error) {
-    console.error('[Video Generation Service Error]:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }
-  }
-}
+    await ctx.db.patch(args.id, { status: 'submitted', updatedAt: Date.now() })
+  },
+})
 \`\`\`
 
 ---
@@ -389,19 +372,19 @@ export async function generateVideoFromScenes(scenes: VideoScene[]) {
 ## 🎨 Design System Integration
 
 ### **10. Consistent Styling Patterns**
-**✅ MyShortReel Standards**:
+**✅ Recommended Standards**:
 
 \`\`\`tsx
 // DO: Use design tokens from globals.css
 <div className="bg-background text-foreground border-border">
 
-// DO: Responsive classes for video layouts
+// DO: Responsive classes for grid layouts
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-// DO: Semantic class names for video features
-<div className="video-scene-card">
+// DO: Semantic class names for feature elements
+<div className="record-card">
 <div className="asset-upload-zone">
-<div className="generation-progress-bar">
+<div className="submit-progress-bar">
 
 // DO: Consistent spacing
 <div className="p-4 md:p-6 lg:p-8">
@@ -409,27 +392,26 @@ export async function generateVideoFromScenes(scenes: VideoScene[]) {
 \`\`\`
 
 ### **11. Component Composition**
-**✅ MyShortReel Patterns**:
+**✅ Recommended Patterns**:
 
 \`\`\`tsx
-// DO: Composable video creation components
-<VideoCreationLayout>
-  <VideoCreationHeader>
-    <ProgressIndicator currentStep={3} totalSteps={6} />
+// DO: Composable feature components
+<RecordEditorLayout>
+  <RecordEditorHeader>
+    <Breadcrumbs />
     <SaveButton />
-  </VideoCreationHeader>
-  
-  <VideoCreationContent>
-    <SceneTimeline scenes={scenes} />
-    <SceneEditor activeScene={activeScene} />
+  </RecordEditorHeader>
+
+  <RecordEditorContent>
+    <RecordForm record={record} />
     <AssetPanel assets={assets} />
-  </VideoCreationContent>
-  
-  <VideoCreationFooter>
+  </RecordEditorContent>
+
+  <RecordEditorFooter>
     <NavigationButtons />
-    <GenerateButton />
-  </VideoCreationFooter>
-</VideoCreationLayout>
+    <SubmitButton />
+  </RecordEditorFooter>
+</RecordEditorLayout>
 
 // DON'T: Monolithic components with everything built-in
 \`\`\`
@@ -438,21 +420,21 @@ export async function generateVideoFromScenes(scenes: VideoScene[]) {
 
 ## 📱 Mobile-First Implementation
 
-### **12. Responsive Video Component Patterns**
+### **12. Responsive Component Patterns**
 **✅ Required Implementation**:
 
 \`\`\`tsx
-// DO: Mobile-first responsive design for video features
-export function VideoPreviewComponent() {
+// DO: Mobile-first responsive design
+export function RecordDetailComponent() {
   return (
-    <div className="video-preview">
+    <div className="record-detail">
       {/* Mobile: Stack vertically */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="w-full md:w-2/3">
-          <VideoPlayer />
+          <RecordForm />
         </div>
         <div className="w-full md:w-1/3">
-          <VideoControls />
+          <RecordSidebar />
         </div>
       </div>
     </div>
@@ -460,22 +442,22 @@ export function VideoPreviewComponent() {
 }
 
 // DO: Conditional rendering for performance
-export function SceneEditor() {
+export function RecordEditor() {
   const isMobile = useMediaQuery('(max-width: 768px)')
-  
+
   if (isMobile) {
-    return <MobileSceneEditor />
+    return <MobileRecordEditor />
   }
-  
-  return <DesktopSceneEditor />
+
+  return <DesktopRecordEditor />
 }
 
 // DO: Touch-friendly controls on mobile
-<button 
+<button
   className="min-h-[44px] min-w-[44px] touch-manipulation"
-  onClick={handlePlay}
+  onClick={handleSave}
 >
-  <PlayIcon />
+  <SaveIcon />
 </button>
 \`\`\`
 
@@ -484,64 +466,59 @@ export function SceneEditor() {
 ## 🧪 Testing Requirements
 
 ### **13. Component Testing Standards**
-**✅ Required Tests for Video Features**:
+**✅ Required Tests for Every Feature**:
 
 \`\`\`tsx
-// DO: Test video component behavior
-describe('VideoGenerationComponent', () => {
-  it('renders correctly with scenes', () => {
-    const scenes = [
-      { id: '1', title: 'Scene 1', duration: 5 },
-      { id: '2', title: 'Scene 2', duration: 3 }
+// DO: Test component behavior
+describe('RecordList', () => {
+  it('renders correctly with records', () => {
+    const records = [
+      { _id: '1', name: 'First record' },
+      { _id: '2', name: 'Second record' }
     ]
-    
-    render(<VideoGenerationComponent scenes={scenes} />)
-    
-    expect(screen.getByText('Scene 1')).toBeInTheDocument()
-    expect(screen.getByText('Scene 2')).toBeInTheDocument()
+
+    render(<RecordList records={records} />)
+
+    expect(screen.getByText('First record')).toBeInTheDocument()
+    expect(screen.getByText('Second record')).toBeInTheDocument()
   })
-  
-  it('handles video generation', async () => {
-    const onGenerate = jest.fn()
-    render(<VideoGenerationComponent onGenerate={onGenerate} />)
-    
-    const generateButton = screen.getByRole('button', { name: /generate/i })
-    fireEvent.click(generateButton)
-    
+
+  it('handles submission', async () => {
+    const onSubmit = jest.fn()
+    render(<RecordList onSubmit={onSubmit} />)
+
+    const submitButton = screen.getByRole('button', { name: /submit/i })
+    fireEvent.click(submitButton)
+
     await waitFor(() => {
-      expect(onGenerate).toHaveBeenCalled()
+      expect(onSubmit).toHaveBeenCalled()
     })
   })
-  
+
   it('displays error state on failure', async () => {
-    const errorMessage = 'Video generation failed'
-    render(<VideoGenerationComponent error={errorMessage} />)
-    
+    const errorMessage = 'Submission failed'
+    render(<RecordList error={errorMessage} />)
+
     expect(screen.getByText(errorMessage)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
   })
 })
 
-// DO: Test service layer
-describe('videoGeneration service', () => {
-  it('generates video from scenes', async () => {
-    const scenes = [{ id: '1', title: 'Test Scene' }]
-    const result = await generateVideoFromScenes(scenes)
-    
-    expect(result.success).toBe(true)
-    expect(result.videoUrl).toBeDefined()
+// DO: Test Convex functions with convex-test
+describe('records.submit', () => {
+  it('rejects an unauthenticated caller', async () => {
+    const t = convexTest(schema)
+    await expect(
+      t.mutation(api.records.submit, { id: recordId })
+    ).rejects.toThrow('Unauthenticated')
   })
-  
-  it('handles API errors gracefully', async () => {
-    // Mock API failure
-    global.fetch = jest.fn(() => 
-      Promise.reject(new Error('API Error'))
-    )
-    
-    const result = await generateVideoFromScenes([])
-    
-    expect(result.success).toBe(false)
-    expect(result.error).toBeDefined()
+
+  it('rejects a caller who does not own the record', async () => {
+    const t = convexTest(schema)
+    await expect(
+      t.withIdentity({ subject: 'other_user' })
+       .mutation(api.records.submit, { id: recordId })
+    ).rejects.toThrow('Unauthorized')
   })
 })
 \`\`\`
@@ -550,61 +527,61 @@ describe('videoGeneration service', () => {
 
 ## 🚨 Common Anti-Patterns to Avoid
 
-### **14. What NOT to Do in MyShortReel**
+### **14. What NOT to Do**
 
-**❌ Mixing Video Generation Logic in UI Components**:
+**❌ Mixing Business Logic into UI Components**:
 \`\`\`tsx
-// DON'T: API calls directly in components
-export default function VideoPage() {
-  const handleGenerate = async () => {
-    // 100+ lines of video generation logic
-    const response = await fetch('/api/generate', {
+// DON'T: API calls and orchestration directly in components
+export default function RecordPage() {
+  const handleSubmit = async () => {
+    // 100+ lines of validation, persistence and side-effect logic
+    const response = await fetch('/api/submit', {
       method: 'POST',
-      body: JSON.stringify({ scenes })
+      body: JSON.stringify({ record })
     })
     // Complex processing logic
     // Error handling
     // State updates
   }
-  
-  return <button onClick={handleGenerate}>Generate</button>
+
+  return <button onClick={handleSubmit}>Submit</button>
 }
 
-// DO: Use service layer and hooks
-export default function VideoPage() {
-  const { generateVideo, isGenerating } = useVideoWorkflow()
-  
+// DO: Use Convex functions behind a business-logic hook
+export default function RecordPage() {
+  const { submitRecord, isSubmitting } = useRecordWorkflow()
+
   return (
-    <button 
-      onClick={generateVideo} 
-      disabled={isGenerating}
+    <button
+      onClick={submitRecord}
+      disabled={isSubmitting}
     >
-      Generate
+      Submit
     </button>
   )
 }
 \`\`\`
 
-**❌ Monolithic Step Components**:
+**❌ Monolithic Page Components**:
 \`\`\`tsx
-// DON'T: Everything in one step component
-export default function Step3Page() {
+// DON'T: Everything in one page component
+export default function RecordPage() {
   // 50+ state variables
-  // Scene management logic
+  // Form logic
   // Asset upload logic
   // AI chat logic
-  // Video preview logic
+  // Preview logic
   // 1000+ lines of mixed responsibilities
 }
 
 // DO: Modular approach
-export default function Step3Page() {
+export default function RecordPage() {
   return (
-    <SceneCreationLayout>
-      <SceneEditor />
+    <RecordEditorLayout>
+      <RecordForm />
       <AssetPanel />
       <AIAssistant />
-    </SceneCreationLayout>
+    </RecordEditorLayout>
   )
 }
 \`\`\`
@@ -612,48 +589,48 @@ export default function Step3Page() {
 **❌ Prop Drilling Through Multiple Levels**:
 \`\`\`tsx
 // DON'T: Pass props through 5+ levels
-<VideoCreation 
-  scenes={scenes}
-  onSceneUpdate={onSceneUpdate}
+<RecordEditor
+  record={record}
+  onRecordUpdate={onRecordUpdate}
   assets={assets}
   onAssetAdd={onAssetAdd}
   // 20+ more props
 >
-  <SceneEditor 
-    scenes={scenes}
-    onSceneUpdate={onSceneUpdate}
+  <RecordSection
+    record={record}
+    onRecordUpdate={onRecordUpdate}
     // Pass down again
   >
-    <SceneCanvas 
-      scenes={scenes}
-      onSceneUpdate={onSceneUpdate}
+    <RecordField
+      record={record}
+      onRecordUpdate={onRecordUpdate}
       // Pass down again
     />
-  </SceneEditor>
-</VideoCreation>
+  </RecordSection>
+</RecordEditor>
 
-// DO: Use stores or context
-const { scenes, updateScene } = useVideoStore()
-const { assets, addAsset } = useAssetStore()
+// DO: Read from Convex where the data is needed, or use a store for UI state
+const record = useQuery(api.records.get, { id: recordId })
+const updateRecord = useMutation(api.records.update)
 \`\`\`
 
 **❌ No Loading States for Async Operations**:
 \`\`\`tsx
-// DON'T: No feedback during video generation
-const handleGenerate = async () => {
-  await generateVideo()
+// DON'T: No feedback during a long operation
+const handleSubmit = async () => {
+  await submitRecord()
   // User has no idea what's happening
 }
 
 // DO: Proper loading states
-const { generateVideo, isGenerating, progress } = useVideoWorkflow()
+const { submitRecord, isSubmitting, progress } = useRecordWorkflow()
 
 return (
   <>
-    <button onClick={generateVideo} disabled={isGenerating}>
-      {isGenerating ? 'Generating...' : 'Generate Video'}
+    <button onClick={submitRecord} disabled={isSubmitting}>
+      {isSubmitting ? t('submitting') : t('submit')}
     </button>
-    {isGenerating && (
+    {isSubmitting && (
       <ProgressBar value={progress} max={100} />
     )}
   </>
@@ -664,16 +641,15 @@ return (
 \`\`\`tsx
 // DON'T: Complex logic in JSX
 <div>
-  {scenes.map(scene => (
-    <div key={scene.id}>
-      {scene.assets.filter(a => a.type === 'image').map(asset => (
-        <img 
-          src={asset.url || "/placeholder.svg"} 
-          alt={asset.name}
+  {records.map(record => (
+    <div key={record._id}>
+      {record.assets.filter(a => a.type === 'image').map(asset => (
+        <img
+          src={asset.url || "/placeholder.svg"}
+          alt={asset.filename}
           style={{
-            width: calculateWidth(asset, scene),
-            height: calculateHeight(asset, scene),
-            transform: `rotate(${calculateRotation(asset)})`,
+            width: calculateWidth(asset, record),
+            height: calculateHeight(asset, record),
             // 20+ more inline calculations
           }}
         />
@@ -683,12 +659,12 @@ return (
 </div>
 
 // DO: Extract to components and hooks
-const { processedScenes } = useSceneProcessing(scenes)
+const { processedRecords } = useRecordProcessing(records)
 
 return (
   <div>
-    {processedScenes.map(scene => (
-      <SceneCard key={scene.id} scene={scene} />
+    {processedRecords.map(record => (
+      <RecordCard key={record._id} record={record} />
     ))}
   </div>
 )
@@ -698,14 +674,15 @@ return (
 
 ## ✅ Implementation Checklist
 
-### **Before Starting Any Video Feature**:
-- [ ] **Route Planning**: Does this need its own route in the guided flow?
+### **Before Starting Any Feature**:
+- [ ] **Route Planning**: Does this need its own route?
 - [ ] **Component Breakdown**: What components will I need?
-- [ ] **Service Layer**: Do I need API integration?
+- [ ] **Data Layer**: Which Convex queries/mutations does this need?
 - [ ] **State Management**: Should this use a store or local state?
-- [ ] **Mobile-First**: How will video playback work on mobile?
-- [ ] **TypeScript**: Are all video/scene/asset types defined?
-- [ ] **Error Handling**: How do I handle generation failures?
+- [ ] **Mobile-First**: How does this behave on a small screen?
+- [ ] **TypeScript**: Are all entity types derived from the Convex schema?
+- [ ] **i18n**: Is every user-facing string going through `useTranslations()`?
+- [ ] **Error Handling**: How do I handle failures of the slow path?
 
 ### **During Implementation**:
 - [ ] **Single Responsibility**: Each component has one clear purpose
@@ -718,11 +695,11 @@ return (
 - [ ] **Type Safety**: Full TypeScript coverage
 
 ### **After Implementation**:
-- [ ] **Testing**: Components and services are tested
+- [ ] **Testing**: Components and Convex functions are tested
 - [ ] **Documentation**: Code is properly documented
-- [ ] **Performance**: Video operations are optimized
-- [ ] **Accessibility**: Video controls are keyboard accessible
-- [ ] **Integration**: Works with existing guided flow
+- [ ] **Performance**: Queries use indexes, no N+1 patterns
+- [ ] **Accessibility**: Controls are keyboard accessible
+- [ ] **Integration**: Works with existing routes and navigation
 
 ---
 
@@ -731,24 +708,18 @@ return (
 ### **Code Quality Indicators**:
 - **Component Size**: < 200 lines per component
 - **File Organization**: Clear feature-based structure
-- **Type Coverage**: 100% TypeScript
-- **Service Separation**: No API calls in components
+- **Type Coverage**: 100% TypeScript, no `any`
+- **Layer Separation**: No direct API calls in components
 - **State Management**: Appropriate use of stores vs local state
-- **Reusability**: Components can be used across steps
+- **Reusability**: Components can be used across routes
 
 ### **User Experience Indicators**:
-- **Performance**: Fast video preview and generation
+- **Performance**: Fast first paint, responsive interactions
 - **Responsiveness**: Works on all device sizes
 - **Feedback**: Clear loading and error states
 - **Accessibility**: Keyboard navigation and screen reader support
 - **Consistency**: Follows established design patterns
-
-### **Video Feature Specific**:
-- **Generation Success Rate**: > 95%
 - **Error Recovery**: Clear error messages and retry options
-- **Asset Upload**: Smooth upload experience with progress
-- **Preview Quality**: Fast preview rendering
-- **Mobile Experience**: Touch-friendly video controls
 
 ---
 
@@ -756,10 +727,10 @@ return (
 
 ### **Regular Reviews**:
 1. **Architecture Review**: Are we following the established patterns?
-2. **Performance Review**: Are video operations optimized?
-3. **User Experience Review**: Is the mobile video experience optimal?
+2. **Performance Review**: Are queries indexed and payloads small?
+3. **User Experience Review**: Is the mobile experience optimal?
 4. **Code Quality Review**: Is the code maintainable?
-5. **Service Integration Review**: Are API calls efficient?
+5. **Integration Review**: Are external API calls efficient and retried?
 
 ### **Refactoring Guidelines**:
 - **When to Refactor**: 
@@ -767,50 +738,36 @@ return (
   - Multiple responsibilities
   - Repeated logic across components
   - Complex prop drilling
-  - Slow video operations
+  - Slow queries or oversized payloads
   
 - **How to Refactor**: 
   - Break into smaller, focused components
   - Extract business logic to hooks
-  - Move API calls to services
-  - Use stores for shared state
-  - Optimize video processing
+  - Move external API calls into Convex actions
+  - Use stores for shared UI state
+  - Add indexes rather than filtering client-side
   
 - **Testing**: Ensure functionality remains intact
 - **Documentation**: Update documentation after changes
 
 ---
 
-## 📚 MyShortReel Specific Patterns
+## 📚 Reference Patterns
 
-### **Guided Flow Pattern**:
+### **Multi-Step Flow Pattern**:
 \`\`\`tsx
-// Each step follows this pattern:
+// For a wizard/checkout/onboarding flow, each step follows this pattern:
 // 1. Page component (route entry)
-app/guided/step-[n]/page.tsx
+app/[locale]/[flow]/step-[n]/page.tsx
 
 // 2. Layout component (structure)
-components/step-[n]/Step[N]Layout.tsx
+components/[flow]/Step[N]Layout.tsx
 
 // 3. Feature components (functionality)
-components/step-[n]/[Feature]Component.tsx
+components/[flow]/[Feature]Component.tsx
 
 // 4. Shared components (reusable)
 components/shared/[Component].tsx
-\`\`\`
-
-### **Video Workflow Pattern**:
-\`\`\`tsx
-// 1. User input (Steps 1-2)
-Event Type → Event Details
-
-// 2. Content creation (Steps 3-4)
-Scene Creation → Asset Management
-
-// 3. Preview and generation (Steps 5-6)
-Video Preview → Video Generation
-
-// Each step should be independent but connected through stores
 \`\`\`
 
 ### **State Flow Pattern**:
@@ -833,4 +790,4 @@ const data = useFeatureStore(state => state.data)
 
 ---
 
-*This document serves as the definitive guide for feature implementation in MyShortReel. Following these patterns ensures maintainable, scalable, and high-quality code that provides an excellent video creation experience across all devices.*
+*This document serves as the definitive guide for feature implementation in this template. Following these patterns ensures maintainable, scalable, high-quality code across all devices.*
