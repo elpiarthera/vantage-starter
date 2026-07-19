@@ -136,8 +136,7 @@ your-app/
         ├── README.md                                    # Implementation guide
         ├── ToDo/                                        # Pending implementations
         │   ├── auth-implementation-plan.md             # Clerk auth plan
-        │   ├── convex-implementation-plan.md           # Convex backend plan
-        │   └── ai-models-implementation-plan.md        # AI models plan
+        │   └── convex-implementation-plan.md           # Convex backend plan
         └── Done/                                        # Completed implementations
 \`\`\`
 
@@ -923,7 +922,6 @@ Border: #223649
 - **Implementation Plans**: `docs/Implementation/ToDo/`
   - Auth Implementation: `auth-implementation-plan.md`
   - Convex Backend: `convex-implementation-plan.md`
-  - AI Models: `ai-models-implementation-plan.md`
 - **WCAG Guidelines**: https://www.w3.org/WAI/WCAG21/quickref/
 - **Touch Target Guidance**: https://www.w3.org/WAI/WCAG21/Understanding/target-size.html
 - **Tailwind CSS Docs**: https://tailwindcss.com/docs
