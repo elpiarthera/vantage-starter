@@ -136,7 +136,6 @@ your-app/
         ├── README.md                                    # Implementation guide
         ├── ToDo/                                        # Pending implementations
         │   ├── auth-implementation-plan.md             # Clerk auth plan
-        │   └── convex-implementation-plan.md           # Convex backend plan
         └── Done/                                        # Completed implementations
 \`\`\`
 
@@ -921,7 +920,6 @@ Border: #223649
 - **Feature Best Practices**: `docs/Best-Practices/feature-implementation-best-practices.md`
 - **Implementation Plans**: `docs/Implementation/ToDo/`
   - Auth Implementation: `auth-implementation-plan.md`
-  - Convex Backend: `convex-implementation-plan.md`
 - **WCAG Guidelines**: https://www.w3.org/WAI/WCAG21/quickref/
 - **Touch Target Guidance**: https://www.w3.org/WAI/WCAG21/Understanding/target-size.html
 - **Tailwind CSS Docs**: https://tailwindcss.com/docs
@@ -943,7 +941,7 @@ Border: #223649
 - None (frontend mobile-first implementation complete)
 
 ### **📋 Pending**
-- Backend integration (Convex) - See `docs/Implementation/ToDo/convex-implementation-plan.md`
+- Backend integration (Convex) - See `docs/Guides/convex-setup.md`
 - Authentication (Clerk) - See `docs/Implementation/ToDo/auth-implementation-plan.md`
 
 ---

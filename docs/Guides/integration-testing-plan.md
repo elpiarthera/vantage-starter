@@ -6,13 +6,13 @@ End-to-end testing plan for Convex + Clerk + AI APIs integration.
 
 ### Phase 1: Authentication Flow Testing
 ### Phase 2: Database Operations Testing  
-### Phase 3: AI API Integration Testing
+### Phase 3: External API & AI Integration Testing
 ### Phase 4: Error Handling & Edge Cases
 ### Phase 5: Performance & Load Testing
 
 ---
 
-## Phase 1: Authentication Flow Testing (1 hour)
+## Phase 1: Authentication Flow Testing
 
 ### Test 1.1: User Sign Up & Sign In
 
@@ -83,19 +83,20 @@ End-to-end testing plan for Convex + Clerk + AI APIs integration.
 1. Create organization as user A (admin)
 2. Invite user B as member
 3. User B accepts invitation
-4. User A creates project in org
-5. User B tries to view project (should succeed)
-6. User B tries to delete project (should fail)
+4. User A creates a record in the org
+5. User B tries to view it (should succeed)
+6. User B tries to delete it (should fail)
 
 **Expected Results**:
-- [ ] Admin can create/edit/delete projects
-- [ ] Member can view projects
-- [ ] Member cannot delete projects
-- [ ] Permissions enforced in Convex mutations
+- [ ] Admin can create/edit/delete records
+- [ ] Member can view records
+- [ ] Member cannot delete records
+- [ ] Permissions enforced in Convex mutations, not only hidden in the UI
+- [ ] A member of org A cannot read a record belonging to org B, even with its exact document ID
 
 ---
 
-## Phase 2: Database Operations Testing (1.5 hours)
+## Phase 2: Database Operations Testing
 
 ### Test 2.1: User CRUD Operations
 
@@ -119,45 +120,46 @@ const user = await ctx.db.query('users')
   .first()
 \`\`\`
 
-### Test 2.2: Project CRUD Operations
+### Test 2.2: Primary Entity CRUD Operations
 
-**Objective**: Verify project management
+Run this suite against your app's main table — whatever a user creates most of.
 
 **Test Cases**:
 
 | Test | Action | Expected Result |
 |------|--------|-----------------|
-| 2.2.1 | Create project | Project saved to Convex |
-| 2.2.2 | List projects | Returns user's projects |
-| 2.2.3 | Update project | Changes saved |
-| 2.2.4 | Delete project | Project removed |
+| 2.2.1 | Create record | Record saved to Convex |
+| 2.2.2 | List records | Returns the caller's records only |
+| 2.2.3 | Update record | Changes saved |
+| 2.2.4 | Delete record | Record removed |
 | 2.2.5 | Filter by status | Returns filtered results |
 | 2.2.6 | Filter by category | Returns filtered results |
 
 **Verification**:
-- [ ] Project has correct `userId`
-- [ ] Project has correct `organizationId` (if org context)
+- [ ] Record has correct `userId`
+- [ ] Record has correct `organizationId` (if org context)
 - [ ] Timestamps set correctly
 - [ ] Status transitions work (draft → in-progress → completed)
+- [ ] Filtering happens server-side via an index, not `.collect()` then filter in the client
 
-### Test 2.3: Scene CRUD Operations
+### Test 2.3: Child Entity CRUD & Ordering
 
-**Objective**: Verify scene management
+For any table that hangs off the primary entity (line items, comments, attachments, steps).
 
 **Test Cases**:
 
 | Test | Action | Expected Result |
 |------|--------|-----------------|
-| 2.3.1 | Add scene to project | Scene created with correct projectId |
-| 2.3.2 | Update scene order | `sceneNumber` updated correctly |
-| 2.3.3 | Update scene content | Changes saved |
-| 2.3.4 | Delete scene | Scene removed, order recalculated |
-| 2.3.5 | Query scenes by project | Returns all project scenes |
+| 2.3.1 | Add child to parent | Created with correct parent ID |
+| 2.3.2 | Reorder children | Order field updated correctly |
+| 2.3.3 | Update child content | Changes saved |
+| 2.3.4 | Delete child | Removed, order recalculated with no gaps |
+| 2.3.5 | Query children by parent | Returns all children, in order |
 
 **Verification**:
-- [ ] Scenes maintain correct order
-- [ ] `projectId` reference valid
-- [ ] Asset references (`startFrame`, `endFrame`) valid
+- [ ] Ordering is stable across refetches
+- [ ] Parent reference valid
+- [ ] Foreign-key-style `Id<>` references still resolve
 
 ### Test 2.4: Asset Upload & Storage
 
@@ -177,10 +179,8 @@ const user = await ctx.db.query('users')
 - [ ] Asset metadata saved to database
 - [ ] Asset URL returns file
 
-**Test Files**:
-- Image: PNG, JPG (various sizes: 1KB, 1MB, 5MB)
-- Video: MP4 (various sizes: 1MB, 10MB, 50MB)
-- Audio: MP3 (various sizes: 500KB, 5MB)
+**Test Files**: cover both ends of the size range you allow, plus one file just over the limit
+to prove the limit is enforced server-side and not only by the file picker.
 
 ### Test 2.5: Relational Data Integrity
 
@@ -190,132 +190,84 @@ const user = await ctx.db.query('users')
 
 | Test | Relationship | Expected Behavior |
 |------|--------------|-------------------|
-| 2.5.1 | Project → Scenes | Deleting project cascades to scenes |
-| 2.5.2 | Scene → Assets | Asset references remain valid |
-| 2.5.3 | Project → Videos | Videos link to correct project |
-| 2.5.4 | User → Projects | User can query their projects |
-| 2.5.5 | Org → Projects | Org members see org projects |
+| 2.5.1 | Parent → children | Deleting the parent cascades to its children |
+| 2.5.2 | Child → assets | Asset references remain valid, no orphaned storage IDs |
+| 2.5.3 | User → records | User can query their own records |
+| 2.5.4 | Org → records | Org members see org records, and only those |
+| 2.5.5 | Deleted parent | Querying a child of a deleted parent fails cleanly, not with a crash |
 
 ---
 
-## Phase 3: AI API Integration Testing (2 hours)
+## Phase 3: External API & AI Integration Testing
 
-### Test 3.1: Image Generation (fal.ai)
+Every external call in this template lives in a Convex **action** (queries and mutations cannot
+reach the network). These tests target that boundary: the action, its retry behaviour, and the
+mutation it runs on the way back.
 
-**Objective**: Verify image generation works
+### Test 3.1: Happy Path
 
-**Steps**:
-1. Trigger image generation from step-3
-2. Pass prompt to fal.ai API
-3. Verify job queued
-4. Poll for completion
-5. Save generated image to Convex storage
-6. Verify image URL accessible
-
-**Expected Results**:
-- [ ] API request succeeds
-- [ ] Job ID returned
-- [ ] Polling returns completed status
-- [ ] Image URL returned
-- [ ] Image saved to Convex storage
-- [ ] Image displays in UI
-
-**Error Cases**:
-- [ ] Invalid API key handled
-- [ ] Timeout handled (30s limit)
-- [ ] Rate limit handled (429 error)
-- [ ] Invalid prompt handled
-
-### Test 3.2: Video Generation (Kling Video v2.5 Turbo Pro)
-
-**Objective**: Verify video generation works
+**Objective**: Verify a successful external call round-trips into the database
 
 **Steps**:
-1. Select generated images for scene
-2. Trigger video generation (Kling v2.5 Turbo Pro)
-3. Verify fal.ai API called
-4. Poll for completion (can take 1-3 min)
-5. Save video to Convex storage
-6. Verify video URL accessible
+1. Trigger the action from the UI
+2. Confirm the request leaves with the correct credentials and payload
+3. Await completion (poll if the provider is asynchronous)
+4. Persist the result via `ctx.runMutation`
+5. Confirm the UI updates reactively, without a manual refresh
 
 **Expected Results**:
-- [ ] API request succeeds
-- [ ] Job queued successfully
-- [ ] Polling handles long wait times
-- [ ] Video URL returned
-- [ ] Video saved to Convex storage
-- [ ] Video plays in UI
+- [ ] Request succeeds
+- [ ] Result persisted to Convex
+- [ ] Subscribed components re-render with no refetch code
+- [ ] Secrets read from environment variables, never from the client
 
-**Error Cases**:
-- [ ] Long generation time handled (5+ min)
-- [ ] Generation failure handled
-- [ ] Retry logic works (max 3 retries)
+### Test 3.2: Long-Running Jobs
 
-### Test 3.3: Audio Generation (fal.ai Music & Speech)
-
-**Objective**: Verify audio generation works
-
-**Music Test**:
-1. Enter music prompt
-2. Trigger music generation (Stable Audio 2.5 or MiniMax Music)
-3. Poll for completion
-4. Save audio to Convex storage
-5. Verify audio plays
-
-**Narration Test**:
-1. Enter narration text
-2. Select voice
-3. Trigger speech generation (MiniMax Speech 2.6 HD)
-4. Save audio to Convex storage
-5. Verify audio plays
-
-**Expected Results**:
-- [ ] Music generation succeeds
-- [ ] Narration generation succeeds
-- [ ] Audio files saved correctly
-- [ ] Audio plays in browser
-- [ ] Duration tracked correctly
-
-### Test 3.4: Video Assembly (fal.ai + Rendi)
-
-**Objective**: Verify video assembly works
+**Objective**: Verify jobs that outlive a single request
 
 **Steps**:
-1. Complete project with scenes, narration, music
-2. Trigger video assembly
-3. Step 1 (Parallel A): Rendi mixes narration + music with ducking
-4. Step 1 (Parallel B): fal.ai merges scene videos
-5. Step 2: fal.ai merges video + mixed audio track
-6. Verify final video generated
+1. Trigger a job whose provider returns a job ID rather than a result
+2. Confirm a row is written immediately with status `queued`/`processing`
+3. Poll or receive the webhook
+4. Confirm the terminal status is written exactly once
 
 **Expected Results**:
-- [ ] All 3 assembly steps complete
-- [ ] Video IDs saved to database
-- [ ] Final video URL accessible
-- [ ] Video plays with audio synced
-- [ ] Duration matches expected
+- [ ] Status visible to the user for the whole duration
+- [ ] Polling backs off rather than hammering the provider
+- [ ] A job that never completes ends in `failed`, not stuck in `processing` forever
+- [ ] Re-delivered webhooks are idempotent (no duplicate rows, no double charge)
 
-### Test 3.5: Cost Tracking
+### Test 3.3: Failure Modes
 
-**Objective**: Verify usage tracking works
+Each of these must be provoked deliberately — a test that never saw the failure has not tested it.
+
+| Test | Scenario | Expected Behavior |
+|------|----------|-------------------|
+| 3.3.1 | Invalid API key | Clear error, no partial row written |
+| 3.3.2 | Provider timeout | Retry with backoff, then a terminal `failed` status |
+| 3.3.3 | Rate limit (429) | Retry honouring `Retry-After` |
+| 3.3.4 | Malformed provider response | Rejected by validation, not persisted |
+| 3.3.5 | Provider succeeds, mutation fails | Result not silently lost |
+
+### Test 3.4: Usage & Cost Tracking
+
+**Objective**: Verify every billable call is recorded
 
 **Steps**:
-1. Generate image (track cost)
-2. Generate video (track cost)
-3. Generate audio (track cost)
-4. Query `usageTracking` table
-5. Verify costs recorded
+1. Trigger each kind of external call
+2. Query the usage table
+3. Compare against the provider dashboard for the same window
 
 **Expected Results**:
-- [ ] Each API call tracked
-- [ ] Model name recorded correctly
-- [ ] Cost calculated correctly
-- [ ] User credits deducted
-- [ ] Usage limit enforced
+- [ ] Each call tracked exactly once
+- [ ] Service and model names recorded in a consistent format
+- [ ] Cost computed from the provider response, never hardcoded
+- [ ] Credits deducted transactionally with the usage row
+- [ ] A failed call does not deduct credits
+- [ ] Usage limit enforced server-side before the external call is made
 
----
 
-## Phase 4: Error Handling & Edge Cases (1 hour)
+## Phase 4: Error Handling & Edge Cases
 
 ### Test 4.1: Authentication Errors
 
@@ -361,17 +313,18 @@ const user = await ctx.db.query('users')
 
 ---
 
-## Phase 5: Performance & Load Testing (1 hour)
+## Phase 5: Performance & Load Testing
 
 ### Test 5.1: Query Performance
 
 **Objective**: Verify queries are fast
 
-**Metrics**:
-- [ ] User query < 100ms
-- [ ] Project list query < 200ms
-- [ ] Scene list query < 150ms
+**Metrics** (indicative budgets — set your own, then hold them):
+- [ ] Single-document query < 100ms
+- [ ] Primary list query < 200ms
+- [ ] Child list query < 150ms
 - [ ] Asset list query < 200ms
+- [ ] No query without a `.withIndex()` on a table that grows unbounded
 
 **Load Test**:
 - Run 10 concurrent queries
@@ -382,19 +335,20 @@ const user = await ctx.db.query('users')
 **Objective**: Verify file uploads/downloads are fast
 
 **Metrics**:
-- [ ] 1MB image upload < 2s
-- [ ] 10MB video upload < 10s
+- [ ] Small file (~1MB) upload completes promptly
+- [ ] Largest allowed file completes within your stated limit
 - [ ] File download starts < 500ms
 
-### Test 5.3: AI API Response Times
+### Test 5.3: External API Response Times
 
-**Objective**: Track AI generation times
+**Objective**: Establish a baseline per provider, so a regression is visible
 
-**Expected Times**:
-- [ ] Image generation: 10-30s
-- [ ] Video generation: 2-5 min
-- [ ] Music generation: 30-60s
-- [ ] Narration generation: 5-15s
+Measure each external call in your app and record the observed range. Do not copy budgets from
+another product — a provider's latency is a property of that provider, measure it.
+
+- [ ] Baseline recorded per provider and per operation
+- [ ] Any operation slower than its baseline surfaces progress UI to the user
+- [ ] Timeouts configured above the observed p99, not guessed
 
 ### Test 5.4: Concurrent Users
 
@@ -402,8 +356,8 @@ const user = await ctx.db.query('users')
 
 **Test**:
 1. Simulate 10 concurrent users
-2. Each user creates project
-3. Each user generates images
+2. Each user creates a record
+3. Each user triggers an external call
 4. Verify no conflicts or errors
 
 **Expected Results**:
@@ -445,11 +399,10 @@ Before deploying to production:
 - [ ] Queries optimized
 
 ### AI APIs
-- [ ] Image generation works
-- [ ] Video generation works
-- [ ] Audio generation works
-- [ ] Video assembly works
-- [ ] Cost tracking accurate
+- [ ] Each external integration round-trips into the database
+- [ ] Long-running jobs reach a terminal status
+- [ ] Webhooks are idempotent
+- [ ] Cost and usage tracking accurate
 
 ### Error Handling
 - [ ] Auth errors handled
@@ -466,18 +419,6 @@ Before deploying to production:
 
 ---
 
-## Time Estimate
-
-**Total testing time: 6.5 hours**
-
-- Auth testing: 1 hour
-- Database testing: 1.5 hours
-- AI API testing: 2 hours
-- Error handling: 1 hour
-- Performance: 1 hour
-
----
-
 ## Reporting Issues
 
 When you find a bug:
@@ -486,7 +427,7 @@ When you find a bug:
    - Steps to reproduce
    - Expected behavior
    - Actual behavior
-   - Screenshots/videos
+   - Screenshots or a screen recording
    - Browser/device info
 
 2. Check logs:

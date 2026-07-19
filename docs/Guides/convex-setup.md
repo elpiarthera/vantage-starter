@@ -86,7 +86,7 @@ export default {
 
 ### Step 7: Create Schema File
 
-Create `convex/schema.ts` and copy the schema from `docs/Guides/convex-database-schema.md`:
+The template already ships a working `convex/schema.ts` — **read that file, it is the source of truth**, not a copy of it in prose. A schema documented in a second place drifts from the one the backend actually enforces. The excerpt below shows the shape; open `convex/schema.ts` for the full set of tables and indexes.
 
 \`\`\`typescript
 import { defineSchema, defineTable } from 'convex/server'
@@ -106,7 +106,7 @@ export default defineSchema({
     .index('by_email', ['email'])
     .index('by_organization', ['organizationId']),
 
-  // ... Copy remaining tables from convex-database-schema.md
+  // ... see convex/schema.ts for the remaining tables and their indexes
 })
 \`\`\`
 
@@ -522,9 +522,9 @@ Update Vercel environment variables with production Convex URL.
 ## Next Steps
 
 After completing this setup:
-1. Implement remaining Convex functions per convex-implementation-plan.md
+1. Add the Convex functions your product needs, following the patterns in `convex/`
 2. Test Clerk + Convex integration thoroughly
-3. Migrate mock data to Convex queries
+3. Replace any placeholder data with Convex queries
 
 ## Time Estimate
 

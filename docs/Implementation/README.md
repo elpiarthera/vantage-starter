@@ -10,7 +10,6 @@ Contains implementation plans that have **not yet been started** or are **in pro
 
 Current plans:
 - `auth-implementation-plan.md` - Clerk + Convex authentication
-- `convex-implementation-plan.md` - Convex backend and schema
 
 ### `/Done`
 Contains implementation plans that have been **completed and deployed**.
