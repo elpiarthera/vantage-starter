@@ -27,6 +27,18 @@ Both sentences above were true when written and false a few hours later. They ar
 
 `ChangePasswordModal` validated current/new/confirm password fields, then on submit ran `console.log("[v0] Changing password")` behind a `// TODO: Implement actual password change logic` — closing the modal as if the account were re-secured while no request ever left the browser. Wired to Clerk's `useUser().user.updatePassword({ currentPassword, newPassword, signOutOfOtherSessions: true })`: a valid submission now actually rotates the password and signs out other sessions; a wrong current password (`form_password_incorrect`) is refused with a visible field error and the modal stays open — never silently swallowed. New i18n keys (`current_password_incorrect`, `change_password_success_toast`, `change_password_failed_toast`) added across all 7 locales. `NotificationsTab.tsx`'s sibling `[v0]`/TODO is separately reported and untouched here.
 
+### Fixed (2026-07-19 — NotificationsTab staged a save that went nowhere)
+
+**The save was theatre.** `handleSave` awaited `setTimeout(resolve, 1000)` under a `// Simulate API call` comment, wrote a `[v0]` line to the console, and cleared the spinner. Nothing left the browser. The spinner was real; the save was not — which is worse than an obviously missing feature, because the interface reports success.
+
+**The second half of the defect, which the first hides.** The three toggles initialised from hardcoded literals (`useState(true)` / `useState(false)`), and the `user` prop was destructured to `_user` precisely because nothing read it. So even once the write worked, a reload would have silently reverted the user's choices to the defaults. Fixing only the write would have produced a save that persists and a screen that lies about it.
+
+Preferences now initialise from `user.unsafeMetadata` and persist through `user.update({ unsafeMetadata: { ...user.unsafeMetadata, … } })`. The existing metadata is spread rather than replaced — `ProfileTab.tsx` owns `theme`, `language` and `notifications` in the same object, and a bare write would have deleted them. `securityAlerts` stays always-on and is deliberately NOT persisted: it is a guarantee, not a preference, and storing it would invite a future write to switch it off. Failure now surfaces through `toast.error` instead of resolving silently. Both new strings go through next-intl across all 7 locales.
+
+**A stale reference in the brief, corrected by the agent rather than copied.** The task brief cited `ChangePasswordModal.tsx` as the canonical Clerk-call pattern, on the belief that PR #42 had fixed it. #42 is still OPEN on another branch, so in this tree that modal is itself still theatre with a `console.log`. The agent detected the contradiction and followed `ProfileTab.tsx` — the actually-wired surface — instead of reproducing the defect it was sent to fix.
+
+**Test added, RED-first, proving the spread is load-bearing.** `__tests__/components/NotificationsTab.test.tsx` renders with `unsafeMetadata` pre-seeded with foreign keys (`theme`, `language`, `notifications`) owned by `ProfileTab.tsx`, then asserts the *actual* argument passed to `user.update` still carries them alongside the updated notification flags. Proven RED by deleting the `...user.unsafeMetadata` spread (test fails on the exact assertion), then GREEN after restoring it — `git diff` on the component empty. Also covers: preferences initialise from `unsafeMetadata` rather than hardcoded defaults, and a rejected `user.update` surfaces the error via `toast.error` instead of resolving silently.
+
 ### Fixed (2026-07-18 — the inventory's own matcher, five attempts, after Eta's second REVISE on #41)
 
 Two defects, both mine, both in the instrument rather than the subject.

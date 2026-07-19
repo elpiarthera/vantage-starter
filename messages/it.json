@@ -512,7 +512,9 @@
 		"toggle_email_aria": "Attiva/disattiva notifiche email",
 		"toggle_push_aria": "Attiva/disattiva notifiche push",
 		"toggle_marketing_aria": "Attiva/disattiva email di marketing",
-		"security_alerts_aria": "Avvisi di sicurezza (sempre attivi)"
+		"security_alerts_aria": "Avvisi di sicurezza (sempre attivi)",
+		"save_success_toast": "Preferenze di notifica salvate",
+		"save_failed_toast": "Impossibile salvare le preferenze di notifica"
 	},
 	"project_card": {
 		"edit": "Modifica Progetto",

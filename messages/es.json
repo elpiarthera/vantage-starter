@@ -512,7 +512,9 @@
 		"toggle_email_aria": "Alternar notificaciones por correo electrónico",
 		"toggle_push_aria": "Alternar notificaciones push",
 		"toggle_marketing_aria": "Alternar correos de marketing",
-		"security_alerts_aria": "Alertas de seguridad (siempre activadas)"
+		"security_alerts_aria": "Alertas de seguridad (siempre activadas)",
+		"save_success_toast": "Preferencias de notificación guardadas",
+		"save_failed_toast": "No se pudieron guardar las preferencias de notificación"
 	},
 	"project_card": {
 		"edit": "Editar Proyecto",

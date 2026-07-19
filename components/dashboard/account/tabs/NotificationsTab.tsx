@@ -4,6 +4,7 @@ import type { UserResource } from "@clerk/types";
 import { Bell, Info, Mail, Shield, Smartphone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -15,32 +16,48 @@ import { Switch } from "@/components/ui/switch";
 import { useDevice } from "@/contexts/DeviceContext";
 
 interface NotificationsTabProps {
-	user: UserResource; // TODO: Sprint X - Store notification preferences in Convex/Clerk metadata
+	user: UserResource;
 }
 
-export function NotificationsTab({ user: _user }: NotificationsTabProps) {
+export function NotificationsTab({ user }: NotificationsTabProps) {
 	const { isMobile } = useDevice();
 	const t = useTranslations("notifications_tab");
 
-	// Initialize state with default values (TODO: use real user preferences from Clerk metadata)
-	const [emailNotifications, setEmailNotifications] = useState(true);
-	const [pushNotifications, setPushNotifications] = useState(false);
-	const [marketingEmails, setMarketingEmails] = useState(true);
-	const [securityAlerts] = useState(true); // Always true
+	// Initialize state from persisted Clerk unsafeMetadata, falling back to defaults
+	// only when the user has never saved a preference yet.
+	const [emailNotifications, setEmailNotifications] = useState(
+		(user.unsafeMetadata?.emailNotifications as boolean | undefined) ?? true,
+	);
+	const [pushNotifications, setPushNotifications] = useState(
+		(user.unsafeMetadata?.pushNotifications as boolean | undefined) ?? false,
+	);
+	const [marketingEmails, setMarketingEmails] = useState(
+		(user.unsafeMetadata?.marketingEmails as boolean | undefined) ?? true,
+	);
+	const [securityAlerts] = useState(true); // Always true, not persistable
 
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleSave = async () => {
 		setIsSaving(true);
-		// Simulate API call
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		console.log("[v0] Saving notification preferences:", {
-			emailNotifications,
-			pushNotifications,
-			marketingEmails,
-			securityAlerts,
-		});
-		setIsSaving(false);
+		try {
+			await user.update({
+				unsafeMetadata: {
+					...user.unsafeMetadata,
+					emailNotifications,
+					pushNotifications,
+					marketingEmails,
+				},
+			});
+			toast.success(t("save_success_toast"));
+		} catch (error) {
+			console.error("Failed to save notification preferences:", error);
+			toast.error(
+				error instanceof Error ? error.message : t("save_failed_toast"),
+			);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	return (

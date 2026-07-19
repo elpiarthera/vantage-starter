@@ -512,7 +512,9 @@
 		"toggle_email_aria": "Activer/désactiver les notifications par e-mail",
 		"toggle_push_aria": "Activer/désactiver les notifications push",
 		"toggle_marketing_aria": "Activer/désactiver les e-mails marketing",
-		"security_alerts_aria": "Alertes de sécurité (toujours activées)"
+		"security_alerts_aria": "Alertes de sécurité (toujours activées)",
+		"save_success_toast": "Préférences de notification enregistrées",
+		"save_failed_toast": "Échec de l'enregistrement des préférences de notification"
 	},
 	"project_card": {
 		"edit": "Modifier le projet",

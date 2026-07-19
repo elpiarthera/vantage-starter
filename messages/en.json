@@ -512,7 +512,9 @@
 		"toggle_email_aria": "Toggle email notifications",
 		"toggle_push_aria": "Toggle push notifications",
 		"toggle_marketing_aria": "Toggle marketing emails",
-		"security_alerts_aria": "Security alerts (always enabled)"
+		"security_alerts_aria": "Security alerts (always enabled)",
+		"save_success_toast": "Notification preferences saved",
+		"save_failed_toast": "Failed to save notification preferences"
 	},
 	"project_card": {
 		"edit": "Edit Project",
