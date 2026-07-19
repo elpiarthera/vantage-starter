@@ -512,7 +512,9 @@
 		"toggle_email_aria": "E-Mail-Benachrichtigungen umschalten",
 		"toggle_push_aria": "Push-Benachrichtigungen umschalten",
 		"toggle_marketing_aria": "Marketing-E-Mails umschalten",
-		"security_alerts_aria": "Sicherheitswarnungen (immer aktiviert)"
+		"security_alerts_aria": "Sicherheitswarnungen (immer aktiviert)",
+		"save_success_toast": "Benachrichtigungseinstellungen gespeichert",
+		"save_failed_toast": "Benachrichtigungseinstellungen konnten nicht gespeichert werden"
 	},
 	"project_card": {
 		"edit": "Projekt bearbeiten",
