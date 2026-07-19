@@ -16,7 +16,9 @@ Deleted rather than rewritten, listed so nothing load-bearing vanishes quietly: 
 
 `convex/schema.ts:8` is included even though it is a **comment**, not behaviour. No test can cover it, so it was treated as prose. It matters because the final sweep asserts over every file type, not markdown alone — a comment is exactly where a zero goes quietly wrong.
 
-**Two files deliberately NOT cleaned, and this is a decision rather than an omission.** `CHANGELOG.md` — its mentions ARE the record of removing that product, including the evidence command of an earlier audit. Erasing the name there does not clean history, it falsifies a dated trail; that is CONTENT, which does not expire, not STATE. `docs/Guides/disaster-recovery-plan.md` — it does not survive a rewrite: it recovers a specific running production application, which a template does not have, and its salvageable parts already duplicate `convex-setup.md` and `deployment-guide.md`. Both are escalated, neither is forced.
+**Two files were held back at this point, and both decisions were reversed later the same day — recorded here at their date rather than rewritten away.** `CHANGELOG.md` was left alone on the argument that its mentions ARE the record of removing that product, so CONTENT that does not expire rather than STATE. Laurent overruled it on a different criterion — what a *fork reads*: a template repository carries no retired product's name, journal included — and the names were removed in a later commit, the entries and their dates kept. `docs/Guides/disaster-recovery-plan.md` was escalated rather than cleaned, because it does not survive a rewrite: it recovers a specific running production application, which a template does not have. It left with the archived set.
+
+Both sentences above were true when written and false a few hours later. They are corrected here rather than deleted, because a changelog that silently edits its own superseded reasoning stops being a record of how decisions were actually reached.
 
 ### Fixed (2026-07-18 — FAQ accordion e2e spec, order-dependent race on lit-ui upgrade)
 
