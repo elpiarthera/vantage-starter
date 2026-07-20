@@ -3376,5 +3376,21 @@
 	},
 	"shared": {
 		"skip_link": "Перейти к основному содержимому"
+	},
+	"generative_ui": {
+		"mission_proposal_aria": "Предложение миссии: {name}",
+		"objective_label": "Цель",
+		"success_criteria_label": "Критерии успеха",
+		"ai_operation_aria": "Операция ИИ",
+		"human_operation_aria": "Операция человека",
+		"review_required": "Требуется проверка",
+		"estimated_minutes": "{count, plural, one {# мин} few {# мин} many {# мин} other {# мин}}",
+		"after_operations": "{count, plural, one {После # операции} few {После # операций} many {После # операций} other {После # операции}}",
+		"human_checkpoint_aria": "Контрольная точка человека",
+		"checkpoint_label": "Контрольная точка",
+		"onboarding_config_aria": "Конфигурация адаптации: {projectName}",
+		"summary_label": "Сводка",
+		"pain_points_label": "Проблемные точки",
+		"agent_count": "{count, plural, one {# агент} few {# агента} many {# агентов} other {# агента}}"
 	}
 }

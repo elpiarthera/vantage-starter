@@ -9,6 +9,7 @@
  */
 
 import type { ComponentRegistry } from "@json-render/react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -149,11 +150,12 @@ export const vantageOSRegistry: ComponentRegistry = {
 	MissionProposal: ({ element, children }: any) => {
 		const { name, brief, objective, estimatedTimeline, successCriteria } =
 			element.props;
+		const t = useTranslations("generative_ui");
 
 		return (
 			<section
 				className="w-full border border-border bg-[oklch(0.17_0.01_240)] overflow-hidden"
-				aria-label={`Mission proposal: ${name}`}
+				aria-label={t("mission_proposal_aria", { name })}
 			>
 				{/* Header */}
 				<div className="border-b border-border px-6 py-5">
@@ -175,7 +177,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 					{objective && (
 						<div className="bg-[oklch(0.13_0.01_240)] border border-border px-4 py-3">
 							<p className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider mb-1">
-								Objective
+								{t("objective_label")}
 							</p>
 							<p className="text-sm text-[oklch(0.93_0.01_240)] leading-relaxed">
 								{objective}
@@ -188,7 +190,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 				{successCriteria && successCriteria.length > 0 && (
 					<div className="border-b border-border px-6 py-4">
 						<p className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider mb-3">
-							Success Criteria
+							{t("success_criteria_label")}
 						</p>
 						<ul className="space-y-2">
 							{successCriteria.map((criterion: string) => (
@@ -229,6 +231,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 		} = element.props;
 
 		const isAI = type === "ai";
+		const t = useTranslations("generative_ui");
 
 		return (
 			<div className="border border-border bg-[oklch(0.13_0.01_240)] p-4">
@@ -243,7 +246,9 @@ export const vantageOSRegistry: ComponentRegistry = {
 								: "text-[oklch(0.75_0.14_65)]",
 						)}
 						role="img"
-						aria-label={isAI ? "AI operation" : "Human operation"}
+						aria-label={
+							isAI ? t("ai_operation_aria") : t("human_operation_aria")
+						}
 					>
 						{isAI ? <IconBot /> : <IconUser />}
 					</div>
@@ -255,7 +260,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 							</span>
 							{requiresReview && (
 								<span className="text-xs px-2 py-0.5 rounded-full border border-[oklch(0.75_0.14_65)]/50 text-[oklch(0.75_0.14_65)]">
-									Review required
+									{t("review_required")}
 								</span>
 							)}
 							{phase && (
@@ -283,13 +288,13 @@ export const vantageOSRegistry: ComponentRegistry = {
 					{estimatedMinutes && (
 						<span className="flex items-center gap-1 tabular-nums">
 							<IconClock />
-							{estimatedMinutes} min
+							{t("estimated_minutes", { count: estimatedMinutes })}
 						</span>
 					)}
 					{dependsOn && dependsOn.length > 0 && (
 						<span className="flex items-center gap-1">
 							<IconArrow />
-							After {dependsOn.length} op{dependsOn.length > 1 ? "s" : ""}
+							{t("after_operations", { count: dependsOn.length })}
 						</span>
 					)}
 					{requiredTools && requiredTools.length > 0 && (
@@ -304,19 +309,20 @@ export const vantageOSRegistry: ComponentRegistry = {
 
 	Checkpoint: ({ element }: any) => {
 		const { description } = element.props;
+		const t = useTranslations("generative_ui");
 
 		return (
 			<div
 				className="flex items-center gap-3 border-2 border-dashed border-[oklch(0.75_0.14_65)]/50 bg-[oklch(0.75_0.14_65)]/5 px-4 py-3"
 				role="note"
-				aria-label="Human checkpoint"
+				aria-label={t("human_checkpoint_aria")}
 			>
 				<div className="shrink-0 text-[oklch(0.75_0.14_65)]">
 					<IconPause />
 				</div>
 				<div>
 					<p className="text-xs font-medium text-[oklch(0.75_0.14_65)] uppercase tracking-wider mb-0.5">
-						Checkpoint
+						{t("checkpoint_label")}
 					</p>
 					<p className="text-xs text-[oklch(0.65_0.01_240)] leading-relaxed">
 						{description}
@@ -372,11 +378,12 @@ export const vantageOSRegistry: ComponentRegistry = {
 	OnboardingConfig: ({ element, children }: any) => {
 		const { projectName, clientName, sector, summary, painPoints } =
 			element.props;
+		const t = useTranslations("generative_ui");
 
 		return (
 			<section
 				className="w-full border border-border bg-[oklch(0.17_0.01_240)] overflow-hidden"
-				aria-label={`Onboarding config: ${projectName}`}
+				aria-label={t("onboarding_config_aria", { projectName })}
 			>
 				{/* Header */}
 				<div className="border-b border-border px-6 py-5">
@@ -396,7 +403,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 					{summary && (
 						<div className="bg-[oklch(0.13_0.01_240)] border border-border px-4 py-3 mb-4">
 							<p className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider mb-1">
-								Summary
+								{t("summary_label")}
 							</p>
 							<p className="text-sm text-[oklch(0.93_0.01_240)] leading-relaxed">
 								{summary}
@@ -407,7 +414,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 					{painPoints && painPoints.length > 0 && (
 						<div>
 							<p className="text-xs font-medium text-[oklch(0.65_0.01_240)] uppercase tracking-wider mb-2">
-								Pain Points
+								{t("pain_points_label")}
 							</p>
 							<div className="flex flex-wrap gap-1.5">
 								{painPoints.map((pain: string) => (
@@ -432,6 +439,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 	TeamSelection: ({ element, children }: any) => {
 		const { name, description, category, agentCount, selected, matchedPains } =
 			element.props;
+		const t = useTranslations("generative_ui");
 
 		return (
 			<fieldset
@@ -465,7 +473,7 @@ export const vantageOSRegistry: ComponentRegistry = {
 								{category}
 							</span>
 							<span className="text-xs px-2 py-0.5 rounded-full border border-[oklch(0.62_0.18_240)]/50 text-[oklch(0.62_0.18_240)] tabular-nums">
-								{agentCount} agent{agentCount !== 1 ? "s" : ""}
+								{t("agent_count", { count: agentCount })}
 							</span>
 						</div>
 						{description && (

@@ -3376,5 +3376,21 @@
 	},
 	"shared": {
 		"skip_link": "Zum Hauptinhalt springen"
+	},
+	"generative_ui": {
+		"mission_proposal_aria": "Missionsvorschlag: {name}",
+		"objective_label": "Ziel",
+		"success_criteria_label": "Erfolgskriterien",
+		"ai_operation_aria": "KI-Vorgang",
+		"human_operation_aria": "Menschlicher Vorgang",
+		"review_required": "Überprüfung erforderlich",
+		"estimated_minutes": "{count, plural, one {# Min.} other {# Min.}}",
+		"after_operations": "{count, plural, one {Nach # Vorgang} other {Nach # Vorgängen}}",
+		"human_checkpoint_aria": "Menschlicher Kontrollpunkt",
+		"checkpoint_label": "Kontrollpunkt",
+		"onboarding_config_aria": "Onboarding-Konfiguration: {projectName}",
+		"summary_label": "Zusammenfassung",
+		"pain_points_label": "Problempunkte",
+		"agent_count": "{count, plural, one {# Agent} other {# Agenten}}"
 	}
 }

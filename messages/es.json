@@ -3376,5 +3376,21 @@
 	},
 	"shared": {
 		"skip_link": "Saltar al contenido principal"
+	},
+	"generative_ui": {
+		"mission_proposal_aria": "Propuesta de misión: {name}",
+		"objective_label": "Objetivo",
+		"success_criteria_label": "Criterios de éxito",
+		"ai_operation_aria": "Operación de IA",
+		"human_operation_aria": "Operación humana",
+		"review_required": "Revisión requerida",
+		"estimated_minutes": "{count, plural, one {# min} other {# min}}",
+		"after_operations": "{count, plural, one {Después de # operación} other {Después de # operaciones}}",
+		"human_checkpoint_aria": "Punto de control humano",
+		"checkpoint_label": "Punto de control",
+		"onboarding_config_aria": "Configuración de incorporación: {projectName}",
+		"summary_label": "Resumen",
+		"pain_points_label": "Puntos débiles",
+		"agent_count": "{count, plural, one {# agente} other {# agentes}}"
 	}
 }
