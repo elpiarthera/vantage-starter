@@ -6,14 +6,6 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
-### Added (2026-07-20 — mcpcn block mapping: which of the 30 blocks replace hand-written chat/dashboard UI)
-
-New research doc `docs/mcpcn-block-mapping.md` maps every block in the mcpcn registry (https://www.mcpcn.dev) to a file in this repo, or documents why it has no home today. The registry item count is derived, not typed — the dispatch brief's "31" was the project's GitHub star count, not the block count; `curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "..."` and an independent `grep` on `llms.txt` both landed on **30** `registry:block` items (plus 2 `registry:lib`, 1 `registry:style`, none of which are blocks).
-
-10 of the 30 blocks have a concrete today-home: `message-bubble`/`chat-conversation` replace the hand-written bubble/avatar/empty-state markup in `components/chat/MessageList.tsx`; `status-badge` replaces the pill markup in `components/chat/ToolCallIndicator.tsx`; `option-list`/`tag-select` replace the three near-duplicate hand-written `TeamSelection`/`AgentSelection`/`SkillSelection` components in `lib/json-render/registry.tsx`; `quick-reply`, `progress-steps`, and `table` are net-new capabilities with no existing code to replace; `stat-card` replaces `components/missions/mission-stats.tsx`'s own `StatCard`; `hero` replaces `components/landing/HeroSection.tsx`. The other 20 (events, tickets, map, contact/issue forms, date-time picker, order/payment confirmation, amount-input, blog posts, social-post previews, product-list) are declared homeless with their reason — this product has no events, blog, social, e-commerce, or scheduling feature, and Polar.sh's hosted checkout/portal already owns the payment-confirmation surface.
-
-No component code was written or modified by this task.
-
 ### Fixed (2026-07-20 — mission navigation led to a 404, and the configurator was unreachable)
 
 Two of the three internal `router.push` call sites for opening a mission targeted `/missions/:id` (`components/missions/mission-card.tsx:42`, `components/missions/mission-list-view.tsx:156`) — a route that has never existed (only `/dashboard/missions/[missionId]` does, confirmed by `find "app/[locale]" -name page.tsx`). The third, correct-shaped call site (`app/[locale]/dashboard/architect/page.tsx:129`) still hand-typed the path and imported `useRouter` from `next/navigation` instead of `@/i18n/routing`, so it bypassed next-intl's automatic locale prefixing. `/dashboard/configurator` had zero referrers anywhere in the app — a real page, reachable only by typing the URL.
