@@ -153,6 +153,15 @@ print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
 2. **Replaces:** nothing.
 3. **Cost:** Base UI; a map tile provider (Mapbox/Maplibre — free tier available, no cost blocker); geocoding company/event addresses into lat/lng (a one-time batch job, not a recurring cost).
 
+### Dashboards & metrics
+
+**stat-card** — scrollable stat cards with values, trend arrows, change indicators.
+1. **Feature it opens:** every product in the house has numbers nobody currently sees on a screen. VantagePeers knows task throughput, blocked-task counts, and per-orchestrator completion rates — all of it reachable only by reading tool output; a stat strip turns it into a board someone can glance at. VantageCRM has pipeline value, win rate, and conversion rate as MCP tools (`pipeline_value`, `win_rate`, `conversion_rate`) with no rendered surface at all. VantageRegistry knows how many skills sit below the freshness threshold. In vantage-starter it is already wired to the missions dashboard.
+2. **Replaces:** `components/missions/mission-stats.tsx`'s own `StatCard`/`StatCardSkeleton` plus four hand-coded inline SVG icon functions — **already done**, this block shipped in wave 1 and is consuming `StatCardItem` today.
+3. **Cost:** none for the block itself (it is one of the seven that need no UI primitive library). Per new home, the cost is a query that returns the numbers — those already exist as MCP tools in VantageCRM and VantagePeers, so the cost is a screen, not a backend.
+
+---
+
 ### Marketing
 
 **hero** — landing hero, logos, title, subtitle, CTAs, tech-logo footer.
@@ -164,7 +173,25 @@ print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
 
 ## 5. Score
 
-30 of 30 blocks open at least one named feature in at least one of the five products. **Zero blocks rejected.** No block in this registry is unusable by every product in the house — the previous version's 20 rejections were a scoping error, not a fact about the components.
+Do not read the number below as typed — derive it, and derive the coverage too. The registry is the authority on what must be covered; this file is the authority on what *is* covered; the check is that the two sets match:
+
+```
+# how many blocks the registry declares
+curl -sS https://www.mcpcn.dev/r/registry.json \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); \
+print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
+
+# which of them this document fails to mention — must print nothing
+curl -sS https://www.mcpcn.dev/r/registry.json \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); \
+doc=open('docs/mcpcn-block-mapping.md').read(); \
+print('\n'.join(i['name'] for i in d['items'] \
+if i.get('type')=='registry:block' and i['name'] not in doc))"
+```
+
+The second command is the one that matters, and it is the one that caught a real defect: the first draft of this rewrite asserted "30 of 30, zero rejected" while **silently omitting `stat-card`** — 29 covered, one dropped without a word. The claim was typed, not derived, inside a document whose opening section preaches derivation. A count that nobody made fail is not a measurement.
+
+Every block in the registry opens at least one named feature in at least one of the five products. **Zero blocks rejected.** The previous version's 20 rejections were a scoping error — an artefact of asking "which existing screen uses this?" — not a fact about the components.
 
 ---
 
