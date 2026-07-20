@@ -1,6 +1,6 @@
 "use client";
 
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/shared/types";
 import { Bell, Info, Mail, Shield, Smartphone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";

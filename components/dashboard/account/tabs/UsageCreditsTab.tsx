@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/shared/types";
 import { useQuery } from "convex/react";
 import {
 	Activity,
@@ -174,7 +174,6 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 					</div>
 				</Card>
 			</div>
-
 			{/* Usage Statistics */}
 			<div>
 				<h2 className="text-xl md:text-2xl font-semibold mb-4">
@@ -242,7 +241,6 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 					</Card>
 				</div>
 			</div>
-
 			{/* COMMENT DO NOT DELETE - Cost Breakdown section: to implement later (see docs/Post MVP Improvement/Post-MVP-Improvement.md)
 			<div>
 				<h2 className="text-xl md:text-2xl font-semibold mb-4">
@@ -253,7 +251,6 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 				</Card>
 			</div>
 			*/}
-
 			{/* Usage History Table */}
 			<div>
 				<h2 className="text-xl md:text-2xl font-semibold mb-4">
@@ -359,7 +356,6 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 					)}
 				</Card>
 			</div>
-
 			{/* Total Credits Used Summary */}
 			<Card className="p-4 md:p-6 bg-muted/50">
 				<div className="flex items-center justify-between">
@@ -372,7 +368,6 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 					</span>
 				</div>
 			</Card>
-
 			{/* Purchase Credits Modal */}
 			<PurchaseCreditsModal
 				isOpen={isPurchaseModalOpen}

@@ -1,6 +1,6 @@
 "use client";
 
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/shared/types";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";

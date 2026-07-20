@@ -1,6 +1,6 @@
 "use client";
 
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/shared/types";
 import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { useQuery } from "convex/react";
 import { Calendar, Check, CreditCard } from "lucide-react";

@@ -10,7 +10,7 @@
 // per locale, official translations of every widget string) and layer our
 // brand copy ("VantageStarter") on top with a deep merge.
 import { deDE, enUS, esES, frFR, itIT, ptBR, ruRU } from "@clerk/localizations";
-import type { LocalizationResource } from "@clerk/types";
+import type { LocalizationResource } from "@clerk/shared/types";
 import { routing } from "@/i18n/routing";
 
 // Keyed by next-intl locale code (routing.locales), NOT by Clerk's own

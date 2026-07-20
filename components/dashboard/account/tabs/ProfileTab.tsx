@@ -1,7 +1,7 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/shared/types";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";

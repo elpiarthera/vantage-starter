@@ -44,7 +44,7 @@ jest.mock("sonner", () => ({
 	toast: { success: jest.fn(), error: jest.fn() },
 }));
 
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/shared/types";
 import { NotificationsTab } from "@/components/dashboard/account/tabs/NotificationsTab";
 
 function buildUser(
