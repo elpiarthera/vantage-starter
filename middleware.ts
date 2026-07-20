@@ -19,7 +19,7 @@ function applyCSP(response: NextResponse): NextResponse {
 }
 
 // Define public routes (include locale prefixes explicitly to avoid broad matching)
-const isPublicRoute = createRouteMatcher([
+export const isPublicRoute = createRouteMatcher([
 	"/",
 	"/(en|fr|de|it|es|pt|ru)",
 	"/(en|fr|de|it|es|pt|ru)/sign-in(.*)",
@@ -27,10 +27,20 @@ const isPublicRoute = createRouteMatcher([
 	"/(en|fr|de|it|es|pt|ru)/sign-up(.*)",
 	"/sign-up(.*)",
 	"/api/webhooks(.*)", // Webhooks are public (Clerk validates signatures)
-	"/(en|fr|de|it|es|pt|ru)/watch(.*)", // Public video sharing page
-	"/watch(.*)", // Public video sharing page (fallback without locale)
-	"/(en|fr|de|it|es|pt|ru)/shared(.*)", // Public shared link redirect page
-	"/shared(.*)", // Public shared link redirect page (fallback without locale)
+	// Legal/accessibility pages are a regulatory obligation -- must be
+	// readable without an account, in every locale and without prefix.
+	"/(en|fr|de|it|es|pt|ru)/legal(.*)",
+	"/legal(.*)",
+	"/(en|fr|de|it|es|pt|ru)/privacy(.*)",
+	"/privacy(.*)",
+	"/(en|fr|de|it|es|pt|ru)/accessibility(.*)",
+	"/accessibility(.*)",
+	"/(en|fr|de|it|es|pt|ru)/accessibility-plan(.*)",
+	"/accessibility-plan(.*)",
+	"/(en|fr|de|it|es|pt|ru)/accessibilite(.*)",
+	"/accessibilite(.*)",
+	"/(en|fr|de|it|es|pt|ru)/schema-accessibilite(.*)",
+	"/schema-accessibilite(.*)",
 	// Note: /api/chat and other protected API routes are NOT listed here
 	// They will be authenticated by Clerk middleware before the route handler runs
 ]);

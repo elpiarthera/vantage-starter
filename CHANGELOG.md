@@ -81,6 +81,33 @@ synchronous `"use server"` export that Next 16 rejects at build time).
   `throwMissingPublishableKeyError` from inside `.next/server/middleware.js` at
   request time (not an import/build-time crash) — confirming `clerkMiddleware()`
   from `@clerk/nextjs/server` is wired and executing on v7, not merely type-checking.
+### Fixed (2026-07-20 — legal and accessibility pages no longer sit behind the sign-up wall)
+
+`middleware.ts`'s `isPublicRoute` list did not include the six legal/accessibility routes that
+exist under `app/[locale]/` (`legal`, `privacy`, `accessibility`, `accessibility-plan`,
+`accessibilite`, `schema-accessibilite`), so every one of them 307'd an unauthenticated visitor
+to `/sign-up` — a regulatory obligation the template broke by default, inherited by every fork.
+Measured on unmodified `origin/main` (94de890) via `pnpm build && pnpm start` with inline dummy
+Clerk keys: all six routes returned `307` with `location: /sign-up?redirect_url=...`. The same
+list also carried four dead patterns (`/watch(.*)`, `/shared(.*)`, with and without locale
+prefix) for a video-sharing product this repository no longer ships — `ls -d
+"app/[locale]/watch" "app/[locale]/shared"` confirms neither route exists. Added the six
+legal/accessibility routes (locale-prefixed and bare, matching the existing `sign-in`/`sign-up`
+pattern), removed the four dead `/watch`/`/shared` entries, and exported `isPublicRoute` (was
+module-private) so `__tests__/integration/legal-pages-public.test.ts` can assert against the
+real matcher instead of a re-typed copy that could silently drift from the shipped one. Negative
+control preserved: `/en/dashboard` still 307s to `/sign-up` with
+`x-clerk-auth-status: signed-out` — auth on protected routes is untouched.
+
+**Follow-up (reviewer-found hole, same day):** the original suite asserted only locale-prefixed
+paths (`/en/legal`, `/fr/accessibilite`, …); the bare forms (`/legal`, `/privacy`, …) were added
+to `isPublicRoute` but never exercised by a test — and the bare form is the one that actually
+serves the page, since `/en/legal` 307s to `/legal` under next-intl's `as-needed` rewrite before
+`isPublicRoute` decides anything. Added the six bare paths to the same case table. Proved the gap
+was real by removing the bare `"/legal(.*)"` entry from `middleware.ts`, confirming via `grep` the
+removal landed, watching the suite fail exactly the injected case (`allows /legal without
+authentication` — expected `true`, received `false`), then restoring and confirming
+`git diff middleware.ts` empty.
 
 ### Fixed (2026-07-20 — the generative-UI plan chrome speaks the active locale)
 
