@@ -1,11 +1,12 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useRouter } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { ChatInterface } from "./_components/chat-interface";
 import { SessionList } from "./_components/session-list";
 
@@ -126,7 +127,7 @@ export default function ArchitectPage() {
 	};
 
 	const handlePlanConfirmed = (missionId: Id<"missions">) => {
-		router.push(`/dashboard/missions/${missionId}`);
+		router.push(ROUTES.dashboardMission(missionId));
 	};
 
 	if (workspaces === undefined) {

@@ -6,6 +6,17 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-20 — mission navigation led to a 404, and the configurator was unreachable)
+
+Two of the three internal `router.push` call sites for opening a mission targeted `/missions/:id` (`components/missions/mission-card.tsx:42`, `components/missions/mission-list-view.tsx:156`) — a route that has never existed (only `/dashboard/missions/[missionId]` does, confirmed by `find "app/[locale]" -name page.tsx`). The third, correct-shaped call site (`app/[locale]/dashboard/architect/page.tsx:129`) still hand-typed the path and imported `useRouter` from `next/navigation` instead of `@/i18n/routing`, so it bypassed next-intl's automatic locale prefixing. `/dashboard/configurator` had zero referrers anywhere in the app — a real page, reachable only by typing the URL.
+
+Added `lib/routes.ts`: a single module producing every internal route path (`ROUTES.dashboardMission(id)`, etc.), locale-free by design — `i18n/routing.ts`'s `createNavigation()` (next-intl, no `pathnames` map configured) prepends the locale prefix automatically, so callers pass a bare path straight into `useRouter()`/`<Link>` imported from `@/i18n/routing`. All three mission call sites, the credits-modal account-tab redirect, chat creation/list, and both consultant-onboarding redirects now consume `ROUTES` and the next-intl router/`Link` instead of `next/navigation` + hand-typed strings; the class sweep (`router.push`/`router.replace`/`redirect(` across `app/ components/ lib/ hooks/ providers/`) is 0 remaining. `/dashboard/configurator` is now reachable from the sidebar's WORKSPACE group, next to Settings (design-system tool, not a content surface), across all seven locales.
+
+Guard: `__tests__/lib/route-tree-guard.test.ts` derives the real route tree from disk and fails if any `ROUTES` entry has no matching `page.tsx`, any real route is unreachable from `ROUTES`, or any `router.push`/`router.replace`/`redirect(` call site uses an internal path that doesn't resolve through `ROUTES`. Proven to bite: a probe path was injected into `app/[locale]/dashboard/chat/page.tsx` (untouched by this delivery), confirmed landed via `grep`, the guard went red naming the exact file:line, then the file was restored via `git checkout` with an empty `git diff` proving restoration.
+
+RED-first: run against `git stash`-restored pre-fix call sites, 2/2 hand-typed-path assertions failed exactly at `mission-card.tsx:42` and `mission-list-view.tsx:156`; green 4/4 after the fix. `pnpm exec tsc --noEmit`: 0 errors (before: 0, unrelated to this change). `pnpm exec biome check .`: 86 warnings before and after (all pre-existing, none touch files in this diff).
+
+
 ### Changed (2026-07-20 — @clerk/nextjs upgraded from v6.35.1 to v7.5.20, first of three planned majors)
 
 `@clerk/nextjs` moves 6.35.1 → 7.5.20 (Clerk Core 3). Scope held to Clerk only —

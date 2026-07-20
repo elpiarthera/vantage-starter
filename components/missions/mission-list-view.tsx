@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import type { Doc } from "@/convex/_generated/dataModel";
+import { useRouter } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import type { MissionFilterState } from "./mission-filters";
 
@@ -153,7 +154,7 @@ export function MissionListView({
 		if (onMissionClick) {
 			onMissionClick(missionId);
 		} else {
-			router.push(`/missions/${missionId}`);
+			router.push(ROUTES.dashboardMission(missionId));
 		}
 	};
 

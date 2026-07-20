@@ -13,11 +13,12 @@
  */
 
 import { useAction, useMutation, useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useRouter } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -636,7 +637,6 @@ function NoWorkspace() {
 
 export default function ConsultantOnboardPage() {
 	const t = useTranslations("consultant");
-	const locale = useLocale();
 	const router = useRouter();
 	const [step, setStep] = useState<Step>(1);
 	const [projectId, setProjectId] = useState<Id<"consultantProjects"> | null>(
@@ -663,7 +663,7 @@ export default function ConsultantOnboardPage() {
 		} catch (err) {
 			console.error("[onboard] updateStatus discovery failed:", err);
 		}
-		router.push(`/${locale}/dashboard/consultant/onboard/${projectId}`);
+		router.push(ROUTES.dashboardConsultantOnboardProject(projectId));
 	};
 
 	if (workspaces === undefined) {

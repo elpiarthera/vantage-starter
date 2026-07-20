@@ -1,7 +1,6 @@
 "use client";
 
 import { AlertCircle, CreditCard, Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +18,8 @@ import {
 	DrawerTitle,
 } from "@/components/ui/drawer";
 import { useDevice } from "@/contexts/DeviceContext";
+import { useRouter } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 interface InsufficientCreditsModalProps {
 	isOpen: boolean;
@@ -78,7 +79,7 @@ export function InsufficientCreditsModal({
 				(typeof window !== "undefined" ? window.location.href : "");
 			const params = new URLSearchParams({ tab: "usage" });
 			if (returnTo) params.set("returnTo", returnTo);
-			router.push(`/dashboard/account?${params.toString()}`);
+			router.push(`${ROUTES.dashboardAccount}?${params.toString()}`);
 		}
 	};
 

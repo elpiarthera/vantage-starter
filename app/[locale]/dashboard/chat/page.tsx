@@ -1,12 +1,12 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { Link, useRouter } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 function SkeletonRow() {
 	return (
@@ -69,8 +69,6 @@ function formatDate(ts: number): string {
 export default function ChatListPage() {
 	const t = useTranslations("chat");
 	const router = useRouter();
-	const params = useParams();
-	const locale = typeof params?.locale === "string" ? params.locale : "en";
 
 	const [search, setSearch] = useState("");
 	const [creating, setCreating] = useState(false);
@@ -130,7 +128,7 @@ export default function ChatListPage() {
 				title: "",
 				projectId: selectedProjectId !== "" ? selectedProjectId : undefined,
 			});
-			router.push(`/${locale}/dashboard/chat/${chatId}`);
+			router.push(ROUTES.dashboardChatSession(chatId));
 		} finally {
 			setCreating(false);
 		}
@@ -332,7 +330,7 @@ export default function ChatListPage() {
 											/>
 										) : (
 											<Link
-												href={`/${locale}/dashboard/chat/${chat._id}`}
+												href={ROUTES.dashboardChatSession(chat._id)}
 												className="flex flex-1 items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary rounded-md"
 											>
 												{chat.isPinned && (
