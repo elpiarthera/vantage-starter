@@ -1,6 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import {
+	StatusBadge,
+	StatusBadgeIcon,
+	StatusBadgeLabel,
+} from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 
 export type ToolCallState = "streaming" | "call" | "result" | "partial-call";
@@ -59,43 +64,18 @@ export function ToolCallIndicator({
 }: ToolCallIndicatorProps) {
 	const isActive =
 		state === "streaming" || state === "call" || state === "partial-call";
-	const isDone = state === "result";
 	const label = useToolLabel(toolName, isActive);
 
 	return (
-		<output
-			aria-label={label}
-			className={cn(
-				"flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium w-fit",
-				isActive &&
-					"bg-[oklch(0.62_0.16_44_/_0.12)] text-[oklch(0.52_0.16_44)]",
-				isDone && "bg-muted text-muted-foreground",
-				className,
-			)}
-		>
-			{/* Spinner or checkmark */}
-			{isActive ? (
-				<span
-					className="size-3 rounded-full border-2 border-[oklch(0.62_0.16_44)] border-t-transparent animate-spin shrink-0"
-					aria-hidden="true"
-				/>
-			) : (
-				<svg
-					className="size-3 shrink-0"
-					viewBox="0 0 12 12"
-					fill="none"
-					aria-hidden="true"
-				>
-					<path
-						d="M2 6l3 3 5-5"
-						stroke="currentColor"
-						strokeWidth="1.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					/>
-				</svg>
-			)}
-			<span>{label}</span>
+		<output aria-label={label} className="contents">
+			<StatusBadge
+				data={{ status: isActive ? "processing" : "success" }}
+				appearance={{ label, size: "md" }}
+				className={cn("w-fit", className)}
+			>
+				<StatusBadgeIcon />
+				<StatusBadgeLabel />
+			</StatusBadge>
 		</output>
 	);
 }

@@ -1,101 +1,12 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { AlertTriangle, CheckCircle, Cog, Target } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { StatCardItem } from "@/components/ui/stat-card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-
-// Inline SVGs replacing lucide-react icons
-function IconTarget({ className }: { className?: string }) {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			className={className}
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<circle cx="12" cy="12" r="6" />
-			<circle cx="12" cy="12" r="2" />
-		</svg>
-	);
-}
-
-function IconCog({ className }: { className?: string }) {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			className={className}
-			aria-hidden="true"
-		>
-			<path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
-			<path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
-			<path d="M12 2v2" />
-			<path d="M12 22v-2" />
-			<path d="m17 20.66-1-1.73" />
-			<path d="M11 10.27 7 3.34" />
-			<path d="m20.66 17-1.73-1" />
-			<path d="m3.34 7 1.73 1" />
-			<path d="M14 12h8" />
-			<path d="M2 12h2" />
-			<path d="m20.66 7-1.73 1" />
-			<path d="m3.34 17 1.73-1" />
-			<path d="m17 3.34-1 1.73" />
-			<path d="m11 13.73-4 6.93" />
-		</svg>
-	);
-}
-
-function IconCheckCircle({ className }: { className?: string }) {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			className={className}
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<path d="m9 12 2 2 4-4" />
-		</svg>
-	);
-}
-
-function IconAlertTriangle({ className }: { className?: string }) {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			className={className}
-			aria-hidden="true"
-		>
-			<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-			<path d="M12 9v4" />
-			<path d="M12 17h.01" />
-		</svg>
-	);
-}
 
 type Trend = "up" | "down" | "neutral";
 
@@ -120,10 +31,10 @@ function StatCard({
 }: StatCardProps) {
 	const containerClass =
 		trend === "up"
-			? "bg-success/5 border border-success/20"
+			? "bg-success/5 border-success/20"
 			: trend === "down"
-				? "bg-destructive/5 border border-destructive/20"
-				: "bg-card border border-border";
+				? "bg-destructive/5 border-destructive/20"
+				: "bg-card border-border";
 
 	const changeClass =
 		trend === "up"
@@ -133,7 +44,8 @@ function StatCard({
 				: "text-muted-foreground";
 
 	return (
-		<div
+		<StatCardItem
+			stat={{ trend }}
 			className={cn(
 				"flex-1 min-w-0 space-y-4 rounded-xl p-4",
 				containerClass,
@@ -154,17 +66,17 @@ function StatCard({
 				)}
 				<span className="text-muted-foreground">{comparison}</span>
 			</div>
-		</div>
+		</StatCardItem>
 	);
 }
 
 function StatCardSkeleton() {
 	return (
-		<div className="flex-1 min-w-0 space-y-4 animate-pulse">
+		<StatCardItem stat={{}} className="flex-1 min-w-0 space-y-4 animate-pulse">
 			<div className="h-4 w-24 rounded bg-muted" />
 			<div className="h-10 w-16 rounded bg-muted" />
 			<div className="h-3 w-32 rounded bg-muted" />
-		</div>
+		</StatCardItem>
 	);
 }
 
@@ -206,14 +118,14 @@ export function MissionStats({ workspaceId }: MissionStatsProps) {
 			<div className="rounded-xl border border-border p-4 sm:p-6 w-full">
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 					<StatCard
-						icon={<IconTarget className="size-[18px] text-muted-foreground" />}
+						icon={<Target className="size-[18px] text-muted-foreground" />}
 						title={t("total")}
 						value={stats.total}
 						comparison={t("in_workspace")}
 						trend="neutral"
 					/>
 					<StatCard
-						icon={<IconCog className="size-[18px] text-muted-foreground" />}
+						icon={<Cog className="size-[18px] text-muted-foreground" />}
 						title={t("in_progress")}
 						value={inProgress}
 						comparison={t("executing_or_awaiting")}
@@ -225,9 +137,7 @@ export function MissionStats({ workspaceId }: MissionStatsProps) {
 						}
 					/>
 					<StatCard
-						icon={
-							<IconCheckCircle className="size-[18px] text-muted-foreground" />
-						}
+						icon={<CheckCircle className="size-[18px] text-muted-foreground" />}
 						title={t("completed")}
 						value={completed}
 						comparison={t("missions_done")}
@@ -238,7 +148,7 @@ export function MissionStats({ workspaceId }: MissionStatsProps) {
 					/>
 					<StatCard
 						icon={
-							<IconAlertTriangle className="size-[18px] text-muted-foreground" />
+							<AlertTriangle className="size-[18px] text-muted-foreground" />
 						}
 						title={t("needs_attention")}
 						value={needsAttention}
