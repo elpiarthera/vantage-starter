@@ -10,8 +10,15 @@ import { ImageResponse } from "next/og";
  * resolves to this file, so translating its English copy would be dead work
  * with zero user-facing effect. Kept only as a Next.js convention fallback
  * for tooling that probes the bare root.
+ *
+ * NOT `runtime = "edge"`: this route compiled fine but broke DEPLOYMENT.
+ * Vercel caps an Edge Function at 1 MB; Next 16 pushed this bundle from
+ * 2 604 267 B to 3 078 930 B (+18,2 %, measured on both sides of the diff),
+ * so `pnpm build` stayed green while `vercel deploy` failed with
+ * `The Edge Function "opengraph-image" size is 1.06 MB`. On the Node
+ * runtime that limit does not apply. A file that serves no route has no
+ * reason to claim the edge.
  */
-export const runtime = "edge";
 
 export const alt = "VantageStarter — AI SaaS Starter Kit";
 export const size = {
@@ -49,7 +56,13 @@ export default async function Image() {
 						width: "64px",
 						height: "64px",
 						borderRadius: "16px",
-						background: "oklch(0.62 0.16 44)",
+						// Satori (next/og) cannot parse oklch() — it throws
+						// `Unexpected token type: function`. This is the sRGB
+						// conversion of oklch(0.62 0.16 44), the brand primary.
+						// The repo-wide OKLCH-tokens rule governs CSS; this file
+						// is rendered by Satori, which has its own colour grammar,
+						// and already uses hex everywhere else.
+						background: "#d25f26",
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",

@@ -6,6 +6,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-20 — the build was green and the deployment was not: `/opengraph-image` exceeded Vercel's Edge Function size cap)
+
+`pnpm build` compiled 119/119 pages while `vercel deploy` failed with `The Edge Function "opengraph-image" size is 1.06 MB and your plan size limit is 1 MB`. Six local greens were reported without `gh pr checks` ever being read — compilation is Verification, deployment is Activation, and the two were conflated. Eta caught it on #54 and measured the attribution on both sides of the diff, same machine: `.next/server/app/opengraph-image` went from 2 604 267 B on `main` to 3 078 930 B (+18,2 %) under Next 16, crossing a cap the previous size already sat above.
+
+`app/opengraph-image.tsx` declared `export const runtime = "edge"` while serving no route at all — its own header states this, and `ls app/page.tsx` confirms the file is absent (the real homepage is `app/[locale]/page.tsx`, which overrides `openGraph.images` with the static `/og-image.png`). A file that serves no route has no reason to claim the edge, so the declaration was removed rather than the bundle trimmed.
+
+Removing it surfaced a **second, older defect that the edge runtime had been hiding**: the file's `background: "oklch(0.62 0.16 44)"` makes Satori (`next/og`) throw `Unexpected token type: function`. Edge routes are not prerendered at build time, so the failure was deferred to request time — and since no route resolves to this file, no request ever came. The image had been broken for as long as it had existed, silently. Converted to its sRGB equivalent `#d25f26` (conversion computed, not eyeballed); the repo-wide OKLCH-tokens rule governs CSS, whereas this file is rendered by Satori, which has its own colour grammar and already used hex for every other colour in the file.
+
+Class swept by mechanism, not by file: `grep -rn 'runtime\s*=\s*"edge"'` across `app/ components/ lib/ middleware.ts convex/` → remaining 0 live declarations; `grep -rln "next/og\|ImageResponse"` → `app/opengraph-image.tsx` is the only Satori-rendered file in the repo, and it now carries 0 live `oklch(` calls.
+
+Result is stronger than restoring the route below the cap: `/opengraph-image` is now `○ (Static) prerendered as static content` — there is no Edge Function left to measure. 42 502 B on disk against the 3 078 930 B edge bundle. `pnpm build` succeeds, `tsc --noEmit` 0, `biome check .` 86 warnings / 0 errors (identical to `main`), `jest` 122/122.
+
 ### Fixed (2026-07-20 — mission navigation led to a 404, and the configurator was unreachable)
 
 Two of the three internal `router.push` call sites for opening a mission targeted `/missions/:id` (`components/missions/mission-card.tsx:42`, `components/missions/mission-list-view.tsx:156`) — a route that has never existed (only `/dashboard/missions/[missionId]` does, confirmed by `find "app/[locale]" -name page.tsx`). The third, correct-shaped call site (`app/[locale]/dashboard/architect/page.tsx:129`) still hand-typed the path and imported `useRouter` from `next/navigation` instead of `@/i18n/routing`, so it bypassed next-intl's automatic locale prefixing. `/dashboard/configurator` had zero referrers anywhere in the app — a real page, reachable only by typing the URL.
