@@ -6,6 +6,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-20 — sales copy claimed a stack technology that ships nowhere in the product)
+
+Sixteen occurrences across all seven locale files (`messages/{de,en,es,fr,it,pt,ru}.json`, pricing-card `pro_f2` + FAQ `q5_a`, and `q2_a` in `en`/`fr`) named `tambo` as part of *our* AI stack ("AI SDK v6 + Generative UI (tambo + json-render)", "AI: Vercel AI SDK v6, tambo, json-render"). `git grep -ic tambo -- package.json pnpm-lock.yaml lib/ app/ components/ convex/ src/` → 0: no dependency, no import, no code — this was recorded as a known gap by `docs/audits/generative-ui-implementation-state-2026-07-16.md` (see below) and left unfixed until now. Removed `tambo` from every enumeration in all seven locales; the surrounding sentences (stack list, FAQ prose) read naturally without it. `docs/GENERATIVE-UI-COMPARISON.md` and `docs/ORCHESTRATION-PLAN.md` were swept too but left untouched — both cite `tambo` only as a compared/rejected alternative, never as something we ship, which is a legitimate use.
+
+Left as-is and flagged for a human decision, not touched by this fix: the same sentence in `q5_a`/`pro_f2` also lists `fal.ai`, which has zero dependency in this repo either — tracked separately, the landing copy for it belongs to the operator. `docs/GENERATIVE-UI-COMPARISON.md:23`'s "AI cannot hallucinate outside your schema" guarantee is not backed by any runtime validation wiring the catalog to a schema check — rewriting that sentence is a proposal for the humans, not a fact this fix executes.
+
+Class swept and probe-verified: injected a synthetic `tambo` mention into `messages/de.json` (a line the pattern did not originate from), confirmed the sweep count moved 0→1 and named the file, restored via `git checkout`, confirmed empty `git diff`. `pnpm exec node -e` JSON.parse on all seven locale files passed; `node scripts/check-translations.js` Control 2 (key parity) → PASS, 2930 keys in union, 0 violations.
+
 ### Fixed (2026-07-20 — Architect plan top was unreachable while it streamed in)
 
 `ChatInterface` (`app/[locale]/dashboard/architect/_components/chat-interface.tsx`) yanked the viewport back to a bottom sentinel on every `messages.length`/`isStreaming` change (`sentinelRef.current?.scrollIntoView({ behavior: "auto" })`, unconditional). A long generated plan streams in over many chunks; each chunk re-fired the effect, so a user who scrolled up to read the beginning of the plan was immediately dragged back down — the plan's top, and the reasoning above the "Confirm plan" button sitting right under it, was unreachable for as long as the stream lasted. Not a layout defect: `page.tsx`'s `overflow-y-auto` at the branch originally suspected only renders when there is no active session, and `ChatInterface`'s own `ScrollArea` viewport scrolls correctly on its own.
