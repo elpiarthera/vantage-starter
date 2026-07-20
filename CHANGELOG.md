@@ -99,6 +99,16 @@ real matcher instead of a re-typed copy that could silently drift from the shipp
 control preserved: `/en/dashboard` still 307s to `/sign-up` with
 `x-clerk-auth-status: signed-out` — auth on protected routes is untouched.
 
+**Follow-up (reviewer-found hole, same day):** the original suite asserted only locale-prefixed
+paths (`/en/legal`, `/fr/accessibilite`, …); the bare forms (`/legal`, `/privacy`, …) were added
+to `isPublicRoute` but never exercised by a test — and the bare form is the one that actually
+serves the page, since `/en/legal` 307s to `/legal` under next-intl's `as-needed` rewrite before
+`isPublicRoute` decides anything. Added the six bare paths to the same case table. Proved the gap
+was real by removing the bare `"/legal(.*)"` entry from `middleware.ts`, confirming via `grep` the
+removal landed, watching the suite fail exactly the injected case (`allows /legal without
+authentication` — expected `true`, received `false`), then restoring and confirming
+`git diff middleware.ts` empty.
+
 ### Fixed (2026-07-20 — the generative-UI plan chrome speaks the active locale)
 
 **Declared divergence, not a silent one.** The Russian plural forms were written without a

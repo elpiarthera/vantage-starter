@@ -55,6 +55,18 @@ describe("middleware isPublicRoute -- legal/accessibility pages", () => {
 		"/fr/accessibilite",
 		"/fr/schema-accessibilite",
 		"/en/accessibility-plan",
+		// Bare (no locale prefix) forms -- these are what actually serve the
+		// page: next-intl's "as-needed" rewrite sends the default-locale
+		// prefixed path (e.g. /en/legal) straight to the bare one (/legal)
+		// before this matcher is what decides whether it 200s or 307s to
+		// sign-up. Asserting only the prefixed forms leaves the form doing
+		// the real work untested.
+		"/legal",
+		"/privacy",
+		"/accessibility",
+		"/accessibility-plan",
+		"/accessibilite",
+		"/schema-accessibilite",
 	];
 
 	it.each(legalPaths)("allows %s without authentication", (path) => {
