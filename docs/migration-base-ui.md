@@ -1,4 +1,4 @@
-# Radix -> Base UI migration pattern (M1: accordion, checkbox, collapsible, radio-group, slider; M2: select, separator)
+# Radix -> Base UI migration pattern (M1: accordion, checkbox, collapsible, radio-group, slider; M2: select, separator; M3: switch, progress, tooltip)
 
 This wave migrated the five `components/ui/*` primitives with **zero consumers** in the repo — chosen deliberately so a wrong mapping stays invisible while the pattern gets proven. Each mapping below is code-level, taken directly from `@base-ui/react@1.6.0`'s own `.d.ts` files (`node_modules/@base-ui/react/<primitive>/`), not assumed from Radix muscle memory.
 
@@ -172,6 +172,68 @@ This is the structurally biggest change in the repo so far — Base UI's Select 
 
 Both migrations are covered by `__tests__/components/ProfileTab.test.tsx` (Select's sole consumer, `components/dashboard/account/tabs/ProfileTab.tsx`) and `__tests__/components/sidebar-separator.test.tsx` (Separator's sole consumer, `SidebarSeparator` in `components/ui/sidebar.tsx`) — each renders the real consumer end-to-end (not the primitive in isolation) and, for `Select`, drives a real option click through to the consumer's real `onValueChange` handler.
 
+### Switch
+
+`components/ui/switch.tsx` -> consumers: `ProfileTab.tsx` (imported, currently unused pending Post-MVP-Improvement), `NotificationsTab.tsx` (four live toggles).
+
+| Radix part | Base UI part |
+|---|---|
+| `SwitchPrimitives.Root` | `SwitchPrimitive.Root` (unchanged name, `{ Switch }` named export from `@base-ui/react/switch`) |
+| `SwitchPrimitives.Thumb` | `SwitchPrimitive.Thumb` (unchanged name) |
+
+Prop-level API is identical to Radix — `checked`, `defaultChecked`, `onCheckedChange` (verified against `node_modules/@base-ui/react/switch/root/SwitchRoot.d.ts`; the only difference is `onCheckedChange`'s second `eventDetails` argument, which no consumer in this repo reads). No wrapper adaptation was needed.
+
+Data attributes: Radix `data-[state=checked]:` / `data-[state=unchecked]:` -> Base UI `data-[checked]:` / `data-[unchecked]:` (`SwitchRootDataAttributes.checked = "data-checked"`, `.unchecked = "data-unchecked"` — same two-attribute split, present on both `Root` and `Thumb`, confirmed via each part's own `*DataAttributes.d.ts`).
+
+`role="switch"` and `aria-checked` are preserved automatically by Base UI's `Switch.Root` (verified end-to-end in `__tests__/components/NotificationsTab.test.tsx`, which queries `getByRole("switch")` and asserts `aria-checked`).
+
+### Progress
+
+`components/ui/progress.tsx` -> consumers: `components/shared/step-header.tsx`, `app/[locale]/dashboard/missions/[missionId]/page.tsx`.
+
+| Radix part | Base UI part |
+|---|---|
+| `ProgressPrimitive.Root` | `ProgressPrimitive.Root` (unchanged name) |
+| (none — Radix puts `Indicator` directly under `Root`) | `ProgressPrimitive.Track` (new, interposed between `Root` and `Indicator`) |
+| `ProgressPrimitive.Indicator` | `ProgressPrimitive.Indicator` (unchanged name, but no longer needs a manual `style={{ transform: ... }}`) |
+
+**Width is computed automatically, not hand-rolled.** Radix's `Indicator` required the wrapper to compute `translateX(-${100 - value}%)` itself. Base UI's `ProgressIndicator` reads `value`/`min`/`max` from `ProgressRootContext` (provided by `Root`) and sets its own `width: ${percentage}%` internally (confirmed by reading the compiled `ProgressIndicator.js`) — the wrapper no longer touches `style` at all, it only supplies structural classes.
+
+**`value` is a required, nullable prop in Base UI** (`ProgressRootProps.value: number | null`, no default) — Radix's was optional and treated `undefined` as `0`. The wrapper preserves the pre-migration public contract (`value?: number | null`, `<Progress value={progressValue} />` unchanged in both consumers) by defaulting internally: `value={value ?? 0}`.
+
+Data attributes (`ProgressRootDataAttributes` / `...IndicatorDataAttributes` / `...TrackDataAttributes`, identical shape on all three parts): `data-complete`, `data-indeterminate`, `data-progressing` — none of these were used by either consumer's Tailwind classes pre-migration, so no selector rewrite was required.
+
+`role="progressbar"` + `aria-valuenow`/`aria-valuemin`/`aria-valuemax` are preserved automatically by `Progress.Root` (verified end-to-end in `__tests__/components/step-header.test.tsx` and `__tests__/components/mission-detail-progress.test.tsx`, both querying `getByRole("progressbar")` and asserting `aria-valuenow`).
+
+### Tooltip
+
+`components/ui/tooltip.tsx` -> consumers: `components/app-sidebar.tsx` (wraps the nav tree in `TooltipProvider`), `components/ui/sidebar.tsx`'s `SidebarMenuButton` (full `Tooltip`/`TooltipTrigger`/`TooltipContent` stack, driven via the `asChild` public API).
+
+This is the structurally biggest change in the M3 wave — Base UI splits Radix's single `Content` (position + surface + arrow, wrapped in one `Portal`) into `Portal` > `Positioner` (owns anchor positioning: `side`, `align`, `sideOffset`) > `Popup` (visual surface) + a sibling `Arrow` inside `Popup`. Verified against `node_modules/@base-ui/react/tooltip/index.d.ts` re-exporting `./index.parts.js`, plus each part's own `.d.ts`.
+
+| Radix part | Base UI part | Note |
+|---|---|---|
+| `TooltipPrimitive.Provider` | `TooltipPrimitive.Provider` | Prop renamed: Radix's `delayDuration` -> Base UI's `delay` (`TooltipProviderProps.delay?: number`). The wrapper's own public `TooltipProvider` keeps the `delayDuration` prop name (so `app-sidebar.tsx`'s `<TooltipProvider delayDuration={0}>` needs no change) and forwards it internally as `delay={delayDuration}`. |
+| `TooltipPrimitive.Root` | `TooltipPrimitive.Root` | Unchanged name; no `delayDuration` prop on Root in either library |
+| `TooltipPrimitive.Trigger` | `TooltipPrimitive.Trigger` | Unchanged name; renders a `<button>` in both. Radix's usage here relied on `asChild`; Base UI has no `asChild` prop on `Trigger` (confirmed in `TooltipTriggerProps` — no `asChild` field). The wrapper's own `TooltipTrigger` keeps `asChild` in its public prop surface and, when `asChild` is set with a valid element child, maps it internally to Base UI's `render={children}` (the general `asChild` -> `render` mapping from the top-level rules section) — `SidebarMenuButton`'s `<TooltipTrigger asChild>{button}</TooltipTrigger>` needed zero changes. |
+| `TooltipPrimitive.Portal` | `TooltipPrimitive.Portal` | Unchanged |
+| (none — Radix's `Content` combined position + surface) | `TooltipPrimitive.Positioner` (new) | Owns `side`, `align`, `sideOffset`. Interposed between `Portal` and `Popup`. |
+| `TooltipPrimitive.Content` | `TooltipPrimitive.Popup` (renamed + narrowed) | Now only owns the visual surface (border/shadow/animation classes); positioning moved to `Positioner`. |
+| `TooltipPrimitive.Arrow` | `TooltipPrimitive.Arrow` | Unchanged name; still a sibling of the popup content inside `Popup` |
+
+**`role="tooltip"` is NOT stamped by Base UI's `Popup`** (confirmed by grepping the compiled `TooltipPopup.js`/`TooltipTrigger.js` — no `role` attribute anywhere in the tooltip package, unlike Radix's `Content` which carried an implicit `role="tooltip"`). This is a genuine accessibility regression in the vendor library if left unaddressed, so the wrapper adds `role="tooltip"` explicitly on `Popup` in `TooltipContent` to preserve the pre-migration a11y contract — this is the one place M3 adds behavior Base UI doesn't provide out of the box, flagged loudly here rather than left silent.
+
+**CSS var for transform-origin.** Radix: `--radix-tooltip-content-transform-origin`, applied to `Content`. Base UI's equivalent, applied to `Positioner`, is `--transform-origin` (`TooltipPositionerCssVars.transformOrigin = "--transform-origin"`). The wrapper's `origin-(--radix-tooltip-content-transform-origin)` Tailwind arbitrary-property class became `origin-(--transform-origin)`.
+
+**Data attributes** — confirmed via each part's own `*DataAttributes.d.ts`:
+
+| Radix | Base UI |
+|---|---|
+| `data-[state=closed]:animate-out` (on `Content`) | `data-[closed]:animate-out` (on `Popup` — `TooltipPopupDataAttributes.closed = "data-closed"`) |
+| `data-[side=...]` (on `Content`) | `data-[side=...]` (on `Popup` — `TooltipPopupDataAttributes.side = "data-side"`, unchanged values) |
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `__tests__/components/NotificationsTab.test.tsx` + `__tests__/components/ProfileTab.test.tsx` (Switch), `__tests__/components/step-header.test.tsx` + `__tests__/components/mission-detail-progress.test.tsx` (Progress), `__tests__/components/sidebar-tooltip.test.tsx` + `__tests__/components/app-sidebar-tooltip.test.tsx` (Tooltip) — none of the six consumer source files needed any change.
+
 ## Testing note: jsdom needs a `PointerEvent` polyfill for Base UI
 
 Base UI's interaction primitives (`useButton`, checkbox/radio press handling, slider thumb focus/drag) dispatch real `PointerEvent`s, which jsdom does not implement. Any Jest suite driving one of these components via `@testing-library/user-event` throws `TypeError: ... PointerEvent is not a constructor` before the first click resolves. Fixed once, globally, in `jest.setup.ts`:
@@ -214,6 +276,18 @@ grep -rn "@radix-ui/react-separator" app/ components/ lib/ hooks/ providers/ src
 
 The M1 wave proved the trap concretely. Four of the five removed packages (`accordion`, `checkbox`, `collapsible`, `radio-group`) do survive transitively via `@polar-sh/ui` (verify with `pnpm why <pkg>`, which reads the real `.pnpm` tree — not `ls node_modules`, which misses it). The fifth, `slider`, **disappears from the install tree entirely** — no transitive puller. Its removal is exactly as safe as the other four, because all five had zero direct importers. If "transitive survival" had been the safety argument, `slider` would have looked unsafe while being fine, and a future package with a real direct importer could look safe (still installed transitively) while breaking. Prove `remaining: 0` on direct imports; do not look at, or cite, the transitive tree.
 
-## What M1 + M2 together did NOT touch
+## Packages removed this wave (M3)
 
-Every other remaining `@radix-ui/react-*` package in `package.json` (`alert-dialog`, `aspect-ratio`, `avatar`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `label`, `menubar`, `navigation-menu`, `popover`, `progress`, `scroll-area`, `slot`, `switch`, `tabs`, `toast`, `tooltip`, etc.) is still in active use by consumer components and was left untouched. A future wave should apply the same research-first process (read the primitive's own `.d.ts` before assuming a 1:1 API; most of these have real consumers like M2's `select`/`separator` did, so they need the consumer-level review + consumer-mounting tests this doc's M2 section demonstrates, not just M1's zero-consumer proof pattern).
+`@radix-ui/react-switch`, `@radix-ui/react-progress`, `@radix-ui/react-tooltip` — each had exactly two direct consumers in the repo before migration. Sweep before removal:
+
+```
+grep -rn "@radix-ui/react-switch"   app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+grep -rn "@radix-ui/react-progress" app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+grep -rn "@radix-ui/react-tooltip"  app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+```
+
+`pnpm-lock.yaml` regenerated via `pnpm install --lockfile-only`. All three packages still survive transitively via `@polar-sh/ui` -> `@polar-sh/checkout` -> `@convex-dev/polar` (a different, newer version — `1.2.6`/`1.2.8` vs. the removed `1.1.x` direct entries) — per the M1/M2 doctrine above, this transitive survival is irrelevant to the safety of the removal; `remaining: 0` **direct** importers is the only guarantee, and it holds. Public API of all three wrappers (exported names, prop shapes) is unchanged from pre-migration; every consumer file was left untouched.
+
+## What M1 + M2 + M3 together did NOT touch
+
+Every other remaining `@radix-ui/react-*` package in `package.json` (`alert-dialog`, `aspect-ratio`, `avatar`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `label`, `menubar`, `navigation-menu`, `popover`, `scroll-area`, `slot`, `tabs`, `toast`, `toggle`, `toggle-group`, etc.) is still in active use by consumer components and was left untouched. A future wave should apply the same research-first process (read the primitive's own `.d.ts` before assuming a 1:1 API; most of these have real consumers, so they need the consumer-level review + consumer-mounting tests this doc's M2/M3 sections demonstrate, not just M1's zero-consumer proof pattern).
