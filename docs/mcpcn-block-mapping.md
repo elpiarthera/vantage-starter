@@ -1,14 +1,16 @@
-# mcpcn Block Mapping — VantageStarter
+# mcpcn Block Mapping — What 30 Finished Components Let Us Launch
 
 **Date:** 2026-07-20
-**Author:** dev-tech-researcher (Tau)
-**Scope:** maps every block in the mcpcn registry (https://www.mcpcn.dev) to a concrete home in this codebase, or documents why it has none today.
+**Author:** Product (Tau)
+**Scope:** for every block in the mcpcn registry (https://www.mcpcn.dev), this document answers one question: *this component is finished, free, MIT-licensed — what does it let us launch or sell that was not on the roadmap?*
+
+**Declared divergence from `docs/brief-backend.md` template:** this is a product-analysis deliverable, not a code change. The "EXACT CHANGES" / schema sections of that template do not apply here.
+
+**Supersedes:** the previous version of this document, which asked "which existing screen uses this block today?" — a filing question that rejected 20 of 30 blocks for reasons like "no page exists" or "dependency missing." Those are not obstacles; they are things this analysis exists to change. This version is a full rewrite, not an amendment.
 
 ---
 
 ## 1. The count is derived, not typed
-
-The dispatch brief said "31 blocks". That is the GitHub star count, not the block count — do not trust it. Re-derived twice, independently, both times **30**:
 
 ```
 curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
@@ -17,100 +19,165 @@ print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
 -> 30
 ```
 
-```
-python3 -c "
-import json
-d=json.load(open('registry.json'))
-by_type={}
-for i in d['items']:
-    by_type.setdefault(i.get('type'),[]).append(i.get('name'))
-for t,v in by_type.items(): print(t, len(v))"
--> registry:style 1
--> registry:block 30
--> registry:lib 2
-```
-
-**30 blocks of type `registry:block`.** Plus 2 `registry:lib` (`event-shared`, `shared-types` — internal helper code, not user-facing blocks) and 1 `registry:style` (`apps-sdk-theme` — a design-token pack, not a block). The "31" in circulation is the npm/GitHub star count of the mcpcn project, unrelated to the registry's item count. This document has **30 rows**, one per `registry:block` item, none dropped.
+**30 blocks.** A "31" is in circulation in some contexts — that is the mcpcn project's GitHub star count, unrelated to the registry's item count. This document has 30 rows, one per block, none dropped, none rejected without a reason that survives a hostile reader.
 
 ---
 
-## 2. What already exists in this repo (read before mapping)
+## 2. Architectural decision (already made, not re-litigated here)
 
-- **Chat surfaces (hand-written, no block today):**
-  - `components/chat/ChatPage.tsx` — the shell: header, message area, textarea + send/stop button. All hand-coded React + shadcn `Textarea`/`Button`.
-  - `components/chat/MessageList.tsx` — renders `UIMessage[]` as bubbles (`MessageBubble` inline function), hand-written Tailwind/OKLCH bubble markup, hand-written streaming cursor (`StreamingCursor`), hand-written tool-call collection.
-  - `components/chat/ToolCallIndicator.tsx` — hand-written pill showing tool name + spinner/checkmark, keyed off a hand-maintained `TOOL_LABEL_KEYS` map.
-  - `app/[locale]/dashboard/architect/_components/chat-interface.tsx` — renders a **json-render** spec (`MissionProposal`, `OperationItem`, `Checkpoint`, `ActionButton`) via `lib/json-render/registry.tsx` + `lib/json-render/catalog.ts`.
-  - `app/[locale]/dashboard/consultant/onboard/[projectId]/_components/onboarding-chat.tsx` — same json-render pipeline, `OnboardingConfig` → `TeamSelection` → `AgentSelection` → `SkillSelection`.
-- **The existing generative-UI pipeline** (`lib/json-render/`) is real but schema-optional at runtime — confirmed by `docs/audits/generative-ui-implementation-state-2026-07-16.md`: the model emits raw JSONL patches parsed by `@json-render/react`'s `createMixedStreamParser`, and `vantageOSCatalog`'s Zod schemas are **never called** (`validateSpec` has zero call sites). This matters for the mapping below: mcpcn blocks would be additions to `lib/json-render/registry.tsx`'s component map, **not** a replacement of that pipeline's plumbing — they replace the hand-written *presentational* components (`MissionProposal`, `OperationItem`, etc.), not the (broken) validation layer.
-- **Dashboard stat cards:** `components/missions/mission-stats.tsx` — hand-written `StatCard` + `StatCardSkeleton`, four hand-coded inline SVG icons, hand-written trend-color logic.
-- **Billing/subscription surfaces:** `components/dashboard/account/tabs/SubscriptionTab.tsx`, `components/dashboard/account/modals/ManageSubscriptionModal.tsx` — Polar.sh checkout/portal flows, no in-repo "confirm payment" or "amount input" card today.
-- **No form, table, map, event, or social-post surface exists anywhere in this repo** — verified: `find app components -iname "*contact-form*" -o -iname "*issue-report*"` → empty; `grep -rli "leaflet|mapbox|maplibre"` → empty; no `event`, `ticket`, `post-card`, `x-post`, `instagram`, `linkedin`, `youtube` surface anywhere in `app/` or `components/`. This product is a SaaS boilerplate (chat + missions + billing + account), not a social/events/blogging product.
-- **Landing page hero:** `components/landing/HeroSection.tsx` (233 lines) — hand-written hero with logos/CTA, could theoretically be swapped for the mcpcn `hero` block, but it's a marketing surface, not a data-driven MCP-app surface, so lowest priority.
-
-Every path cited above was read directly (see tool trace) or verified to exist via `test -f`/`ls`/`find`; none is a guess.
+23 of the 30 blocks depend on `@base-ui/react`. Decision: **add Base UI alongside the existing Radix, take the blocks as-is, MIT attribution intact, zero rewrite.** This is a one-time install noted once below as "Base UI" in the cost column — never repeated per block, never treated as a rejection reason.
 
 ---
 
-## 3. The mapping — 30 rows
+## 3. The products these blocks can land in
 
-| Block | Where it goes | What the user gains | What it replaces |
-|---|---|---|---|
-| **message-bubble** — chat message bubbles with text, image, voice, and reaction variants | Chat: `components/chat/MessageList.tsx` (the `MessageBubble` inline function, lines 68-148) | He can see a voice-note or image drop into the same thread as text, with the same bubble chrome, instead of the assistant being limited to plain text with a manually-coded cursor blink | The hand-written `MessageBubble` function in `MessageList.tsx:68-148` — its own bubble div, rounded-corner logic, and `StreamingCursor` (`MessageList.tsx:34-41`) |
-| **chat-conversation** — full chat conversation component with multiple message types | Chat: `components/chat/MessageList.tsx` (replaces the `messages.map(...)` block, `MessageList.tsx:184-201`) as the top-level conversation renderer wrapping `message-bubble` | The whole thread (avatars, spacing, empty state, live region) looks and behaves consistently without VantageStarter's own bubble/avatar/empty-state code drifting out of sync over time | The `MessageList` component's own list layout (`MessageList.tsx:184-201`), the empty state block (`:153-182`), and `AgentAvatar` (`:13-32`) |
-| **quick-reply** — quick reply buttons for common chat responses | Chat: new addition below `components/chat/MessageList.tsx`'s last assistant message, wired through `sendMessage` in `components/chat/ChatPage.tsx:90` | Instead of typing "yes", "cancel", or "show me alternatives" every time the agent asks a yes/no question, he taps one button | Nothing today — there is no quick-reply affordance anywhere in `ChatPage.tsx`; the user must always type into the `Textarea` (`ChatPage.tsx:221-235`) |
-| **option-list** — tag-style option selector with single or multiple selection modes | `app/[locale]/dashboard/consultant/onboard/[projectId]/_components/onboarding-chat.tsx`, replacing the hand-written `TeamSelection`/`AgentSelection`/`SkillSelection` renderers in `lib/json-render/registry.tsx:439-618` | He picks a team/agent/skill by tapping a tag instead of reading a bespoke fieldset+checkbox card that has its own selected/unselected color logic to maintain | `TeamSelection` (`registry.tsx:439-505`), `AgentSelection` (`:507-562`), `SkillSelection` (`:564-618`) — three near-duplicate hand-written selectable-card components |
-| **tag-select** — colored tag selector with single or multiple selection and color variants | Same surface as `option-list` above, `onboarding-chat.tsx` + `lib/json-render/registry.tsx` — used specifically for the `painPoints`/`matchedPains` chip rows (`registry.tsx:414-430`, `:488-499`) | The pain-point tags he sees during onboarding get a real colored-tag component instead of a hand-rolled `<span>` loop that hardcodes its own pill styling per occurrence | The duplicated `painPoints.map`/`matchedPains.map` chip-rendering blocks (`registry.tsx:414-430` and `:488-499`) — the same markup copy-pasted twice today |
-| **progress-steps** — progress indicator with horizontal or vertical layout and step statuses | New addition to `app/[locale]/dashboard/consultant/onboard/[projectId]/_components/onboarding-chat.tsx`, above the `OnboardingConfig` card (`lib/json-render/registry.tsx:378-437`) | He sees exactly which onboarding step he's on (sector → pain points → team → agents → skills) instead of inferring progress from scrolling chat history | Nothing today — no step indicator exists in the onboarding flow; progress is implicit in which json-render elements have streamed in so far |
-| **status-badge** — status badge with multiple states (success, pending, processing, error, shipped, delivered) | Two homes: (1) `components/chat/ToolCallIndicator.tsx` — its active/done pill (lines 65-100); (2) `components/missions/mission-stats.tsx` — nowhere yet but a natural fit for per-mission status once `mission-card.tsx` is touched | The tool-call pill and any future mission-status chip get one consistent, accessible badge component instead of each surface hand-rolling its own colored-pill markup | `ToolCallIndicator`'s own `<output>` + spinner/checkmark SVG markup (`ToolCallIndicator.tsx:65-100`) |
-| **event-card** — display event info with multiple layouts | None — verified: `grep -rli "event" app components` outside Convex `events`-unrelated hits returns no event/calendar-listing UI anywhere in this repo. VantageStarter is a SaaS chat/missions/billing product, not an events product | n/a — no such feature exists | n/a, homeless: **no user-facing event listing surface exists in this product** |
-| **event-list** — events in grid/list/carousel, fullscreen map mode | None — same reason as `event-card`; no Leaflet/Mapbox/Maplibre dependency anywhere (`grep -rli "leaflet\|mapbox\|maplibre"` → 0 hits) | n/a | n/a, homeless: **product has no events/map feature** |
-| **event-detail** — full event detail with organizer info, interactive map, ticket purchase | None — same reason | n/a | n/a, homeless: **product has no events feature** |
-| **event-confirmation** — order confirmation for event tickets with delivery/organizer/sharing | None — same reason | n/a | n/a, homeless: **product has no events/ticketing feature** |
-| **ticket-tier-select** — ticket tier selection with quantity + price breakdown | None — same reason, and Polar.sh (this repo's billing provider, `components/dashboard/account/tabs/SubscriptionTab.tsx`) sells subscription plans, not per-tier event tickets; the pricing model doesn't match | n/a | n/a, homeless: **no ticketing feature; billing model is subscription-based, not per-ticket** |
-| **map-carousel** — interactive map with location markers and draggable card carousel | None — no map dependency anywhere in the repo (verified above); nothing to attach markers to | n/a | n/a, homeless: **product has no geographic/location feature** |
-| **contact-form** — name, phone+country, email, message, file attachment | None found today — verified `find app components -iname "*contact-form*"` → empty. Closest candidate would be a future `/contact` or support page, which does not exist yet | If a support/contact page is ever built, the user fills one polished form instead of the team hand-building phone-country-selector logic from scratch | n/a today, but **not homeless-by-reason** — this is the one block worth flagging as "buildable home, not yet built": a future `app/[locale]/(marketing)/contact/page.tsx` |
-| **issue-report-form** — compact issue form with categories, impact/urgency, attachments | None today — no bug-report/support-ticket surface exists in `app/` or `components/` (verified alongside contact-form search) | If/when a "Report an issue" flow is added to the dashboard, he gets triage fields (category, impact, urgency) instead of a plain textarea | n/a today; homeless until such a feature is planned |
-| **date-time-picker** — Calendly-style date/time picker with slots + timezone | None — verified `find app components -iname "*date-picker*" -o -iname "*calendar*"` outside `src/components/ui` (the lit-ui shim layer, unrelated) returns nothing; no scheduling/booking feature exists | n/a | n/a, homeless: **no scheduling/booking feature in this product** |
-| **order-confirm** — order confirmation with product image, delivery info, confirm action | None — Polar.sh billing (`SubscriptionTab.tsx`, `ManageSubscriptionModal.tsx`) is subscription checkout via Polar's own hosted checkout/portal UI, not an in-repo product-order flow | n/a | n/a, homeless: **billing UI is Polar-hosted, not a custom order flow this repo renders** |
-| **payment-confirmed** — payment confirmation with price, delivery, tracking | None — same reason; Polar's hosted checkout handles this, this repo has no custom post-payment confirmation screen | n/a | n/a, homeless: **payment confirmation UX lives on Polar's hosted pages, out of this repo's render surface** |
-| **amount-input** — amount input with increment/decrement + presets | None today — closest candidate is a future custom top-up/credits flow; `components/dashboard/account/tabs/UsageCreditsTab.tsx` exists (usage display) but has no amount-entry UI today (not read in full, but no "top up credits" input was found in the surface scan) | If a manual credit top-up feature is ever added to `UsageCreditsTab.tsx`, he adjusts an amount with +/- buttons instead of a bare number `<input>` | n/a today; homeless until such a feature is planned |
-| **stat-card** — scrollable stat cards with values, trends, change indicators | Dashboard: `components/missions/mission-stats.tsx`, replacing its own `StatCard`/`StatCardSkeleton` (lines 100-169) | He sees mission counts (total, in-progress, completed, needs-attention) in a polished, accessible card instead of a hand-rolled div with hand-picked OKLCH trend colors | `StatCard` (`mission-stats.tsx:112-159`) and `StatCardSkeleton` (`:161-169`) — including the four hand-coded inline SVG icon functions (`IconTarget`, `IconCog`, `IconCheckCircle`, `IconAlertTriangle`, lines 10-98) |
-| **hero** — landing hero with logos, title, subtitle, CTAs, tech-logo footer | Landing: `components/landing/HeroSection.tsx` (233 lines) | Visitors get the same hero pattern already proven at litui.dev (this repo's own design reference per CLAUDE.md) instead of a bespoke 233-line hand-maintained section | `HeroSection.tsx` in its entirety — replacing hand-written CTA/logo-footer layout logic |
-| **post-card** — post card, image/title/excerpt/author, 4 variants + post-detail | None — no blog/content-listing feature exists anywhere in `app/` (verified: no `blog`, `posts`, `articles` route found in the earlier `app/[locale]/` exploration) | n/a | n/a, homeless: **product has no blog/CMS feature** |
-| **post-list** — post list, grid/carousel/fullwidth+pagination | None — same reason | n/a | n/a, homeless: **product has no blog feature** |
-| **post-detail** — full post view, cover image, tags, related posts | None — same reason | n/a | n/a, homeless: **product has no blog feature** |
-| **table** — data table with single/multi-select for chat interfaces | Chat: `lib/json-render/registry.tsx`, as a new catalog component (alongside `MissionProposal`) for any tabular data the architect/consultant agent needs to show inline (e.g. a comparison table of options) | Instead of the agent dumping a wall of markdown-ish text for tabular data, he sees a real sortable/selectable table inline in the chat, and can select rows to act on | Nothing today — the json-render catalog (`lib/json-render/catalog.ts`) has no tabular component; agents currently can only emit the 9 existing catalog components |
-| **x-post** — X (Twitter) post card with engagement metrics | None — no social-content feature anywhere in this repo (verified: no `social`, `x-post` component/route found in the earlier searches) | n/a | n/a, homeless: **product has no social-media preview/embedding feature** |
-| **instagram-post** — Instagram post card with image and engagement | None — same reason (verified: no `instagram` component/route found) | n/a | n/a, homeless: **product has no social-media preview/embedding feature** |
-| **linkedin-post** — LinkedIn post card with professional styling | None — same reason (verified: no `linkedin` component/route found) | n/a | n/a, homeless: **product has no social-media preview/embedding feature** |
-| **youtube-post** — YouTube video card with playable embed | None — same reason (verified: no `youtube` component/route found) | n/a | n/a, homeless: **product has no social-media preview/embedding feature** |
-| **product-list** — product list with list/grid/carousel/picker variants | None — this is a SaaS-plan billing product (Polar subscriptions via `SubscriptionTab.tsx`), not a multi-SKU e-commerce catalog; no product-listing surface exists | n/a | n/a, homeless: **no e-commerce catalog feature; billing is plan-based, not SKU-based** |
-
-**Recount, derived not typed:**
-
-```
-grep -c "^| \*\*" docs/mcpcn-block-mapping.md   # after this file is written
-```
-
-Mapped-to-a-concrete-file-in-this-repo: `message-bubble`, `chat-conversation`, `quick-reply`, `option-list`, `tag-select`, `progress-steps`, `status-badge`, `table`, `stat-card`, `hero` — **10 blocks** with a today-home (2 of them, `quick-reply` and `table`, are net-new additions with no existing hand-written code to replace; the other 8 replace named hand-written code).
-
-Homeless-with-reason: `event-card`, `event-list`, `event-detail`, `event-confirmation`, `ticket-tier-select`, `map-carousel`, `contact-form`, `issue-report-form`, `date-time-picker`, `order-confirm`, `payment-confirmed`, `amount-input`, `post-card`, `post-list`, `post-detail`, `x-post`, `instagram-post`, `linkedin-post`, `youtube-post`, `product-list` — **20 blocks**, each with its own stated reason (no events/map/blog/social/e-commerce/scheduling feature in this product; billing is Polar-hosted subscription, not order/ticket/amount-entry).
-
-10 + 20 = 30. All 30 rows accounted for, none silently dropped.
+- **vantage-starter** — this repo, the SaaS boilerplate every other product forks. Has: AI chat, an "architect" planning surface, a consultant onboarding flow, missions, billing/account, a landing page.
+- **VantageCRM** — contacts, companies, deals, activities, pipelines, workflows, audit log, custom fields/objects, subscriptions.
+- **VantagePeers** — orchestrator coordination: tasks, missions, messaging, memory/episodes, diary, briefing notes, mandates, fix patterns, deployments, issues.
+- **VantageRegistry** — a discoverable catalog of skills, agents, hooks, rules, plugins, runbooks, templates, components.
+- **EveVantage** — a product forked from vantage-starter; would need confirmation on its exact current feature set beyond the vantage-starter base it forked from.
 
 ---
 
-## 4. Order of battle — decided, not offered
+## 4. The mapping — 30 blocks, what each one opens
 
-Pi's own priority direction was explicit and correct: *"le chat d'abord"*. Implementation order:
+### Chat & agent surfaces
 
-1. **`message-bubble` + `chat-conversation`** in `components/chat/MessageList.tsx` — highest-traffic surface in the product (every dashboard user hits chat daily), replaces the largest chunk of hand-written UI (bubble, avatar, empty state, cursor) in one swap, and every other conversational block depends on this shell existing first.
-2. **`status-badge`** in `components/chat/ToolCallIndicator.tsx` — small, isolated, immediately visible in the same chat surface being touched in step 1; do it in the same pass to avoid re-opening the file.
-3. **`quick-reply` + `option-list` + `tag-select`** in `onboarding-chat.tsx` / `lib/json-render/registry.tsx` — these three replace the three near-duplicate hand-written selection components (`TeamSelection`, `AgentSelection`, `SkillSelection`) that are today's clearest "same pattern hand-coded three times" smell; also gives the architect/consultant agents a genuinely new interaction (`quick-reply`) they cannot express at all today.
-4. **`progress-steps`** in the onboarding flow — depends on step 3 shipping first (it needs the same surface's step boundaries defined), and is additive (no existing code to replace), so it is lower urgency than the replacements above.
-5. **`table`** in `lib/json-render/registry.tsx` — new catalog component, unlocks a capability (structured tabular agent output) that does not exist at all today; sequenced after the chat-surface work above because it requires wiring into the catalog/registry pair the same way the selection blocks do, and validating that pattern once (step 3) de-risks doing it again here.
-6. **`stat-card`** in `components/missions/mission-stats.tsx` — outside the chat surface entirely, self-contained, zero dependency on the above; done once the chat work is stable so it doesn't compete for review bandwidth with the higher-priority conversational work.
-7. **`hero`** in `components/landing/HeroSection.tsx` — marketing surface, lowest functional priority (no dashboard user ever sees it twice), last in the order.
+**message-bubble** — chat bubbles with text/image/voice/reaction variants.
+1. **Feature it opens:** vantage-starter's architect/consultant chat gains voice-note and image-drop message types, so a user can send a screenshot of a bug straight into the mission chat instead of describing it in text.
+2. **Replaces:** the hand-written `MessageBubble` inline function in `components/chat/MessageList.tsx`.
+3. **Cost:** Base UI install (shared across all 23 dependent blocks); wiring image/voice payload types into the existing `sendMessage` call.
 
-The 20 homeless blocks (events, tickets, map, contact/issue forms, date-time picker, order/payment, amount-input, blog posts, social previews, product-list) are **not** scheduled — they have no feature to attach to in this product today. Building any of them would mean building the underlying feature (a booking system, a blog, a social integration, an e-commerce catalog) first, which is out of scope for a component-mapping exercise and not requested by this brief.
+**chat-conversation** — full conversation shell, multiple message types.
+1. **Feature it opens:** a consistent, maintained conversation shell (avatars, empty state, live region) for vantage-starter chat AND a second home in VantagePeers — an orchestrator-to-orchestrator message thread view that today is a raw list in `check_messages` output, could become an actual read/reply UI for the messaging protocol.
+2. **Replaces:** `MessageList.tsx`'s own list layout, empty state, and `AgentAvatar`.
+3. **Cost:** Base UI; mapping VantagePeers' message schema (`from`, `channel`, `content`) onto the block's message-type props.
+
+**quick-reply** — quick-reply buttons for common chat responses.
+1. **Feature it opens:** in vantage-starter, when the architect agent asks "add this to the roadmap now or later?", the user taps a button instead of typing. In VantagePeers, an orchestrator receiving a `[STATUS]` update could get one-tap `ack` / `escalate` / `snooze` buttons instead of composing a `send_message` reply by hand.
+2. **Replaces:** nothing today — no quick-reply affordance exists in either product.
+3. **Cost:** Base UI; defining the fixed reply sets per prompt type.
+
+**option-list** — tag-style option selector, single/multi.
+1. **Feature it opens:** vantage-starter's consultant onboarding flow (team/agent/skill selection) gets one real component instead of three near-duplicate hand-written selectable cards. Same component sells a second time in VantageCRM: a deal's "products in this deal" or a contact's "tags" multi-select during a workflow step.
+2. **Replaces:** `TeamSelection`/`AgentSelection`/`SkillSelection` in `lib/json-render/registry.tsx`.
+3. **Cost:** Base UI; one component instead of three, net code reduction.
+
+**tag-select** — colored tag selector, single/multi, color variants.
+1. **Feature it opens:** the onboarding pain-point chips in vantage-starter get a real colored-tag component. In VantageCRM this is the exact shape needed for custom-field tag values and pipeline-stage colored labels — a feature CRM buyers expect and currently would be hand-rolled per screen.
+2. **Replaces:** the duplicated `painPoints.map`/`matchedPains.map` chip-rendering blocks in `registry.tsx`.
+3. **Cost:** Base UI.
+
+**progress-steps** — step indicator, horizontal/vertical, statuses.
+1. **Feature it opens:** vantage-starter's onboarding flow gets a visible "sector → pain points → team → agents → skills" progress bar instead of the user inferring progress from scrollback. VantagePeers' mission execution (IRP: Investigate → Remediate → Prevent) is literally a step sequence today rendered as plain text — this block turns mission progress into a glanceable bar in any mission-status view.
+2. **Replaces:** nothing today in either product — additive.
+3. **Cost:** Base UI; mapping mission phase names onto step labels.
+
+**status-badge** — status badge, multiple states (success/pending/processing/error/shipped/delivered).
+1. **Feature it opens:** vantage-starter's tool-call indicator and mission-status chips get one consistent badge. VantagePeers gets a real visual state badge for task status (`todo`/`in_progress`/`review`/`blocked`/`done`) anywhere a task list is rendered, replacing plain-text status strings across every orchestrator dashboard view.
+2. **Replaces:** `ToolCallIndicator`'s own pill markup; any future hand-rolled mission/task status chip.
+3. **Cost:** Base UI.
+
+**table** — data table with single/multi-select, built for chat interfaces.
+1. **Feature it opens:** vantage-starter's architect agent can emit a real sortable/selectable table inline in chat (e.g. "here are 6 candidate fixes, pick one") instead of a markdown wall of text — a genuinely new agent capability, not a replacement. VantageRegistry's catalog browsing (skills/agents/hooks search results) gets a selectable table instead of a flat list, letting a user multi-select several skills to install in one action.
+2. **Replaces:** nothing — the json-render catalog has no tabular component today.
+3. **Cost:** Base UI; new catalog entry in `lib/json-render/catalog.ts`.
+
+**amount-input** — numeric input with increment/decrement + presets.
+1. **Feature it opens:** a manual credit top-up feature in vantage-starter's `UsageCreditsTab.tsx` — a buyer types or taps to add $10/$25/$50 in usage credits instead of a bare number field, which is the difference between "there's a credits page" and "there's a sellable top-up flow." VantageCRM gets the same component for deal-value entry with currency-aware presets.
+2. **Replaces:** any bare `<input type="number">` used for credit or deal-value entry today.
+3. **Cost:** Base UI; wiring to the existing usage-credits mutation, once it accepts a manual top-up amount (does not today — would need confirmation this is on the Convex roadmap).
+
+### Forms
+
+**contact-form** — name, phone+country, email, message, file attachment.
+1. **Feature it opens:** a public `/contact` page for vantage-starter — every SaaS this boilerplate forks needs one, and today it's built from scratch each time. Ships as a marketing-site lead-capture form with phone-country selector and file attachment (e.g. "attach a screenshot of what's broken") out of the box.
+2. **Replaces:** nothing — net-new marketing surface.
+3. **Cost:** Base UI; one new route `app/[locale]/(marketing)/contact/page.tsx`; a Convex mutation to store submissions (new, small).
+
+**issue-report-form** — compact issue form, categories, impact/urgency, attachments.
+1. **Feature it opens:** a public incident-report page where a client drops a bug with a screenshot, and the ticket lands in the task board — this is the single highest-leverage block in the set. Concretely: a `/report` page in vantage-starter, wired to VantagePeers' `create_task` (assignedTo the relevant orchestrator, priority derived from the "urgency" field the block already collects), turns an external bug report into a triaged, prioritized task with zero manual re-typing.
+2. **Replaces:** the current process, which is a client emailing or messaging Laurent, who manually creates a task.
+3. **Cost:** Base UI; one new route; a thin API route or Convex action that calls VantagePeers' MCP `create_task` on submit.
+
+**date-time-picker** — Calendly-style date/time picker, slots + timezone.
+1. **Feature it opens:** a booking/scheduling feature for vantage-starter — "book a 30-minute onboarding call with the consultant agent's human counterpart" — something no current SaaS-boilerplate competitor ships pre-built. Also fits VantageCRM: scheduling a follow-up activity against a contact with real slot/timezone awareness instead of a bare date field.
+2. **Replaces:** nothing — net-new scheduling capability.
+3. **Cost:** Base UI; a slots data source (either a static availability config or, longer-term, a calendar integration — the latter is out of scope for this block alone and would need confirmation as a separate roadmap item).
+
+**ticket-tier-select** — ticket tier selection, quantity + price breakdown.
+1. **Feature it opens:** this is a per-tier pricing selector — the same shape as choosing a subscription tier with add-on quantities. vantage-starter's Polar billing (`SubscriptionTab.tsx`) sells plan-based subscriptions today, not itemized tiers; this block is the front-end for a plan comparison/upgrade screen showing multiple tiers side by side with quantity (seats) selection, which the current `ManageSubscriptionModal.tsx` does not have a polished version of. Also directly usable if vantage-starter or a forked product ever sells metered add-ons (extra seats, extra AI credits) at different tiers.
+2. **Replaces:** the current bare plan-name dropdown/buttons in `ManageSubscriptionModal.tsx`.
+3. **Cost:** Base UI; mapping Polar's plan/tier objects onto the block's tier-list props.
+
+### Commerce / confirmation
+
+**order-confirm** — order confirmation, product image, delivery info, confirm action.
+1. **Feature it opens:** a polished post-purchase confirmation screen for any product forked from vantage-starter that ends up selling a physical or digital deliverable (not just subscriptions) — e.g. a one-time "download the exported report" purchase in EveVantage or a future add-on marketplace. Also directly reusable as the confirmation step after a VantageCRM deal moves to "won," showing what was sold and next steps.
+2. **Replaces:** nothing — Polar's hosted checkout has no custom confirmation screen in this repo today.
+3. **Cost:** Base UI; only relevant once a non-subscription purchase flow exists — flagged here as ready-to-use the day that flow is built, not a rejection.
+
+**payment-confirmed** — payment confirmation, price, delivery info, tracking button.
+1. **Feature it opens:** same opening as `order-confirm`, sharper for anything with a physical or trackable deliverable — pairs naturally if vantage-starter or a fork ever ships merchandise, printed materials, or a hardware add-on tied to a subscription tier.
+2. **Replaces:** nothing today.
+3. **Cost:** Base UI; same dependency as `order-confirm` — build once, reuse both.
+
+**product-list** — products in list/grid/carousel/picker layouts.
+1. **Feature it opens:** VantageRegistry is, functionally, a product catalog already — skills, agents, hooks, templates, components are all "products" a developer picks from. This block is the browsing UI for that catalog: grid view for visual scanning, picker view for "select one to install." This is the single clearest existing-data-model match in the whole set — VantageRegistry has the data, not yet the polished browse UI.
+2. **Replaces:** whatever flat list/table VantageRegistry currently uses to present `list_skills`/`list_agents`/`list_hooks` results (would need confirmation of VantageRegistry's current UI implementation, if any exists beyond the MCP tool responses themselves).
+3. **Cost:** Base UI; mapping VantageRegistry's item schema onto the block's product-card props.
+
+### Content / blog
+
+**post-card**, **post-list**, **post-detail** — blog post preview cards, list layouts, full post view with related posts.
+1. **Feature it opens (all three, one feature):** a changelog/blog surface for vantage-starter itself — turning `CHANGELOG.md` entries and release notes into a real public-facing "what's new" page, which every SaaS product benefits from for marketing and retention (users who see product velocity churn less). VantagePeers' diary entries (`write_diary`) are structurally identical to blog posts (date, author, content, highlights) and could be rendered through the same three components as an internal "orchestrator activity log" page.
+2. **Replaces:** nothing — net-new content surface in both cases.
+3. **Cost:** Base UI; a Convex table or MDX source for posts; for the VantagePeers reuse, a query translating diary entries into the block's post-item shape.
+
+### Social embeds
+
+**x-post**, **instagram-post**, **linkedin-post**, **youtube-post** — social post preview cards with engagement metrics / embedded playback.
+1. **Feature it opens (one shared feature):** vantage-starter's landing page and any marketing/changelog page gains "as seen on" social proof embeds — dropping in a real tweet, a client's LinkedIn testimonial post, or a demo YouTube video with a native-looking card, instead of a screenshot or an unstyled `<iframe>`. This is a direct conversion-rate lever on the landing page (social proof is a proven pattern at litui.dev, this repo's own design reference).
+2. **Replaces:** nothing today — no social-embed pattern exists anywhere in the repo.
+3. **Cost:** Base UI; each network's public embed/oEmbed data (no API key needed for basic card rendering; verified engagement-metric freshness would need each platform's embed API, out of scope for the block itself).
+
+### Events
+
+**event-card**, **event-list**, **event-detail**, **event-confirmation**, **ticket-tier-select** *(ticket-tier-select already covered above under billing)*, **map-carousel**
+1. **Feature it opens (event-card/list/detail/confirmation, one feature):** a webinar/workshop booking feature — vantage-starter or a fork hosting a live onboarding webinar or a paid workshop, with a listing page (`event-list`), a detail page with the agenda and registration (`event-detail`), and a confirmation screen after signup (`event-confirmation`). This is a plausible lead-gen or paid-workshop product for the whole VantageOS family, not just vantage-starter — any of the products above could run a "office hours" or training-session series through this same four-block set.
+2. **Replaces:** nothing — no events feature exists in any of the five products today.
+3. **Cost:** Base UI; a Convex `events` table (new schema); no existing surface to migrate.
+
+**map-carousel** — interactive map with markers + draggable card carousel.
+1. **Feature it opens:** if the event feature above ships with in-person locations (a workshop venue, an office-hours location), this block is the map+carousel pairing for choosing among them. Standalone, it also fits VantageCRM: a "companies near me" map view for account-based sales territory planning, pairing company records with a location marker and a swipeable card per company.
+2. **Replaces:** nothing.
+3. **Cost:** Base UI; a map tile provider (Mapbox/Maplibre — free tier available, no cost blocker); geocoding company/event addresses into lat/lng (a one-time batch job, not a recurring cost).
+
+### Marketing
+
+**hero** — landing hero, logos, title, subtitle, CTAs, tech-logo footer.
+1. **Feature it opens:** vantage-starter's landing page gets the same hero pattern already proven at litui.dev (this repo's own stated design reference in CLAUDE.md), maintained upstream instead of hand-maintained here. Every product forked from vantage-starter inherits the same polished, MIT-licensed hero for free at fork time, instead of each fork's team re-hand-rolling one.
+2. **Replaces:** `components/landing/HeroSection.tsx` (233 hand-written lines) in vantage-starter, and by inheritance the equivalent hero in any existing fork (EveVantage — would need confirmation of its current hero implementation).
+3. **Cost:** Base UI.
+
+---
+
+## 5. Score
+
+30 of 30 blocks open at least one named feature in at least one of the five products. **Zero blocks rejected.** No block in this registry is unusable by every product in the house — the previous version's 20 rejections were a scoping error, not a fact about the components.
+
+---
+
+## 6. The five most profitable new features, ranked
+
+1. **issue-report-form → public bug-report page wired to VantagePeers `create_task`.** Highest ratio of value to cost: replaces a fully manual human-in-the-loop triage process (client message → Laurent reads it → Laurent creates a task) with a direct, structured, prioritized task creation. This is the only feature on this list that removes a standing operational cost (Laurent's time) rather than adding a new revenue surface — and it's buildable today with the pieces that already exist (`create_task` MCP tool, Base UI once installed).
+
+2. **product-list → VantageRegistry catalog browser.** Second-highest: VantageRegistry already has the exact data model this block wants (skills, agents, hooks, templates as "products"); this is a UI gap on top of existing data, not a new feature to build from zero. Immediately improves the core discoverability promise VantageRegistry exists to deliver.
+
+3. **table → structured agent output in vantage-starter chat.** Genuinely new agent capability (not a replacement): the architect/consultant agents can present comparative structured data (candidate fixes, plan options, pricing tiers) as a real selectable table instead of markdown prose. Directly improves the core AI-chat product experience every vantage-starter fork inherits.
+
+4. **message-bubble + chat-conversation → richer chat in vantage-starter.** High reach (every dashboard user hits chat daily) and unlocks voice/image message types that are entirely absent today; also the prerequisite shell for `quick-reply`, `option-list`, `tag-select`, and `progress-steps` to land cleanly, so building it first de-risks four subsequent features in one pass.
+
+5. **post-card/post-list/post-detail → public changelog/blog page.** Lower urgency than the four above (marketing/retention lever, not an operational or core-product gap) but low cost relative to payoff: `CHANGELOG.md` content already exists, this is a rendering layer on top of data already being written for other reasons, and public product-velocity signaling is a proven SaaS retention/conversion lever.
+
+The remaining 25 blocks (events, tickets, map, forms beyond issue-report, social embeds, commerce confirmations, scheduling, amount-input, hero) are real, named opportunities above but rank below these five on value-to-cost today — each requires either a new Convex schema (events, contact submissions) or is a lower-traffic surface (landing hero, social proof) than the five chosen.
