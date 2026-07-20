@@ -11,6 +11,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuth, requireAuthWithWorkspace } from "./lib/auth";
+import { deriveTitleFromContent } from "./lib/titles";
 
 // ============================================================================
 // MUTATIONS
@@ -22,6 +23,7 @@ export const create = mutation({
 		existingMissionId: v.optional(v.id("missions")),
 		title: v.optional(v.string()),
 	},
+	returns: v.id("architectSessions"),
 	handler: async (ctx, args) => {
 		const user = await requireAuth(ctx);
 		await requireAuthWithWorkspace(ctx, args.workspaceId);
@@ -62,6 +64,7 @@ export const addMessage = mutation({
 		role: v.union(v.literal("user"), v.literal("assistant")),
 		content: v.string(),
 	},
+	returns: v.id("architectMessages"),
 	handler: async (ctx, args) => {
 		const user = await requireAuth(ctx);
 
@@ -74,6 +77,25 @@ export const addMessage = mutation({
 			throw new Error("Not authorized to modify this session");
 		}
 
+		// Auto-title: derive the session's display name from its own first user
+		// message, unless the user has already renamed it (isTitleCustom).
+		// Checked BEFORE insert so "first message" means "no prior message".
+		let titlePatch: { title: string } | undefined;
+		if (args.role === "user" && !session.isTitleCustom) {
+			const priorMessages = await ctx.db
+				.query("architectMessages")
+				.withIndex("by_session_created", (q) =>
+					q.eq("sessionId", args.sessionId),
+				)
+				.take(1);
+			if (priorMessages.length === 0) {
+				const derived = deriveTitleFromContent(args.content);
+				if (derived.length > 0) {
+					titlePatch = { title: derived };
+				}
+			}
+		}
+
 		const messageId = await ctx.db.insert("architectMessages", {
 			sessionId: args.sessionId,
 			role: args.role,
@@ -82,7 +104,10 @@ export const addMessage = mutation({
 			updatedAt: Date.now(),
 		});
 
-		await ctx.db.patch(args.sessionId, { updatedAt: Date.now() });
+		await ctx.db.patch(args.sessionId, {
+			updatedAt: Date.now(),
+			...titlePatch,
+		});
 
 		return messageId;
 	},
@@ -93,6 +118,7 @@ export const complete = mutation({
 		sessionId: v.id("architectSessions"),
 		missionId: v.optional(v.id("missions")),
 	},
+	returns: v.null(),
 	handler: async (ctx, args) => {
 		const user = await requireAuth(ctx);
 		const session = await ctx.db.get(args.sessionId);
@@ -105,6 +131,7 @@ export const complete = mutation({
 			existingMissionId: args.missionId ?? session.existingMissionId,
 			updatedAt: Date.now(),
 		});
+		return null;
 	},
 });
 
@@ -113,6 +140,7 @@ export const updateTitle = mutation({
 		sessionId: v.id("architectSessions"),
 		title: v.string(),
 	},
+	returns: v.null(),
 	handler: async (ctx, args) => {
 		const user = await requireAuth(ctx);
 		const session = await ctx.db.get(args.sessionId);
@@ -120,15 +148,21 @@ export const updateTitle = mutation({
 		if (session.createdBy !== user.clerkUserId) throw new Error("Unauthorized");
 		await requireAuthWithWorkspace(ctx, session.workspaceId);
 
+		// An explicit rename is the user naming the session — recorded in the
+		// data (isTitleCustom), never left implicit in call order, so the
+		// auto-title mechanism never overwrites it again.
 		await ctx.db.patch(args.sessionId, {
 			title: args.title,
+			isTitleCustom: true,
 			updatedAt: Date.now(),
 		});
+		return null;
 	},
 });
 
 export const remove = mutation({
 	args: { sessionId: v.id("architectSessions") },
+	returns: v.null(),
 	handler: async (ctx, args) => {
 		const user = await requireAuth(ctx);
 		const session = await ctx.db.get(args.sessionId);
@@ -144,6 +178,7 @@ export const remove = mutation({
 		await Promise.all(messages.map((m) => ctx.db.delete(m._id)));
 
 		await ctx.db.delete(args.sessionId);
+		return null;
 	},
 });
 
@@ -151,8 +186,33 @@ export const remove = mutation({
 // QUERIES
 // ============================================================================
 
+const sessionDoc = v.object({
+	_id: v.id("architectSessions"),
+	_creationTime: v.number(),
+	workspaceId: v.id("workspaces"),
+	status: v.union(
+		v.literal("active"),
+		v.literal("completed"),
+		v.literal("abandoned"),
+	),
+	existingMissionId: v.optional(v.id("missions")),
+	missionContext: v.optional(
+		v.object({
+			missionId: v.string(),
+			missionName: v.string(),
+			missionBrief: v.optional(v.string()),
+		}),
+	),
+	createdBy: v.string(),
+	title: v.optional(v.string()),
+	isTitleCustom: v.optional(v.boolean()),
+	createdAt: v.number(),
+	updatedAt: v.number(),
+});
+
 export const get = query({
 	args: { sessionId: v.id("architectSessions") },
+	returns: v.union(sessionDoc, v.null()),
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) return null;
@@ -169,6 +229,12 @@ export const get = query({
 
 export const getMessages = query({
 	args: { sessionId: v.id("architectSessions") },
+	returns: v.array(
+		v.object({
+			role: v.union(v.literal("user"), v.literal("assistant")),
+			content: v.string(),
+		}),
+	),
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) return [];
@@ -191,6 +257,10 @@ export const listRecent = query({
 		workspaceId: v.id("workspaces"),
 		limit: v.optional(v.number()),
 	},
+	returns: v.object({
+		sessions: v.array(sessionDoc),
+		hasMore: v.boolean(),
+	}),
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) return { sessions: [], hasMore: false };

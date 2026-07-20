@@ -381,7 +381,15 @@ export const update = mutation({
 			throw new Error("Forbidden");
 		}
 
-		await ctx.db.patch(id, { ...updates, updatedAt: Date.now() });
+		// An explicit title update is the user renaming the chat — this
+		// precedence is recorded in the data (isTitleCustom), never left
+		// implicit in call order, so the auto-title mechanism never
+		// overwrites it again.
+		await ctx.db.patch(id, {
+			...updates,
+			...(updates.title !== undefined ? { isTitleCustom: true } : {}),
+			updatedAt: Date.now(),
+		});
 		return null;
 	},
 });

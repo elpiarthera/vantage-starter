@@ -2835,6 +2835,7 @@
 		"sessions_title": "Сессии",
 		"start_new_session_aria": "Начать новую сессию с архитектором",
 		"new_session": "Новая сессия",
+		"rename_session_aria": "Переименовать сессию",
 		"plan_prefix": "План: {name}",
 		"no_workspace_found": "Рабочее пространство не найдено",
 		"create_workspace_to_use_architect": "Создайте рабочее пространство, чтобы использовать архитектора.",

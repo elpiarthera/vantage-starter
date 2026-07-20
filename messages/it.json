@@ -2835,6 +2835,7 @@
 		"sessions_title": "Sessioni",
 		"start_new_session_aria": "Avvia una nuova sessione con l'architetto",
 		"new_session": "Nuova sessione",
+		"rename_session_aria": "Rinomina sessione",
 		"plan_prefix": "Piano: {name}",
 		"no_workspace_found": "Nessuno spazio di lavoro trovato",
 		"create_workspace_to_use_architect": "Crea uno spazio di lavoro per usare l'architetto.",
