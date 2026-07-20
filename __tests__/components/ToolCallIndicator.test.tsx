@@ -23,16 +23,17 @@ function resolve(dict: Dict, ns: string, key: string): string {
 }
 
 jest.mock("next-intl", () => ({
-	useTranslations: (ns: string) => (key: string, vars?: Record<string, unknown>) => {
-		const resolved = resolve(en, ns, key);
-		if (vars && typeof resolved === "string") {
-			return Object.entries(vars).reduce(
-				(acc, [k, v]) => acc.replace(`{${k}}`, String(v)),
-				resolved,
-			);
-		}
-		return resolved;
-	},
+	useTranslations:
+		(ns: string) => (key: string, vars?: Record<string, unknown>) => {
+			const resolved = resolve(en, ns, key);
+			if (vars && typeof resolved === "string") {
+				return Object.entries(vars).reduce(
+					(acc, [k, v]) => acc.replace(`{${k}}`, String(v)),
+					resolved,
+				);
+			}
+			return resolved;
+		},
 }));
 
 import { ToolCallIndicator } from "@/components/chat/ToolCallIndicator";
