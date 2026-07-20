@@ -456,12 +456,18 @@ function ProjectNotFound() {
 // MAIN ONBOARDING CHAT
 // ============================================================================
 
+// How close to the bottom (in px) the viewport must be for new content to
+// still be considered "followed". Below this the user has taken over.
+const STICK_TO_BOTTOM_THRESHOLD_PX = 48;
+
 export function OnboardingChat({ projectId }: OnboardingChatProps) {
 	const t = useTranslations("consultant");
 	const locale = useLocale();
 	const router = useRouter();
 	const sentinelRef = useRef<HTMLDivElement>(null);
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const isStuckToBottomRef = useRef(true);
 	const [input, setInput] = useState("");
 
 	// Load project data from Convex
@@ -493,8 +499,36 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 		.find((m) => m.role === "assistant");
 	const activeSpec = lastAssistantMessage?.spec ?? null;
 
+	// Track whether the user is currently stuck to the bottom of the
+	// scrollable viewport. Radix's ScrollArea renders its own scrollable
+	// element (`data-slot="scroll-area-viewport"`) inside our wrapper div —
+	// that inner element is what actually scrolls, so we listen on it.
+	useEffect(() => {
+		const viewport = scrollContainerRef.current?.querySelector<HTMLElement>(
+			'[data-slot="scroll-area-viewport"]',
+		);
+		if (!viewport) return;
+
+		const handleScroll = () => {
+			const distanceFromBottom =
+				viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+			isStuckToBottomRef.current =
+				distanceFromBottom <= STICK_TO_BOTTOM_THRESHOLD_PX;
+		};
+
+		handleScroll();
+		viewport.addEventListener("scroll", handleScroll, { passive: true });
+		return () => viewport.removeEventListener("scroll", handleScroll);
+	}, []);
+
 	// biome-ignore lint/correctness/useExhaustiveDependencies: messages.length and isStreaming are intentional triggers
 	useEffect(() => {
+		// Only auto-follow the stream if the user has not scrolled away from
+		// the bottom. Once they scroll up, the automatic recall stops until
+		// they return to the bottom themselves — otherwise a long streaming
+		// plan yanks the viewport back down on every chunk and its top
+		// becomes unreachable for as long as the stream lasts.
+		if (!isStuckToBottomRef.current) return;
 		sentinelRef.current?.scrollIntoView({ behavior: "auto" });
 	}, [messages.length, isStreaming]);
 
@@ -582,39 +616,41 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 				</div>
 
 				{/* Messages */}
-				<ScrollArea className="flex-1">
-					<div className="px-4 md:px-6 py-6 space-y-6 max-w-3xl mx-auto">
-						{messages.length === 0 && !isStreaming && <ChatEmptyHint />}
+				<div className="flex-1 min-h-0" ref={scrollContainerRef}>
+					<ScrollArea className="h-full">
+						<div className="px-4 md:px-6 py-6 space-y-6 max-w-3xl mx-auto">
+							{messages.length === 0 && !isStreaming && <ChatEmptyHint />}
 
-						{messages.map((msg) => (
-							<div key={msg.id}>
-								{msg.role === "user" ? (
-									<UserBubble text={msg.text} />
-								) : (
-									<AssistantBubble
-										text={msg.text}
-										spec={msg.spec}
-										isStreaming={
-											isStreaming && msg === messages[messages.length - 1]
-										}
-										thinkingLabel={t("thinking")}
-									/>
-								)}
-							</div>
-						))}
+							{messages.map((msg) => (
+								<div key={msg.id}>
+									{msg.role === "user" ? (
+										<UserBubble text={msg.text} />
+									) : (
+										<AssistantBubble
+											text={msg.text}
+											spec={msg.spec}
+											isStreaming={
+												isStreaming && msg === messages[messages.length - 1]
+											}
+											thinkingLabel={t("thinking")}
+										/>
+									)}
+								</div>
+							))}
 
-						{isStreaming && messages.length === 0 && (
-							<AssistantBubble
-								text=""
-								spec={null}
-								isStreaming
-								thinkingLabel={t("thinking")}
-							/>
-						)}
+							{isStreaming && messages.length === 0 && (
+								<AssistantBubble
+									text=""
+									spec={null}
+									isStreaming
+									thinkingLabel={t("thinking")}
+								/>
+							)}
 
-						<div ref={sentinelRef} aria-hidden="true" />
-					</div>
-				</ScrollArea>
+							<div ref={sentinelRef} aria-hidden="true" />
+						</div>
+					</ScrollArea>
+				</div>
 
 				{/* Error display */}
 				{error && (
