@@ -2,6 +2,10 @@
 
 import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 import { useTranslations } from "next-intl";
+import {
+	MessageBubble,
+	MessageBubbleContent,
+} from "@/components/ui/message-bubble";
 import { cn } from "@/lib/utils";
 import { ToolCallIndicator } from "./ToolCallIndicator";
 
@@ -65,7 +69,7 @@ interface MessageBubbleProps {
 	isStreaming: boolean;
 }
 
-function MessageBubble({
+function MessageListItem({
 	message,
 	isLastMessage,
 	isStreaming,
@@ -119,20 +123,16 @@ function MessageBubble({
 					</div>
 				)}
 
-				{/* Text content */}
+				{/* Text content — rendered through the ported message-bubble block */}
 				{textContent && (
-					<div
-						className={cn(
-							"rounded-2xl px-4 py-3 text-sm leading-relaxed",
-							isUser && "bg-primary text-primary-foreground rounded-tr-sm",
-							isAssistant &&
-								"bg-card border border-border text-card-foreground rounded-tl-sm",
-						)}
-					>
-						<p className="whitespace-pre-wrap break-words">
-							{textContent}
-							{showCursor && <StreamingCursor />}
-						</p>
+					<div className={cn("flex flex-col", isUser && "items-end")}>
+						<MessageBubble
+							appearance={{ isOwn: isUser }}
+							data={{ content: textContent }}
+						>
+							<MessageBubbleContent />
+						</MessageBubble>
+						{showCursor && <StreamingCursor />}
 					</div>
 				)}
 
@@ -189,7 +189,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 			className="flex flex-col gap-4 px-4 py-4"
 		>
 			{messages.map((message, index) => (
-				<MessageBubble
+				<MessageListItem
 					key={message.id}
 					message={message}
 					isLastMessage={index === messages.length - 1}

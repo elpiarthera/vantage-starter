@@ -1,0 +1,167 @@
+/**
+ * Adapted from mcpcn (https://www.mcpcn.dev) — MIT License.
+ * The upstream source ships no license header of its own; this attribution
+ * notice is added here per this repo's licensing policy, it is not a
+ * preserved original notice.
+ *
+ * Ported for VantageStarter as-is; colors map onto this repo's OKLCH
+ * tokens (`--card`) via the ported `message-bubble` primitives it composes.
+ */
+"use client";
+
+import type { ComponentProps } from "react";
+import { createContext, useContext } from "react";
+
+import { cn } from "@/lib/utils";
+
+import {
+	ImageMessageBubble,
+	MessageBubble,
+	MessageBubbleContent,
+} from "./message-bubble";
+import type { ChatMessage } from "./types";
+
+export type { ChatMessage } from "./types";
+
+interface ChatConversationContextValue {
+	messages: ChatMessage[];
+}
+
+const ChatConversationContext =
+	createContext<ChatConversationContextValue | null>(null);
+
+export const useChatConversation = () => {
+	const context = useContext(ChatConversationContext);
+
+	if (!context) {
+		throw new Error(
+			"ChatConversation components must be used within ChatConversation",
+		);
+	}
+
+	return context;
+};
+
+const DEFAULT_MESSAGES: ChatMessage[] = [
+	{
+		author: "Sarah",
+		avatarFallback: "S",
+		content: "Hey! Check out this new feature we just shipped",
+		time: "10:30 AM",
+		type: "text",
+	},
+	{
+		author: "You",
+		avatarFallback: "Y",
+		content: "Oh wow, that looks amazing! How long did it take to build?",
+		isOwn: true,
+		status: "read",
+		time: "10:31 AM",
+		type: "text",
+	},
+	{
+		author: "Sarah",
+		avatarFallback: "S",
+		content: "Here's a preview of the dashboard",
+		image: "https://picsum.photos/seed/chat-attachment/400/300",
+		time: "10:32 AM",
+		type: "image",
+	},
+	{
+		author: "You",
+		avatarFallback: "Y",
+		content: "This is incredible! The UI is so clean",
+		isOwn: true,
+		status: "delivered",
+		time: "10:33 AM",
+		type: "text",
+	},
+];
+
+export interface ChatConversationProps extends ComponentProps<"div"> {
+	data?: {
+		messages?: ChatMessage[];
+	};
+}
+
+interface ChatConversationMessageProps extends ComponentProps<"div"> {
+	message: ChatMessage;
+}
+
+export const ChatConversationMessage = ({
+	children,
+	message,
+}: ChatConversationMessageProps) => {
+	if (children) {
+		return <>{children}</>;
+	}
+
+	const data = {
+		author: message.author,
+		avatarFallback: message.avatarFallback,
+		avatarUrl: message.avatarUrl,
+		content: message.content,
+		time: message.time,
+	};
+
+	if ((message.type ?? "text") === "image") {
+		return (
+			<ImageMessageBubble
+				appearance={{ isOwn: message.isOwn ?? false }}
+				control={{ status: message.status }}
+				data={{ ...data, image: message.image }}
+			/>
+		);
+	}
+
+	return (
+		<MessageBubble
+			appearance={{ isOwn: message.isOwn ?? false }}
+			control={{ status: message.status }}
+			data={data}
+		>
+			<MessageBubbleContent />
+		</MessageBubble>
+	);
+};
+
+export const ChatConversationMessages = ({
+	children,
+	className,
+	...props
+}: ComponentProps<"div">) => {
+	const { messages } = useChatConversation();
+
+	return (
+		<div className={cn("space-y-4", className)} {...props}>
+			{children ??
+				messages.map((message, index) => (
+					<ChatConversationMessage
+						key={`${message.author ?? "message"}-${message.time ?? index}`}
+						message={message}
+					/>
+				))}
+		</div>
+	);
+};
+
+const ChatConversationRoot = ({
+	children,
+	className,
+	data,
+	...props
+}: ChatConversationProps & { children: React.ReactNode }) => {
+	const context: ChatConversationContextValue = {
+		messages: data?.messages ?? DEFAULT_MESSAGES,
+	};
+
+	return (
+		<ChatConversationContext.Provider value={context}>
+			<div className={cn("rounded-xl bg-card p-4", className)} {...props}>
+				{children}
+			</div>
+		</ChatConversationContext.Provider>
+	);
+};
+
+export const ChatConversation = ChatConversationRoot;
