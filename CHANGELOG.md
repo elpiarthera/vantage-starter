@@ -8,6 +8,15 @@ All notable changes to VantageStarter are documented in this file.
 
 ### Fixed (2026-07-20 — the generative-UI plan chrome speaks the active locale)
 
+**Declared divergence, not a silent one.** The Russian plural forms were written without a
+Russian speaker. The plural *categories* are driven by `Intl.PluralRules("ru")` and asserted
+by the test suite; what is unverified is whether the word forms inside each category read
+naturally. Holding the delivery would have kept six correct locales behind one approximate
+seventh, on a layer that until now rendered English to every user in every language. The
+approximation is recorded in `messages/README.md`, next to the files it concerns, with what
+would close it — a native reader on `generative_ui` in `ru.json`.
+
+
 `lib/json-render/registry.tsx` renders the chrome around every AI-generated plan (Architect mission proposals, Consultant onboarding config) — labels, aria-labels, units, counters — and it was English-only across all seven shipped locales, verified by `grep -cE 'useTranslations|getTranslations' lib/json-render/registry.tsx lib/json-render/catalog.ts` returning `0`/`0` on unmodified `origin/main` (bb2ac8a). A French user reading a streamed plan saw "After 3 ops" mid-sentence, and a screen reader announced "Human checkpoint" regardless of locale — an accessibility defect, not only a polish one. `registry.tsx` was already `"use client"` and every consumer (`app/[locale]/dashboard/architect/_components/chat-interface.tsx`, `.../consultant/onboard/[projectId]/_components/onboarding-chat.tsx`) mounts inside `NextIntlClientProvider` (`app/[locale]/layout.tsx`), so `useTranslations` was wired directly — no provider plumbing needed, and this is stated as the reasoning for the choice over `getTranslations`/server-only approaches.
 
 Fourteen new keys under a `generative_ui` namespace, real (not machine-copied) translations across `en`/`fr`/`de`/`es`/`it`/`pt`/`ru`. Two counters (`After N operations`, `N agents`) route through next-intl's ICU `{count, plural, ...}` so each locale states its own plural rule instead of the English `s`-suffix hardcode being repeated in seven languages — French's `one` category (which, per CLDR, also covers `0`) and Russian's three-way `one`/`few`/`many` split are both exercised by the ICU grammar rather than hand-rolled. Confidence: high for `fr`/`de`/`es`/`it`/`pt` (direct translation of short UI chrome); Russian plural-form genitive agreement (`операции`/`операций`) is a best-effort approximation flagged for native-speaker review before this ships to Russian-speaking users.
