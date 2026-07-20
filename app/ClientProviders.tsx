@@ -35,14 +35,23 @@ const CLERK_TEXT = "var(--foreground)";
 const CLERK_TEXT_MUTED = "var(--muted-foreground)";
 const CLERK_DANGER = "var(--destructive)";
 
-// ClerkProvider in @clerk/nextjs v6 is typed as an async Server Component
-// (Promise<React.JSX.Element>), which TS rejects as a JSX component regardless
-// of @types/react version (verified against @types/react 19.2.17 — TS2786 persists:
+// ClerkProvider in @clerk/nextjs is still typed as an async Server Component
+// in v7 (Promise<React.JSX.Element>), which TS rejects as a JSX component
+// regardless of @types/react version. VERIFIED (this task, @clerk/nextjs
+// 7.5.20): node_modules/@clerk/nextjs/dist/types/app-router/server/
+// ClerkProvider.d.ts -- the file actually re-exported from the package's
+// top-level `ClerkProvider` (via components.server.d.ts ->
+// ServerComponentsServerModuleTypes) -- still declares
+// `ClerkProvider<TUi>(props): Promise<React.JSX.Element>`. (A second,
+// unrelated `client-boundary/ClerkProvider.d.ts` in the same package IS
+// synchronous, but it is not what `import { ClerkProvider } from
+// "@clerk/nextjs"` resolves to -- checking it first was a mistake in an
+// earlier pass of this task.) TS2786 persists exactly as it did on v6:
 // "'ClerkProvider' cannot be used as a JSX component. Its return type
-// 'Promise<Element>' is not a valid JSX element"). Not a React 18 vs 19 gap —
-// it is Clerk v6's own async-component typing, the runtime behavior is correct.
+// 'Promise<Element>' is not a valid JSX element." Not a React 18 vs 19 gap --
+// it is Clerk's own async-component typing, the runtime behavior is correct.
 // See: https://clerk.com/changelog/2024-04-19#nextjs-app-router-server-components
-// biome-ignore lint/suspicious/noExplicitAny: cast required for Clerk v6 async-component typing
+// biome-ignore lint/suspicious/noExplicitAny: cast required for Clerk's async-component typing
 const ClerkProviderCompat = ClerkProvider as any;
 
 export function ClientProviders({
@@ -65,10 +74,10 @@ export function ClientProviders({
 				variables: {
 					colorPrimary: CLERK_PRIMARY,
 					colorBackground: CLERK_BG,
-					colorInputBackground: CLERK_INPUT_BG,
-					colorInputText: CLERK_TEXT,
-					colorText: CLERK_TEXT,
-					colorTextSecondary: CLERK_TEXT_MUTED,
+					colorInput: CLERK_INPUT_BG,
+					colorInputForeground: CLERK_TEXT,
+					colorForeground: CLERK_TEXT,
+					colorMutedForeground: CLERK_TEXT_MUTED,
 					colorDanger: CLERK_DANGER,
 
 					// Space Grotesk — inherits from page CSS via "inherit"
@@ -80,7 +89,7 @@ export function ClientProviders({
 					// Rounded corners — matches landing card style (rounded-2xl)
 					borderRadius: "16px",
 
-					spacingUnit: "1rem",
+					spacing: "1rem",
 				},
 				elements: {
 					// --- Global containers ---

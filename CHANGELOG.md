@@ -6,6 +6,71 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-20 — @clerk/nextjs upgraded from v6.35.1 to v7.5.20, first of three planned majors)
+
+`@clerk/nextjs` moves 6.35.1 → 7.5.20 (Clerk Core 3). Scope held to Clerk only —
+`next` stays 15.3.9, `convex` stays ^1.34.0. This is deliverable 1 of 3; it was
+attempted first specifically because Clerk 7's peerDependencies accept Next 15
+**and** Next 16, so it installs cleanly against today's base and is measurable in
+isolation, unlike the Next 16 attempt (stopped separately — Clerk 6.35.1 ships a
+synchronous `"use server"` export that Next 16 rejects at build time).
+
+- `@clerk/nextjs` `^6.35.1` → `^7.5.20`; `@clerk/types` dependency replaced by
+  `@clerk/shared` `^4.25.5` (the type now lives at `@clerk/shared/types`, per
+  Clerk's Core 3 guide — https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3).
+  All 7 call sites updated: `components/dashboard/account/AccountTabs.tsx`,
+  `.../tabs/{NotificationsTab,ProfileTab,SubscriptionTab,UsageCreditsTab}.tsx`,
+  `i18n/clerk-localization.ts`, `__tests__/components/NotificationsTab.test.tsx`.
+- `app/ClientProviders.tsx`: `appearance.variables` keys renamed per Core 3 —
+  `colorInputBackground`→`colorInput`, `colorInputText`→`colorInputForeground`,
+  `colorText`→`colorForeground`, `colorTextSecondary`→`colorMutedForeground`,
+  `spacingUnit`→`spacing`. Same renames applied to `app/[locale]/waitlist/page.tsx`'s
+  `<Waitlist appearance>`. The `ClerkProvider as any` cast stays — VERIFIED against
+  `@clerk/nextjs@7.5.20`'s own `dist/types/app-router/server/ClerkProvider.d.ts`
+  (the file actually re-exported as the package's top-level `ClerkProvider`) that
+  it is still typed `Promise<React.JSX.Element>` in v7, same TS2786 as v6.
+- `@clerk/ui` was pulled in transiently by `pnpm dlx @clerk/upgrade`'s own install
+  step but is not a real dependency of `@clerk/nextjs@7` (verified via
+  `npm view @clerk/nextjs@7.5.20 dependencies`) and nothing in this repo imports
+  it — removed. `@clerk/themes` (unused, zero imports found) dropped by the same
+  codemod pass and left dropped.
+- Ran `pnpm dlx @clerk/upgrade --sdk=nextjs --release=core-3` (official Clerk
+  codemod). It is slow on this repo (multiple runs exceeded a 170s timeout mid-file)
+  but its partial passes were additive and consistent; final state was completed
+  manually against the same Core 3 guide the codemod implements, then every touched
+  file was run through `biome check --write` to fix the codemod's own jscodeshift
+  indentation (mixed tabs/spaces, extra JSX-branch parens) — no logic changes from
+  that formatting pass.
+- No webhook handler exists under `convex/` in this repo (verified:
+  `grep -rl "svix\|verifyWebhook\|Webhook(" convex` → no matches), so the Core 3
+  webhook-verification changes do not apply here.
+- `SignedIn`/`SignedOut`/`<Protect>`→`<Show>`, `@clerk/clerk-react`→`@clerk/react`
+  renames, `afterSignInUrl`/`afterSignUpUrl`/legacy `redirectUrl` props, `saml*`
+  APIs, `clerkJSUrl`/`clerkJSVariant` props, `beforeEmit`/`useCheckout` restructure,
+  `colorRing`/`colorModalBackdrop` opacity, `experimental_` prefixes, `hideSlug`,
+  `__unstable_*` — all verified absent from this repo by grep; no changes needed.
+  `ClerkProvider` was already correctly placed inside `<body>` (`app/ClientProviders.tsx`
+  rendered from `app/[locale]/layout.tsx`, never wrapping `<html>`) — no change needed.
+- Verified before/after with both runners on this machine (`scw-vigilant-shirley`,
+  Node v20.20.1, pnpm 10.33.0): `pnpm exec jest` → 108/108 passed before and after;
+  `pnpm exec vitest run __tests__/convex` → 197 passed / 7 skipped (204) before and
+  after. No test deleted, skipped, or weakened for this upgrade.
+- `pnpm build` succeeds on Next 15.3.9 + Clerk 7.5.20 (full production build, all
+  locales, middleware bundle 415 kB). `pnpm exec tsc --noEmit` → 0 errors.
+  `pnpm exec biome check .` → 86 warnings before and after (pre-existing, out of
+  scope for this delivery).
+- Auth exercised, not assumed: booted `pnpm start` against the production build
+  with a syntactically-valid dummy `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`/`CLERK_SECRET_KEY`
+  pair (no live Clerk instance is configured in this environment) and measured with
+  `curl`. Unauthenticated `GET /en/dashboard` → `307` to
+  `/sign-up?redirect_url=...%2Fen%2Fdashboard` (middleware's locale-aware
+  `auth.protect({ unauthenticatedUrl })` firing exactly as designed). `GET /` → `200`.
+  `GET /en/sign-in` → `200` with Clerk's own markup present in the response body.
+  Before the dummy keys were set, the same boot threw Clerk's own
+  `throwMissingPublishableKeyError` from inside `.next/server/middleware.js` at
+  request time (not an import/build-time crash) — confirming `clerkMiddleware()`
+  from `@clerk/nextjs/server` is wired and executing on v7, not merely type-checking.
+
 ### Fixed (2026-07-20 — the generative-UI plan chrome speaks the active locale)
 
 **Declared divergence, not a silent one.** The Russian plural forms were written without a
