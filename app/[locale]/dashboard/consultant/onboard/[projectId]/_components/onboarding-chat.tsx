@@ -14,12 +14,12 @@
 import type { Spec } from "@json-render/core";
 import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation, useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useRouter } from "@/i18n/routing";
 import {
 	generateConfig,
 	type OnboardingConfigSpec,
@@ -28,6 +28,7 @@ import {
 	type SelectedTeam,
 } from "@/lib/consultant/config-generator";
 import { vantageOSRegistry } from "@/lib/json-render/registry";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -462,7 +463,6 @@ const STICK_TO_BOTTOM_THRESHOLD_PX = 48;
 
 export function OnboardingChat({ projectId }: OnboardingChatProps) {
 	const t = useTranslations("consultant");
-	const locale = useLocale();
 	const router = useRouter();
 	const sentinelRef = useRef<HTMLDivElement>(null);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -552,7 +552,7 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 	};
 
 	const handleConfirmed = () => {
-		router.push(`/${locale}/dashboard/consultant/onboard`);
+		router.push(ROUTES.dashboardConsultantOnboard);
 	};
 
 	// Loading state
@@ -580,9 +580,7 @@ export function OnboardingChat({ projectId }: OnboardingChatProps) {
 						<div className="flex items-center gap-3">
 							<button
 								type="button"
-								onClick={() =>
-									router.push(`/${locale}/dashboard/consultant/onboard`)
-								}
+								onClick={() => router.push(ROUTES.dashboardConsultantOnboard)}
 								className="flex items-center justify-center min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-2"
 								aria-label={t("back")}
 							>

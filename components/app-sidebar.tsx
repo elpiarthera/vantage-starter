@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Link, usePathname } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 const navItemClass = cn(
@@ -457,6 +458,40 @@ export function AppSidebar() {
                 │  Workspace-scoped nav item (e.g. Members, Billing, etc.)   │
                 └─────────────────────────────────────────────────────────────┘
               */}
+
+								{/* Configurator — design-system theme/token picker, a
+								    workspace-level tool alongside Settings, not a content
+								    surface like Chat/Missions/Architect above. */}
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										asChild
+										isActive={pathname.startsWith(ROUTES.dashboardConfigurator)}
+										className={navItemClass}
+										style={{ transition: `color ${navTransition}` }}
+									>
+										<Link
+											href={ROUTES.dashboardConfigurator}
+											onClick={handleNavClick}
+										>
+											<svg
+												width="18"
+												height="18"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="1.5"
+												className="shrink-0"
+												aria-hidden="true"
+											>
+												<circle cx="13.5" cy="6.5" r="2.5" />
+												<circle cx="6.5" cy="12" r="2.5" />
+												<circle cx="17.5" cy="17.5" r="2.5" />
+												<path d="M13.5 9v3.5M6.5 14.5 17.5 15" />
+											</svg>
+											<span>{t("nav_configurator")}</span>
+										</Link>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
 
 								{/* Settings */}
 								<SidebarMenuItem>

@@ -1,11 +1,12 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
+import { useRouter } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 type Mission = Doc<"missions">;
@@ -39,7 +40,7 @@ export function MissionCard({ mission, onClick }: MissionCardProps) {
 		priorityColors[mission.priority ?? "medium"] ?? priorityColors.medium;
 
 	const handleViewDetails = () => {
-		router.push(`/missions/${mission._id}`);
+		router.push(ROUTES.dashboardMission(mission._id));
 	};
 
 	const handleArchive = async () => {
