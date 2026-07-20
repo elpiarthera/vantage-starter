@@ -71,6 +71,43 @@ describe("MissionStats", () => {
 		expect(matches.length).toBe(4);
 	});
 
+	// Coverage hole found by Eta while gating #56: the assertions above check
+	// that "12" appears SOMEWHERE and that there are 4 tiles — never which
+	// number sits in which tile. Swapping `value={inProgress}` for
+	// `value={completed}` in mission-stats.tsx left the suite fully green, so
+	// the dashboard could show the in-progress count under "Completed" with
+	// nothing failing. The code shipped is correct; the coverage was not.
+	//
+	// The four mocked values are deliberately distinct (12 / 3 / 5 / 2) — with
+	// two equal values a swap would be undetectable by construction.
+	it("puts each value in its own tile — a swap between tiles must fail", () => {
+		render(<MissionStats workspaceId={"workspace-1" as never} />);
+
+		const expected: ReadonlyArray<readonly [string, string]> = [
+			["Total Missions", "12"],
+			["In Progress", "3"],
+			["Completed", "5"],
+			["Needs Attention", "2"],
+		];
+
+		// Anchor read from the real markup, not assumed: `StatCard` renders the
+		// label inside a flex `div` and the value as a sibling `<p>`, both direct
+		// children of the `StatCardItem` tile — so the tile is the label span's
+		// grandparent.
+		// Assert the VALUE ELEMENT, never the whole tile. A first version of this
+		// test used `toHaveTextContent` on the tile and did NOT catch the swap:
+		// that matcher does substring matching over all descendant text, and the
+		// trend caption still carried the old number ("3 active"), so the tile
+		// contained "3" even while its headline read 5. The probe that proved
+		// this was the swap itself — the test only counts once it reddens on it.
+		for (const [label, value] of expected) {
+			const tile = screen.getByText(label).closest("div")?.parentElement;
+			expect(tile).not.toBeNull();
+			const headline = tile?.querySelector("p");
+			expect(headline?.textContent).toBe(value);
+		}
+	});
+
 	it("renders lucide-react icons, not hand-coded inline SVG icon functions", () => {
 		const { container } = render(
 			<MissionStats workspaceId={"workspace-1" as never} />,
