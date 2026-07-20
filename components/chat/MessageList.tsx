@@ -2,6 +2,14 @@
 
 import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 import { useTranslations } from "next-intl";
+import {
+	ChatConversation,
+	ChatConversationMessages,
+} from "@/components/ui/chat-conversation";
+import {
+	MessageBubble,
+	MessageBubbleContent,
+} from "@/components/ui/message-bubble";
 import { cn } from "@/lib/utils";
 import { ToolCallIndicator } from "./ToolCallIndicator";
 
@@ -10,9 +18,15 @@ interface MessageListProps {
 	isStreaming: boolean;
 }
 
+// DECLARED DIVERGENCE (not wired to a ported block): upstream `message-bubble`
+// only models an avatar as either an image URL or a single fallback letter
+// (`avatarFallback`/`avatarUrl`) — it has no slot for an arbitrary brand SVG
+// icon. Routing this through that model would replace the app's spark icon
+// with a plain letter square, a visible regression. Kept hand-written.
 function AgentAvatar() {
 	return (
 		<div
+			data-agent-avatar="true"
 			className="size-7 rounded-lg bg-primary flex items-center justify-center shrink-0 mt-0.5"
 			aria-hidden="true"
 		>
@@ -31,6 +45,9 @@ function AgentAvatar() {
 	);
 }
 
+// LEGITIMATE EXCEPTION: upstream mcpcn ships no streaming-cursor concept at
+// all (its blocks render static demo data, never a live-generating message).
+// There is nothing to port here — kept hand-written by necessity, not choice.
 function StreamingCursor() {
 	return (
 		<span
@@ -65,7 +82,7 @@ interface MessageBubbleProps {
 	isStreaming: boolean;
 }
 
-function MessageBubble({
+function MessageListItem({
 	message,
 	isLastMessage,
 	isStreaming,
@@ -119,20 +136,16 @@ function MessageBubble({
 					</div>
 				)}
 
-				{/* Text content */}
+				{/* Text content — rendered through the ported message-bubble block */}
 				{textContent && (
-					<div
-						className={cn(
-							"rounded-2xl px-4 py-3 text-sm leading-relaxed",
-							isUser && "bg-primary text-primary-foreground rounded-tr-sm",
-							isAssistant &&
-								"bg-card border border-border text-card-foreground rounded-tl-sm",
-						)}
-					>
-						<p className="whitespace-pre-wrap break-words">
-							{textContent}
-							{showCursor && <StreamingCursor />}
-						</p>
+					<div className={cn("flex flex-col", isUser && "items-end")}>
+						<MessageBubble
+							appearance={{ isOwn: isUser }}
+							data={{ content: textContent }}
+						>
+							<MessageBubbleContent />
+						</MessageBubble>
+						{showCursor && <StreamingCursor />}
 					</div>
 				)}
 
@@ -151,6 +164,10 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 	const t = useTranslations("chat");
 
 	if (messages.length === 0) {
+		// DECLARED DIVERGENCE (not wired to `chat-conversation`): upstream ships
+		// no empty-state concept, and its Root always applies card styling
+		// (`rounded-xl bg-card p-4`) that would visibly box this full-height,
+		// transparent, centered state — a look nobody asked for. Kept hand-written.
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-4 px-4 text-center">
 				<div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
@@ -181,21 +198,31 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 		);
 	}
 
+	// Wired to the ported `chat-conversation` shell: `ChatConversation` supplies
+	// the list container, `ChatConversationMessages` the list layout. The
+	// card styling is neutralized (twMerge resolves the conflicting utility
+	// classes) so the previous transparent, flush-padded look is unchanged;
+	// `data={{ messages: [] }}` is unused context — we always pass explicit
+	// children below to keep tool-call indicators, per-message avatars, and
+	// the streaming cursor, none of which the upstream default renderer knows.
 	return (
-		<div
+		<ChatConversation
 			role="log"
 			aria-label={t("messageList.ariaLabel")}
 			aria-live="polite"
-			className="flex flex-col gap-4 px-4 py-4"
+			className="rounded-none bg-transparent p-0 px-4 py-4"
+			data={{ messages: [] }}
 		>
-			{messages.map((message, index) => (
-				<MessageBubble
-					key={message.id}
-					message={message}
-					isLastMessage={index === messages.length - 1}
-					isStreaming={isStreaming}
-				/>
-			))}
-		</div>
+			<ChatConversationMessages>
+				{messages.map((message, index) => (
+					<MessageListItem
+						key={message.id}
+						message={message}
+						isLastMessage={index === messages.length - 1}
+						isStreaming={isStreaming}
+					/>
+				))}
+			</ChatConversationMessages>
+		</ChatConversation>
 	);
 }
