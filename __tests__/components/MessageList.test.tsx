@@ -91,4 +91,36 @@ describe("MessageList", () => {
 
 		expect(screen.getByText("Start a conversation")).toBeInTheDocument();
 	});
+
+	it("renders the message list through the ported chat-conversation shell", () => {
+		const messages = [
+			textMessage("1", "user", "Hello there"),
+			textMessage("2", "assistant", "General Kenobi"),
+		];
+
+		render(<MessageList messages={messages} isStreaming={false} />);
+
+		const shell = document.querySelector('[data-slot="chat-conversation"]');
+		const list = document.querySelector(
+			'[data-slot="chat-conversation-messages"]',
+		);
+		expect(shell).not.toBeNull();
+		expect(list).not.toBeNull();
+		expect(shell?.contains(list)).toBe(true);
+		// The log region itself must be the ported shell, not a spare wrapper.
+		expect(screen.getByRole("log")).toBe(shell);
+	});
+
+	it("still shows exactly one avatar per assistant message inside the shell", () => {
+		const messages = [
+			textMessage("1", "user", "Hello there"),
+			textMessage("2", "assistant", "General Kenobi"),
+		];
+
+		render(<MessageList messages={messages} isStreaming={false} />);
+
+		const shell = document.querySelector('[data-slot="chat-conversation"]');
+		const avatars = shell?.querySelectorAll('[data-agent-avatar="true"]');
+		expect(avatars?.length).toBe(1);
+	});
 });

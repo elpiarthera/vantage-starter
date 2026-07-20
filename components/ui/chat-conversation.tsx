@@ -133,7 +133,11 @@ export const ChatConversationMessages = ({
 	const { messages } = useChatConversation();
 
 	return (
-		<div className={cn("space-y-4", className)} {...props}>
+		<div
+			data-slot="chat-conversation-messages"
+			className={cn("space-y-4", className)}
+			{...props}
+		>
 			{children ??
 				messages.map((message, index) => (
 					<ChatConversationMessage
@@ -157,7 +161,11 @@ const ChatConversationRoot = ({
 
 	return (
 		<ChatConversationContext.Provider value={context}>
-			<div className={cn("rounded-xl bg-card p-4", className)} {...props}>
+			<div
+				data-slot="chat-conversation"
+				className={cn("rounded-xl bg-card p-4", className)}
+				{...props}
+			>
 				{children}
 			</div>
 		</ChatConversationContext.Provider>
