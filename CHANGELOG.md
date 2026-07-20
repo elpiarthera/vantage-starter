@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-20 — migration M1: five zero-consumer `components/ui/*` primitives ported from Radix to Base UI)
+
+Migrated `accordion.tsx`, `checkbox.tsx`, `collapsible.tsx`, `radio-group.tsx`, `slider.tsx` from their `@radix-ui/react-*` primitives to `@base-ui/react@1.6.0` equivalents. These five were chosen because they have zero consumers in `app/ components/ lib/ hooks/ providers/ src/` (verified by grep, re-confirmed no import of `@/components/ui/<name>` exists anywhere) — a wrong mapping stays invisible while the migration pattern gets proven cheaply. Public API (exported names, props) is unchanged for all five.
+
+Key API differences discovered and documented in `docs/migration-base-ui.md`: Base UI splits Radix's single `data-state="open|closed"` attribute into per-state boolean presence attributes (`data-open`, `data-checked`, `data-panel-open`, ...) — each verified against the primitive's own `*DataAttributes.d.ts`; `radio-group` in Base UI is split across two packages (`@base-ui/react/radio-group` for the group, `@base-ui/react/radio` for the item, vs. Radix's single package); `slider` gained a `Control` wrapper part between `Root` and `Track` that owns track-press-to-seek interaction; `collapsible`'s content part is named `Panel`, not `Content`.
+
+Removed `@radix-ui/react-accordion`, `@radix-ui/react-checkbox`, `@radix-ui/react-collapsible`, `@radix-ui/react-radio-group`, `@radix-ui/react-slider` from `package.json` — each proven `remaining: 0` importers repo-wide via `grep -rn "@radix-ui/react-<name>" app/ components/ lib/ hooks/ providers/ src/` before removal. `pnpm-lock.yaml` regenerated via `pnpm install --lockfile-only`. All other `@radix-ui/react-*` packages (with real consumers) were left untouched.
+
+`jest.setup.ts` gained a global `PointerEvent` polyfill (jsdom ships none) — Base UI's interaction primitives dispatch real `PointerEvent`s for press handling, so any suite driving one via `@testing-library/user-event` threw `PointerEvent is not a constructor` without it. This is a one-time fix that any future Base UI migration wave inherits for free.
+
+Added one Jest render+interaction test per component in `__tests__/components/` (`accordion.test.tsx`, `checkbox.test.tsx`, `collapsible.test.tsx`, `radio-group.test.tsx`, `slider.test.tsx`) — none existed before since these components had no consumer to exercise them. Bite-proven on `checkbox.test.tsx`: injected `disabled` on `CheckboxPrimitive.Root`, confirmed the mutation landed (`grep -n disabled components/ui/checkbox.tsx` → line 15), test went RED (`aria-checked` stayed `"false"` after a click), restored, `git diff components/ui/checkbox.tsx` clean.
+
+`pnpm exec tsc --noEmit` → 0 errors. `pnpm exec biome check .` → 86 warnings / 0 errors (identical to `main`'s baseline). `pnpm exec jest` → 18/18 suites, 139/139 tests green. `pnpm build` → succeeds, all 120 pages generated.
+
 ### Fixed (2026-07-20 — the build was green and the deployment was not: `/opengraph-image` exceeded Vercel's Edge Function size cap)
 
 `pnpm build` compiled 119/119 pages while `vercel deploy` failed with `The Edge Function "opengraph-image" size is 1.06 MB and your plan size limit is 1 MB`. Six local greens were reported without `gh pr checks` ever being read — compilation is Verification, deployment is Activation, and the two were conflated. Eta caught it on #54 and measured the attribution on both sides of the diff, same machine: `.next/server/app/opengraph-image` went from 2 604 267 B on `main` to 3 078 930 B (+18,2 %) under Next 16, crossing a cap the previous size already sat above.
