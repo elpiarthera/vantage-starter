@@ -103,6 +103,13 @@ const logos: Record<string, React.ReactNode> = {
 	),
 };
 
+// BOUNDARY (traced, not silent — see CHANGELOG.md "configurator: theme
+// persistence across navigation"): this control has no consumer anywhere in
+// the app. Only lucide-react icons are ever rendered (project convention,
+// CLAUDE.md/AGENTS.md). Wiring real icon-library switching would mean
+// installing the four other packages listed in ICON_LIBRARIES and building a
+// shared icon-abstraction layer across every call site — out of scope for a
+// configurator fix. Left selectable (state persists) but intentionally inert.
 export function IconLibraryPicker() {
 	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();

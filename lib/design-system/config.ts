@@ -113,6 +113,26 @@ export const designSystemConfigSchema = z.object({
 
 export type DesignSystemConfig = z.infer<typeof designSystemConfigSchema>;
 
+// Keys of the configurator's URL-bound state. Used by DesignSystemProvider
+// to detect whether the current URL already carries an explicit selection
+// (in which case it takes precedence) versus needing to rehydrate from the
+// persisted (localStorage) selection — see lib/design-system/persist.ts.
+// Kept nuqs-free (unlike search-params.ts) so it can be imported from Jest
+// specs without pulling in nuqs/server's ESM-only build.
+export const DESIGN_SYSTEM_PARAM_KEYS = [
+	"style",
+	"baseColor",
+	"theme",
+	"chartColor",
+	"iconLibrary",
+	"font",
+	"fontHeading",
+	"menuAccent",
+	"menuColor",
+	"radius",
+	"rtl",
+] as const satisfies readonly (keyof DesignSystemConfig)[];
+
 export const DEFAULT_CONFIG: DesignSystemConfig = {
 	style: "luma",
 	baseColor: "neutral",
