@@ -85,14 +85,14 @@ Every installed block is listed with the number of screens consuming it. `consum
 ### Chat & agent surfaces
 
 **message-bubble** — chat bubbles with text/image/voice/reaction variants.
-1. **Feature it opens:** vantage-starter's dashboard chat (`components/chat/MessageList.tsx`) gains voice-note and image-drop message types, so a user can send a screenshot of a bug straight into the mission chat instead of describing it in text.
-2. **Replaces:** the hand-written `MessageBubble` inline rendering in `components/chat/MessageList.tsx` — already installed and wired (`components/ui/message-bubble.tsx`).
-3. **Cost:** Base UI (already installed, see §2); wiring image/voice payload types into the existing `sendMessage` call.
+1. **Feature it opens:** *partially delivered.* Text messages in vantage-starter's dashboard chat (`components/chat/MessageList.tsx:142-147`) render through the ported `MessageBubble`/`MessageBubbleContent` — done, evidence: `MessageList.tsx` imports and calls them for `textContent`, confirmed via `grep`. **Not built:** the block's `ImageMessageBubble` and `VoiceMessageBubble` exports (`components/ui/message-bubble.tsx:230`, `:516`) exist in the component file but are never imported by `MessageList.tsx` (confirmed via `grep` — zero matches for `ImageMessageBubble`/`VoiceMessageBubble` outside `components/ui/message-bubble.tsx` and `components/ui/chat-conversation.tsx`), so a user still cannot send a screenshot or voice note into the mission chat. Remaining work is planned in Batch 2.
+2. **Replaces:** the hand-written `MessageBubble` inline rendering in `components/chat/MessageList.tsx` — done, for the text case only. For image/voice: nothing today — no drop-to-attach or record-voice affordance exists in the chat composer, confirmed via `grep` on the composer file for `voice`/`image-drop` (zero matches).
+3. **Cost:** Base UI (already installed, see §2) — paid for the text case. Remaining: a new message-part type for image/voice payloads, wiring `ImageMessageBubble`/`VoiceMessageBubble` into `MessageList.tsx`'s render switch, and a composer affordance (attach button / hold-to-record) that produces that payload.
 
 **chat-conversation** — full conversation shell, multiple message types.
-1. **Feature it opens:** the conversation shell (avatars, empty state, live region) for vantage-starter's dashboard chat in `components/chat/MessageList.tsx` — already installed and wired (`components/ui/chat-conversation.tsx`). Second job: a new orchestrator-to-orchestrator thread view inside VantagePeers, at new route `app/[locale]/dashboard/peers/messages/page.tsx`, rendering `check_messages` output as a real read/reply UI instead of raw tool output.
-2. **Replaces:** `MessageList.tsx`'s own list layout and empty state, for the vantage-starter case; nothing — net-new surface — for the VantagePeers thread view.
-3. **Cost:** Base UI (already paid, shared); for the VantagePeers reuse, a query translating `check_messages`' `(from, channel, content)` shape into the block's message-item props.
+1. **Feature it opens:** *partially delivered.* The conversation shell (list container, list layout) for vantage-starter's dashboard chat in `components/chat/MessageList.tsx:209-226` — done, evidence: `MessageList.tsx` imports and renders `ChatConversation`/`ChatConversationMessages`, confirmed via `grep`. Its empty state is deliberately kept hand-written instead (declared divergence at `MessageList.tsx:167-170` — upstream's empty-state look was rejected, not omitted by accident). **Not built:** the second job, an orchestrator-to-orchestrator thread view inside VantagePeers, at new route `app/[locale]/dashboard/peers/messages/page.tsx` — route confirmed absent via `find app -path "*peers/messages*"` (zero results), rendering `check_messages` output as a real read/reply UI instead of raw tool output. Remaining work is planned in Batch 3.
+2. **Replaces:** `MessageList.tsx`'s own list-container/list-layout markup — done; its empty-state markup — deliberately not replaced (see divergence above). For the VantagePeers thread view: nothing — net-new surface, no route exists today.
+3. **Cost:** Base UI (already paid, shared) — paid for the vantage-starter shell. Remaining, for the VantagePeers reuse: the new route, and a query translating `check_messages`' `(from, channel, content)` shape into the block's message-item props.
 
 **quick-reply** — quick-reply buttons for common chat responses.
 1. **Feature it opens:** in vantage-starter's dashboard chat, when the architect agent asks "add this to the roadmap now or later?", the user taps a button instead of typing — wired into `components/chat/MessageList.tsx` alongside `message-bubble`.
@@ -115,9 +115,9 @@ Every installed block is listed with the number of screens consuming it. `consum
 3. **Cost:** Base UI (shared).
 
 **status-badge** — status badge, multiple states (success/pending/processing/error/shipped/delivered).
-1. **Feature it opens:** vantage-starter's tool-call indicator (`components/chat/ToolCallIndicator.tsx`) and mission list (`components/missions/mission-list-view.tsx`) — already installed and wired (`components/ui/status-badge.tsx`).
-2. **Replaces:** `ToolCallIndicator`'s own pill markup and `mission-list-view.tsx`'s own inline status chip.
-3. **Cost:** Base UI (shared) — already paid, this block is live.
+1. **Feature it opens:** *partially delivered.* vantage-starter's tool-call indicator — done, evidence: `components/chat/ToolCallIndicator.tsx:5-8,71-78` imports and renders `StatusBadge`/`StatusBadgeIcon`/`StatusBadgeLabel`, confirmed via `grep`. **Not built:** the mission list (`components/missions/mission-list-view.tsx`) still renders its own hand-written status chip — `mission-list-view.tsx:17` ("Inline status badge styles replacing cva + missionStatusBadge from lib/status-variants") and `:183-189` (a `<span>` styled from a local `STATUS_BADGE_CLASSES` map), confirmed via `grep` for `StatusBadge` in that file: zero matches. Remaining work is planned in Batch 1.
+2. **Replaces:** `ToolCallIndicator`'s own pill markup — done. `mission-list-view.tsx`'s inline `STATUS_BADGE_CLASSES` span — not yet replaced.
+3. **Cost:** Base UI (shared) — already paid for the tool-call-indicator case. Remaining: swap `mission-list-view.tsx`'s `STATUS_BADGE_CLASSES` span for `StatusBadge`, mapping the existing mission `status` values onto the block's state prop.
 
 **table** — data table with single/multi-select, built for chat interfaces.
 1. **Feature it opens:** vantage-starter's dashboard chat gains a genuinely new agent capability at `components/chat/MessageList.tsx`: the architect agent emits a real sortable/selectable table inline in chat (e.g. "here are 6 candidate fixes, pick one") instead of a markdown wall of text.
@@ -239,7 +239,7 @@ Every installed block is listed with the number of screens consuming it. `consum
 ### Dashboards & metrics
 
 **stat-card** — scrollable stat cards with values, trend arrows, change indicators.
-1. **Feature it opens:** vantage-starter's missions dashboard at `components/missions/mission-stats.tsx` — already installed and wired (`components/ui/stat-card.tsx`).
+1. **Feature it opens:** done — evidence: `components/missions/mission-stats.tsx:6,47,75,120,127,149` imports and renders `StatCardItem` from `components/ui/stat-card.tsx`, confirmed via `grep`. Zero remaining work.
 2. **Replaces:** `mission-stats.tsx`'s own `StatCard`/`StatCardSkeleton` plus four hand-coded inline SVG icon functions — this replacement already shipped in wave 1 and is consuming `StatCardItem` today.
 3. **Cost:** none for the block itself — it needs no UI primitive library, already paid. Reusing it a second time (e.g. a VantageCRM pipeline-value stat strip) costs only the query that returns the numbers.
 
@@ -290,6 +290,51 @@ Every block in the registry opens exactly one named, committed feature in one of
 
 This is a sequence, not a value ranking — every entry in §4 is committed regardless of when it ships. Base UI is already installed (§2); no batch below waits on it.
 
+### The plan can drift from §4 exactly like §5 drifted once — so it gets the same kind of guard
+
+§5 audits that §4 covers all 30 registry blocks. It does not audit that the **plan below** covers what §4 committed to build — a block can have a full §4 entry and still be silently absent from every batch, or half-covered by an entry whose claim of "already wired" turns out to name only part of the feature. That exact defect shipped once in this document (`status-badge`, `message-bubble`, `chat-conversation`, `ticket-tier-select` — see Batch 5). The guard below is scoped to the plan, not §4.
+
+**What counts as a plan entry, stated in one sentence so the next reader writes the same matcher:** a block counts as accounted for only if its name (or, for a shared bullet, one of the `/`-separated names in the bullet's bold head, with any trailing `(...)` parenthetical stripped) is the bold head of a line starting with `- **` inside this Implementation Plan section, or its §4 entry states, in those literal words, that it carries **zero remaining work** — a bare mention of the name anywhere else in the prose, including this guard's own explanatory paragraph above, does not count.
+
+```
+python3 -c "
+import json,re,urllib.request
+doc=open('docs/mcpcn-block-mapping.md').read()
+mapping=doc.split('## 4. The mapping',1)[1].split(chr(10)+'## 5.',1)[0]
+plan=doc.split('## Implementation plan',1)[1]
+d=json.load(urllib.request.urlopen('https://www.mcpcn.dev/r/registry.json'))
+blocks=[i['name'] for i in d['items'] if i.get('type')=='registry:block']
+entries = re.split(r'(?=^\*\*[a-z0-9-]+\*\* —)', mapping, flags=re.M)
+entry_by_name = {}
+for e in entries:
+    m = re.match(r'^\*\*([a-z0-9-]+)\*\* —', e)
+    if m: entry_by_name[m.group(1)] = e
+# membership = bold head of a '- **...**' batch bullet line, not a free-text mention
+bullet_heads = re.findall(r'^- \*\*([^*]+)\*\*', plan, re.M)
+names_in_plan = set()
+for h in bullet_heads:
+    h = re.sub(r'\s*\([^)]*\)', '', h).strip()   # drop trailing parenthetical
+    for part in h.split(' / '):                    # shared bullets name several blocks
+        names_in_plan.add(part.strip())
+missing=[]
+for b in blocks:
+    is_done = b in entry_by_name and 'zero remaining work' in entry_by_name[b].lower()
+    if not is_done and b not in names_in_plan: missing.append(b)
+print(f'{len(blocks)-len(missing)}/{len(blocks)} blocks accounted for in the plan')
+print('MISSING:', missing if missing else 'none')
+import sys; sys.exit(1 if missing else 0)"
+-> 30/30 blocks accounted for in the plan
+-> MISSING: none
+```
+
+**Proven bipolar on three adversarial deletions, not one convenient one.** `message-bubble` and `chat-conversation` were picked precisely because both names also recur in this guard's own explanatory paragraph above — a free-text `\b<name>\b` search over the whole plan section (the defect this guard replaces) would stay green on both deletions, since the name still appears in that paragraph. The bullet-head-only matcher does not:
+
+- Deleting the `message-bubble` Batch 5 bullet, asserting the deletion landed (`grep -c` on the exact bullet text -> `0`), running the guard: `29/30 blocks accounted for in the plan`, `MISSING: ['message-bubble']`, exit 1. Restoring (`diff` against the pre-mutation file -> empty) and re-running: `30/30`, `MISSING: none`, exit 0.
+- Deleting the `chat-conversation` Batch 5 bullet, same sequence: probe-landed check `0`, guard -> `29/30`, `MISSING: ['chat-conversation']`, exit 1. Restored, `diff` empty, guard -> `30/30`, `MISSING: none`, exit 0.
+- Deleting the `ticket-tier-select` Batch 5 bullet, same sequence: probe-landed check `0`, guard -> `29/30`, `MISSING: ['ticket-tier-select']`, exit 1. Restored, `diff` empty, guard -> `30/30`, `MISSING: none`, exit 0.
+
+Same standard §5 holds itself to: a guard nobody made fail is not a measurement, and this one has failed three times, on purpose, on the two names it was most likely to falsely pass, and been proven to recover each time.
+
 **Run §3's derivation command before starting any batch.** It is the authority on what is installed and what is already in service; nothing in this plan restates that state in prose, because prose expires and the command does not. **A batch never re-wires a block the command already reports with `consumers >= 1`** — if a block named below has since been wired, drop it from its batch and move on. That has already happened once to this document, which is why the rule is written down rather than assumed.
 
 **One PR per batch. One batch in the gate at a time.** A batch does not open until the prior batch has merged, so each PR is reviewable against a stable base and a broken batch never blocks the ones behind it in the queue — that queue position is the only ordering claim made here.
@@ -332,8 +377,19 @@ Real dependency: none of the five blocks in this batch depend on each other or o
 - **x-post / instagram-post / linkedin-post / youtube-post** — host: the landing page, in the section adjacent to `components/landing/HeroSection.tsx` (confirmed present via `find`). Replaces: nothing (confirmed — no social-embed pattern exists anywhere in the repo). Convex: none — each renders from its network's own public oEmbed data, fetched client- or build-side; no table. These four ship as one PR because they share one new landing-page section and one embed-fetching pattern, reused four times, not four unrelated integrations. TDD assertion: given a fixture oEmbed response for each network, the corresponding card renders that network's author, text, and engagement-metric fields.
 - **hero** — host: `components/landing/HeroSection.tsx` (confirmed present via `find`, 233 hand-written lines per `wc -l`). Replaces: `HeroSection.tsx` in full. Convex: none. TDD assertion: the landing page still renders the same title, subtitle, and CTA hrefs it does today, sourced from the same copy constants, after `hero` replaces the hand-written markup.
 
+### Batch 5 — finish the blocks a prior draft marked done while a real gap remained
+
+Real dependency: none of these four bullets depend on each other. They are grouped because they share one failure mode this document itself exists to prevent — a block whose §4 entry read "already installed and wired" while part, or all, of its §4-committed feature was still missing — and putting them in one late batch keeps that repair visible as its own reviewable unit rather than folded silently into batches 1-4.
+
+- **status-badge** — host: `components/missions/mission-list-view.tsx` (confirmed present via `find`). Replaces: the file's own `STATUS_BADGE_CLASSES`-driven `<span>` at `mission-list-view.tsx:183-189` (confirmed via `grep` — no `StatusBadge` import in that file today; `ToolCallIndicator.tsx` is the only current consumer). Convex: none — reads the same `status` field the inline span already reads. TDD assertion: rendering a mission row with each known `status` value produces a `StatusBadge` carrying the same visual state the old `STATUS_BADGE_CLASSES` map assigned it, and `mission-list-view.tsx` no longer imports `STATUS_BADGE_CLASSES`.
+- **ticket-tier-select** — host: `components/dashboard/account/modals/ManageSubscriptionModal.tsx` (confirmed present via `find`; confirmed via `grep` — the modal currently builds a `plans` array rendered as plain cards/buttons, no `ticket-tier-select` import). Replaces: the modal's own plan-card/button markup for the three DB-backed tiers. Convex: none — reads the existing `subscriptionTiers` table (`convex/schema.ts:339`, confirmed present via `grep`), no new table or mutation. TDD assertion: given a fixture of three `subscriptionTiers` rows, the block renders one tier row per fixture entry with the fixture's price and seat-quantity control, and selecting a tier calls the same `onSelectPlan` handler the old card markup called.
+- **message-bubble (image/voice completion)** — host: `components/chat/MessageList.tsx`, extending the message-part switch already handling `textContent` (line 140-150, confirmed via `grep`). Replaces: nothing new — additive to the existing text-only render path. Convex: none for the block itself; wiring depends on whatever storage the composer's attach/record affordance already uses for message attachments (none exists yet — the composer file was checked via `grep` for `voice`/`image-drop` with zero matches, so the attachment upload path is also net-new and out of this bullet's TDD scope; it is a prerequisite, not assumed solved here). TDD assertion: a message whose `parts` array contains an `image` or `voice` part renders `ImageMessageBubble`/`VoiceMessageBubble` respectively instead of falling through to the plain-text `MessageBubble`.
+- **chat-conversation (VantagePeers thread view)** — host: new route `app/[locale]/dashboard/peers/messages/page.tsx` (confirmed missing via `find`, to be created). Replaces: nothing — VantagePeers messages are consumed today only as raw `check_messages` MCP tool output, with no rendered thread screen (same "browse screen over data an MCP tool already returns, zero new Convex tables" pattern as Batch 3's `product-list`). Convex: none — a query translating `check_messages`' `(from, channel, content)` shape into the block's message-item props, no new table. TDD assertion: given a fixed `check_messages` response fixture, the page renders one `ChatConversation` message item per returned entry, and a reply action calls `send_message` with the composed content and the correct `channel`.
+
 ### One open item, named rather than invented
 
 `map-carousel`'s geocoding step assumes VantageCRM's `companies` record already carries a usable address field. That table lives in the VantageCRM repo, not this one, so it was not read for this plan. Confirm the field at brief time before Batch 3 starts; do not assume the shape.
 
-Sequence recap: Batch 1 (four unwired blocks, existing screens) -> Batch 2 (one new mutation, two chat/account surfaces) -> Batch 3 (two browse screens over existing MCP data) -> Batch 4 (five net-new-table marketing/commerce features, one PR per bullet group). One PR per batch entry; one PR in the gate at a time.
+**`message-bubble`'s image/voice completion carries one more named unknown**, same standard as the one above: the message-attachment upload path (where a dropped image or recorded voice clip is stored) does not exist anywhere in this repo yet (confirmed via `grep` on the composer file — zero matches for an upload/attachment mutation). Batch 5's bullet scopes only the render side; the upload path is a prerequisite to brief separately, not assumed solved here.
+
+Sequence recap: Batch 1 (four unwired blocks, existing screens) -> Batch 2 (one new mutation, two chat/account surfaces) -> Batch 3 (two browse screens over existing MCP data) -> Batch 4 (five net-new-table marketing/commerce features, one PR per bullet group) -> Batch 5 (four blocks a prior draft marked done or omitted while real §4-committed work remained). One PR per batch entry; one PR in the gate at a time.
