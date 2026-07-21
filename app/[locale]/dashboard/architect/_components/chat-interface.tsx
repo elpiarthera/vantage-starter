@@ -4,12 +4,22 @@ import type { Spec } from "@json-render/core";
 import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation } from "convex/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import {
+	resolveOperationSelection,
+	toggleOperationExclusion,
+} from "@/lib/architect/operation-selection";
+import {
+	extractProposalFromSpec,
+	filterProposalOperations,
+	type ProposalOperation,
+} from "@/lib/architect/proposal";
 import { vantageOSRegistry } from "@/lib/json-render/registry";
 import { cn } from "@/lib/utils";
 
@@ -17,27 +27,6 @@ interface ChatInterfaceProps {
 	sessionId: Id<"architectSessions">;
 	workspaceId: Id<"workspaces">;
 	onPlanConfirmed: (missionId: Id<"missions">) => void;
-}
-
-// ============================================================================
-// EXTRACTED PROPOSAL TYPES — must match operationProposalValidator / checkpointProposalValidator
-// ============================================================================
-
-interface ProposalOperation {
-	id: string;
-	name: string;
-	description?: string;
-	type: "ai" | "human";
-	assignedAgentId?: string;
-	estimatedMinutes?: number;
-	dependsOn?: string[];
-	requiresReview?: boolean;
-	requiredTools?: string[];
-}
-
-interface ProposalCheckpoint {
-	afterOperationId: string;
-	description: string;
 }
 
 // ============================================================================
@@ -133,6 +122,101 @@ function AssistantBubble({
 // CONFIRM PLAN BAR
 // ============================================================================
 
+// ============================================================================
+// PER-OPERATION SELECTION CHECKLIST
+// ============================================================================
+//
+// Reuses the visual language of TeamSelection / SkillSelection
+// (lib/json-render/registry.tsx): a bordered row that changes border +
+// background when selected, with an accessible checkbox indicator. Built as
+// its own React component (rather than threaded through the AI-authored
+// json-render spec/registry) because the spec is a re-streamed, read-only
+// artifact — the source of truth for "what will be created" belongs to this
+// screen, not to the model's output.
+
+function OperationSelectionRow({
+	operation,
+	selected,
+	blocked,
+	onToggle,
+}: {
+	operation: ProposalOperation;
+	selected: boolean;
+	blocked: boolean;
+	onToggle: (id: string) => void;
+}) {
+	const t = useTranslations("architect");
+	return (
+		<div
+			className={cn(
+				"flex items-start gap-3 border px-3 py-2.5 transition-colors duration-150",
+				selected
+					? "border-[oklch(0.62_0.18_240)]/40 bg-[oklch(0.62_0.18_240)]/5"
+					: "border-border bg-muted/20 opacity-60",
+			)}
+		>
+			<Checkbox
+				checked={selected}
+				disabled={blocked}
+				onCheckedChange={() => onToggle(operation.id)}
+				aria-label={t("toggle_operation_aria", { name: operation.name })}
+				className="mt-0.5"
+			/>
+			<div className="flex-1 min-w-0">
+				<p className="text-sm font-medium text-foreground truncate">
+					{operation.name}
+				</p>
+				{blocked && (
+					<p className="text-xs text-muted-foreground mt-0.5">
+						{t("operation_blocked_by_dependency")}
+					</p>
+				)}
+			</div>
+		</div>
+	);
+}
+
+function OperationSelectionChecklist({
+	operations,
+	manuallyExcludedIds,
+	onToggle,
+}: {
+	operations: ProposalOperation[];
+	manuallyExcludedIds: ReadonlySet<string>;
+	onToggle: (id: string) => void;
+}) {
+	const t = useTranslations("architect");
+	const { excludedIds, blockedIds } = useMemo(
+		() => resolveOperationSelection(operations, manuallyExcludedIds),
+		[operations, manuallyExcludedIds],
+	);
+
+	if (operations.length === 0) return null;
+
+	return (
+		<div className="px-4 py-3 space-y-2 border-t border-border">
+			<p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+				{t("select_operations_to_include")}
+			</p>
+			<div className="space-y-1.5 max-h-48 overflow-y-auto">
+				{operations.map((operation) => (
+					<OperationSelectionRow
+						key={operation.id}
+						operation={operation}
+						selected={!excludedIds.has(operation.id)}
+						blocked={blockedIds.has(operation.id)}
+						onToggle={onToggle}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
+// ============================================================================
+// CONFIRM PLAN BAR
+// ============================================================================
+
 function ConfirmPlanBar({
 	spec,
 	sessionId,
@@ -147,91 +231,52 @@ function ConfirmPlanBar({
 	const t = useTranslations("architect");
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [manuallyExcludedIds, setManuallyExcludedIds] = useState<Set<string>>(
+		new Set(),
+	);
 
-	const extractProposal = useCallback(() => {
-		if (!spec?.elements) return null;
-
-		const rootId = spec.root;
-		if (!rootId) return null;
-
-		const root = spec.elements[rootId as string];
-		if (!root || root.type !== "MissionProposal") return null;
-
-		const ops: ProposalOperation[] = [];
-		const checkpoints: ProposalCheckpoint[] = [];
-
-		for (const childId of root.children ?? []) {
-			const child = spec.elements[childId as string];
-			if (!child) continue;
-
-			const cp = child.props as Record<string, unknown>;
-
-			if (child.type === "OperationItem") {
-				const rawType = String(cp.type ?? "ai");
-				ops.push({
-					id: String(cp.id ?? childId),
-					name: String(cp.name ?? ""),
-					description:
-						cp.description !== undefined ? String(cp.description) : undefined,
-					type: rawType === "human" ? "human" : "ai",
-					assignedAgentId:
-						cp.assignedAgentId !== undefined
-							? String(cp.assignedAgentId)
-							: undefined,
-					estimatedMinutes:
-						typeof cp.estimatedMinutes === "number"
-							? cp.estimatedMinutes
-							: undefined,
-					dependsOn: Array.isArray(cp.dependsOn)
-						? (cp.dependsOn as unknown[]).map(String)
-						: undefined,
-					requiresReview:
-						typeof cp.requiresReview === "boolean"
-							? cp.requiresReview
-							: undefined,
-					requiredTools: Array.isArray(cp.requiredTools)
-						? (cp.requiredTools as unknown[]).map(String)
-						: undefined,
-				});
-			} else if (child.type === "Checkpoint") {
-				checkpoints.push({
-					afterOperationId: String(cp.afterOperationId ?? ""),
-					description: String(cp.description ?? ""),
-				});
-			}
-		}
-
-		const p = root.props as Record<string, unknown>;
-		return {
-			name: String(p.name ?? ""),
-			brief: String(p.brief ?? ""),
-			objective: String(p.objective ?? ""),
-			estimatedTimeline: String(p.estimatedTimeline ?? ""),
-			successCriteria: Array.isArray(p.successCriteria)
-				? (p.successCriteria as string[])
-				: [],
-			intent: "delivery" as const,
-			structure: "linear" as const,
-			operations: ops,
-			checkpoints,
-		};
+	// A new plan (new spec identity) always starts with every operation
+	// selected — exclusions never carry over from a previous plan.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: spec identity is the intentional reset trigger; the effect body doesn't need to read it
+	useEffect(() => {
+		setManuallyExcludedIds(new Set());
 	}, [spec]);
+
+	const proposal = useMemo(() => extractProposalFromSpec(spec), [spec]);
+	const operations = proposal?.operations ?? [];
+
+	const toggleOperation = useCallback(
+		(id: string) => {
+			setManuallyExcludedIds((prev) =>
+				toggleOperationExclusion(operations, prev, id),
+			);
+		},
+		[operations],
+	);
 
 	const completeSession = useMutation(api.architectSessions.complete);
 	const createMission = useMutation(api.missions.createFromProposal);
 
 	const handleConfirm = async () => {
-		const proposal = extractProposal();
 		if (!proposal) {
 			setError(t("extract_proposal_error"));
 			return;
 		}
 
+		const { excludedIds } = resolveOperationSelection(
+			operations,
+			manuallyExcludedIds,
+		);
+		const filteredProposal = filterProposalOperations(proposal, excludedIds);
+
 		setIsConfirming(true);
 		setError(null);
 
 		try {
-			const missionId = await createMission({ workspaceId, proposal });
+			const missionId = await createMission({
+				workspaceId,
+				proposal: filteredProposal,
+			});
 			await completeSession({
 				sessionId,
 				missionId: missionId as Id<"missions">,
@@ -245,30 +290,40 @@ function ConfirmPlanBar({
 	};
 
 	return (
-		<div className="border-t border-border px-4 py-3 bg-muted/30">
-			<div className="flex items-center justify-between gap-4">
-				<div>
-					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
-						{t("plan_ready")}
-					</p>
-					<p className="text-xs text-muted-foreground mt-0.5">
-						{t("confirm_plan_description")}
-					</p>
-					{error && (
-						<p className="text-xs mt-1" style={{ color: "oklch(0.65 0.2 25)" }}>
-							{error}
+		<div className="border-t border-border bg-muted/30">
+			<OperationSelectionChecklist
+				operations={operations}
+				manuallyExcludedIds={manuallyExcludedIds}
+				onToggle={toggleOperation}
+			/>
+			<div className="px-4 py-3">
+				<div className="flex items-center justify-between gap-4">
+					<div>
+						<p className="text-sm font-medium text-foreground tracking-[-0.015em]">
+							{t("plan_ready")}
 						</p>
-					)}
+						<p className="text-xs text-muted-foreground mt-0.5">
+							{t("confirm_plan_description")}
+						</p>
+						{error && (
+							<p
+								className="text-xs mt-1"
+								style={{ color: "oklch(0.65 0.2 25)" }}
+							>
+								{error}
+							</p>
+						)}
+					</div>
+					<Button
+						onClick={handleConfirm}
+						disabled={isConfirming}
+						className="btn-shadow active-scale rounded-full shrink-0 font-medium"
+						size="sm"
+						aria-label={t("confirm_and_create_mission_aria")}
+					>
+						{isConfirming ? t("creating") : t("confirm_plan_button")}
+					</Button>
 				</div>
-				<Button
-					onClick={handleConfirm}
-					disabled={isConfirming}
-					className="btn-shadow active-scale rounded-full shrink-0 font-medium"
-					size="sm"
-					aria-label={t("confirm_and_create_mission_aria")}
-				>
-					{isConfirming ? t("creating") : t("confirm_plan_button")}
-				</Button>
 			</div>
 		</div>
 	);
