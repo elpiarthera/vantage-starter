@@ -6,8 +6,6 @@ import { MenuAccentPicker } from "./accent-picker";
 import { BaseColorPicker } from "./base-color-picker";
 import { ChartColorPicker } from "./chart-color-picker";
 import { FontPicker } from "./font-picker";
-import { IconLibraryPicker } from "./icon-library-picker";
-import { MenuColorPicker } from "./menu-picker";
 import { RadiusPicker } from "./radius-picker";
 import { StylePicker } from "./style-picker";
 import { ThemePicker } from "./theme-picker";
@@ -62,10 +60,14 @@ export function Customizer({ className }: { className?: string }) {
 				<FontPicker label="Heading" param="fontHeading" />
 				<FontPicker label="Font" param="font" />
 				<FieldSeparator className="my-1" />
-				<IconLibraryPicker />
+				{/* IconLibraryPicker and MenuColorPicker are intentionally not
+				    rendered: neither has a consumer anywhere in the app (traced in
+				    CHANGELOG.md, "configurator: theme persistence across
+				    navigation"), so they would apply nothing visible. Their
+				    component files and BOUNDARY comments are kept for whoever wires
+				    them later — this is a written decision, not a silent drop. */}
 				<RadiusPicker />
 				<FieldSeparator className="my-1" />
-				<MenuColorPicker />
 				<MenuAccentPicker />
 			</div>
 		</aside>
