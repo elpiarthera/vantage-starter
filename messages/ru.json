@@ -2877,6 +2877,7 @@
 		"projectNamePlaceholder": "напр., Acme Corp Q2 ИИ",
 		"clientNamePlaceholder": "напр., Acme Corp",
 		"websiteUrlPlaceholder": "https://example.com",
+		"websiteUrlHint": "Работает с https:// или без него — например, perello.consulting",
 		"competitorNamePlaceholder": "напр., Конкурент ООО",
 		"competitorUrlPlaceholder": "https://competitor.com",
 		"sectorTechnology": "Технологии",

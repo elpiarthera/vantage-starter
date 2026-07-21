@@ -2877,6 +2877,7 @@
 		"projectNamePlaceholder": "es. Acme Corp Q2 IA",
 		"clientNamePlaceholder": "es. Acme Corp",
 		"websiteUrlPlaceholder": "https://esempio.it",
+		"websiteUrlHint": "Funziona con o senza https:// — es. perello.consulting",
 		"competitorNamePlaceholder": "es. Concorrente Srl",
 		"competitorUrlPlaceholder": "https://concorrente.it",
 		"sectorTechnology": "Tecnologia",

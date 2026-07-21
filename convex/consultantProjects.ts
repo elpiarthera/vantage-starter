@@ -12,6 +12,7 @@
  */
 
 import { v } from "convex/values";
+import { normalizeUrl } from "../lib/validation/url";
 import {
 	internalMutation,
 	internalQuery,
@@ -92,9 +93,10 @@ export const create = mutation({
 			throw new Error("Client name too long (max 200)");
 		if (args.sector.length > 100) throw new Error("Sector too long (max 100)");
 
-		// Validate URL format
+		// Normalize (add scheme if missing) then validate URL format
+		let clientWebsiteUrl: string;
 		try {
-			new URL(args.clientWebsiteUrl);
+			clientWebsiteUrl = normalizeUrl(args.clientWebsiteUrl);
 		} catch {
 			throw new Error("Invalid clientWebsiteUrl: must be a valid URL");
 		}
@@ -104,7 +106,7 @@ export const create = mutation({
 			workspaceId: args.workspaceId,
 			name: args.name.trim(),
 			clientName: args.clientName.trim(),
-			clientWebsiteUrl: args.clientWebsiteUrl.trim(),
+			clientWebsiteUrl,
 			sector: args.sector.trim(),
 			status: "created",
 			createdBy: user.clerkUserId,
@@ -143,10 +145,11 @@ export const update = mutation({
 			throw new Error("Forbidden: only the project creator can update it");
 		}
 
-		// Validate URL if provided
+		// Normalize (add scheme if missing) then validate URL if provided
+		let normalizedWebsiteUrl: string | undefined;
 		if (args.clientWebsiteUrl !== undefined) {
 			try {
-				new URL(args.clientWebsiteUrl);
+				normalizedWebsiteUrl = normalizeUrl(args.clientWebsiteUrl);
 			} catch {
 				throw new Error("Invalid clientWebsiteUrl: must be a valid URL");
 			}
@@ -156,8 +159,8 @@ export const update = mutation({
 		if (args.name !== undefined) patch.name = args.name.trim();
 		if (args.clientName !== undefined)
 			patch.clientName = args.clientName.trim();
-		if (args.clientWebsiteUrl !== undefined)
-			patch.clientWebsiteUrl = args.clientWebsiteUrl.trim();
+		if (normalizedWebsiteUrl !== undefined)
+			patch.clientWebsiteUrl = normalizedWebsiteUrl;
 		if (args.sector !== undefined) patch.sector = args.sector.trim();
 		if (args.sessionId !== undefined) patch.sessionId = args.sessionId;
 		if (args.config !== undefined) patch.config = args.config;
@@ -240,9 +243,10 @@ export const addCompetitor = mutation({
 			);
 		}
 
-		// Validate URL
+		// Normalize (add scheme if missing) then validate URL
+		let competitorUrl: string;
 		try {
-			new URL(args.url);
+			competitorUrl = normalizeUrl(args.url);
 		} catch {
 			throw new Error("Invalid competitor URL: must be a valid URL");
 		}
@@ -258,7 +262,7 @@ export const addCompetitor = mutation({
 			...existing,
 			{
 				name: args.name.trim(),
-				url: args.url.trim(),
+				url: competitorUrl,
 			},
 		];
 

@@ -6,6 +6,28 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — consultant onboarding rejected the domain a human actually types)
+
+Closes `k1776bdqs2105aat7xcdre8s2n8aysb4`. Reported from the preview by the person using it: step 1 -> 2 failed when he typed his own site. The `progress-steps` block shipped in PR #81 is **not** at fault — it was masked by this.
+
+`convex/consultantProjects.ts` validated the field with a bare `new URL(args.clientWebsiteUrl)` on the raw string. Measured: `new URL("perello.consulting")` throws `Invalid URL`; `new URL("https://perello.consulting").hostname` is `perello.consulting`. A scheme-less domain is exactly what a person types into a "website" field, so the validation rejected the normal case and accepted only the shape a developer would type.
+
+**Normalize, then validate** — `lib/validation/url.ts`'s `normalizeUrl` trims, prepends `https://` when no scheme is present, and delegates to `URL` for the real verdict. It does **not** launder nonsense: an empty string, `"hello world"` and `"...."` still throw, and a hostname with no alphanumeric character is rejected explicitly. It lives in root `lib/` because it must be importable from both the Convex runtime and the browser, which is the convention already used for shared code (`convex/http/ai.ts` imports from `lib/ai/models`); the reason is written at the top of the file, not left implicit.
+
+**Applied at all four human-input sites, not just the one that was reported** — `create`, `update` and `addCompetitor` in `convex/consultantProjects.ts`, plus both form paths in `app/[locale]/dashboard/consultant/onboard/page.tsx`. The normalized value is what gets stored and what is handed to the scrapers, so `convex/actions/scrapeClient.ts` and `scrapeCompetitor.ts` receive a URL they can parse. The website field also moves from `type="url"` to `type="text" inputMode="url"`, because native browser URL validation would reject scheme-less input before our own normalizer ever ran, and gains a hint (`consultant.websiteUrlHint`) in all seven locales.
+
+CLASS: any human-typed URL/domain string validated with a bare `new URL(...)` and no scheme normalization.
+- sweep: `git grep -n "new URL(" -- convex/ lib/ app/ components/ | grep -v __tests__` -> 14 hits. Four were this class, all fixed. The other ten parse `req.url`, a configured `BASE_URL`/`baseUrl`, or a value already normalized upstream — machine-supplied, not human-typed, each confirmed by reading its context rather than by pattern alone.
+- remaining: 0.
+
+Mutation proof reproduced independently by the orchestrator, not relayed: stripping the normalization at `consultantProjects.ts:99` (grep-confirmed landed) reddened exactly `RED 1: accepts a scheme-less domain and stores a parseable URL` and `still accepts a fully-qualified URL unchanged in scheme` — 2 failed / 7 passed — and restore was byte-identical. The tests drive the real mutations through `convex-test`; none of them re-implements the validation it checks.
+
+**Separate defect, reported and NOT acted on:** the served Convex deployment does not expose `designSystem` on `users:updatePreferences`, while `convex/users.ts` on `main` has defined it since PR #70. Read-only check: `pnpm exec convex function-spec --prod` returns only `{notifications, theme}`. Merged is not deployed. No environment variable was touched and no deploy was run — that is the owner's call, and it is stated here rather than quietly worked around.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec vitest run` -> 34 files, 350 passed / 0 failed / 7 skipped, 357 total. `pnpm exec jest` -> 51 suites, 238/238 tests. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 12 touched files -> clean. The 7 vitest skips are the Polar product-ID env-var checks in `__tests__/convex/polar-product-mapping.test.ts`, each refusing **by name** with `cannot measure: POLAR_PRODUCT_* not set` — a declared refusal, never a silent pass.
+
+One claim from the implementing agent could not be reproduced and is therefore not certified here: it reported a transient worker-transform failure in `mission-stats.test.tsx`. Three consecutive runs of that suite and a full `jest` run all came back green. It is recorded as unreproduced rather than dismissed.
+
 ### Changed (2026-07-21 — two orphan mcpcn blocks put to work, two refused by name)
 
 Closes `k174mnth8k4p3habftxavp63jd8awsy4`. A block nobody renders is not delivered.
