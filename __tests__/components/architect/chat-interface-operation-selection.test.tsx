@@ -13,6 +13,19 @@
  * - RED3 / dependency-edge decision: unchecking an operation cascades to the
  *   operation that depends on it (see lib/architect/operation-selection.ts),
  *   and that dependent cannot be manually re-checked directly.
+ *
+ * Per-guard mutation proof (Day 133 follow-up): a whole-implementation
+ * stash cannot tell a test that guards its OWN behaviour apart from one
+ * that merely fails because nothing renders. Mutating
+ * `filterProposalOperations` alone (Mutation A) reddens RED1 only — RED2
+ * and RED3 stay green. Mutating the cascade in
+ * `resolveOperationSelection` alone (Mutation B) reddens RED3 as expected,
+ * but ALSO reddened the original RED1 below, because that fixture's op1
+ * has a dependent (op2) — RED1 was unintentionally exercising the cascade
+ * too, not pure manual exclusion. `RED1b` below was added to close that
+ * gap: it unchecks a standalone operation (op3, no dependents) so manual
+ * exclusion is asserted in isolation from the cascade rule. See
+ * CHANGELOG.md for the full mutation matrix.
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -71,7 +84,7 @@ const spec = {
 	elements: {
 		root: {
 			type: "MissionProposal",
-			children: ["op1", "op2"],
+			children: ["op1", "op2", "op3"],
 			props: {
 				name: "Landing page",
 				brief: "Build it",
@@ -92,6 +105,13 @@ const spec = {
 				type: "ai",
 				dependsOn: ["op1"],
 			},
+		},
+		// Deliberately independent (no dependsOn, nothing depends on it) so
+		// RED1b can assert pure manual exclusion in isolation from the
+		// cascade rule exercised by op1/op2.
+		op3: {
+			type: "OperationItem",
+			props: { id: "op3", name: "Write the copy", type: "ai" },
 		},
 	},
 };
@@ -158,6 +178,34 @@ describe("ChatInterface — per-operation plan approval", () => {
 		expect(proposal.operations.map((op: { id: string }) => op.id)).toEqual([
 			"op1",
 			"op2",
+			"op3",
+		]);
+	});
+
+	test("RED1b: unchecking a standalone operation (no dependents) excludes only itself, isolated from the cascade rule", async () => {
+		render(
+			<ChatInterface
+				sessionId={"session-1" as never}
+				workspaceId={"workspace-1" as never}
+				onPlanConfirmed={jest.fn()}
+			/>,
+		);
+
+		const op3Checkbox = screen.getByRole("checkbox", {
+			name: /write the copy/i,
+		});
+		fireEvent.click(op3Checkbox);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: /confirm and create mission/i }),
+		);
+
+		await screen.findByRole("button", { name: /confirm and create mission/i });
+		expect(createFromProposalMock).toHaveBeenCalledTimes(1);
+		const [{ proposal }] = createFromProposalMock.mock.calls[0];
+		expect(proposal.operations.map((op: { id: string }) => op.id)).toEqual([
+			"op1",
+			"op2",
 		]);
 	});
 
@@ -182,7 +230,9 @@ describe("ChatInterface — per-operation plan approval", () => {
 		await screen.findByRole("button", { name: /confirm and create mission/i });
 		expect(createFromProposalMock).toHaveBeenCalledTimes(1);
 		const [{ proposal }] = createFromProposalMock.mock.calls[0];
-		expect(proposal.operations).toEqual([]);
+		expect(proposal.operations.map((op: { id: string }) => op.id)).toEqual([
+			"op3",
+		]);
 	});
 
 	test("RED3 dependency-edge decision: op2 (dependent) cannot be manually re-checked while op1 stays excluded", () => {
