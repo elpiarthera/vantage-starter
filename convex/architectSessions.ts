@@ -9,9 +9,49 @@
  */
 
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireAuth, requireAuthWithWorkspace } from "./lib/auth";
 import { deriveTitleFromContent } from "./lib/titles";
+
+/**
+ * Resolves the display title a READER should see for a session, without
+ * writing anything back.
+ *
+ * Why read-time rather than another write-time catch-up: the name is
+ * DERIVABLE from data already on hand — the linked mission's name, or the
+ * session's own first message — so a stored copy was never the source of
+ * truth to begin with. This also reaches the population a write-time catch-up
+ * cannot: a session already `completed`, with `existingMissionId` set, that
+ * will never receive another `addMessage` call. `title` on the row itself
+ * stays absent (nobody named it, and we never patch from a query — Convex
+ * queries are read-only) — this function's return value is what the UI
+ * shows, and it is recomputed on every read rather than persisted.
+ */
+async function resolveDisplayTitle(
+	ctx: QueryCtx,
+	session: Doc<"architectSessions">,
+): Promise<string | undefined> {
+	if (session.title) return session.title;
+
+	if (session.existingMissionId) {
+		const mission = await ctx.db.get(session.existingMissionId);
+		if (mission) return mission.name;
+	}
+
+	const firstMessage = await ctx.db
+		.query("architectMessages")
+		.withIndex("by_session_created", (q) => q.eq("sessionId", session._id))
+		.order("asc")
+		.take(1);
+	if (firstMessage.length > 0 && firstMessage[0].role === "user") {
+		const derived = deriveTitleFromContent(firstMessage[0].content);
+		if (derived.length > 0) return derived;
+	}
+
+	return undefined;
+}
 
 // ============================================================================
 // MUTATIONS
@@ -79,17 +119,39 @@ export const addMessage = mutation({
 
 		// Auto-title: derive the session's display name from its own first user
 		// message, unless the user has already renamed it (isTitleCustom).
-		// Checked BEFORE insert so "first message" means "no prior message".
+		//
+		// Gate is `!session.title` (does this session have a name yet?), NOT
+		// "is this the first message?" — the earlier gate
+		// (`priorMessages.length === 0`) only ever fired at the literal first
+		// message, so any session that already had a message when this
+		// mechanism shipped could never be named again: no title, no second
+		// chance. Catch-up trade-off taken here: fire on the session's NEXT
+		// write rather than (a) a migration, which would touch rows nobody
+		// may ever open again, or (b) an on-open patch, which is impossible
+		// from a query (Convex queries are read-only) and would need a
+		// parallel mutation wired into every read path.
 		let titlePatch: { title: string } | undefined;
-		if (args.role === "user" && !session.isTitleCustom) {
+		if (!session.title && !session.isTitleCustom) {
 			const priorMessages = await ctx.db
 				.query("architectMessages")
 				.withIndex("by_session_created", (q) =>
 					q.eq("sessionId", args.sessionId),
 				)
+				.order("asc")
 				.take(1);
-			if (priorMessages.length === 0) {
-				const derived = deriveTitleFromContent(args.content);
+			// Prefer the session's own FIRST message as the naming source; fall
+			// back to the message being saved now when there is no prior one
+			// (the brand-new-session case).
+			const sourceContent =
+				priorMessages.length > 0
+					? priorMessages[0].role === "user"
+						? priorMessages[0].content
+						: undefined
+					: args.role === "user"
+						? args.content
+						: undefined;
+			if (sourceContent) {
+				const derived = deriveTitleFromContent(sourceContent);
 				if (derived.length > 0) {
 					titlePatch = { title: derived };
 				}
@@ -126,10 +188,22 @@ export const complete = mutation({
 		if (session.createdBy !== user.clerkUserId) throw new Error("Unauthorized");
 		await requireAuthWithWorkspace(ctx, session.workspaceId);
 
+		// A session that produces a mission takes the mission's name — unless
+		// the user already renamed the session (isTitleCustom), which must
+		// survive untouched, exactly like the first-exchange auto-title.
+		let titlePatch: { title: string } | undefined;
+		if (args.missionId && !session.isTitleCustom) {
+			const mission = await ctx.db.get(args.missionId);
+			if (mission) {
+				titlePatch = { title: mission.name };
+			}
+		}
+
 		await ctx.db.patch(args.sessionId, {
 			status: "completed",
 			existingMissionId: args.missionId ?? session.existingMissionId,
 			updatedAt: Date.now(),
+			...titlePatch,
 		});
 		return null;
 	},
@@ -223,7 +297,8 @@ export const get = query({
 		// Verify ownership
 		if (session.createdBy !== identity.subject) return null;
 
-		return session;
+		const title = await resolveDisplayTitle(ctx, session);
+		return { ...session, title };
 	},
 });
 
@@ -277,8 +352,21 @@ export const listRecent = query({
 			.take(limit + 1);
 
 		const hasMore = sessions.length > limit;
+		const page = hasMore ? sessions.slice(0, limit) : sessions;
+
+		// Resolve a display title for every row, including dormant/completed
+		// sessions the write-time catch-up in addMessage/complete can never
+		// reach again — see resolveDisplayTitle for the derivation and why it
+		// is not persisted.
+		const sessionsWithTitle = await Promise.all(
+			page.map(async (session) => ({
+				...session,
+				title: await resolveDisplayTitle(ctx, session),
+			})),
+		);
+
 		return {
-			sessions: hasMore ? sessions.slice(0, limit) : sessions,
+			sessions: sessionsWithTitle,
 			hasMore,
 		};
 	},

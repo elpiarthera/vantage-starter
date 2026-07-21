@@ -124,6 +124,55 @@ describe("CHAT: auto-title from first exchange", () => {
 	});
 });
 
+describe("CHAT: catch-up naming for a chat that predates the auto-title mechanism", () => {
+	let t: ReturnType<typeof makeT>;
+	let workspaceId: Id<"workspaces">;
+
+	beforeEach(async () => {
+		t = makeT();
+		({ workspaceId } = await seedOwnerWorkspace(t));
+	});
+
+	it("an old chat with an existing message and no derived title gets a name on its next message", async () => {
+		const asOwner = t.withIdentity({ subject: OWNER });
+
+		const chatId = await asOwner.mutation(api.chats.create, {
+			workspaceId,
+			title: "",
+		});
+
+		// Simulate a chat that predates the auto-title mechanism: it already
+		// has a first user message inserted directly (bypassing messages.save's
+		// derivation), so `title` stays "" exactly like a row created before
+		// this fix shipped — same class as the architect-session sibling in
+		// session-mission-title.test.ts.
+		await t.run(async (ctx) => {
+			await ctx.db.insert("messages", {
+				chatId,
+				role: "user",
+				content: "Draft a go-to-market plan for a B2B SaaS onboarding tool",
+				createdAt: Date.now(),
+			});
+		});
+
+		const before = await t.run(async (ctx) => await ctx.db.get(chatId));
+		expect(before?.title).toBeFalsy();
+
+		// Any subsequent message is the catch-up trigger.
+		await asOwner.mutation(api.messages.save, {
+			chatId,
+			role: "user",
+			content: "Also add a pricing section",
+		});
+
+		const chat = await t.run(async (ctx) => await ctx.db.get(chatId));
+		expect(chat?.title).toBeTruthy();
+		expect(chat?.title).not.toBe("New chat");
+		// Derived from the chat's OWN FIRST message, not the newest one.
+		expect(chat?.title?.toLowerCase()).toContain("go-to-market");
+	});
+});
+
 describe("ARCHITECT: auto-title from first exchange", () => {
 	let t: ReturnType<typeof makeT>;
 	let workspaceId: Id<"workspaces">;

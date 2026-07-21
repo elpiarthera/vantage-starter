@@ -6,6 +6,30 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — an Architect session now carries the name of what it produced, and dormant sessions are named too)
+
+Closes `k17d2s6dcanwzrs52zrhyf8rqx8aw19k`. On screen: a mission created from Architect mode has a name; the session that produced it was still listed as "New session", next to eight rows reading the same. A list where every row reads alike is a list nobody can re-read.
+
+Two distinct defects sat behind one symptom.
+
+**The auto-title gate asked the wrong question.** `convex/architectSessions.ts` derived a title only when `priorMessages.length === 0` — literally "is this the first message?" So any session that already held a message when the mechanism shipped could never be named: no title, no second chance, forever. The gate is now `!session.title` — "does this row have a name yet?" — which is the property actually being decided. `convex/messages.ts:193` carried the identical motif on chats and is fixed the same way; that duplication is the class, not a coincidence.
+
+**A session that produced a mission ignored the better name it already had.** `complete` already received a `missionId` and the UI already sent it (`chat-interface.tsx`); the mutation simply never used it for titling. It now takes `mission.name` — unless `isTitleCustom` records that the user named the session themselves, a human choice the automatic mechanism must never overwrite.
+
+**The write-time catch-up alone would have left the reported rows untouched, which is why it is not the whole fix.** A `completed` session receives no further `addMessage`, so it would never have been renamed; and one that had already produced a mission has `existingMissionId` in the database — the mission's name one `ctx.db.get` away — with its completion long past. The first implementation passed its tests while the symptom survived on screen. `resolveDisplayTitle` (l.32-54) now derives the display name at READ time in `get` and `listRecent`: stored title if any, else the linked mission's name, else the session's own first user message. Every historical row is named on the next render, with no migration touching rows nobody may open and no backfill mutation writing on a read path.
+
+**Declared trade-off, written where the reader of the code will see it:** `title` stays absent in the database. That is truthful rather than lossy — nobody named the session, so the UI is showing a derivation, not a stored fact. The cost is recomputation per read; the derivation is two indexed lookups at most. `session-list.tsx` already read `session.title` with a fallback, so no frontend change was needed and none was made.
+
+Mutation proof, each landing grep-confirmed and each restore verified: removing the catch-up gate reddens only RED3; removing the mission-rename guard reddens only RED2; reverting the chat sibling reddens only its own new test. Reproduced independently by the orchestrator — deleting the mission-name branch of `resolveDisplayTitle` reddened **exactly the two dormant-row tests** (`…shows the mission's name (listRecent)` and `(get)`) while the first-message derivation test stayed green, 2 failed / 4 passed, restore byte-identical to the pre-mutation copy. Tests that localise are the point; an undifferentiated net is not proof.
+
+CLASS: a derivation gate keyed on "is this the first write?" instead of "does this row have the value yet?", which freezes every row that already existed when the mechanism shipped.
+- sweep: `rg -n "priorMessages.length === 0" convex/` on `main` -> `architectSessions.ts:91` and `messages.ts:193`, both fixed. Broader `rg -n "\.length === 0\)" convex/*.ts` -> only dependency-graph code (`operations.ts`, `orchestration.ts`, `registry.ts`), no once-only derived field.
+- remaining: 0.
+
+No new user-facing strings, so no locale work. Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root: `pnpm exec vitest run` -> 341 passed / 0 failed / 7 skipped, 348 total. `pnpm exec jest` -> 48/48 suites, 231/231 tests. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 4 touched files -> clean.
+
+Laurent verifies visually: Architect mode, session list — the session that produced "Lancement Extension Google Chrome" carries that name.
+
 ### Changed (2026-07-21 — route guard: from value-validity to source-provenance, and 37 hand-typed paths migrated to ROUTES)
 
 Closes `k173s3gwmnm1ncmtawyyt2wnjs8azxe2`. `__tests__/lib/route-tree-guard.test.ts` matched exactly one formulation of its own class — `router.push` / `router.replace` / `redirect(` — and was blind to `<Link href="/literal/path">`. It now scans JSX `href` too.

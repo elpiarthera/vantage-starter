@@ -183,15 +183,31 @@ export const save = mutation({
 
 		// Auto-title: derive the chat's display name from its own first user
 		// message, unless the user has already renamed it (isTitleCustom).
-		// Checked BEFORE insert so "first message" means "no prior message".
+		//
+		// Gate is `!chat.title` (does this chat have a name yet?), NOT "is this
+		// the first message?" — same class as architectSessions.addMessage:
+		// the earlier gate (`priorMessages.length === 0`) only fired at the
+		// literal first message, so a chat that already had a message when
+		// this mechanism shipped could never be named. Catch-up fires on the
+		// chat's NEXT write (see architectSessions.ts for the full trade-off
+		// note against a migration or an on-open patch).
 		let titlePatch: { title: string } | undefined;
-		if (args.role === "user" && !chat.isTitleCustom) {
+		if (!chat.title && !chat.isTitleCustom) {
 			const priorMessages = await ctx.db
 				.query("messages")
 				.withIndex("by_chat_created", (q) => q.eq("chatId", args.chatId))
+				.order("asc")
 				.take(1);
-			if (priorMessages.length === 0) {
-				const derived = deriveTitleFromContent(args.content);
+			const sourceContent =
+				priorMessages.length > 0
+					? priorMessages[0].role === "user"
+						? priorMessages[0].content
+						: undefined
+					: args.role === "user"
+						? args.content
+						: undefined;
+			if (sourceContent) {
+				const derived = deriveTitleFromContent(sourceContent);
 				if (derived.length > 0) {
 					titlePatch = { title: derived };
 				}
