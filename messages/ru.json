@@ -3253,7 +3253,13 @@
 		"messageList": {
 			"ariaLabel": "Сообщения чата",
 			"emptyTitle": "Начните беседу",
-			"emptyDescription": "Агент имеет доступ к вашей базе знаний и может использовать инструменты."
+			"emptyDescription": "Агент имеет доступ к вашей базе знаний и может использовать инструменты.",
+			"quickReply": {
+				"ariaLabel": "Быстрые ответы",
+				"addNow": "Добавить сейчас",
+				"addLater": "Добавить позже",
+				"tellMeMore": "Подробнее"
+			}
 		},
 		"modelSelector": {
 			"selectPlaceholder": "Выбрать модель",

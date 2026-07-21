@@ -6,6 +6,24 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-21 — mcpcn blocks, batch 1: `option-list` and `quick-reply` put into service)
+
+Closes `k1721t26exar0fahvfd32xfkmn8ay02k`. Batch 1 of the plan in `docs/mcpcn-block-mapping.md` §5.
+
+**Scope was derived, not read off the plan.** §3's command reported `option-list consumers=0` and `quick-reply consumers=0`; `tag-select` and `progress-steps` were nominally in this batch but the same command already counted them at 1, so they dropped out — exactly as §5 instructs. After the lot the command returns `consumers=1` for all four. Positive control on the same command against `HEAD`, so the pair `0 -> 1` is a measurement and not a pattern that could not move: `git grep -l "<block>" HEAD -- components app src | grep -v "components/ui/<block>.tsx" | wc -l` -> **0** for both, against **1** in the working tree.
+
+**`option-list` was not wired where it was first expected, and the refusal is the useful part.** The obvious target, `TeamSelection` in the consultant onboarding chat, walks a `OnboardingConfig -> TeamSelection -> AgentSelection -> SkillSelection` tree with cascade-blocked exclusions (`lib/consultant/config-selection.ts`). `option-list` models a flat list and has no notion of that cascade, so replacing the component would have meant re-implementing the cascade beside it — a regression dressed as a port. It was wired instead into the Step 1 sector picker on the same route (`app/[locale]/dashboard/consultant/onboard/page.tsx`), which is a genuinely flat single-select. `components/ui/option-list.tsx` gained `aria-pressed`, a `focus-visible` ring, and single-select auto-submit; each is documented in its own header.
+
+**`quick-reply`** is wired into `components/chat/MessageList.tsx` behind a new optional `onQuickReply` prop, passed `sendMessage` from `components/chat/ChatPage.tsx` — the same payload and model a typed Enter sends, not a parallel path. It renders after the last assistant text message once streaming has stopped.
+
+i18n: `chat.messageList.quickReply.{ariaLabel,addNow,addLater,tellMeMore}` added to all seven locales. The sector field reuses the existing `consultant.sector*` keys, so it needed no new strings.
+
+Both blocks were driven from a failing test: `__tests__/components/consultant/onboard-step1-sector-option-list.test.tsx` and `__tests__/components/MessageList-quick-reply.test.tsx` were confirmed red before the wiring and green after. Mutation proof on each — `MUTATED_SECTOR` / `MUTATED_REPLY` injected, `grep`-confirmed landed, the named test reddened, restore verified by `git diff | grep -c MUTATED` -> 0. Negative control: the existing `onboard-step1-url-normalize`, `onboard-page-progress-steps` and `MessageList.test.tsx` suites pass unmodified.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 53 suites, 243/243. `pnpm exec vitest run` -> 38 files, 372 passed / 0 failed / 7 skipped, 379 total (the 7 are the Polar product-id env checks, each refusing by name through `ctx.skip(reason)` — unrelated to this lot). `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 14 changed files -> clean.
+
+Visual check (Laurent): `/dashboard/consultant/onboard` -> Step 1 -> click a sector pill, then "Next". And in a chat, send a message and wait for the assistant's reply to finish streaming — three pills appear beneath it; tapping one sends it as a new user message.
+
 ### Fixed (2026-07-21 — an organization member was refused on chat messages while passing everywhere else)
 
 Closes `k1789wtea1cxfmcwdqcyxs0e4h8azr8g`.

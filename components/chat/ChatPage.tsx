@@ -95,6 +95,13 @@ export function ChatPage({ chatId }: ChatPageProps) {
 		submitMessage();
 	};
 
+	// Quick-reply tap sends the exact same payload a typed Enter would —
+	// same sendMessage call, same selectedModel, no separate code path.
+	const handleQuickReply = (text: string) => {
+		if (isStreaming) return;
+		sendMessage({ text }, { body: { selectedModel } });
+	};
+
 	return (
 		<div className="flex flex-col h-[calc(100vh-8rem)]">
 			{/* Page header */}
@@ -195,7 +202,11 @@ export function ChatPage({ chatId }: ChatPageProps) {
 				className="flex-1 overflow-y-auto"
 				aria-label={t("page.conversationAriaLabel")}
 			>
-				<MessageList messages={messages} isStreaming={isStreaming} />
+				<MessageList
+					messages={messages}
+					isStreaming={isStreaming}
+					onQuickReply={handleQuickReply}
+				/>
 			</section>
 
 			{/* Error banner */}

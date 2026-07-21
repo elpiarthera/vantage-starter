@@ -10,12 +10,24 @@ import {
 	MessageBubble,
 	MessageBubbleContent,
 } from "@/components/ui/message-bubble";
+import {
+	QuickReply,
+	QuickReplyList,
+	type QuickReplyOption,
+} from "@/components/ui/quick-reply";
 import { cn } from "@/lib/utils";
 import { ToolCallIndicator } from "./ToolCallIndicator";
 
 interface MessageListProps {
 	messages: UIMessage[];
 	isStreaming: boolean;
+	/**
+	 * Fired when the user taps a quick-reply option instead of typing.
+	 * Wired by the caller (ChatPage) to the same `sendMessage` call a typed
+	 * Enter would trigger. Optional — quick-reply is additive; a caller that
+	 * omits it simply gets no quick-reply row.
+	 */
+	onQuickReply?: (text: string) => void;
 }
 
 // DECLARED DIVERGENCE (not wired to a ported block): upstream `message-bubble`
@@ -160,8 +172,32 @@ function MessageListItem({
 	);
 }
 
-export function MessageList({ messages, isStreaming }: MessageListProps) {
+// Fixed quick-reply set for the "add this to the roadmap now or later?"
+// style prompt (docs/mcpcn-block-mapping.md Batch 1). Net-new affordance —
+// replaces nothing; shown after the last assistant text message once
+// streaming has stopped, so the user can tap instead of typing.
+function useQuickReplyOptions(): QuickReplyOption[] {
 	const t = useTranslations("chat");
+	return [
+		{ label: t("messageList.quickReply.addNow") },
+		{ label: t("messageList.quickReply.addLater") },
+		{ label: t("messageList.quickReply.tellMeMore") },
+	];
+}
+
+export function MessageList({
+	messages,
+	isStreaming,
+	onQuickReply,
+}: MessageListProps) {
+	const t = useTranslations("chat");
+	const quickReplyOptions = useQuickReplyOptions();
+	const lastMessage = messages[messages.length - 1];
+	const showQuickReply =
+		Boolean(onQuickReply) &&
+		!isStreaming &&
+		lastMessage?.role === "assistant" &&
+		(lastMessage.parts ?? []).some(isTextUIPart);
 
 	if (messages.length === 0) {
 		// DECLARED DIVERGENCE (not wired to `chat-conversation`): upstream ships
@@ -222,6 +258,20 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 						isStreaming={isStreaming}
 					/>
 				))}
+				{showQuickReply && (
+					<QuickReply
+						data={{ replies: quickReplyOptions }}
+						actions={{
+							onSelectReply: (reply) => {
+								if (reply.label) onQuickReply?.(reply.label);
+							},
+						}}
+						aria-label={t("messageList.quickReply.ariaLabel")}
+						className="bg-transparent p-0"
+					>
+						<QuickReplyList />
+					</QuickReply>
+				)}
 			</ChatConversationMessages>
 		</ChatConversation>
 	);
