@@ -57,9 +57,10 @@ describe("Issue #188 — return to workflow after credit purchase", () => {
 		expect(insufficientCreditsModalSource).toContain("returnUrl?:");
 	});
 
-	test("InsufficientCreditsModal uses useRouter from next/navigation", () => {
-		expect(insufficientCreditsModalSource).toContain('from "next/navigation"');
+	test("InsufficientCreditsModal uses the locale-aware useRouter from @/i18n/routing", () => {
+		expect(insufficientCreditsModalSource).toContain('from "@/i18n/routing"');
 		expect(insufficientCreditsModalSource).toContain("useRouter");
+		expect(insufficientCreditsModalSource).toContain("router.push(");
 	});
 
 	test("InsufficientCreditsModal smart default navigates with returnTo param", () => {
