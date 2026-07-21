@@ -44,15 +44,18 @@ const MENU_OPTIONS = [
 	},
 ] as const;
 
-// BOUNDARY (traced, not silent — see CHANGELOG.md "configurator: theme
-// persistence across navigation"): no element in the app carries the
-// `cn-menu-target` class that providers/DesignSystemProvider.tsx toggles
-// `.dark`/`.cn-menu-translucent` on, so this control currently has no visible
-// effect anywhere. The only always-present candidate surface
-// (components/ui/dropdown-menu.tsx) hardcodes an inline dark background that
-// bypasses the OKLCH tokens, so wiring this in would also require removing
-// that override — a cross-cutting change to a shared primitive used on every
-// page, out of scope for a configurator-only fix.
+// LIVE CONTROL (corrected — see CHANGELOG.md "configurator: theme
+// persistence across navigation"): `menuColor` has two real consumers —
+// (1) components/design-system/accent-picker.tsx gates the "Bold" accent
+// option off whenever menuColor is translucent, an immediately observable
+// effect in this same picker panel; (2) providers/DesignSystemProvider.tsx's
+// useLayoutEffect toggles `.dark`/`.cn-menu-translucent` on any
+// `.cn-menu-target`/`[data-menu-translucent]` element, which is a real,
+// wired mechanism — it is merely latent today because no such element exists
+// in the current DOM, not because the control itself is dead. Do not hide
+// this control: with localStorage persistence now in place, hiding it would
+// permanently lock out a user whose persisted `menuColor` is
+// translucent/inverted from ever re-selecting "Bold", with no UI path back.
 export function MenuColorPicker() {
 	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();

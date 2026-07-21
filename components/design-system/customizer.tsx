@@ -6,6 +6,7 @@ import { MenuAccentPicker } from "./accent-picker";
 import { BaseColorPicker } from "./base-color-picker";
 import { ChartColorPicker } from "./chart-color-picker";
 import { FontPicker } from "./font-picker";
+import { MenuColorPicker } from "./menu-picker";
 import { RadiusPicker } from "./radius-picker";
 import { StylePicker } from "./style-picker";
 import { ThemePicker } from "./theme-picker";
@@ -60,14 +61,20 @@ export function Customizer({ className }: { className?: string }) {
 				<FontPicker label="Heading" param="fontHeading" />
 				<FontPicker label="Font" param="font" />
 				<FieldSeparator className="my-1" />
-				{/* IconLibraryPicker and MenuColorPicker are intentionally not
-				    rendered: neither has a consumer anywhere in the app (traced in
-				    CHANGELOG.md, "configurator: theme persistence across
-				    navigation"), so they would apply nothing visible. Their
-				    component files and BOUNDARY comments are kept for whoever wires
-				    them later — this is a written decision, not a silent drop. */}
+				{/* IconLibraryPicker is intentionally not rendered: it has zero
+				    consumers anywhere in the app (traced in CHANGELOG.md,
+				    "configurator: theme persistence across navigation"), so it
+				    would apply nothing visible. Its component file and BOUNDARY
+				    comment are kept for whoever wires it later — a written
+				    decision, not a silent drop. MenuColorPicker IS a live control
+				    (gates the Bold accent option in accent-picker.tsx and drives
+				    .cn-menu-target inversion in DesignSystemProvider) and stays
+				    rendered — hiding it would lock a user whose persisted
+				    menuColor is translucent/inverted out of "Bold" with no UI path
+				    back. */}
 				<RadiusPicker />
 				<FieldSeparator className="my-1" />
+				<MenuColorPicker />
 				<MenuAccentPicker />
 			</div>
 		</aside>
