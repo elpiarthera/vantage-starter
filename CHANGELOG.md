@@ -6,6 +6,26 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — §3's derivation command counted prose, not consumers)
+
+Traced in batch 2's entry below rather than patched, until now. `docs/mcpcn-block-mapping.md` §3's command was `git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l` — it matched the bare block name anywhere in the tree, so `table` returned `consumers=43` (legal pages, `DataTable`, the word "acceptable") for a block one file actually imports. Every batch in the plan defines its own scope from this command's output, so a bare-name match could certify a block "in service" that nobody had wired — a guard that cannot fail.
+
+**Fix:** count files importing `components/ui/$b`, not files containing `$b`. The import path is the one string that appears only where the block is actually consumed. Checked that this is the only import form the repo uses for `components/ui/` — no relative `../components/ui/...` variant exists, confirmed via `git grep -n "from \"\.\./.*components/ui/" -- components app src` -> zero matches — so the fixed command has no blind spot to the aliasing side.
+
+**Proof the fixed command bites, on foreign material chosen for this probe, not by its author.** Four already-wired blocks had their import line deleted from their one real consumer, mutation-landing asserted via `grep -c` on the edited file before any count was read:
+- `message-bubble` removed from `components/chat/MessageList.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+- `chat-conversation` removed from `components/chat/MessageList.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+- `stat-card` removed from `components/missions/mission-stats.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+- `status-badge` removed from `components/chat/ToolCallIndicator.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+
+All four restored; `git diff --stat` against the three touched files returned empty. Re-run across every installed block (37 blocks) confirmed no other block regressed to `0` and `table` reports `1`, not `43`.
+
+CLASS: a "consumers" count derived from a substring match on the bare component name rather than its import path.
+- sweep: `grep -n 'git grep -l "\$b"' docs/mcpcn-block-mapping.md` -> zero matches (the fixed form is the only one left in the document); §3's fenced command and its surrounding prose, plus the `table` entry's now-redundant workaround footnote in §4, were all updated.
+- remaining: 0.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 55 suites, 249/249. `pnpm exec vitest run` -> 39 files, 381 passed / 0 failed / 7 skipped, 388 total. `pnpm exec tsc --noEmit` -> 0. No application file left modified (mutations restored, `git diff --stat` empty).
+
 ### Added (2026-07-21 — mcpcn blocks, batch 2: a credits top-up that actually writes, and a selectable table in the chat thread)
 
 Closes `k1735z78vfe7vxs87hngvpqgf18ayh12`. Batch 2 of the plan in `docs/mcpcn-block-mapping.md` §5. Built on `tau/blocks-batch1`, not on `main`, so §3's derivation command sees batch 1's wiring and cannot re-wire a block already in service.

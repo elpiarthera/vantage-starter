@@ -72,11 +72,24 @@ for b in $(curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
 import json,sys; d=json.load(sys.stdin)
 print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block'))"); do
   [ -f "components/ui/$b.tsx" ] || continue
-  echo "$b consumers=$(git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l)"
+  echo "$b consumers=$(git grep -l "components/ui/$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l)"
 done
 ```
 
-Every installed block is listed with the number of screens consuming it. `consumers=0` means installed but not yet in service; a block absent from the output is not installed yet. Each entry below names the exact route or screen that puts its block to work.
+Every installed block is listed with the number of files **importing** it via its `@/components/ui/$b` path — checked as the only import form this repo uses for `components/ui/` (no relative `../components/ui/...` variant exists, confirmed via `git grep`). `consumers=0` means installed but not yet in service; a block absent from the output is not installed yet. Each entry below names the exact route or screen that puts its block to work.
+
+**Corrected from an earlier version of this command**, which counted files matching the bare block name (`git grep -l "$b" ...`) instead of the import path. A bare-name match counts prose, not consumption: `table` matched the legal pages, `DataTable`, and the word "acceptable", reporting `consumers=43` for a block one file actually imports. Counting the import path — `components/ui/$b` — instead of the bare name is the fix, because the import path is the one string in the repo that only appears where the block is actually consumed.
+
+**Proven bipolar on foreign material, not on cases the fix's own author picked.** Four already-wired blocks — `message-bubble`, `chat-conversation`, `stat-card`, `status-badge` — had their import line deleted from their one real consumer, one at a time, with the deletion's landing confirmed via `grep -c` on the edited file returning `0` before any count was read:
+
+- `message-bubble` import removed from `components/chat/MessageList.tsx` → landed (`grep -c` → `0`) → command: `1` → `0`.
+- `chat-conversation` import removed from `components/chat/MessageList.tsx` → landed (`grep -c` → `0`) → command: `1` → `0`.
+- `stat-card` import removed from `components/missions/mission-stats.tsx` → landed (`grep -c` → `0`) → command: `1` → `0`.
+- `status-badge` import removed from `components/chat/ToolCallIndicator.tsx` → landed (`grep -c` → `0`) → command: `1` → `0`.
+
+All four restored; `git diff` against the pre-mutation tree returned empty for each file. Re-running the command across every installed block afterward reported the four back at `1` and `table` at `1` (not `43`) — no other block regressed to `0`.
+
+**One residual, declared rather than left to be rediscovered.** The fixed command still matches on a path *prefix*, so a block whose name is a prefix of another block's name would absorb the other's importers. One such pair exists in `components/ui/` today — `progress` and `progress-steps` — and it is harmless here: `progress` is a shadcn component, not an mcpcn registry block, so it never enters this command's loop. The day the registry ships a block whose name prefixes another registry block's, this count over-reports again and the command needs an end-of-name anchor. Written down because a divergence that is written down is a decision, and a silent one is debt.
 
 ---
 
@@ -123,7 +136,7 @@ Every installed block is listed with the number of screens consuming it. `consum
 1. **Feature it opens:** vantage-starter's dashboard chat gains a genuinely new agent capability at `components/chat/MessageList.tsx`: the architect agent emits a real sortable/selectable table inline in chat (e.g. "here are 6 candidate fixes, pick one") instead of a markdown wall of text.
 2. **Replaces:** nothing — the chat surface renders markdown tables today, not an interactive component.
 3. **Cost:** Base UI (shared); a new message-part renderer in `MessageList.tsx` for the table payload type.
-4. **See it (Laurent):** in a chat where the agent emits a `data-table` part, the table renders inline; a row can be selected and the selection carries that row's id. Whether the block is in service is `consumers` in §3's output, never a sentence here — but note §3's command over-counts this particular block: `table` is a common substring and it matched prose in the legal pages, `DataTable`, and `acceptable`. Count its importers instead: `git grep -l "components/ui/table" -- components app src | grep -v "components/ui/table.tsx"`. Traced in `k174h9yq0mfnfj7vfpbdvvnn0h8az003`.
+4. **See it (Laurent):** in a chat where the agent emits a `data-table` part, the table renders inline; a row can be selected and the selection carries that row's id. Whether the block is in service is `consumers` in §3's output, never a sentence here — §3's command now counts importers of `components/ui/table` rather than the bare name `table`, so it no longer over-counts prose matches (legal pages, `DataTable`, "acceptable"). Fixed in `k174h9yq0mfnfj7vfpbdvvnn0h8az003`.
 
 **amount-input** — numeric input with increment/decrement + presets.
 1. **Feature it opens:** a manual credit top-up control in vantage-starter's `components/dashboard/account/tabs/UsageCreditsTab.tsx` — a buyer taps to add $10/$25/$50 in usage credits instead of a bare number field.
