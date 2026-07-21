@@ -536,6 +536,70 @@ git grep -n "@radix-ui/react-dropdown-menu" -- components app lib hooks provider
 
 Both migrations are covered end-to-end by real consumer-mounting tests: `DashboardHeader-dropdown-menu.test.tsx` (desktop user menu — proves both the `DropdownMenuTrigger` and `DropdownMenuItem` `asChild -> render` bridges land the real `<button>`/`<a>` rather than a Base UI default wrapper, via anti-nesting assertions bipolar-proven against each bridge's removal) and `picker-content.test.tsx` (mounts `Picker`/`PickerTrigger`/`PickerContent`/`PickerGroup`/`PickerItem` directly, proving the `Portal > Positioner > Popup` structural insertion does not prevent the popup from mounting and exposing real item content — bipolar-proven against removing the `Positioner` wrapper). Declared coverage limit, same as M6's scroll-area precedent: jsdom performs no real floating-ui positioning math, so visual placement of the popup relative to its trigger is a human/browser verification item, not something these tests can prove.
 
-## What M1 + M2 + M3 + M4 + M5 + M6 + M7 + M8 together did NOT touch
+## Packages removed this wave (M9) — `@radix-ui/react-slot` has no Base UI equivalent at all; `useRender` is the general-purpose replacement
 
-Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying every prior wave's lessons — and M8's new one: don't trust a directory-listing-only check for "no equivalent part exists" (`Menu.Separator` was re-exported from a sibling package, invisible to `ls node_modules/@base-ui/react/menu`) — always read the package's own `index.parts.d.ts` export list before declaring a divergence.
+### Button + Sidebar
+
+`components/ui/button.tsx` -> 28 consumers repo-wide (`asChild` used by 11: `app/[locale]/admin/error.tsx`, `app/[locale]/dashboard/error.tsx`, `app/[locale]/dashboard/missions/[missionId]/page.tsx`, `app/[locale]/error.tsx`, `app/not-found.tsx`, `components/dashboard/DashboardHeader.tsx`, `components/dashboard/account/tabs/ProfileTab.tsx`, `components/shared/LanguageSwitcher.tsx`, `components/shared/step-header.tsx`, `components/ui/alert-dialog.tsx`, `components/ui/sidebar.tsx`). `components/ui/sidebar.tsx` -> five internal `asChild` sites (`SidebarGroupLabel`, `SidebarGroupAction`, `SidebarMenuButton`, `SidebarMenuAction`, `SidebarMenuSubButton`).
+
+Unlike every primitive M1-M8 migrated, `@radix-ui/react-slot` is not a Radix *primitive package* with a Base UI namespace counterpart — it is a standalone prop-merging utility (`Slot` swaps in as the rendered element and merges the parent's props onto the single child). Base UI ships no drop-in replacement part; its general mechanism for "render as a different/child element while merging props onto it" is the `useRender` hook (`@base-ui/react/use-render`), confirmed by reading `node_modules/@base-ui/react/use-render/useRender.d.ts` and the underlying `mergeProps` behavior in `merge-props/mergeProps.d.ts` — the same `render`/`mergeProps` machinery every prior wave's individual `asChild -> render` bridges (`AlertDialogTrigger` M4, `TooltipTrigger` M3, `SheetTrigger` M7, `DropdownMenuTrigger` M8) already used on Base UI's *own* primitives. `button.tsx` and `sidebar.tsx` are different: they are not Base UI primitive wrappers, they are this repo's own plain components, so there is no primitive-supplied `render` prop to bridge onto — `useRender` has to be called directly.
+
+**The merge mechanism, precisely.** `useRender({ render, defaultTagName, props, ref })` returns a `React.ReactElement`: when `render` is a `React.ReactElement` (the case used here), it becomes the base and the `props` bag is merged onto it via the internal `mergeProps` semantics documented on `mergeProps.d.ts` — `className` strings joined (rightmost first), event handlers composed right-to-left (rightmost fires first), other props overwritten by the external (rightmost) value. When `render` is omitted, `defaultTagName` (a plain intrinsic tag name, e.g. `"button"`) is rendered instead. This is exactly Radix `Slot`'s pre-migration contract (merge onto the child when `asChild`, render the plain tag otherwise) — the only new step is that `useRender` needs the child element handed to it as `render`, whereas Radix inferred it implicitly by climbing the child tree.
+
+**The `useAsChildRender` helper — one non-exported internal function per file, duplicated, not shared.** Both `button.tsx` and `sidebar.tsx` define the identical small helper locally:
+
+```ts
+function useAsChildRender<RenderedElementType extends Element>({
+	asChild,
+	defaultTagName,
+	children,
+	props,
+	ref,
+}: {
+	asChild: boolean;
+	defaultTagName: keyof React.JSX.IntrinsicElements;
+	children?: React.ReactNode;
+	props: Record<string, unknown>;
+	ref: React.Ref<RenderedElementType>;
+}) {
+	return useRender({
+		...(asChild
+			? { render: React.Children.only(children) as React.ReactElement }
+			: { defaultTagName }),
+		props: asChild ? props : { ...props, children },
+		ref,
+	});
+}
+```
+
+When `asChild`, `React.Children.only(children)` becomes the `render` target and `props` (className + any consumer-passed attributes, deliberately excluding `children` — the child already carries its own content) is merged onto it. When not `asChild`, `defaultTagName` renders the plain host element and `children` is passed through normally alongside `props`. Kept as a duplicated internal helper (not exported, not moved to a shared `lib/` file) because this migration's own scope is exactly these two files — a shared utility would be a legitimate follow-up but is out of scope here.
+
+**`button.tsx`'s `Button`:** the old `const Comp = asChild ? Slot : "button"` branch is replaced by one `useAsChildRender` call inside the `forwardRef` body. `ButtonProps` (`asChild?: boolean` retained), `buttonVariants`, `displayName`, and the two named exports (`Button`, `buttonVariants`) are byte-identical to pre-migration — no consumer needed a change.
+
+**`sidebar.tsx`'s five sites:** each of `SidebarGroupLabel` (div), `SidebarGroupAction` (button), `SidebarMenuButton` (button), `SidebarMenuAction` (button), `SidebarMenuSubButton` (a) replaces its own `const Comp = (asChild ? Slot : "<tag>") as React.ElementType` line with a call to the same local helper, passing that site's own `defaultTagName` and building its own `data-*`/className props exactly as before. `SidebarMenuButton`'s tooltip path (`<TooltipTrigger asChild>{button}</TooltipTrigger>`, `button` now the `useAsChildRender`-returned `ReactElement`) needed no change — `useRender`'s return type (`React.ReactElement`) satisfies the same slot `TooltipTrigger` already expected from the pre-migration `<Comp/>` JSX.
+
+`@radix-ui/react-slot` proven `remaining: 0` direct importers, then removed:
+
+```
+git grep -n "@radix-ui/react-slot" -- components app lib hooks providers src
+# (no output)
+
+pnpm remove @radix-ui/react-slot
+```
+
+`pnpm-lock.yaml` regenerated by the `pnpm remove` command itself (no manual edit). Per every prior wave's doctrine, `remaining: 0` **direct** importers is the only safety guarantee for a removal — transitive survival (or its absence) is irrelevant and was not checked as a safety condition.
+
+**Terminal proof — this migration series reaches a single pile.** After M9, zero `@radix-ui/react-*` imports remain anywhere in `components/ui/`:
+
+```
+git grep -n "@radix-ui/react" -- 'components/ui/*.tsx'
+# (no output)
+```
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `button-aschild.test.tsx` (mounts `app/[locale]/error.tsx`, asserting the migrated `Button asChild` merges onto the real `<Link>`-rendered anchor rather than wrapping it in an extra `<button>`, plus a non-`asChild` `Button` regression check) and `sidebar-aschild.test.tsx` (mounts a real `asChild`-wrapped anchor through `SidebarMenuButton` inside a real `SidebarProvider`/`Sidebar` tree) — each proven bipolar against the concrete regression this migration must not reintroduce (the `asChild` branch silently falling back to wrapping the child in a `defaultTagName` host instead of merging onto it): RED under that mutation, GREEN restored, `git diff` empty. Neither consumer's own source needed any change.
+
+## Terminal state — single-pile Base UI, zero `@radix-ui` anywhere
+
+After M9, `git grep -n "@radix-ui/react" -- 'components/**' 'app/**' 'src/**' 'lib/**' 'hooks/**' 'providers/**'` returns **zero hits** — no source file imports any Radix package.
+
+The nine `@radix-ui/react-*` packages that lingered in `package.json` after M9 (`aspect-ratio`, `context-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `toast`, `toggle`, `toggle-group`) were **orphans, not in use**: `git grep -l "@radix-ui/react-<name>"` repo-wide returned `0` importers for each, and no `components/ui/*.tsx` file corresponds to any of them — leftover shadcn scaffolding whose components were never generated. They were removed via `pnpm remove` in this same lot (the sweep proof is pasted in the M9 CHANGELOG entry). `package.json` now contains **zero** `@radix-ui` dependencies. `slot` left the list in M9 by migration; these nine left by orphan-cleanup. A future wave should keep applying every prior wave's lessons — including M8's: don't trust a directory-listing-only check for "no equivalent part exists" (`Menu.Separator` was re-exported from a sibling package, invisible to `ls node_modules/@base-ui/react/menu`) — always read the package's own `index.parts.d.ts` export list before declaring a divergence — and M9's: when the Radix package being migrated is a cross-cutting utility rather than a primitive with its own Base UI namespace, the replacement mechanism (`useRender`) has to be wired directly into the repo's own components, not bridged through a Base UI primitive's `render` prop.
