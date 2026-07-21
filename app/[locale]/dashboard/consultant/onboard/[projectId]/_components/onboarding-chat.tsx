@@ -15,7 +15,8 @@ import type { Spec } from "@json-render/core";
 import { JSONUIProvider, Renderer, useChatUI } from "@json-render/react";
 import { useMutation, useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -27,6 +28,14 @@ import {
 	type SelectedSkill,
 	type SelectedTeam,
 } from "@/lib/consultant/config-generator";
+import {
+	filterConsultantSelection,
+	resolveConsultantSelection,
+	type SelectableTeamNode,
+	toggleAgentExclusion,
+	toggleSkillExclusion,
+	toggleTeamExclusion,
+} from "@/lib/consultant/config-selection";
 import { vantageOSRegistry } from "@/lib/json-render/registry";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -127,6 +136,237 @@ function AssistantBubble({
 }
 
 // ============================================================================
+// PER-TEAM/AGENT/SKILL SELECTION CHECKLIST
+// ============================================================================
+//
+// Reuses the visual language of TeamSelection / AgentSelection /
+// SkillSelection (lib/json-render/registry.tsx) but is built as its own
+// interactive React component rather than threaded through the AI-authored
+// json-render spec/registry: the spec is a re-streamed, read-only artifact
+// — the source of truth for "what actually gets deployed" belongs to this
+// screen, not to the model's output. Mirrors the architect plan confirm
+// screen (chat-interface.tsx's OperationSelectionChecklist).
+
+function SkillSelectionRow({
+	skillId,
+	name,
+	selected,
+	blocked,
+	onToggle,
+}: {
+	skillId: string;
+	name: string;
+	selected: boolean;
+	blocked: boolean;
+	onToggle: (id: string) => void;
+}) {
+	const t = useTranslations("consultant");
+	return (
+		<div
+			className={cn(
+				"flex items-center gap-2.5 border px-3 py-2 transition-colors duration-150",
+				selected
+					? "border-[oklch(0.62_0.18_240)]/40 bg-[oklch(0.62_0.18_240)]/5"
+					: "border-border bg-muted/20 opacity-60",
+			)}
+		>
+			<Checkbox
+				checked={selected}
+				disabled={blocked}
+				onCheckedChange={() => onToggle(skillId)}
+				aria-label={t("toggleSkillAria", { name })}
+			/>
+			<span className="text-xs text-foreground truncate">{name}</span>
+			{blocked && (
+				<span className="text-xs text-muted-foreground ml-auto shrink-0">
+					{t("skillBlockedByAgent")}
+				</span>
+			)}
+		</div>
+	);
+}
+
+function AgentSelectionRow({
+	agentId,
+	name,
+	skills,
+	selected,
+	blocked,
+	excludedSkillIds,
+	blockedSkillIds,
+	onToggleAgent,
+	onToggleSkill,
+}: {
+	agentId: string;
+	name: string;
+	skills: SelectedSkill[];
+	selected: boolean;
+	blocked: boolean;
+	excludedSkillIds: ReadonlySet<string>;
+	blockedSkillIds: ReadonlySet<string>;
+	onToggleAgent: (id: string) => void;
+	onToggleSkill: (id: string) => void;
+}) {
+	const t = useTranslations("consultant");
+	return (
+		<div
+			className={cn(
+				"border px-3 py-2 transition-colors duration-150",
+				selected
+					? "border-[oklch(0.62_0.18_240)]/40 bg-[oklch(0.62_0.18_240)]/5"
+					: "border-border bg-muted/20 opacity-60",
+			)}
+		>
+			<div className="flex items-center gap-2.5">
+				<Checkbox
+					checked={selected}
+					disabled={blocked}
+					onCheckedChange={() => onToggleAgent(agentId)}
+					aria-label={t("toggleAgentAria", { name })}
+				/>
+				<span className="text-sm font-medium text-foreground truncate">
+					{name}
+				</span>
+				{blocked && (
+					<span className="text-xs text-muted-foreground ml-auto shrink-0">
+						{t("agentBlockedByTeam")}
+					</span>
+				)}
+			</div>
+			{skills.length > 0 && (
+				<div className="mt-1.5 ml-6 space-y-1">
+					{skills.map((skill) => (
+						<SkillSelectionRow
+							key={skill.skillId}
+							skillId={skill.skillId}
+							name={skill.name}
+							selected={!excludedSkillIds.has(skill.skillId)}
+							blocked={blockedSkillIds.has(skill.skillId)}
+							onToggle={onToggleSkill}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
+
+function TeamSelectionRow({
+	team,
+	selected,
+	excludedAgentIds,
+	blockedAgentIds,
+	excludedSkillIds,
+	blockedSkillIds,
+	onToggleTeam,
+	onToggleAgent,
+	onToggleSkill,
+}: {
+	team: SelectedTeam;
+	selected: boolean;
+	excludedAgentIds: ReadonlySet<string>;
+	blockedAgentIds: ReadonlySet<string>;
+	excludedSkillIds: ReadonlySet<string>;
+	blockedSkillIds: ReadonlySet<string>;
+	onToggleTeam: (id: string) => void;
+	onToggleAgent: (id: string) => void;
+	onToggleSkill: (id: string) => void;
+}) {
+	const t = useTranslations("consultant");
+	return (
+		<div
+			className={cn(
+				"border px-3 py-2.5 transition-colors duration-150",
+				selected
+					? "border-[oklch(0.62_0.18_240)]/40 bg-[oklch(0.62_0.18_240)]/5"
+					: "border-border bg-muted/20 opacity-60",
+			)}
+		>
+			<div className="flex items-center gap-2.5">
+				<Checkbox
+					checked={selected}
+					onCheckedChange={() => onToggleTeam(team.teamId)}
+					aria-label={t("toggleTeamAria", { name: team.name })}
+				/>
+				<span className="text-sm font-semibold text-foreground truncate">
+					{team.name}
+				</span>
+			</div>
+			{team.agents.length > 0 && (
+				<div className="mt-1.5 ml-6 space-y-1.5">
+					{team.agents.map((agent) => (
+						<AgentSelectionRow
+							key={agent.agentId}
+							agentId={agent.agentId}
+							name={agent.name}
+							skills={team.skills.filter((skill) =>
+								agent.skills.includes(skill.skillId),
+							)}
+							selected={!excludedAgentIds.has(agent.agentId)}
+							blocked={blockedAgentIds.has(agent.agentId)}
+							excludedSkillIds={excludedSkillIds}
+							blockedSkillIds={blockedSkillIds}
+							onToggleAgent={onToggleAgent}
+							onToggleSkill={onToggleSkill}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
+
+function ConfigSelectionChecklist({
+	teams,
+	excludedTeamIds,
+	excludedAgentIds,
+	blockedAgentIds,
+	excludedSkillIds,
+	blockedSkillIds,
+	onToggleTeam,
+	onToggleAgent,
+	onToggleSkill,
+}: {
+	teams: SelectedTeam[];
+	excludedTeamIds: ReadonlySet<string>;
+	excludedAgentIds: ReadonlySet<string>;
+	blockedAgentIds: ReadonlySet<string>;
+	excludedSkillIds: ReadonlySet<string>;
+	blockedSkillIds: ReadonlySet<string>;
+	onToggleTeam: (id: string) => void;
+	onToggleAgent: (id: string) => void;
+	onToggleSkill: (id: string) => void;
+}) {
+	const t = useTranslations("consultant");
+
+	if (teams.length === 0) return null;
+
+	return (
+		<div className="px-4 md:px-6 py-3 space-y-2 border-t border-border max-w-3xl mx-auto w-full">
+			<p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+				{t("selectTeamsAgentsSkills")}
+			</p>
+			<div className="space-y-2 max-h-64 overflow-y-auto">
+				{teams.map((team) => (
+					<TeamSelectionRow
+						key={team.teamId}
+						team={team}
+						selected={!excludedTeamIds.has(team.teamId)}
+						excludedAgentIds={excludedAgentIds}
+						blockedAgentIds={blockedAgentIds}
+						excludedSkillIds={excludedSkillIds}
+						blockedSkillIds={blockedSkillIds}
+						onToggleTeam={onToggleTeam}
+						onToggleAgent={onToggleAgent}
+						onToggleSkill={onToggleSkill}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
+// ============================================================================
 // CONFIRM CONFIG BAR
 // ============================================================================
 
@@ -149,6 +389,25 @@ function ConfirmConfigBar({
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [isDownloading, setIsDownloading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [manuallyExcludedTeamIds, setManuallyExcludedTeamIds] = useState<
+		Set<string>
+	>(new Set());
+	const [manuallyExcludedAgentIds, setManuallyExcludedAgentIds] = useState<
+		Set<string>
+	>(new Set());
+	const [manuallyExcludedSkillIds, setManuallyExcludedSkillIds] = useState<
+		Set<string>
+	>(new Set());
+
+	// A new spec (new extracted config) always starts with every
+	// team/agent/skill selected — exclusions never carry over from a
+	// previous extraction.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: spec identity is the intentional reset trigger; the effect body doesn't need to read it
+	useEffect(() => {
+		setManuallyExcludedTeamIds(new Set());
+		setManuallyExcludedAgentIds(new Set());
+		setManuallyExcludedSkillIds(new Set());
+	}, [spec]);
 
 	const updateProject = useMutation(api.consultantProjects.update);
 	const updateStatus = useMutation(api.consultantProjects.updateStatus);
@@ -316,12 +575,91 @@ function ConfirmConfigBar({
 		}
 	}, [extractConfigSpec, projectName]);
 
+	const extracted = useMemo(() => extractConfigSpec(), [extractConfigSpec]);
+	const teams = extracted?.configSpec.teams ?? [];
+
+	// team -> agent -> skill tree the pure cascade resolver operates over
+	// (lib/consultant/config-selection.ts); derived from the same extracted
+	// teams the checklist below renders, never typed by hand.
+	const selectableTeams: SelectableTeamNode[] = useMemo(
+		() =>
+			teams.map((team) => ({
+				teamId: team.teamId,
+				agents: team.agents.map((agent) => ({
+					agentId: agent.agentId,
+					skillIds: agent.skills,
+				})),
+			})),
+		[teams],
+	);
+
+	const {
+		excludedTeamIds,
+		excludedAgentIds,
+		excludedSkillIds,
+		blockedAgentIds,
+		blockedSkillIds,
+	} = useMemo(
+		() =>
+			resolveConsultantSelection(
+				selectableTeams,
+				manuallyExcludedTeamIds,
+				manuallyExcludedAgentIds,
+				manuallyExcludedSkillIds,
+			),
+		[
+			selectableTeams,
+			manuallyExcludedTeamIds,
+			manuallyExcludedAgentIds,
+			manuallyExcludedSkillIds,
+		],
+	);
+
+	const handleToggleTeam = useCallback((id: string) => {
+		setManuallyExcludedTeamIds((prev) => toggleTeamExclusion(prev, id));
+	}, []);
+
+	const handleToggleAgent = useCallback(
+		(id: string) => {
+			setManuallyExcludedAgentIds((prev) =>
+				toggleAgentExclusion(
+					selectableTeams,
+					manuallyExcludedTeamIds,
+					prev,
+					id,
+				),
+			);
+		},
+		[selectableTeams, manuallyExcludedTeamIds],
+	);
+
+	const handleToggleSkill = useCallback(
+		(id: string) => {
+			setManuallyExcludedSkillIds((prev) =>
+				toggleSkillExclusion(
+					selectableTeams,
+					manuallyExcludedTeamIds,
+					manuallyExcludedAgentIds,
+					prev,
+					id,
+				),
+			);
+		},
+		[selectableTeams, manuallyExcludedTeamIds, manuallyExcludedAgentIds],
+	);
+
 	const handleConfirm = async () => {
-		const extracted = extractConfigSpec();
 		if (!extracted) {
 			setError(t("configExtractError"));
 			return;
 		}
+
+		const filtered = filterConsultantSelection(
+			extracted,
+			excludedTeamIds,
+			excludedAgentIds,
+			excludedSkillIds,
+		);
 
 		setIsConfirming(true);
 		setError(null);
@@ -330,9 +668,9 @@ function ConfirmConfigBar({
 			await updateProject({
 				projectId,
 				config: spec,
-				selectedTeams: extracted.selectedTeamIds,
-				selectedAgents: extracted.selectedAgentIds,
-				selectedSkills: extracted.selectedSkillIds,
+				selectedTeams: filtered.selectedTeamIds,
+				selectedAgents: filtered.selectedAgentIds,
+				selectedSkills: filtered.selectedSkillIds,
 			});
 			await updateStatus({ projectId, status: "review" });
 			onConfirmed();
@@ -345,6 +683,17 @@ function ConfirmConfigBar({
 
 	return (
 		<div className="border-t border-border py-3 bg-muted/30">
+			<ConfigSelectionChecklist
+				teams={teams}
+				excludedTeamIds={excludedTeamIds}
+				excludedAgentIds={excludedAgentIds}
+				blockedAgentIds={blockedAgentIds}
+				excludedSkillIds={excludedSkillIds}
+				blockedSkillIds={blockedSkillIds}
+				onToggleTeam={handleToggleTeam}
+				onToggleAgent={handleToggleAgent}
+				onToggleSkill={handleToggleSkill}
+			/>
 			<div className="flex items-center justify-between gap-4 px-4 md:px-6 max-w-3xl mx-auto">
 				<div>
 					<p className="text-sm font-medium text-foreground tracking-[-0.015em]">

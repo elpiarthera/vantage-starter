@@ -2927,7 +2927,13 @@
 		"saving": "Сохранение...",
 		"createProjectError": "Не удалось создать проект",
 		"invalidUrl": "Неверный URL. Пожалуйста, укажите https://",
-		"addCompetitorError": "Не удалось добавить конкурента"
+		"addCompetitorError": "Не удалось добавить конкурента",
+		"selectTeamsAgentsSkills": "Vyberite komandy, agentov i navyki dlya vklyucheniya",
+		"toggleTeamAria": "Pereklyuchit komandu {name}",
+		"toggleAgentAria": "Pereklyuchit agenta {name}",
+		"toggleSkillAria": "Pereklyuchit navyk {name}",
+		"agentBlockedByTeam": "Snachala vklyuchite komandu etogo agenta.",
+		"skillBlockedByAgent": "Snachala vklyuchite agenta, ispolzuyushchego etot navyk."
 	},
 	"configurator": {
 		"title": "Конфигуратор дизайна",

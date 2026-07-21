@@ -2927,7 +2927,13 @@
 		"saving": "Salvando...",
 		"createProjectError": "Falha ao criar o projeto",
 		"invalidUrl": "URL inválida. Inclua https://",
-		"addCompetitorError": "Falha ao adicionar o concorrente"
+		"addCompetitorError": "Falha ao adicionar o concorrente",
+		"selectTeamsAgentsSkills": "Selecione quais equipes, agentes e habilidades incluir",
+		"toggleTeamAria": "Alternar equipe {name}",
+		"toggleAgentAria": "Alternar agente {name}",
+		"toggleSkillAria": "Alternar habilidade {name}",
+		"agentBlockedByTeam": "Marque novamente a equipe deste agente primeiro.",
+		"skillBlockedByAgent": "Marque novamente um agente que usa esta habilidade primeiro."
 	},
 	"configurator": {
 		"title": "Configurador de design",

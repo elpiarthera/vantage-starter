@@ -2962,7 +2962,13 @@
 		"createProjectError": "Impossible de créer le projet",
 		"invalidUrl": "URL invalide. Veuillez inclure https://",
 		"addCompetitorError": "Impossible d'ajouter le concurrent",
-		"onboardingStepsAriaLabel": "Étapes d'intégration"
+		"onboardingStepsAriaLabel": "Étapes d'intégration",
+		"selectTeamsAgentsSkills": "Choisissez les equipes, agents et competences a inclure",
+		"toggleTeamAria": "Basculer l'equipe {name}",
+		"toggleAgentAria": "Basculer l'agent {name}",
+		"toggleSkillAria": "Basculer la competence {name}",
+		"agentBlockedByTeam": "Recochez d'abord l'equipe de cet agent.",
+		"skillBlockedByAgent": "Recochez d'abord un agent utilisant cette competence."
 	},
 	"architect": {
 		"thinking": "Réflexion en cours",

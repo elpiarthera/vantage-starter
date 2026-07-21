@@ -2962,7 +2962,13 @@
 		"createProjectError": "Failed to create project",
 		"invalidUrl": "Invalid URL. Please include https://",
 		"addCompetitorError": "Failed to add competitor",
-		"onboardingStepsAriaLabel": "Onboarding steps"
+		"onboardingStepsAriaLabel": "Onboarding steps",
+		"selectTeamsAgentsSkills": "Select which teams, agents & skills to include",
+		"toggleTeamAria": "Toggle team {name}",
+		"toggleAgentAria": "Toggle agent {name}",
+		"toggleSkillAria": "Toggle skill {name}",
+		"agentBlockedByTeam": "Re-check the team this agent belongs to first.",
+		"skillBlockedByAgent": "Re-check an agent that uses this skill first."
 	},
 	"architect": {
 		"thinking": "Thinking",
