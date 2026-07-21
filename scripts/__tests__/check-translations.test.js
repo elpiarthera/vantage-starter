@@ -435,8 +435,13 @@ describe("check-translations — Control 1d (module-level constant label maps)",
 	// value, referenced from JSX, on a file the matcher was never built
 	// around.
 	test("MUST_BLOCK: a new nested English label map reached via JSX on foreign material (ToolCallIndicator.tsx) turns Control 1 RED", () => {
-		const target = path.join(ROOT, "components/chat/ToolCallIndicator.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `ToolCallIndicator.tsx` is also imported by
+		// `__tests__/components/ToolCallIndicator.test.tsx` — mutating the real
+		// file in place races that suite across Jest's parallel worker
+		// processes (see `buildScratchRoot` doc-comment). Mutate an isolated
+		// scratch copy instead; the real file is never touched.
+		const relPath = "components/chat/ToolCallIndicator.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_NESTED_LABELMAP_PROBE_MARKER___";
 		const injectedDecl = `\nconst PROBE_TOOL_LABELS: Record<string, { active: string; done: string }> = {\n\tprobeTool: {\n\t\tactive: "Probing in progress...",\n\t\tdone: "Probe complete ${marker}",\n\t},\n};\n`;
@@ -455,30 +460,30 @@ describe("check-translations — Control 1d (module-level constant label maps)",
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 		const jsxRefLanded = execSync(
-			`grep -c "PROBE_TOOL_LABELS.probeTool.done" "${target}"`,
-			{ cwd: ROOT, encoding: "utf8" },
+			`grep -c "PROBE_TOOL_LABELS.probeTool.done" "${scratchFile}"`,
+			{ encoding: "utf8" },
 		).trim();
 		expect(Number(jsxRefLanded)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "label-map:PROBE_TOOL_LABELS.probeTool.done" &&
 					v.text.includes(marker),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -524,8 +529,14 @@ describe("check-translations — Control 1e (JSX expression container child lite
 	// French users at components/search-modal.tsx:242, invisible to both the
 	// jsx-text check (not `ts.JsxText`) and the attr check (not an attribute).
 	test("MUST_BLOCK: a ternary of two English string literals in JSX child position on foreign material (theme-toggle.tsx) turns Control 1 RED", () => {
-		const target = path.join(ROOT, "components/theme-toggle.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `theme-toggle.tsx` is also imported by
+		// `__tests__/components/theme-toggle.test.tsx` and the
+		// `DashboardHeader-*` suites — mutating the real file in place races
+		// those suites across Jest's parallel worker processes (see
+		// `buildScratchRoot` doc-comment). Mutate an isolated scratch copy
+		// instead; the real file is never touched.
+		const relPath = "components/theme-toggle.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_JSXEXPR_TERNARY_PROBE_MARKER___";
 		const mutated = original.replace(
@@ -535,23 +546,23 @@ describe("check-translations — Control 1e (JSX expression container child lite
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) => v.kind === "jsx-expression" && v.text.includes(marker),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -605,8 +616,13 @@ describe("check-translations — Control 1e (JSX expression container child lite
 	// mutation on the `error.digest` block, never by reading the (now fixed)
 	// original defect.
 	test('MUST_BLOCK: an injected logical-OR English fallback ({expr || "English"}) in JSX child position on foreign material (error.tsx) turns Control 1 RED', () => {
-		const target = path.join(ROOT, "app/[locale]/error.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `app/[locale]/error.tsx` is also imported by
+		// `__tests__/components/button-aschild.test.tsx` — mutating the real
+		// file in place races that suite across Jest's parallel worker
+		// processes (see `buildScratchRoot` doc-comment). Mutate an isolated
+		// scratch copy instead; the real file is never touched.
+		const relPath = "app/[locale]/error.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_JSXEXPR_LOGICALOR_PROBE_MARKER___";
 		const mutated = original.replace(
@@ -616,23 +632,23 @@ describe("check-translations — Control 1e (JSX expression container child lite
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) => v.kind === "jsx-expression" && v.text.includes(marker),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -688,8 +704,14 @@ describe("check-translations — Control 1f (array-of-objects copy tables)", () 
 	// here is injection on foreign material never selected to build this
 	// matcher around).
 	test("MUST_BLOCK: a new English array-of-objects label table reached via JSX .map() on foreign material (theme-toggle.tsx) turns Control 1 RED", () => {
-		const target = path.join(ROOT, "components/theme-toggle.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `theme-toggle.tsx` is also imported by
+		// `__tests__/components/theme-toggle.test.tsx` and the
+		// `DashboardHeader-*` suites — mutating the real file in place races
+		// those suites across Jest's parallel worker processes (see
+		// `buildScratchRoot` doc-comment). Mutate an isolated scratch copy
+		// instead; the real file is never touched.
+		const relPath = "components/theme-toggle.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_ARRAYCOPY_PROBE_MARKER___";
 		const injectedDecl = `\nconst PROBE_OPTIONS = [\n\t{ id: "opt1", label: "Totally Hardcoded Probe Option ${marker}" },\n\t{ id: "opt2", label: "Second Probe Option" },\n];\n`;
@@ -704,31 +726,30 @@ describe("check-translations — Control 1f (array-of-objects copy tables)", () 
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
 		// Assert the mutation actually landed before reading any verdict.
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
-		const jsxRefLanded = execSync(`grep -c "o.label" "${target}"`, {
-			cwd: ROOT,
+		const jsxRefLanded = execSync(`grep -c "o.label" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(jsxRefLanded)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "object-copy:PROBE_OPTIONS[0].label" &&
 					v.text.includes(marker),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -1330,8 +1351,13 @@ describe("check-translations — Control 4 (called but undefined)", () => {
 	// cannot see: no locale disagrees with any other locale about this key —
 	// they all agree it doesn't exist.
 	test("MUST_BLOCK: a t() call resolving to a key absent from ALL locales, on foreign material (mission-stats.tsx), turns Control 4 RED", () => {
-		const target = path.join(ROOT, "components/missions/mission-stats.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `mission-stats.tsx` is also imported by
+		// `__tests__/components/mission-stats.test.tsx` — mutating the real file
+		// in place races that suite across Jest's parallel worker processes
+		// (see `buildScratchRoot` doc-comment). Mutate an isolated scratch copy
+		// instead; the real file is never touched.
+		const relPath = "components/missions/mission-stats.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "probeNeverDefinedAnywhere";
 		const mutated = original.replace(
@@ -1340,18 +1366,18 @@ describe("check-translations — Control 4 (called but undefined)", () => {
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl4CalledButUndefined();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control4 } = runScriptJson(scratchRoot);
+			expect(control4.ok).toBe(false);
+			const hit = control4.violations.find(
 				(v) => v.path === `missions.stats.${marker}`,
 			);
 			expect(hit).toBeDefined();
@@ -1359,7 +1385,7 @@ describe("check-translations — Control 4 (called but undefined)", () => {
 				expect.arrayContaining(["en", "fr", "de", "it", "es", "pt", "ru"]),
 			);
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -1986,8 +2012,13 @@ describe("check-translations — date-fns prose function implicit-locale guard",
 	// Injects formatDuration({ months: 1 }) with no { locale } option.
 	// -------------------------------------------------------------------------
 	test("MUST_BLOCK #3: formatDuration({ months: 1 }) with no locale on foreign material (mission-stats.tsx) turns Control 1 RED", () => {
-		const target = path.join(ROOT, "components/missions/mission-stats.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `mission-stats.tsx` is also imported by
+		// `__tests__/components/mission-stats.test.tsx` — mutating the real file
+		// in place races that suite across Jest's parallel worker processes
+		// (see `buildScratchRoot` doc-comment). Mutate an isolated scratch copy
+		// instead; the real file is never touched.
+		const relPath = "components/missions/mission-stats.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_PROSE_PROBE3_MARKER___";
 		let mutated = original.replace(
@@ -2001,26 +2032,26 @@ describe("check-translations — date-fns prose function implicit-locale guard",
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "implicit-locale" &&
-					v.file === path.relative(ROOT, target) &&
+					v.file === relPath &&
 					v.text.includes("formatDuration"),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -2029,8 +2060,13 @@ describe("check-translations — date-fns prose function implicit-locale guard",
 	// refactor — derives from the existing import, no regression.
 	// -------------------------------------------------------------------------
 	test('MUST_BLOCK #4 (regression): format(d, "PPP") on foreign material still turns Control 1 RED', () => {
-		const target = path.join(ROOT, "components/missions/mission-stats.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `mission-stats.tsx` is also imported by
+		// `__tests__/components/mission-stats.test.tsx` — mutating the real file
+		// in place races that suite across Jest's parallel worker processes
+		// (see `buildScratchRoot` doc-comment). Mutate an isolated scratch copy
+		// instead; the real file is never touched.
+		const relPath = "components/missions/mission-stats.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_PPP_REGRESSION_PROBE___";
 		let mutated = original.replace(
@@ -2044,26 +2080,26 @@ describe("check-translations — date-fns prose function implicit-locale guard",
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "implicit-locale" &&
-					v.file === path.relative(ROOT, target) &&
+					v.file === relPath &&
 					v.text.includes("format"),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -2242,8 +2278,14 @@ describe("check-translations — date-fns NAMESPACE import (`import * as dateFns
 	});
 
 	test("MUST_BLOCK: dateFns.formatDistanceToNow(d, { addSuffix: true }) via namespace import, no locale, on foreign material (theme-toggle.tsx) turns Control 1 RED", () => {
-		const target = path.join(ROOT, "components/theme-toggle.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `theme-toggle.tsx` is also imported by
+		// `__tests__/components/theme-toggle.test.tsx` and the
+		// `DashboardHeader-*` suites — mutating the real file in place races
+		// those suites across Jest's parallel worker processes (see
+		// `buildScratchRoot` doc-comment). Mutate an isolated scratch copy
+		// instead; the real file is never touched.
+		const relPath = "components/theme-toggle.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_DATEFNS_NS_PROBE_MARKER___";
 		let mutated = `import * as dateFns from "date-fns";\n${original}`;
@@ -2255,32 +2297,33 @@ describe("check-translations — date-fns NAMESPACE import (`import * as dateFns
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "implicit-locale" &&
-					v.file === "components/theme-toggle.tsx" &&
+					v.file === relPath &&
 					v.text.includes("dateFns.formatDistanceToNow"),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
 	test('MUST_BLOCK: dateFns.format(d, "PPP") via namespace import, no locale, on foreign material (theme-toggle.tsx) turns Control 1 RED', () => {
-		const target = path.join(ROOT, "components/theme-toggle.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// See scratch-root isolation note above — same racy target.
+		const relPath = "components/theme-toggle.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		const marker = "___I18N_DATEFNS_NS_FORMAT_PROBE_MARKER___";
 		let mutated = `import * as dateFns from "date-fns";\n${original}`;
@@ -2292,32 +2335,33 @@ describe("check-translations — date-fns NAMESPACE import (`import * as dateFns
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			expect(result.ok).toBe(false);
-			const hit = result.violations.find(
+			const { control1 } = runScriptJson(scratchRoot);
+			expect(control1.ok).toBe(false);
+			const hit = control1.violations.find(
 				(v) =>
 					v.kind === "implicit-locale" &&
-					v.file === "components/theme-toggle.tsx" &&
+					v.file === relPath &&
 					v.text.includes("dateFns.format"),
 			);
 			expect(hit).toBeDefined();
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
 	test("MUST_PASS: dateFns.formatDistanceToNow(d, { locale: fr }) via namespace import — opted in, NOT flagged", () => {
-		const target = path.join(ROOT, "components/theme-toggle.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// See scratch-root isolation note above — same racy target.
+		const relPath = "components/theme-toggle.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
 		let mutated = `import * as dateFns from "date-fns";\nimport { fr } from "date-fns/locale";\n${original}`;
 		mutated = mutated.replace(
@@ -2327,18 +2371,19 @@ describe("check-translations — date-fns NAMESPACE import (`import * as dateFns
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		writeScratchFile(scratchRoot, relPath, mutated);
 		try {
-			const result = runControl1LiteralScan();
-			const falsePositives = result.violations.filter(
+			const { control1 } = runScriptJson(scratchRoot);
+			const falsePositives = control1.violations.filter(
 				(v) =>
-					v.file === "components/theme-toggle.tsx" &&
+					v.file === relPath &&
 					v.kind === "implicit-locale" &&
 					v.text.includes("dateFns.formatDistanceToNow"),
 			);
 			expect(falsePositives).toEqual([]);
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
@@ -2414,10 +2459,15 @@ describe("check-translations — Control 1 RATCHET (gated scope vs out-of-scope 
 	// GATED_ROOTS) page, assert Control 1 reports it via the
 	// language-neutral `jsx-text` kind (never "English"), then restore.
 	test("MUST_PASS: an injected French JSX-text literal on foreign material (app/[locale]/accessibilite/page.tsx, out-of-scope) is reported with the corrected, language-neutral wording — never labeled English", () => {
-		const target = path.join(ROOT, "app/[locale]/accessibilite/page.tsx");
-		const original = fs.readFileSync(target, "utf8");
+		// `app/[locale]/accessibilite/page.tsx` is also imported by
+		// `__tests__/integration/legal-pages-public.test.ts` — mutating the
+		// real file in place races that suite across Jest's parallel worker
+		// processes (see `buildScratchRoot` doc-comment). Mutate an isolated
+		// scratch copy instead; the real file is never touched.
+		const relPath = "app/[locale]/accessibilite/page.tsx";
+		const original = fs.readFileSync(path.join(ROOT, relPath), "utf8");
 
-		expect(isInGatedScope("app/[locale]/accessibilite/page.tsx")).toBe(false);
+		expect(isInGatedScope(relPath)).toBe(false);
 
 		const marker = "___I18N_FR_JSXTEXT_PROBE_MARKER___";
 		const injectedFrenchText = `Déclaration d'accessibilité probe ${marker}`;
@@ -2427,20 +2477,18 @@ describe("check-translations — Control 1 RATCHET (gated scope vs out-of-scope 
 		);
 		expect(mutated).not.toBe(original);
 
-		fs.writeFileSync(target, mutated);
+		const scratchRoot = buildScratchRoot();
+		const scratchFile = writeScratchFile(scratchRoot, relPath, mutated);
 
-		const landed = execSync(`grep -c "${marker}" "${target}"`, {
-			cwd: ROOT,
+		const landed = execSync(`grep -c "${marker}" "${scratchFile}"`, {
 			encoding: "utf8",
 		}).trim();
 		expect(Number(landed)).toBeGreaterThan(0);
 
 		try {
-			const result = runControl1LiteralScan();
-			const frHit = result.outOfScopeViolations.find(
-				(v) =>
-					v.file === "app/[locale]/accessibilite/page.tsx" &&
-					v.text.includes(marker),
+			const { control1 } = runScriptJson(scratchRoot);
+			const frHit = control1.outOfScopeViolations.find(
+				(v) => v.file === relPath && v.text.includes(marker),
 			);
 			expect(frHit).toBeDefined();
 			expect(frHit.kind).toBe("jsx-text");
@@ -2449,7 +2497,7 @@ describe("check-translations — Control 1 RATCHET (gated scope vs out-of-scope 
 			// "English", even though the injected text is French.
 			expect(frHit.kind.toLowerCase()).not.toContain("english");
 		} finally {
-			assertRestored(target, original);
+			fs.rmSync(scratchRoot, { recursive: true, force: true });
 		}
 	});
 
