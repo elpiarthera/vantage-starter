@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import type { UserResource } from "@clerk/shared/types";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import {
 	Activity,
 	CreditCard,
@@ -14,9 +14,15 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { PurchaseCreditsModal } from "@/components/dashboard/account/modals/PurchaseCreditsModal";
 // biome-ignore lint/correctness/noUnusedImports: UsageChart used when Cost Breakdown section is uncommented (see Post-MVP-Improvement.md)
 import { UsageChart } from "@/components/dashboard/usage/UsageChart";
+import {
+	AmountInput,
+	AmountInputControls,
+	useAmountInput,
+} from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +33,41 @@ import { useDateFormatter } from "@/hooks/useDateFormatter";
 
 interface UsageCreditsTabProps {
 	user: UserResource;
+}
+
+/**
+ * Tap-to-confirm preset buttons for the manual top-up control: matches the
+ * committed UX in docs/mcpcn-block-mapping.md §4 "amount-input" — "a buyer
+ * taps to add $10/$25/$50" — a single tap both selects and confirms the
+ * amount, rather than requiring a second "Confirm" tap. Reads `presets` and
+ * `currencySymbol` from the `AmountInput` block's own context so it stays a
+ * genuine composition of the ported block, not a parallel implementation.
+ */
+function TopUpPresetButtons({
+	disabled,
+	onTopUp,
+}: {
+	disabled: boolean;
+	onTopUp: (amount: number) => void;
+}) {
+	const { currencySymbol, presets } = useAmountInput();
+
+	return (
+		<div className="flex flex-wrap gap-2">
+			{presets.map((preset) => (
+				<Button
+					disabled={disabled}
+					key={preset}
+					onClick={() => onTopUp(preset)}
+					size="sm"
+					variant="outline"
+				>
+					{currencySymbol}
+					{preset}
+				</Button>
+			))}
+		</div>
+	);
 }
 
 export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
@@ -52,6 +93,41 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 	const usageHistory = useQuery(api.usageTracking.listByUser, { limit: 50 });
 
 	const isLoading = creditsLoading || usageHistory === undefined;
+
+	// Manual top-up (mcpcn `amount-input` block, Batch 2 —
+	// docs/mcpcn-block-mapping.md §4 "amount-input"). Presets are read from
+	// Convex `systemConfig` key `manual_topup_presets` via this query — never
+	// a literal tier list in this file, so the client and the
+	// `recordManualTopUp` mutation it calls can never disagree on what a
+	// valid amount is.
+	const topUpPresets = useQuery(api.credits.getManualTopupPresets, {});
+	const recordManualTopUp = useMutation(api.credits.recordManualTopUp);
+	const [topUpBalanceOverride, setTopUpBalanceOverride] = useState<
+		number | null
+	>(null);
+	const [isToppingUp, setIsToppingUp] = useState(false);
+
+	const handleManualTopUp = async (amount: number) => {
+		if (!user?.id || isToppingUp) return;
+		setIsToppingUp(true);
+		try {
+			const result = await recordManualTopUp({
+				clerkUserId: user.id,
+				amount,
+			});
+			setTopUpBalanceOverride(result.newBalance);
+			toast.success(
+				t("manual_topup_success", { amount, balance: result.newBalance }),
+			);
+		} catch (error) {
+			console.error("[UsageCreditsTab] Manual top-up failed:", error);
+			toast.error(t("manual_topup_error"));
+		} finally {
+			setIsToppingUp(false);
+		}
+	};
+
+	const displayedBalance = topUpBalanceOverride ?? balance;
 
 	// Date formatter hook for i18n
 	const { formatShort } = useDateFormatter();
@@ -152,7 +228,7 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 								<span className="text-sm">{t("available_credits")}</span>
 							</div>
 							<div className="text-3xl md:text-4xl font-bold text-primary">
-								{t("credits_label", { count: balance })}
+								{t("credits_label", { count: displayedBalance })}
 							</div>
 							<div className="flex items-center gap-4 text-sm text-muted-foreground">
 								<span>
@@ -172,6 +248,33 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 							{t("purchase_credits")}
 						</Button>
 					</div>
+					{/* Manual top-up control (mcpcn amount-input block) — only rendered
+					    once presets have loaded, so no tier ever appears as a literal
+					    fallback here. */}
+					{Array.isArray(topUpPresets) && topUpPresets.length > 0 && (
+						<div className="mt-4 border-t border-border pt-4">
+							<p className="text-sm text-muted-foreground mb-2">
+								{t("manual_topup_title")}
+							</p>
+							<AmountInput
+								appearance={{
+									label: t("manual_topup_label"),
+									decreaseLabel: t("manual_topup_decrease"),
+									increaseLabel: t("manual_topup_increase"),
+									currency: "EUR",
+								}}
+								data={{ presets: topUpPresets }}
+								actions={{ onConfirm: handleManualTopUp }}
+							>
+								<AmountInputControls>
+									<TopUpPresetButtons
+										disabled={isToppingUp}
+										onTopUp={handleManualTopUp}
+									/>
+								</AmountInputControls>
+							</AmountInput>
+						</div>
+					)}
 				</Card>
 			</div>
 			{/* Usage Statistics */}

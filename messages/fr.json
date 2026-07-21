@@ -475,6 +475,12 @@
 		"total_purchased": "Total acheté :",
 		"total_used": "Total utilisé :",
 		"purchase_credits": "Acheter des crédits",
+		"manual_topup_title": "Recharger des crédits",
+		"manual_topup_label": "Ajouter des crédits",
+		"manual_topup_decrease": "Diminuer le montant de la recharge",
+		"manual_topup_increase": "Augmenter le montant de la recharge",
+		"manual_topup_success": "{amount} crédits ajoutés. Nouveau solde : {balance}.",
+		"manual_topup_error": "Échec de la recharge. Veuillez réessayer.",
 		"usage_statistics": "Statistiques d'utilisation",
 		"images_generated": "Appels API",
 		"videos_generated": "Générations IA",
@@ -2843,6 +2849,9 @@
 			"ariaLabel": "Messages de la conversation",
 			"emptyTitle": "Démarrez une conversation",
 			"emptyDescription": "L'agent a accès à votre base de connaissances et peut utiliser des outils.",
+			"table": {
+				"emptyMessage": "Aucune ligne à afficher."
+			},
 			"quickReply": {
 				"ariaLabel": "Réponses rapides",
 				"addNow": "Ajouter maintenant",

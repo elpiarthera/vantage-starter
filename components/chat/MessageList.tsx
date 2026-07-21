@@ -1,7 +1,14 @@
 "use client";
 
-import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
+import {
+	getToolName,
+	isDataUIPart,
+	isTextUIPart,
+	isToolUIPart,
+	type UIMessage,
+} from "ai";
 import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 import {
 	ChatConversation,
 	ChatConversationMessages,
@@ -15,8 +22,36 @@ import {
 	QuickReplyList,
 	type QuickReplyOption,
 } from "@/components/ui/quick-reply";
+import {
+	Table,
+	type TableColumn,
+	TableGrid,
+	useTable,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { ToolCallIndicator } from "./ToolCallIndicator";
+
+/**
+ * Payload shape for the `data-table` message part (mcpcn `table` block,
+ * Batch 2 — docs/mcpcn-block-mapping.md §4 "table"): the architect agent
+ * emits this instead of a markdown table when it wants the user to pick a
+ * row (e.g. "here are 6 candidate fixes, pick one"). No schema change — this
+ * is a client-side rendering contract on top of the AI SDK v6 generic
+ * `data-*` UI part, not a new persisted type.
+ */
+interface TableMessagePartData {
+	columns: TableColumn<Record<string, unknown>>[];
+	rows: Record<string, unknown>[];
+}
+
+function isTableMessagePart(
+	part: unknown,
+): part is { type: "data-table"; data: TableMessagePartData } {
+	return (
+		isDataUIPart(part as never) &&
+		(part as { type: string }).type === "data-table"
+	);
+}
 
 interface MessageListProps {
 	messages: UIMessage[];
@@ -28,6 +63,13 @@ interface MessageListProps {
 	 * omits it simply gets no quick-reply row.
 	 */
 	onQuickReply?: (text: string) => void;
+	/**
+	 * Fired when the user selects a row of an inline `data-table` message
+	 * part (mcpcn `table` block). Carries that row's `id` field. Optional —
+	 * additive; a caller that omits it simply gets no selection callback
+	 * (the table still renders and highlights the tapped row).
+	 */
+	onTableRowSelect?: (rowId: string) => void;
 }
 
 // DECLARED DIVERGENCE (not wired to a ported block): upstream `message-bubble`
@@ -92,12 +134,73 @@ interface MessageBubbleProps {
 	message: UIMessage;
 	isLastMessage: boolean;
 	isStreaming: boolean;
+	onTableRowSelect?: (rowId: string) => void;
+}
+
+/**
+ * Renders a `data-table` message part through the ported `table` block
+ * (mcpcn, Batch 2). Row selection reads the row's own `id` field — if a row
+ * carries no `id`, selecting it is a no-op rather than surfacing `undefined`
+ * to the caller.
+ */
+function TableMessagePart({
+	data,
+	onTableRowSelect,
+}: {
+	data: TableMessagePartData;
+	onTableRowSelect?: (rowId: string) => void;
+}) {
+	const t = useTranslations("chat");
+
+	return (
+		<Table
+			appearance={{
+				selectable: onTableRowSelect ? "single" : "none",
+				showActions: false,
+				showHeader: false,
+				showFooter: false,
+				emptyMessage: t("messageList.table.emptyMessage"),
+			}}
+			data={{ columns: data.columns, rows: data.rows }}
+		>
+			<TableGridWithSelection onTableRowSelect={onTableRowSelect} />
+		</Table>
+	);
+}
+
+/**
+ * Thin wrapper around `TableGrid` that reads the block's own selection
+ * context (`useTable`) — set by `TableGrid`'s row `onClick` — and, when the
+ * selected row carries an `id` field, fires `onTableRowSelect` with it.
+ * Composes the ported block's real selection state rather than forking it
+ * with a parallel DOM-level click handler.
+ */
+function TableGridWithSelection({
+	onTableRowSelect,
+}: {
+	onTableRowSelect?: (rowId: string) => void;
+}) {
+	const { selectedRows } = useTable();
+	const lastNotifiedRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		if (!onTableRowSelect) return;
+		const lastSelected = selectedRows.at(-1);
+		const rowId = typeof lastSelected?.id === "string" ? lastSelected.id : null;
+		if (rowId && rowId !== lastNotifiedRef.current) {
+			lastNotifiedRef.current = rowId;
+			onTableRowSelect(rowId);
+		}
+	}, [selectedRows, onTableRowSelect]);
+
+	return <TableGrid />;
 }
 
 function MessageListItem({
 	message,
 	isLastMessage,
 	isStreaming,
+	onTableRowSelect,
 }: MessageBubbleProps) {
 	const isUser = message.role === "user";
 	const isAssistant = message.role === "assistant";
@@ -112,6 +215,9 @@ function MessageListItem({
 
 	// Collect tool parts using v6 API
 	const toolParts = parts.filter(isToolUIPart);
+
+	// Collect data-table parts (mcpcn `table` block, Batch 2)
+	const tableParts = parts.filter(isTableMessagePart);
 
 	const showCursor = isAssistant && isLastMessage && isStreaming && textContent;
 
@@ -161,6 +267,15 @@ function MessageListItem({
 					</div>
 				)}
 
+				{/* Data tables — rendered through the ported table block (mcpcn, Batch 2) */}
+				{tableParts.map((part, i) => (
+					<TableMessagePart
+						key={`${message.id}-table-${i}`}
+						data={part.data}
+						onTableRowSelect={onTableRowSelect}
+					/>
+				))}
+
 				{/* Streaming placeholder — shows cursor when no text yet */}
 				{isAssistant && isLastMessage && isStreaming && !textContent && (
 					<div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
@@ -189,6 +304,7 @@ export function MessageList({
 	messages,
 	isStreaming,
 	onQuickReply,
+	onTableRowSelect,
 }: MessageListProps) {
 	const t = useTranslations("chat");
 	const quickReplyOptions = useQuickReplyOptions();
@@ -256,6 +372,7 @@ export function MessageList({
 						message={message}
 						isLastMessage={index === messages.length - 1}
 						isStreaming={isStreaming}
+						onTableRowSelect={onTableRowSelect}
 					/>
 				))}
 				{showQuickReply && (

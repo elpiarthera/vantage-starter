@@ -6,6 +6,27 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-21 — mcpcn blocks, batch 2: a credits top-up that actually writes, and a selectable table in the chat thread)
+
+Closes `k1735z78vfe7vxs87hngvpqgf18ayh12`. Batch 2 of the plan in `docs/mcpcn-block-mapping.md` §5. Built on `tau/blocks-batch1`, not on `main`, so §3's derivation command sees batch 1's wiring and cannot re-wire a block already in service.
+
+**The first write path onto tables that already existed.** No new table. `convex/credits.ts` gains `recordManualTopUp`, which inserts one `creditTransactions` row and increments the matching `userCredits` row, plus a `getManualTopupPresets` read query. The mutation was driven from a test that asserts the balance increases by **exactly** the requested amount and that **exactly one** history row is written — for an operation that moves money, a test asserting only that nothing threw proves nothing. Mutation proof: `|| true` injected into the preset-membership check (marker grep-confirmed landed), two named tests reddened, restore proven by `git diff | grep -c` -> 0.
+
+**The plan named the mutation wrongly and the code is right.** §5 says `creditTransactions.recordManualTopUp`; it landed in `convex/credits.ts`, so the callable path is `api.credits.recordManualTopUp`. Recorded here rather than quietly resolved, because the document is the batch authority and a reader following it would call a path that does not exist.
+
+**Surfaces.** `components/ui/amount-input.tsx` and `components/ui/table.tsx` were ported from mcpcn (MIT-attributed, OKLCH-native, no colour remap needed). `components/dashboard/account/tabs/UsageCreditsTab.tsx` gains the top-up control — the tab previously displayed a balance and offered no way to change it. `components/chat/MessageList.tsx` gains a `data-table` message-part renderer; selecting a row surfaces that row's id. Both were proven red before green, each with its own mutation proof and restore.
+
+CLASS: a top-up tier written as a literal in code — a value the customer changes does not live in the code.
+- The presets are read from `systemConfig` (`manual_topup_presets`, seeded in `convex/seedCredits.ts`) and reach the host through `getManualTopupPresets`. No tier literal in host code.
+- sweep: `grep -rn "10, 25, 50\|DEFAULT_PRESETS = \[10" components/ convex/ | grep -v seedCredits.ts` -> **one survivor**, `components/ui/amount-input.tsx:71`.
+- **remaining: 1, declared.** That survivor is the ported block's own generic fallback for a consumer that renders it without passing presets. It is dead on this repository's path — `UsageCreditsTab.tsx` always supplies `data.presets` from Convex — and the reason is written at the line itself, where a reader of the code will meet it, not in an exclusion list at the bottom of a sweep. A divergence that is written down is a decision; a silent one is debt.
+
+**§3's derivation command is not trustworthy for a block whose name is a common English substring, and this lot found it the hard way.** It reported `table consumers=43`. That number is meaningless: the command greps the bare block name, and `table` matches prose in the legal pages, `DataTable`, `acceptable`, and much else. The real count of files importing the block is **1** — `git grep -ln "from \"@/components/ui/table\"" -- components app src` -> `components/chat/MessageList.tsx`. The block *is* wired, so the batch criterion holds; but the authority the whole plan rests on returned a figure that measures nothing, and would have returned `consumers >= 1` for `table` even if nobody had wired it. Traced, not patched here.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 55 suites, 249/249. `pnpm exec vitest run` -> 39 files, 381 passed / 0 failed / 7 skipped, 388 total. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 17 changed files -> clean. i18n: `usage_tab.manual_topup_*` and `chat.messageList.table.emptyMessage` in all seven locales.
+
+Visual check (Laurent): `/dashboard/account?tab=usage` -> the Credit Balance card now carries a top-up preset row; tapping a preset moves the balance. And in a chat where the agent emits a `data-table` part, the table renders inline and a row can be selected.
+
 ### Added (2026-07-21 — mcpcn blocks, batch 1: `option-list` and `quick-reply` put into service)
 
 Closes `k1721t26exar0fahvfd32xfkmn8ay02k`. Batch 1 of the plan in `docs/mcpcn-block-mapping.md` §5.

@@ -36,6 +36,12 @@ export const seedAll = internalMutation({
 				value: false,
 				description: "Enable monthly credit reset (MVP: disabled)",
 			},
+			{
+				key: "manual_topup_presets",
+				value: [10, 25, 50],
+				description:
+					"Preset amounts offered by the manual credit top-up control (amount-input block, UsageCreditsTab) — edit this row to change tiers without a code deploy",
+			},
 		];
 
 		for (const config of systemConfigs) {

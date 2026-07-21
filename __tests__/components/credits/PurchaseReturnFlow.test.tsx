@@ -64,6 +64,10 @@ jest.mock("@/convex/_generated/api", () => ({
 		subscriptionTiers: { listCreditPackages: "listCreditPackages" },
 		polar: { generateCheckoutLink: "generateCheckoutLink" },
 		usageTracking: { listByUser: "listByUser" },
+		credits: {
+			getManualTopupPresets: "getManualTopupPresets",
+			recordManualTopUp: "recordManualTopUp",
+		},
 	},
 }));
 
