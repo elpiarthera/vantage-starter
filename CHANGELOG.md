@@ -6,6 +6,16 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — stale router-source assertion in PurchaseReturnFlow test, main green)
+
+`__tests__/components/credits/PurchaseReturnFlow.test.ts`'s "InsufficientCreditsModal uses useRouter from next/navigation" test asserted a stale implementation detail: PR #51 (`c5c0019`, "fix(routes)") deliberately switched `InsufficientCreditsModal.tsx` from `next/navigation` to the locale-aware `@/i18n/routing` router (repo convention: 10/11 `useRouter` call-sites use `@/i18n/routing`), but the test was never updated, so `vitest run` failed on main (1 failed / 343 passed / 7 skipped) while the Issue #188 behaviour it guards (navigate-with-`returnTo` on purchase) remained fully intact — all 17 sibling assertions in the same file passed. The component was NOT changed; the test now asserts the true, current contract: `from "@/i18n/routing"` + `useRouter` + `router.push(`.
+
+**Mutation proof the rewritten assertion still bites:** removed `const router = useRouter();` from `InsufficientCreditsModal.tsx`, confirmed via grep the mutation landed, re-ran the suite — RED (1 failed: the rewritten test, 18 others still passed). Restored via `git checkout`, confirmed `git diff` empty, re-ran — GREEN (19/19).
+
+**Honest limitation (not in scope to fix here):** this entire test file asserts on raw source TEXT via `fs.readFileSync` + `.toContain(...)` string matching, not on rendered behaviour — it is structurally fragile to legitimate refactors (exactly what happened) and could stay green while real behaviour regresses. Converting it to a behaviour/RTL test is a larger, separate task.
+
+`pnpm exec vitest run` → 0 failed / 344 passed / 7 skipped (was 1 failed / 343 passed / 7 skipped on main). `pnpm exec jest` → 47/47 suites, 223/223 tests, unchanged.
+
 ### Added (2026-07-21 — consultant onboarding: per-team/agent/skill config approval, not all-or-nothing)
 
 Closes `k17ecjq9`, the CLASS survivor traced by PR #71's changelog entry ("remaining: 1 traced — onboarding-chat.tsx bulk team/agent/skill acceptance"). `app/[locale]/dashboard/consultant/onboard/[projectId]/_components/onboarding-chat.tsx`'s `handleConfirm` forwarded `extracted.selectedTeamIds/selectedAgentIds/selectedSkillIds` to `updateProject` exactly as extracted from the AI's `TeamSelection`/`AgentSelection`/`SkillSelection` output — no interactive toggle existed, verified live on main (90e48e3) before this fix.
