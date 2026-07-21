@@ -1,8 +1,37 @@
-import { Slot } from "@radix-ui/react-slot";
+import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+
+// Base UI has no drop-in `Slot` (Radix's asChild merge mechanism). Its idiom is
+// the `useRender` hook: when `asChild`, the single child element becomes the
+// render target and the component's own props (className, ref, handlers) are
+// merged onto it via `useRender`'s `props` param (internally merged with
+// `mergeProps` — className strings joined, event handlers composed, non-special
+// props overwritten by the external ones). When not `asChild`, `defaultTagName`
+// renders the plain host element. See docs/migration-base-ui.md §M9.
+function useAsChildRender<RenderedElementType extends Element>({
+	asChild,
+	defaultTagName,
+	children,
+	props,
+	ref,
+}: {
+	asChild: boolean;
+	defaultTagName: keyof React.JSX.IntrinsicElements;
+	children?: React.ReactNode;
+	props: Record<string, unknown>;
+	ref: React.Ref<RenderedElementType>;
+}) {
+	return useRender({
+		...(asChild
+			? { render: React.Children.only(children) as React.ReactElement }
+			: { defaultTagName }),
+		props: asChild ? props : { ...props, children },
+		ref,
+	});
+}
 
 const buttonVariants = cva(
 	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -40,15 +69,17 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-	({ className, variant, size, asChild = false, ...props }, ref) => {
-		const Comp = asChild ? Slot : "button";
-		return (
-			<Comp
-				className={cn(buttonVariants({ variant, size, className }))}
-				ref={ref}
-				{...props}
-			/>
-		);
+	({ className, variant, size, asChild = false, children, ...props }, ref) => {
+		return useAsChildRender({
+			asChild,
+			defaultTagName: "button",
+			children,
+			props: {
+				...props,
+				className: cn(buttonVariants({ variant, size, className })),
+			},
+			ref,
+		});
 	},
 );
 Button.displayName = "Button";

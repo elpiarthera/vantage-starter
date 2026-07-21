@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-21 — migration M9: `button` + `sidebar` ported from Radix Slot to Base UI `useRender`, `@radix-ui/react-slot` removed — single-pile Base UI reached)
+
+Migrated `components/ui/button.tsx` and `components/ui/sidebar.tsx` together — both were the last two consumers of `@radix-ui/react-slot` in the repo (verified `git grep -l "@radix-ui/react-slot" -- components app src lib` -> only these two files before this wave), so the package could not be removed until both migrated.
+
+Unlike every prior wave (M1-M8), this migration's Radix primitive (`Slot`) has no Base UI 1:1 replacement at all — Base UI ships no drop-in `Slot`. Its idiom for `asChild` is the `useRender` hook (`@base-ui/react/use-render`): given a `render` target (the single child element) and a `props` bag, it merges the component's own props (className joined, event handlers composed right-to-left, other props overwritten) onto that target — the same merge Radix's `Slot` performed, verified against `node_modules/@base-ui/react/use-render/useRender.d.ts` and `merge-props/mergeProps.d.ts`. Both wrapper files now define an internal (non-exported, duplicated per file since neither file is meant to import from the other for this) `useAsChildRender` helper: `asChild` true renders `React.Children.only(children)` as the `render` target; `asChild` false renders `defaultTagName`'s native element with `children` passed through normally.
+
+`button.tsx`'s `Button`: the previous `const Comp = asChild ? Slot : "button"` branch is replaced by a single `useAsChildRender` call. Public API (`ButtonProps`, `buttonVariants`, `displayName`, exports) unchanged — all 28 consumers (`asChild` used in 11) needed zero edits.
+
+`sidebar.tsx`: five sites previously doing `const Comp = (asChild ? Slot : "<tag>") as React.ElementType` (`SidebarGroupLabel` div, `SidebarGroupAction` button, `SidebarMenuButton` button, `SidebarMenuAction` button, `SidebarMenuSubButton` a) each moved onto the same helper, preserving each part's default tag, `asChild?: boolean` prop surface, and (for `SidebarMenuButton`) its `TooltipTrigger asChild` wrapping — no consumer edits needed.
+
+`@radix-ui/react-slot` proven `remaining: 0` direct importers, then removed via `pnpm remove @radix-ui/react-slot` (`pnpm-lock.yaml` regenerated). Terminal proof for the whole migration series: `git grep -n "@radix-ui/react" -- 'components/ui/*.tsx'` -> empty — zero `@radix-ui/react-*` imports remain anywhere in `components/ui/`, reaching a single-pile Base UI.
+
+Both migrations are covered by real consumer-mounting tests: `__tests__/components/button-aschild.test.tsx` (mounts `app/[locale]/error.tsx`, asserting the migrated `asChild` `Button` merges onto the real `<Link>` anchor rather than wrapping it, plus a non-`asChild` regression check) and `__tests__/components/sidebar-aschild.test.tsx` (mounts a real `SidebarMenuButton asChild` anchor inside `SidebarProvider`/`Sidebar`) — each proven bipolar (RED under a stated `useRender` regression mutation, GREEN restored, `git diff` empty) — neither consumer's source needed any change.
+
 ### Changed (2026-07-21 — migration M8: `dropdown-menu` + `picker` ported from Radix to Base UI, package removed)
 
 Migrated `components/ui/dropdown-menu.tsx` and `components/create/picker.tsx` together — both imported `@radix-ui/react-dropdown-menu` (verified `git grep -l "@radix-ui/react-dropdown-menu" -- components app src` -> only these two files; `picker.tsx` imports the Radix primitive directly, not via `dropdown-menu.tsx`), so the package could not be removed until both migrated — same one-package-two-files coupling M7 established for `dialog`/`sheet`.
