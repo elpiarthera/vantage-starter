@@ -30,6 +30,7 @@ jest.mock("next-intl", () => ({
 
 jest.mock("next/navigation", () => ({
 	useParams: () => ({ locale: "en", missionId: "mission_1" }),
+	useRouter: () => ({ push: jest.fn() }),
 }));
 
 jest.mock("@/convex/_generated/api", () => ({

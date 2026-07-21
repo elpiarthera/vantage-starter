@@ -10,13 +10,18 @@ import {
 	Clock,
 	Flag,
 	Loader2,
+	Pencil,
+	Trash2,
 	User,
 	XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
+import { EditMissionModal } from "@/components/missions/edit-mission-modal";
+import { EditOperationModal } from "@/components/missions/edit-operation-modal";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -34,7 +39,8 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 // ── Status configs ────────────────────────────────────────────────────────────
@@ -139,12 +145,14 @@ interface OperationItemProps {
 	};
 	agentName?: string;
 	dependencyNames: string[];
+	onEdit: () => void;
 }
 
 function OperationItem({
 	operation,
 	agentName,
 	dependencyNames,
+	onEdit,
 }: OperationItemProps) {
 	const t = useTranslations("missions.detail");
 	const operationStatus = useOperationStatusConfig();
@@ -156,7 +164,7 @@ function OperationItem({
 	return (
 		<div
 			className={cn(
-				"flex gap-3 py-3 px-4 border-l-2 transition-colors duration-150",
+				"flex gap-3 py-3 px-4 border-l-2 transition-colors duration-150 group",
 				isCompleted ? "border-l-green-500/40" : "border-l-border",
 			)}
 		>
@@ -182,13 +190,23 @@ function OperationItem({
 					>
 						{operation.name}
 					</span>
-					<Badge className={cn("text-xs shrink-0", statusConfig.className)}>
-						<StatusIcon
-							className="size-3 mr-1 inline-block"
-							aria-hidden="true"
-						/>
-						{statusConfig.label}
-					</Badge>
+					<div className="flex items-center gap-1.5 shrink-0">
+						<Badge className={cn("text-xs", statusConfig.className)}>
+							<StatusIcon
+								className="size-3 mr-1 inline-block"
+								aria-hidden="true"
+							/>
+							{statusConfig.label}
+						</Badge>
+						<button
+							type="button"
+							onClick={onEdit}
+							className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							aria-label={t("edit_operation_aria", { name: operation.name })}
+						>
+							<Pencil className="size-3.5" aria-hidden="true" />
+						</button>
+					</div>
 				</div>
 
 				{/* Assigned agent */}
@@ -436,11 +454,31 @@ interface MissionDetailProps {
 function MissionDetail({ missionId, locale }: MissionDetailProps) {
 	const t = useTranslations("missions.detail");
 	const format = useFormatter();
+	const router = useRouter();
 	const missionStatusConfig = useMissionStatusConfig();
 	const mission = useQuery(api.missions.get, { id: missionId });
 	const operations = useQuery(api.operations.listByMission, { missionId });
 	const checkpoints = useQuery(api.checkpoints.listByMission, { missionId });
 	const stats = useQuery(api.operations.getStatsByMission, { missionId });
+	const removeMission = useMutation(api.missions.remove);
+
+	const [isEditMissionOpen, setIsEditMissionOpen] = useState(false);
+	const [editingOperation, setEditingOperation] =
+		useState<Doc<"operations"> | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	const handleDeleteMission = async () => {
+		setIsDeleting(true);
+		try {
+			await removeMission({ id: missionId });
+			toast.success(t("toast_mission_deleted"));
+			router.push(ROUTES.dashboardMissions);
+		} catch (error) {
+			toast.error(t("toast_mission_delete_error"));
+			console.error(error);
+			setIsDeleting(false);
+		}
+	};
 
 	const isLoading =
 		mission === undefined ||
@@ -511,14 +549,56 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 					<h1 className="text-2xl font-bold tracking-tight text-foreground font-[Space_Grotesk,sans-serif]">
 						{mission.name}
 					</h1>
-					<Badge
-						className={cn(
-							"text-xs font-medium shrink-0",
-							statusConfig.className,
-						)}
-					>
-						{statusConfig.label}
-					</Badge>
+					<div className="flex items-center gap-2 shrink-0">
+						<Badge
+							className={cn("text-xs font-medium", statusConfig.className)}
+						>
+							{statusConfig.label}
+						</Badge>
+						<Button
+							size="sm"
+							variant="outline"
+							className="rounded-full h-8 px-3 text-xs"
+							onClick={() => setIsEditMissionOpen(true)}
+						>
+							<Pencil className="size-3 mr-1.5" aria-hidden="true" />
+							{t("edit_mission")}
+						</Button>
+						<AlertDialog>
+							<AlertDialogTrigger asChild>
+								<Button
+									size="sm"
+									variant="outline"
+									disabled={isDeleting}
+									className="rounded-full h-8 px-3 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+								>
+									<Trash2 className="size-3 mr-1.5" aria-hidden="true" />
+									{t("delete_mission")}
+								</Button>
+							</AlertDialogTrigger>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle className="font-[Space_Grotesk,sans-serif]">
+										{t("delete_mission_confirm_title")}
+									</AlertDialogTitle>
+									<AlertDialogDescription>
+										{t("delete_mission_confirm_description")}
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel className="rounded-full">
+										{t("cancel")}
+									</AlertDialogCancel>
+									<AlertDialogAction
+										onClick={() => void handleDeleteMission()}
+										className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+									>
+										{t("delete_mission")}
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
+					</div>
 				</div>
 
 				{/* Progress */}
@@ -601,6 +681,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 											operation={op as OperationItemProps["operation"]}
 											agentName={agentDisplay}
 											dependencyNames={depNames}
+											onEdit={() => setEditingOperation(op)}
 										/>
 										{/* Render checkpoint after this operation if one exists */}
 										{checkpointByOpId.has(op._id) && (
@@ -625,6 +706,25 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 			<footer className="text-xs text-muted-foreground">
 				{t("created")} {format.relativeTime(mission.createdAt)}
 			</footer>
+
+			{/* Edit mission modal */}
+			<EditMissionModal
+				mission={mission}
+				open={isEditMissionOpen}
+				onOpenChange={setIsEditMissionOpen}
+			/>
+
+			{/* Edit operation modal */}
+			{editingOperation && (
+				<EditOperationModal
+					operation={editingOperation}
+					siblingOperations={operations}
+					open={editingOperation !== null}
+					onOpenChange={(open) => {
+						if (!open) setEditingOperation(null);
+					}}
+				/>
+			)}
 		</div>
 	);
 }
