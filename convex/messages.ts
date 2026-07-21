@@ -4,8 +4,12 @@
  * Ported from vantage-studio/convex/messages.ts.
  * Auth adapter applied: by_clerk_id → by_clerk_user_id, clerkId → clerkUserId.
  * Votes cascade stripped from deleteAfterTimestamp (no votes table in starter).
- * workspaceMembers check replaced with workspace.ownerId === identity.subject
- * (single-owner workspace for MVP).
+ * Workspace access is granted via `requireAuthWithWorkspace` (owner OR org
+ * member — see convex/lib/auth.ts), the same helper used by agents.ts,
+ * architectSessions.ts, checkpoints.ts, consultantProjects.ts, missions.ts,
+ * operations.ts, projects.ts, and skills.ts. No separate workspaceMembers
+ * table exists or is needed — membership is `workspace.organizationId ===
+ * user.organizationId`.
  *
  * Security fixes applied (per MIGRATION-PLAN.md):
  * - B3: getById — ownership chain check added
@@ -16,10 +20,32 @@
  */
 
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { requireAuth } from "./lib/auth";
+import { requireAuth, requireAuthWithWorkspace } from "./lib/auth";
 import { deriveTitleFromContent } from "./lib/titles";
 import { rateLimiter } from "./ratelimit";
+
+/**
+ * `list` is a query that must degrade to `[]` on any refusal (unauthenticated,
+ * missing row, no workspace access) rather than throw — same non-throwing
+ * contract as agents.ts's `getUserWorkspace` helper. `requireAuthWithWorkspace`
+ * throws by design (mutations/getById want a hard failure), so this wraps it
+ * and swallows exactly the "no access" case into `null`, preserving `list`'s
+ * existing return-shape contract with its callers.
+ */
+async function hasWorkspaceAccess(
+	ctx: QueryCtx,
+	workspaceId: Id<"workspaces">,
+): Promise<boolean> {
+	try {
+		await requireAuthWithWorkspace(ctx, workspaceId);
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 // Tool call schema for reuse.
 //
@@ -76,8 +102,7 @@ const messageDoc = v.object({
 
 /**
  * Get all messages for a chat, ordered by creation time (ascending).
- * Validates workspace ownership before returning data.
- * TODO: add member check when workspaceMembers table is added
+ * Validates workspace access (owner OR org member) before returning data.
  */
 export const list = query({
 	args: { chatId: v.id("chats") },
@@ -89,12 +114,8 @@ export const list = query({
 		const chat = await ctx.db.get(chatId);
 		if (!chat) return [];
 
-		const workspace = await ctx.db.get(chat.workspaceId);
-		if (!workspace) return [];
-
-		// Ownership check — vantage-starter is single-owner (no workspaceMembers table)
-		// TODO: add member check when workspaceMembers table is added
-		if (workspace.ownerId !== identity.subject) return [];
+		// Workspace access check (owner or org member) — see hasWorkspaceAccess.
+		if (!(await hasWorkspaceAccess(ctx, chat.workspaceId))) return [];
 
 		return await ctx.db
 			.query("messages")
@@ -123,10 +144,9 @@ export const getById = query({
 		const chat = await ctx.db.get(message.chatId);
 		if (!chat) throw new Error("Forbidden");
 
-		const ws = await ctx.db.get(chat.workspaceId);
-		if (!ws || ws.ownerId !== identity.subject) {
-			throw new Error("Forbidden");
-		}
+		// Workspace access check (owner or org member) — requireAuthWithWorkspace
+		// throws, which matches this query's existing throw-on-refusal contract.
+		await requireAuthWithWorkspace(ctx, chat.workspaceId);
 
 		return message;
 	},
@@ -138,8 +158,7 @@ export const getById = query({
 
 /**
  * Save a message (user or assistant).
- * Validates workspace ownership before writing.
- * TODO: add member check when workspaceMembers table is added
+ * Validates workspace access (owner OR org member) before writing.
  * Rate limit: 30 per minute per user.
  */
 export const save = mutation({
@@ -172,14 +191,8 @@ export const save = mutation({
 		const chat = await ctx.db.get(args.chatId);
 		if (!chat) throw new Error("Chat not found");
 
-		const workspace = await ctx.db.get(chat.workspaceId);
-		if (!workspace) throw new Error("Workspace not found");
-
-		// Ownership check — vantage-starter is single-owner (no workspaceMembers table)
-		// TODO: add member check when workspaceMembers table is added
-		if (workspace.ownerId !== user.clerkUserId) {
-			throw new Error("Forbidden");
-		}
+		// Workspace access check (owner or org member) — see requireAuthWithWorkspace.
+		await requireAuthWithWorkspace(ctx, chat.workspaceId);
 
 		// Auto-title: derive the chat's display name from its own first user
 		// message, unless the user has already renamed it (isTitleCustom).
@@ -283,8 +296,7 @@ export const update = mutation({
 /**
  * Delete messages after a timestamp (for regeneration).
  * Votes cascade stripped — no votes table in vantage-starter.
- * Validates workspace ownership before deleting.
- * TODO: add member check when workspaceMembers table is added
+ * Validates workspace access (owner OR org member) before deleting.
  */
 export const deleteAfterTimestamp = mutation({
 	args: {
@@ -293,19 +305,13 @@ export const deleteAfterTimestamp = mutation({
 	},
 	returns: v.object({ deleted: v.number() }),
 	handler: async (ctx, { chatId, timestamp }) => {
-		const user = await requireAuth(ctx);
-
 		const chat = await ctx.db.get(chatId);
 		if (!chat) throw new Error("Chat not found");
 
-		const workspace = await ctx.db.get(chat.workspaceId);
-		if (!workspace) throw new Error("Workspace not found");
-
-		// Ownership check — vantage-starter is single-owner (no workspaceMembers table)
-		// TODO: add member check when workspaceMembers table is added
-		if (workspace.ownerId !== user.clerkUserId) {
-			throw new Error("Forbidden");
-		}
+		// Workspace access check (owner or org member) — see requireAuthWithWorkspace.
+		// requireAuthWithWorkspace covers requireAuth internally (throws if
+		// unauthenticated), so no separate requireAuth call is needed here.
+		await requireAuthWithWorkspace(ctx, chat.workspaceId);
 
 		const messages = await ctx.db
 			.query("messages")

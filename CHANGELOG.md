@@ -6,6 +6,28 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — an organization member was refused on chat messages while passing everywhere else)
+
+Closes `k1789wtea1cxfmcwdqcyxs0e4h8azr8g`.
+
+**This task began as a false alarm, and the correction is the more useful part of the record.** Its first version claimed *"six authorization checks are absent"* in `convex/messages.ts`. Three of us — dispatcher, reviewer and orchestrator — reported that before anyone opened the file. It was a count of *comment* occurrences presented as a security state. The commands behind it were correct; the conclusion did not follow from them. Each TODO is immediately followed by its own check (`:97`, `:127`, `:180`, `:306`): a caller who does not own the workspace reads nothing and writes nothing. Retracted in PR #85, in PR #84's body, and here.
+
+**The real defect points the other way and is narrower.** `messages.ts` was the only `convex/` file hand-rolling its access check, and its check was **stricter** than the canonical `requireAuthWithWorkspace` (`convex/lib/auth.ts:185`), which accepts owner **OR** organization member. Eight other `convex/` files consume that helper. So in an organization workspace a legitimate member was **refused on chat messages** while passing everywhere else — a broken feature, a false negative, never an open door. The priority was moved from urgent/security to high/broken-feature to match the real risk rather than the alarming label.
+
+The four sites (`list`, `getById`, `save`, `deleteAfterTimestamp`) now consume the helper. `list` keeps its `[]`-on-refusal contract through a small `hasWorkspaceAccess` wrapper — the helper throws, and a query silently changing what it returns on refusal would break callers in a way no type would catch; the reason is written at the wrapper. `update` was left alone: it is not one of the four sites and gates on `chat.createdBy`, a genuinely different model (message authorship, not workspace access).
+
+**The six comments are gone.** They misled in both directions at once: announcing a check that was present, and naming a table that is not the model this product chose (`convex/lib/auth.ts:172-175` states it — no membership table, access by `ownerId` or `organizationId`).
+
+Coverage is three-poled per site, because a check that refuses everyone scores perfectly on a one-sided probe: the organization member passes (red before this change), the outsider is refused (already true, and it must stay true), the owner still passes. 12 tests. Mutation proof reproduced independently by the orchestrator: reverting `hasWorkspaceAccess` to owner-only (grep-confirmed landed) reddened **exactly** `RED/GREEN: an org member (not the owner) can read the chat's messages` — 1 failed / 11 passed — while both the outsider and owner tests stayed green. A test that localises is the point.
+
+Consumer audit: `git grep` for `api.messages.{list,getById,save,update,deleteAfterTimestamp}` across `.ts`/`.tsx` found no app or component caller; the only caller is a test, acting as owner. Nothing relied on `list` returning `[]` for a legitimate caller.
+
+CLASS: a comment announcing a guarantee the code does not hold — here inverted, announcing an absence that was not real.
+- sweep: `git grep -n "TODO: add .* check" -- convex/ app/ lib/` -> **0** after the lot. Positive control on the same pattern against the pre-fix blob (`git show HEAD:convex/messages.ts`) -> **6**, so the matcher can find instances and the zero is a measurement.
+- remaining: 0.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec vitest run` -> 38 files, 372 passed / 0 failed / 7 skipped, 379 total. `pnpm exec jest` -> 51 suites, 238/238. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on both touched files -> clean. No user-facing string added, so no locale work.
+
 ### Added (2026-07-21 — the consultant flow extracts through Firecrawl, and a failed extraction is now visible)
 
 Closes `k17b1js3w28ewhrj58q9j7z0cd8ax319`. The code announced this capability about itself and never shipped it — `convex/actions/scrapeClient.ts:6` read verbatim *"Uses native fetch + HTML parsing (no Firecrawl dependency — upgrade path noted)"*, with the upgrade path described two lines below.
