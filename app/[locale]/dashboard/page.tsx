@@ -8,6 +8,7 @@ import { useUserSync } from "@/components/UserSyncProvider";
 import { api } from "@/convex/_generated/api";
 import { useCredits } from "@/hooks/business-logic/useCredits";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -107,7 +108,7 @@ function ArchitectCTA() {
 					</p>
 				</div>
 			</div>
-			<Link href="/dashboard/architect" className="shrink-0">
+			<Link href={ROUTES.dashboardArchitect} className="shrink-0">
 				<ui-button
 					variant="primary"
 					size="sm"
@@ -134,7 +135,7 @@ function SessionRow({ session }: { session: Session }) {
 	const format = useFormatter();
 	return (
 		<Link
-			href={`/dashboard/architect?session=${session._id}`}
+			href={`${ROUTES.dashboardArchitect}?session=${session._id}`}
 			className="group flex items-center justify-between px-6 py-4 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 			style={{
 				transitionDuration: "150ms",
@@ -187,7 +188,7 @@ function SessionsEmptyState() {
 				</p>
 			</div>
 			<Link
-				href="/dashboard/architect"
+				href={ROUTES.dashboardArchitect}
 				className="text-xs text-primary hover:underline underline-offset-4 transition-colors duration-150"
 			>
 				{t("start_first_session")}
@@ -206,7 +207,7 @@ function RecentSessions({ sessions }: { sessions: Session[] }) {
 				</h2>
 				{sessions.length > 0 && (
 					<Link
-						href="/dashboard/architect"
+						href={ROUTES.dashboardArchitect}
 						className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-150"
 					>
 						{t("recent_sessions_view_all")}

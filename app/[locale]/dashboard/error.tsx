@@ -11,6 +11,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@/components/ui/card";
+import { ROUTES } from "@/lib/routes";
 
 export default function DashboardError({
 	error,
@@ -58,7 +59,7 @@ export default function DashboardError({
 						{t("try_again")}
 					</Button>
 					<Button variant="ghost" className="w-full" asChild>
-						<Link href="/dashboard">{t("go_to_dashboard")}</Link>
+						<Link href={ROUTES.dashboard}>{t("go_to_dashboard")}</Link>
 					</Button>
 				</CardFooter>
 			</Card>

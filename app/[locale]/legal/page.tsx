@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 type Props = {
 	params: Promise<{ locale: string }>;
@@ -13,7 +14,7 @@ export default async function LegalPage({ params }: Props) {
 		<main className="min-h-screen bg-background">
 			<div className="max-w-3xl mx-auto px-6 py-20">
 				<Link
-					href="/"
+					href={ROUTES.home}
 					className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 mb-8 inline-block"
 				>
 					{t("back_home")}

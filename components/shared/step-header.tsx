@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 interface StepHeaderProps {
 	currentStep: number;
@@ -81,7 +82,7 @@ export function StepHeader({
 							<span className="text-foreground">{totalDuration}</span>
 						</span>
 					)}
-					<Link href="/">
+					<Link href={ROUTES.home}>
 						<Button
 							variant="ghost"
 							className="text-foreground hover:bg-muted p-2 md:px-4"
@@ -112,7 +113,7 @@ export function StepHeader({
 								className="hover:bg-muted focus:bg-muted"
 							>
 								<Link
-									href="/dashboard"
+									href={ROUTES.dashboard}
 									className="flex items-center gap-2 cursor-pointer"
 								>
 									<Settings className="h-4 w-4" />

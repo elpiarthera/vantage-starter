@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 export function CTASection() {
 	const t = useTranslations("landing.cta");
@@ -95,7 +96,7 @@ export function CTASection() {
 						style={{ transitionDelay: "0.15s" }}
 					>
 						<Link
-							href="/sign-up"
+							href={ROUTES.signUp}
 							className="group rounded-xl bg-gray-900 dark:bg-gray-100 px-8 py-4 text-lg font-bold text-white dark:text-gray-900 transition-all hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg active:scale-[0.98] btn-shadow focus-ring"
 						>
 							<span className="flex items-center gap-2">

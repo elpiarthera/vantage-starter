@@ -6,6 +6,26 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-21 — route guard: from value-validity to source-provenance, and 37 hand-typed paths migrated to ROUTES)
+
+Closes `k173s3gwmnm1ncmtawyyt2wnjs8azxe2`. `__tests__/lib/route-tree-guard.test.ts` matched exactly one formulation of its own class — `router.push` / `router.replace` / `redirect(` — and was blind to `<Link href="/literal/path">`. It now scans JSX `href` too.
+
+**The extension alone was not the fix, and shipping it alone would have been fixing the instances while leaving the class open.** The guard checked *does this literal path resolve to a `ROUTES` value*, never *does this call site consume the `ROUTES` module*. Measured on the branch before this change: replacing `<Link href={ROUTES.dashboardAccount}>` with a hand-typed `<Link href="/dashboard/account">` in `components/dashboard/DashboardHeader.tsx` (4 sites, grep-confirmed) left the guard **GREEN, 4 passed / 0 failed**, while `<Link href="/__tau_probe_absent">` in the same file went RED. Every migrated site could have been re-typed the next day with nothing reddening. The guard now asserts the property `lib/routes.ts`'s own header already declared — *every internal navigation MUST consume a value produced by this module* — so a literal internal path at a navigation site is a violation **even when the path is valid**, because it was typed rather than derived.
+
+Exemptions are read off the string, never named: an external or protocol-relative URL, a `mailto:`/`tel:` scheme, a bare `#anchor`, or a final path segment carrying a file extension (which is what keeps the 7 static-asset hrefs in `app/[locale]/layout.tsx` — the preset stylesheet prefetches — out of scope). No filename and no path appears in an allow-list.
+
+**Two test titles were rewritten because they had stopped describing their assertions** (l.112 `describe`, l.206 `it`): both still announced `router.push/replace/redirect` and path *absence*, when the scan covers `href` and the property is now provenance. A stale title that no longer states what the assertion does is the same defect class closed in PR #75; leaving one inside the guard that exists to close mono-formulation gaps was not an option.
+
+**Bite proof, both directions.** MUST_BLOCK, historical: the extended guard run against the unmigrated tree went RED on 7 real violations — `app/[locale]/admin/layout.tsx:93,118,134,170`, `app/[locale]/dashboard/missions/[missionId]/page.tsx:506,539`, `app/[locale]/dashboard/page.tsx:137` — all locale-prefixed template hrefs (`` href={`/${locale}/…`} ``). MUST_BLOCK, provenance: hand-typing a *valid* path at navigation sites in `app/[locale]/legal/page.tsx`, `components/app-sidebar.tsx`, `components/landing/LandingNav.tsx` reddened the guard naming each site. Reproduced independently by the orchestrator on a fourth file the agent never touched — `components/landing/CTASection.tsx:99`, `href={ROUTES.signUp}` → `href="/sign-up"`, grep-confirmed → **1 failed / 3 passed**, naming `components/landing/CTASection.tsx:99 -> "/sign-up..."` — then restored by targeted edit (never `git checkout --`, which on an uncommitted tree reverts the legitimate migration along with the probe; that trap cost one re-migration this cycle). MUST_PASS: guard green on the migrated tree, zero false positives on the 7 static-asset hrefs.
+
+CLASS: any literal internal route path, in any navigation form, must be derived from `lib/routes.ts` rather than typed.
+- sweep: the extended guard's own scan of `app/ components/ lib/ hooks/ providers/` — derived from the artefact, not a hand-run grep. A first hand-run grep (`href="/…`) found 37 sites and *missed* the 7 locale-prefixed template ones, being itself mono-formulation; that miss is recorded here rather than quietly corrected, because it is the same disease this change treats.
+- remaining: 0. 18 files touched; no call site required a declared divergence.
+
+Note on what did **not** happen: all 37 originally-swept paths already resolved to valid `ROUTES` entries, so nothing was broken in the product. This is a migration to the single source of truth, not a repair of a live defect.
+
+Ratios measured by the orchestrator after rebasing onto `bbd7683`. Invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 48/48 suites, 231/231 tests. `pnpm exec vitest run` -> 334 passed / 0 failed / 7 skipped, 341 total. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on all 18 touched files -> clean.
+
 ### Changed (2026-07-21 — PurchaseReturnFlow: source-text assertions replaced by mutation-proven behaviour tests)
 
 Closes `k173692rs0azah3dds8qgyvq1h8ayk2f`, the coverage debt the entry below defers to explicitly. `__tests__/components/credits/PurchaseReturnFlow.test.ts` asserted the SHAPE of five source files (`fs.readFileSync` + `.toContain`) and never rendered anything, so it could not observe the regression it claimed to guard — proven at review when deleting `const router = useRouter();` from the real component left it GREEN 19/19. It is replaced by `PurchaseReturnFlow.test.tsx`, which renders the real components and hook and asserts arguments, DOM state, and side effects.

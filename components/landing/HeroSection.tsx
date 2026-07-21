@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 function TerminalMockup() {
 	const t = useTranslations("landing.hero");
@@ -175,7 +176,7 @@ export function HeroSection() {
 					{/* CTA buttons */}
 					<div className="flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in-up opacity-0 stagger-4">
 						<Link
-							href="/sign-up"
+							href={ROUTES.signUp}
 							className="group flex items-center gap-2 rounded-xl bg-gray-900 dark:bg-gray-100 px-7 py-3.5 text-base font-bold text-white dark:text-gray-900 transition-all hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg active:scale-[0.98] btn-shadow focus-ring"
 						>
 							{t("cta_primary")}

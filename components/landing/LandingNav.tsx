@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 // biome-ignore format: import order managed by Biome
@@ -134,7 +135,7 @@ export function LandingNav() {
 			>
 				{/* Logo */}
 				<Link
-					href="/"
+					href={ROUTES.home}
 					className="group flex items-center gap-2.5 no-underline"
 					aria-label={t("nav.home_aria")}
 				>
@@ -231,14 +232,14 @@ export function LandingNav() {
 					</button>
 
 					<Link
-						href="/sign-in"
+						href={ROUTES.signIn}
 						className="hidden rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 no-underline transition-colors focus-ring sm:inline-flex"
 					>
 						{t("nav.sign_in")}
 					</Link>
 
 					<Link
-						href="/sign-up"
+						href={ROUTES.signUp}
 						className="hidden rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white no-underline transition-all hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 btn-shadow focus-ring sm:inline-flex"
 					>
 						{t("nav.get_started")}
@@ -278,14 +279,14 @@ export function LandingNav() {
 					{/* Mobile CTA buttons */}
 					<div className="mx-auto max-w-6xl border-t border-gray-200/60 dark:border-gray-800/60 px-6 pb-6 pt-4 flex flex-col gap-3">
 						<Link
-							href="/sign-in"
+							href={ROUTES.signIn}
 							onClick={closeMobileMenu}
 							className="block rounded-lg px-4 py-3 text-center text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 no-underline transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 focus-ring"
 						>
 							{t("nav.sign_in")}
 						</Link>
 						<Link
-							href="/sign-up"
+							href={ROUTES.signUp}
 							onClick={closeMobileMenu}
 							className="block rounded-lg bg-gray-900 px-4 py-3 text-center text-base font-medium text-white no-underline transition-all hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 btn-shadow focus-ring"
 						>

@@ -28,6 +28,7 @@ import {
 import { useDevice } from "@/contexts/DeviceContext";
 import { useCredits } from "@/hooks/business-logic/useCredits";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 interface DashboardHeaderProps {
 	/**
@@ -96,7 +97,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							{tCredits("your_balance", { balance })}
 						</Badge>
 					</Button>
-					<Link href="/dashboard/account">
+					<Link href={ROUTES.dashboardAccount}>
 						<Button
 							variant="ghost"
 							className="w-full justify-start min-h-[48px] active:scale-95"
@@ -117,7 +118,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 							<span>{t("profile")}</span>
 						</Button>
 					</Link>
-					<Link href="/dashboard/account">
+					<Link href={ROUTES.dashboardAccount}>
 						<Button
 							variant="ghost"
 							className="w-full justify-start min-h-[48px] active:scale-95"
@@ -219,7 +220,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem asChild>
-					<Link href="/dashboard/account" className="cursor-pointer">
+					<Link href={ROUTES.dashboardAccount} className="cursor-pointer">
 						<svg
 							width="16"
 							height="16"
@@ -237,7 +238,7 @@ export function DashboardHeader({ sidebarTrigger }: DashboardHeaderProps) {
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>
-					<Link href="/dashboard/account" className="cursor-pointer">
+					<Link href={ROUTES.dashboardAccount} className="cursor-pointer">
 						<svg
 							width="16"
 							height="16"
