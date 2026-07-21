@@ -41,7 +41,19 @@ grep -c '^1\. \*\*Feature it opens' docs/mcpcn-block-mapping.md
 
 ## 2. Architectural decision (already made, not re-litigated here)
 
-23 of the 30 blocks depend on `@base-ui/react`. Decision: **add Base UI alongside the existing Radix, take the blocks as-is, MIT attribution intact, zero rewrite.** This is a one-time install noted once below as "Base UI" in the cost column — never repeated per block, never treated as an obstacle.
+23 of the 30 blocks depend on `@base-ui/react`. **That dependency is already installed and it is the only primitives library in this repository** — derived, not assumed:
+
+```
+python3 -c "import json; p=json.load(open('package.json'));
+print('base-ui:', p['dependencies'].get('@base-ui/react'));
+print('radix keys:', [k for k in list(p['dependencies'])+list(p['devDependencies']) if 'radix' in k])"
+-> base-ui: 1.6.0
+-> radix keys: []
+```
+
+An earlier version of this section read *"add Base UI **alongside the existing Radix** … a one-time install"*. That was true when it was written and is false now: Radix was migrated to Base UI and **removed** — every wave is recorded in `docs/migration-base-ui.md`, and the only surviving `@radix-ui` strings in the repository are two test docstrings explaining what a component was ported *from*, plus the changelog history. The sentence is corrected here rather than left standing, because a stale state claim inside a document whose §1 preaches derivation is the exact defect this file exists to avoid.
+
+**Consequence for every cost line below:** the Base UI install is not a future expense to weigh against a block. It is paid. Where an entry names "Base UI" in its cost, read it as *the primitive layer this block builds on, already present* — never as an obstacle, and never as a reason to defer.
 
 ---
 
@@ -53,7 +65,18 @@ grep -c '^1\. \*\*Feature it opens' docs/mcpcn-block-mapping.md
 - **VantageRegistry** — a discoverable catalog of skills, agents, hooks, rules, plugins, runbooks, templates, components.
 - **EveVantage** — a product forked from vantage-starter, carrying the vantage-starter base plus its own additions on top.
 
-Eight of the thirty blocks below are already installed in this repo (`ls components/ui/` returns `chat-conversation.tsx`, `message-bubble.tsx`, `option-list.tsx`, `progress-steps.tsx`, `quick-reply.tsx`, `stat-card.tsx`, `status-badge.tsx`, `tag-select.tsx`). Four of those eight are already wired into a live screen: `stat-card` in `components/missions/mission-stats.tsx`, `message-bubble` and `chat-conversation` in `components/chat/MessageList.tsx`, `status-badge` in `components/chat/ToolCallIndicator.tsx` and `components/missions/mission-list-view.tsx`. The remaining 22 blocks are not yet installed; each entry below names the exact route or screen that installs them.
+**Which blocks are installed, and which are wired into a live screen, is STATE — so it is derived on demand, never written here.** A sentence naming them is true the day it is typed and false after the next merge: an earlier draft of this paragraph said "four are wired" and was already wrong, because two more had been wired in the meantime. Run this instead:
+
+```
+for b in $(curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
+import json,sys; d=json.load(sys.stdin)
+print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block'))"); do
+  [ -f "components/ui/$b.tsx" ] || continue
+  echo "$b consumers=$(git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l)"
+done
+```
+
+Every installed block is listed with the number of screens consuming it. `consumers=0` means installed but not yet in service; a block absent from the output is not installed yet. Each entry below names the exact route or screen that puts its block to work.
 
 ---
 
@@ -64,7 +87,7 @@ Eight of the thirty blocks below are already installed in this repo (`ls compone
 **message-bubble** — chat bubbles with text/image/voice/reaction variants.
 1. **Feature it opens:** vantage-starter's dashboard chat (`components/chat/MessageList.tsx`) gains voice-note and image-drop message types, so a user can send a screenshot of a bug straight into the mission chat instead of describing it in text.
 2. **Replaces:** the hand-written `MessageBubble` inline rendering in `components/chat/MessageList.tsx` — already installed and wired (`components/ui/message-bubble.tsx`).
-3. **Cost:** Base UI install (shared across all 23 dependent blocks, one-time); wiring image/voice payload types into the existing `sendMessage` call.
+3. **Cost:** Base UI (already installed, see §2); wiring image/voice payload types into the existing `sendMessage` call.
 
 **chat-conversation** — full conversation shell, multiple message types.
 1. **Feature it opens:** the conversation shell (avatars, empty state, live region) for vantage-starter's dashboard chat in `components/chat/MessageList.tsx` — already installed and wired (`components/ui/chat-conversation.tsx`). Second job: a new orchestrator-to-orchestrator thread view inside VantagePeers, at new route `app/[locale]/dashboard/peers/messages/page.tsx`, rendering `check_messages` output as a real read/reply UI instead of raw tool output.
@@ -263,21 +286,54 @@ Every block in the registry opens exactly one named, committed feature in one of
 
 ---
 
-## Implementation order
+## Implementation plan
 
-This is an order, not a value ranking — every entry above is committed regardless of when it ships.
+This is a sequence, not a value ranking — every entry in §4 is committed regardless of when it ships. Base UI is already installed (§2); no batch below waits on it.
 
-**Which blocks are installed and which are wired is state, so it is derived, not listed here.** A typed list would be true the day it was written and false the day after the next merge. Run this instead:
+**Run §3's derivation command before starting any batch.** It is the authority on what is installed and what is already in service; nothing in this plan restates that state in prose, because prose expires and the command does not. **A batch never re-wires a block the command already reports with `consumers >= 1`** — if a block named below has since been wired, drop it from its batch and move on. That has already happened once to this document, which is why the rule is written down rather than assumed.
 
-```
-for b in $(curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
-import json,sys; d=json.load(sys.stdin)
-print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block'))"); do
-  [ -f "components/ui/$b.tsx" ] || continue
-  echo "$b consumers=$(git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l)"
-done
-```
+**One PR per batch. One batch in the gate at a time.** A batch does not open until the prior batch has merged, so each PR is reviewable against a stable base and a broken batch never blocks the ones behind it in the queue — that queue position is the only ordering claim made here.
 
-It prints every installed block with the number of screens consuming it; `consumers=0` means installed but not yet in service. At `main` @ `b6218ed` it printed eight installed blocks, four of them with a consumer. Re-run it rather than trusting that sentence — it carries a date, and dates expire.
+### Batch 1 — put the remaining installed-but-unwired blocks into service
 
-Suggested sequence for the rest: `issue-report-form` first (it closes a standing operational cost — bug reports triaged by hand today), then `product-list` (a UI gap over data VantageRegistry already holds), then `table` (a new agent capability inside a chat surface that already renders text), then the remaining onboarding blocks, then the features needing a net-new Convex table (contact form, booking, events, blog, order confirmation) in any order — none of them blocks another.
+Scope is whatever §3's command reports as `consumers=0`, not the list below: at the time of writing that is `option-list` and `quick-reply`. `tag-select` and `progress-steps` were also in this batch and have since been wired (missions status filter and consultant onboarding step indicator respectively) — their entries stay here because the batch is defined by the derivation, and a wired block simply drops out of it. Re-run the command; do not re-wire what it already counts.
+
+Real dependency: the onboarding-side entries target the same live route and the same file, `lib/json-render/registry.tsx`; shipping them as one PR means one review of one file's diff instead of several PRs colliding on the same lines.
+
+- **option-list** — host: `app/[locale]/dashboard/consultant/onboard/page.tsx` (route exists, confirmed via `find`). Replaces: `TeamSelection` at `lib/json-render/registry.tsx:439` (confirmed via `grep`). Convex: none — reads the same team/agent/skill data `TeamSelection` already receives as props. TDD assertion: rendering the onboarding step with a `team` json-render node produces an `option-list` element whose `onSelect` fires the same handler `TeamSelection` used to call.
+- **tag-select** — same route. Replaces: the `painPoints.map` chip block at `lib/json-render/registry.tsx:420` and the `matchedPains.map` block at `:490` (both confirmed via `grep`). Convex: none. TDD assertion: selecting a pain-point tag toggles its selected state and the onward payload sent to the consultant agent still carries the same pain-point id shape as the old `.map` block did.
+- **progress-steps** — same route. Replaces: nothing (confirmed — no progress indicator exists in `registry.tsx` today). Convex: none. TDD assertion: the step index passed to `progress-steps` advances by exactly one each time the onboarding flow's `currentStep` state changes, verified against the five known steps (sector, pain points, team, agents, skills).
+- **quick-reply** — host: `components/chat/MessageList.tsx` (the file that already renders `message-bubble` and `chat-conversation`, confirmed via `grep`). Replaces: nothing (confirmed — no quick-reply affordance exists in that file today). Convex: none — reuses the existing `sendMessage` mutation call already wired in `MessageList.tsx`. TDD assertion: tapping a `quick-reply` option calls `sendMessage` with that option's literal text, identical to what typing and hitting Enter would send.
+
+### Batch 2 — one new Convex mutation, reused by two chat/account surfaces
+
+Real dependency: both blocks in this batch add a first write-path (a mutation that did not exist before) to a table that already exists — grouping them means the "add a mutation to an existing table" review pattern is established once and reused, not because one imports the other.
+
+- **amount-input** — host: `components/dashboard/account/tabs/UsageCreditsTab.tsx` (confirmed via `find`). Replaces: nothing — the tab today only displays balance (confirmed via `grep` on the file, no top-up control present). Convex: `userCredits` (balance, confirmed present at `convex/schema.ts:271`) and `creditTransactions` (audit log, confirmed present at `convex/schema.ts:290`) — new mutation `creditTransactions.recordManualTopUp` that inserts a `creditTransactions` row and increments the matching `userCredits` row; no new table. TDD assertion: calling the new mutation with a preset amount ($10/$25/$50) increments the caller's `userCredits.balance` by exactly that amount and inserts exactly one `creditTransactions` row carrying it.
+- **table** — host: `components/chat/MessageList.tsx`. Replaces: nothing — the chat surface renders markdown tables today, not an interactive component (confirmed by reading the file's message-part rendering switch). Convex: none — a new message-part renderer only, no schema change. TDD assertion: a chat message whose `parts` array contains a `table` part renders the `table` block with the same row/column data as the markdown fallback it replaces, and a row-select event fires a callback carrying that row's id.
+
+### Batch 3 — VantageRegistry and VantageCRM browse screens over existing data
+
+Real dependency: none between the two entries — they land in different products. They are grouped because both are "build a browse screen over data an MCP tool already returns, zero new Convex tables" and reuse the same query-mapping pattern; each still ships as its own PR against a stable batch-2 base.
+
+- **product-list** — host: new route `app/[locale]/dashboard/registry/catalog/page.tsx` (confirmed missing via `find`, to be created). Replaces: nothing — VantageRegistry's catalog is consumed today only as raw MCP tool output, with no rendered browse screen in this repo (confirmed — route absent). Convex: none — a query mapping `list_skills`/`list_agents`/`list_hooks` MCP responses onto the block's product-card props, no new table. TDD assertion: given a fixed MCP response fixture, the page renders one product-card per returned item, and the picker variant's `onSelect` fires with that item's registry id.
+- **map-carousel** — host: new route `app/[locale]/dashboard/crm/territory/page.tsx` (confirmed missing via `find`, to be created). Replaces: nothing — VantageCRM has no map-based territory view today (confirmed — route absent). Convex: a one-time geocoding batch job turning existing company addresses into lat/lng, stored on the existing companies record (exact field TBD by `dev-convex-expert` at brief time — this is the one named unknown in this plan: whether VantageCRM's `companies` table already carries an address field usable for geocoding has not been verified from this repo, since VantageCRM is a separate product/repo not present here). TDD assertion: given a fixture of geocoded companies, the map renders one marker per company and dragging the carousel to a card highlights that company's marker.
+
+### Batch 4 — the five net-new marketing/commerce surfaces, each its own new Convex table
+
+Real dependency: none of the five blocks in this batch depend on each other or on batches 1-3. They are grouped last because each needs a brand-new Convex table (none of which exist yet, confirmed via `grep -nE "defineTable" convex/schema.ts`), the highest-cost category in this plan, and because none of them unblocks anything else — grouping late, same-cost work together keeps the queue's early PRs small and independently mergeable. Each still ships as its own PR; "same batch" here means "same queue position," not "same PR."
+
+- **contact-form** — host: new route `app/[locale]/contact/page.tsx` (confirmed missing via `find`, to be created). Replaces: nothing (confirmed — no `contact` route exists under `app/[locale]/`). Convex: new `contactSubmissions` table (name, email, phone+country, message, attachment ref) and a mutation to insert one row per submission. TDD assertion: submitting the form with valid fields inserts exactly one `contactSubmissions` row carrying the submitted values, and an invalid email is rejected before the mutation runs.
+- **issue-report-form** — host: new route `app/[locale]/report/page.tsx` (confirmed missing via `find`, to be created). Replaces: the current process — a client messaging Laurent, who manually creates a task (this is a process replaced, not a file). Convex: none — a Convex action or API route that calls VantagePeers' `create_task` MCP tool on submit, assignedTo the relevant orchestrator, priority derived from the block's own urgency field; no new table in this repo's `convex/schema.ts` since the task itself is stored by VantagePeers, not here. TDD assertion: submitting the form calls `create_task` exactly once with a priority value that matches the block's urgency field via the declared mapping (e.g. "critical" -> "urgent"), and the resulting task's `assignedTo` matches the category selected in the form.
+- **date-time-picker** — host: new route `app/[locale]/dashboard/consultant/book/page.tsx` (confirmed missing via `find`, to be created). Replaces: nothing (confirmed — no booking surface exists in the repo today). Convex: none for this entry — slots are sourced from a static availability config file, not a table (a real calendar-integration data source is a separate, later feature, out of scope for this batch). TDD assertion: selecting a slot from the static config and confirming produces a booking payload carrying the selected start time and timezone, matching the config entry that was clicked.
+- **event-card / event-list / event-detail / event-confirmation** — host: new routes `app/[locale]/events/page.tsx` (list + card) and `app/[locale]/events/[slug]/page.tsx` (detail + confirmation), both confirmed missing via `find`, to be created. Replaces: nothing (confirmed — no `events` table in `convex/schema.ts`, no events route exists). Convex: new `events` table (title, description, agenda, slug, date, capacity) and a `eventRegistrations` table (eventId, userId, registeredAt) with a mutation recording a registration. These four blocks ship as one PR, not four, because they render one linear user flow (browse -> pick -> register -> confirm) over the same two new tables — splitting them would mean an unreviewable intermediate state (a list page with no detail page to link to). TDD assertion: registering for an event from `event-detail` inserts exactly one `eventRegistrations` row, and `event-confirmation` renders only when that insert has succeeded.
+- **post-card / post-list / post-detail** — host: new routes `app/[locale]/changelog/page.tsx` (list + card) and `app/[locale]/changelog/[slug]/page.tsx` (detail), both confirmed missing via `find`, to be created. Replaces: nothing (confirmed — no blog/changelog route exists). Convex: none — an MDX/parsing source that turns `CHANGELOG.md` entries into post records at build or request time, no new table, since the content already exists as version-controlled text rather than user-submitted data. These three blocks ship as one PR for the same reason as the events group: list and detail are one flow, not three independent features. TDD assertion: parsing a fixture `CHANGELOG.md` with N entries produces N post records, and visiting `[slug]` for a known entry renders that entry's title and body verbatim.
+- **order-confirm / payment-confirmed** — host: new route `app/[locale]/dashboard/account/order-confirmed/page.tsx` (confirmed missing via `find`, to be created), one route with two branches: `order-confirm` for the digital-download purchase, `payment-confirmed` for the trackable-deliverable purchase. Replaces: nothing (confirmed — Polar's hosted checkout has no custom confirmation screen in this repo today). Convex: new `purchases` table (userId, productKey, kind: "digital" | "trackable", trackingRef, purchasedAt) and a mutation recording the one-time purchase on Polar webhook receipt. Two blocks, one PR, because they are two branches of the same confirmation route reading the same new table, not two features. TDD assertion: a webhook fixture for a digital purchase inserts one `purchases` row with `kind: "digital"` and renders `order-confirm`; a fixture for a trackable purchase inserts `kind: "trackable"` and renders `payment-confirmed` with its tracking button.
+- **x-post / instagram-post / linkedin-post / youtube-post** — host: the landing page, in the section adjacent to `components/landing/HeroSection.tsx` (confirmed present via `find`). Replaces: nothing (confirmed — no social-embed pattern exists anywhere in the repo). Convex: none — each renders from its network's own public oEmbed data, fetched client- or build-side; no table. These four ship as one PR because they share one new landing-page section and one embed-fetching pattern, reused four times, not four unrelated integrations. TDD assertion: given a fixture oEmbed response for each network, the corresponding card renders that network's author, text, and engagement-metric fields.
+- **hero** — host: `components/landing/HeroSection.tsx` (confirmed present via `find`, 233 hand-written lines per `wc -l`). Replaces: `HeroSection.tsx` in full. Convex: none. TDD assertion: the landing page still renders the same title, subtitle, and CTA hrefs it does today, sourced from the same copy constants, after `hero` replaces the hand-written markup.
+
+### One open item, named rather than invented
+
+`map-carousel`'s geocoding step assumes VantageCRM's `companies` record already carries a usable address field. That table lives in the VantageCRM repo, not this one, so it was not read for this plan. Confirm the field at brief time before Batch 3 starts; do not assume the shape.
+
+Sequence recap: Batch 1 (four unwired blocks, existing screens) -> Batch 2 (one new mutation, two chat/account surfaces) -> Batch 3 (two browse screens over existing MCP data) -> Batch 4 (five net-new-table marketing/commerce features, one PR per bullet group). One PR per batch entry; one PR in the gate at a time.
