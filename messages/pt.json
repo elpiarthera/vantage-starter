@@ -3253,7 +3253,13 @@
 		"messageList": {
 			"ariaLabel": "Mensagens do chat",
 			"emptyTitle": "Inicie uma conversa",
-			"emptyDescription": "O agente tem acesso à sua base de conhecimento e pode usar ferramentas."
+			"emptyDescription": "O agente tem acesso à sua base de conhecimento e pode usar ferramentas.",
+			"quickReply": {
+				"ariaLabel": "Respostas rápidas",
+				"addNow": "Adicionar agora",
+				"addLater": "Adicionar depois",
+				"tellMeMore": "Conte mais"
+			}
 		},
 		"modelSelector": {
 			"selectPlaceholder": "Selecionar modelo",

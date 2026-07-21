@@ -3253,7 +3253,13 @@
 		"messageList": {
 			"ariaLabel": "Chat-Nachrichten",
 			"emptyTitle": "Unterhaltung starten",
-			"emptyDescription": "Der Agent hat Zugriff auf Ihre Wissensdatenbank und kann Tools verwenden."
+			"emptyDescription": "Der Agent hat Zugriff auf Ihre Wissensdatenbank und kann Tools verwenden.",
+			"quickReply": {
+				"ariaLabel": "Schnellantworten",
+				"addNow": "Jetzt hinzufügen",
+				"addLater": "Später hinzufügen",
+				"tellMeMore": "Mehr erfahren"
+			}
 		},
 		"modelSelector": {
 			"selectPlaceholder": "Modell auswählen",

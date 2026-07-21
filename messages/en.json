@@ -2842,7 +2842,13 @@
 		"messageList": {
 			"ariaLabel": "Chat messages",
 			"emptyTitle": "Start a conversation",
-			"emptyDescription": "The agent has access to your knowledge base and can use tools."
+			"emptyDescription": "The agent has access to your knowledge base and can use tools.",
+			"quickReply": {
+				"ariaLabel": "Quick replies",
+				"addNow": "Add now",
+				"addLater": "Add later",
+				"tellMeMore": "Tell me more"
+			}
 		},
 		"modelSelector": {
 			"selectPlaceholder": "Select model",

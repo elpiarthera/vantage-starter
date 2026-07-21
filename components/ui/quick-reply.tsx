@@ -7,7 +7,9 @@
  * Ported for VantageStarter: already used only tokens present in this
  * repo's OKLCH theme (`border-border`, `bg-background`, `text-foreground`,
  * `bg-foreground`, `text-background`), so no color remapping was needed.
- * Not yet wired to any surface (net-new capability, later wave).
+ * Wired into `components/chat/MessageList.tsx`: shown after the last
+ * assistant text message once streaming has stopped, so the user can tap a
+ * fixed reply instead of typing. Net-new affordance, replaces nothing.
  */
 "use client";
 

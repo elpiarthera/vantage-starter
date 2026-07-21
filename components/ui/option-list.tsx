@@ -6,8 +6,27 @@
  *
  * Ported for VantageStarter as-is; colors map onto this repo's OKLCH
  * tokens (`--foreground`, `--background`, `--border`, `--muted`, `--card`).
- * Not yet wired into a screen — the onboarding surface
- * (`lib/json-render/registry.tsx`) is a later wave.
+ * Wired into the consultant onboarding flow's sector picker
+ * (`app/[locale]/dashboard/consultant/onboard/page.tsx`, Step1ProjectForm) —
+ * a genuine flat single-select with no hierarchy. NOT wired to replace
+ * `TeamSelection` (`lib/json-render/registry.tsx:439`): that screen needs
+ * hierarchical cross-level cascade (deselecting a team cascades to its
+ * agents; a skill shared with another still-included agent is not force-
+ * excluded) which this block's flat option model cannot express — see
+ * `lib/consultant/config-selection.ts` for where that cascade lives.
+ * Duplicating the cascade beside a flat picker would be a regression, not
+ * a port, so `TeamSelection` stays hand-written.
+ *
+ * Added `aria-pressed` on each pill (single AND multi mode) — upstream had
+ * no pressed-state affordance for assistive tech, a real a11y gap on a
+ * toggle-styled button. Added `focus-visible` ring classes to
+ * `OptionListItem` for the same reason (upstream shipped none for this
+ * component, at odds with this repo's accessibility conventions elsewhere).
+ * Added single-select auto-submit: in `multiple: false` mode, choosing an
+ * option IS the decision (radio-group semantics) — no separate confirm
+ * click is needed, so `select()` calls `actions.onSubmit` immediately
+ * instead of requiring `OptionListActions`' Confirm button. Multi-select
+ * mode is untouched and still requires the explicit Confirm action.
  */
 "use client";
 
@@ -99,8 +118,10 @@ export const OptionListItem = ({
 
 	return (
 		<button
+			aria-pressed={selected}
 			className={cn(
 				"inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm",
+				"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
 				selected
 					? "border-foreground bg-foreground text-background"
 					: "border-border bg-background hover:bg-muted",
@@ -218,6 +239,15 @@ const OptionListRoot = ({
 	const select = (option: Option, index: number) => {
 		if (option.disabled) {
 			return;
+		}
+
+		// Single-select mode: choosing an option IS the decision — fire
+		// onSubmit immediately, radio-group semantics, no separate confirm
+		// click required. Called before setSelected (not inside the updater)
+		// so this stays a side-effect-free state update, safe under
+		// double-invocation.
+		if (!multiple) {
+			actions?.onSubmit?.([option]);
 		}
 
 		setSelected((current) => {

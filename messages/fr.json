@@ -2842,7 +2842,13 @@
 		"messageList": {
 			"ariaLabel": "Messages de la conversation",
 			"emptyTitle": "Démarrez une conversation",
-			"emptyDescription": "L'agent a accès à votre base de connaissances et peut utiliser des outils."
+			"emptyDescription": "L'agent a accès à votre base de connaissances et peut utiliser des outils.",
+			"quickReply": {
+				"ariaLabel": "Réponses rapides",
+				"addNow": "Ajouter maintenant",
+				"addLater": "Ajouter plus tard",
+				"tellMeMore": "En savoir plus"
+			}
 		},
 		"modelSelector": {
 			"selectPlaceholder": "Choisir un modèle",

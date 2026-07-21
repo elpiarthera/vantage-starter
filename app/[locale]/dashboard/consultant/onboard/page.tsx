@@ -14,7 +14,13 @@
 
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import {
+	type Option,
+	OptionList,
+	OptionListContent,
+	OptionListOptions,
+} from "@/components/ui/option-list";
 import {
 	ProgressStep,
 	type Step as ProgressStepData,
@@ -162,9 +168,14 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 	const [name, setName] = useState("");
 	const [clientName, setClientName] = useState("");
 	const [websiteUrl, setWebsiteUrl] = useState("");
-	const [sector, setSector] = useState<string>("technology");
+	const [sector, setSector] = useState<Sector>("technology");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	const sectorOptions: Option[] = useMemo(
+		() => SECTORS.map((s) => ({ label: t(SECTOR_I18N_KEYS[s]) })),
+		[t],
+	);
 
 	const createProject = useMutation(api.consultantProjects.create);
 	const scrapeClient = useAction(api.actions.scrapeClient.run);
@@ -283,36 +294,31 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 				</p>
 			</div>
 
-			{/* Sector */}
-			<div className="space-y-1.5">
-				<label htmlFor="sector" className="text-xs font-medium text-foreground">
+			{/* Sector — ported mcpcn `option-list` block (single-select pill
+			    picker) replacing the previous native `<select>`. Flat, no
+			    hierarchy — a genuine fit, unlike TeamSelection downstream in
+			    the same flow, whose team->agent->skill cascade this block
+			    cannot express (see components/ui/option-list.tsx header). */}
+			<fieldset className="space-y-1.5">
+				<legend className="text-xs font-medium text-foreground">
 					{t("sector")}
-				</label>
-				<div className="relative">
-					<select
-						id="sector"
-						value={sector}
-						onChange={(e) => setSector(e.target.value)}
-						className={cn(inputClass, "cursor-pointer appearance-none pr-10")}
-					>
-						{SECTORS.map((s) => (
-							<option key={s} value={s}>
-								{t(SECTOR_I18N_KEYS[s])}
-							</option>
-						))}
-					</select>
-					<svg
-						className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none size-4 text-muted-foreground"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="1.5"
-						aria-hidden="true"
-					>
-						<path d="m6 9 6 6 6-6" />
-					</svg>
-				</div>
-			</div>
+				</legend>
+				<OptionList
+					data={{ options: sectorOptions }}
+					control={{ selectedOptionIndex: SECTORS.indexOf(sector) }}
+					actions={{
+						onSubmit: (selected) => {
+							const index = sectorOptions.indexOf(selected[0]);
+							if (index !== -1) setSector(SECTORS[index]);
+						},
+					}}
+					className="bg-transparent p-0"
+				>
+					<OptionListContent>
+						<OptionListOptions />
+					</OptionListContent>
+				</OptionList>
+			</fieldset>
 
 			{/* Error */}
 			{error && (
