@@ -34,6 +34,8 @@ const competitorValidator = v.object({
 	differentiators: v.optional(v.string()),
 	scrapedAt: v.optional(v.number()),
 	error: v.optional(v.string()),
+	// True only when FIRECRAWL_API_KEY was absent at scrape time.
+	configMissing: v.optional(v.boolean()),
 });
 
 const projectStatusValidator = v.union(
@@ -322,6 +324,8 @@ export const updateCompetitorProfile = internalMutation({
 			differentiators: v.optional(v.string()),
 			scrapedAt: v.number(),
 			error: v.optional(v.string()),
+			// True only when FIRECRAWL_API_KEY was absent at scrape time.
+			configMissing: v.optional(v.boolean()),
 		}),
 	},
 	returns: v.null(),
@@ -351,6 +355,7 @@ export const updateCompetitorProfile = internalMutation({
 				differentiators: args.profile.differentiators,
 				scrapedAt: args.profile.scrapedAt,
 				error: args.profile.error,
+				configMissing: args.profile.configMissing,
 			};
 		});
 

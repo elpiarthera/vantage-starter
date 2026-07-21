@@ -3,15 +3,23 @@
  * scrapeCompetitor — Fetch and extract competitive intelligence from a competitor URL.
  *
  * Extracts: positioning statement, pricing tiers, key offers, differentiators.
- * Stores results via internal.consultantProjects.updateCompetitorProfile.
+ * Fetches through Firecrawl (see ../lib/firecrawl.ts) so JS-rendered
+ * competitor sites are seen; regex parsing below runs on the rendered HTML.
+ * FIRECRAWL_API_KEY absent is a named, surfaced failure on the competitor
+ * profile — never a silent fallback to native fetch.
  *
- * Upgrade path: replace fetch+parse with Firecrawl API when MCP is available.
+ * Stores results via internal.consultantProjects.updateCompetitorProfile.
  */
 
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 import { requireUser } from "../lib/auth";
+import {
+	FirecrawlKeyMissingError,
+	FirecrawlRequestError,
+	firecrawlScrape,
+} from "../lib/firecrawl";
 
 // ============================================================================
 // PRICING PAGE DETECTION
@@ -190,36 +198,21 @@ function extractDifferentiators(
 async function fetchHtml(
 	url: string,
 ): Promise<{ html: string; finalUrl: string }> {
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), 15_000);
+	return await firecrawlScrape(url);
+}
 
-	const response = await fetch(url, {
-		signal: controller.signal,
-		headers: {
-			"User-Agent":
-				"Mozilla/5.0 (compatible; VantageBot/1.0; +https://vantagestarter.com/bot)",
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			"Accept-Language": "en-US,en;q=0.5",
-		},
-	});
-
-	clearTimeout(timeoutId);
-
-	if (!response.ok) {
-		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-	}
-
-	const contentType = response.headers.get("content-type") ?? "";
-	if (!contentType.includes("text/html")) {
-		throw new Error(
-			`Unexpected content type: ${contentType}. Expected text/html.`,
-		);
-	}
-
-	return {
-		html: await response.text(),
-		finalUrl: response.url,
-	};
+/**
+ * Normalize a thrown Firecrawl error (or anything else) into a message
+ * string. Named error classes (FirecrawlKeyMissingError,
+ * FirecrawlRequestError) are surfaced verbatim — never swallowed into a
+ * generic "scrape failed" that would hide a config gap from the consultant.
+ */
+function describeFetchError(err: unknown): string {
+	return err instanceof FirecrawlKeyMissingError ||
+		err instanceof FirecrawlRequestError ||
+		err instanceof Error
+		? err.message
+		: "Unknown Firecrawl error";
 }
 
 // ============================================================================
@@ -235,6 +228,9 @@ export const run = action({
 	returns: v.object({
 		success: v.boolean(),
 		error: v.optional(v.string()),
+		// True only when FIRECRAWL_API_KEY is absent — see scrapeClient.ts run's
+		// `returns` validator for the same field and rationale.
+		configMissing: v.optional(v.boolean()),
 	}),
 	handler: async (ctx, args) => {
 		// Auth check
@@ -260,8 +256,8 @@ export const run = action({
 			mainHtml = result.html;
 			mainFinalUrl = result.finalUrl;
 		} catch (err) {
-			const errorMsg =
-				err instanceof Error ? err.message : "Unknown fetch error";
+			const configMissing = err instanceof FirecrawlKeyMissingError;
+			const errorMsg = describeFetchError(err);
 
 			await ctx.runMutation(
 				internal.consultantProjects.updateCompetitorProfile,
@@ -270,11 +266,12 @@ export const run = action({
 					competitorIndex: args.competitorIndex,
 					profile: {
 						error: errorMsg,
+						configMissing,
 						scrapedAt,
 					},
 				},
 			);
-			return { success: false, error: errorMsg };
+			return { success: false, error: errorMsg, configMissing };
 		}
 
 		// ---- Parse main page ----

@@ -3,10 +3,13 @@
  * scrapeClient — Fetch and extract brand intelligence from a client website.
  *
  * Called after project creation to auto-populate brandKit and knowledgeBase.
- * Uses native fetch + HTML parsing (no Firecrawl dependency — upgrade path noted).
+ * Fetches through Firecrawl (see ../lib/firecrawl.ts for the fetch-layer
+ * rationale), then applies the regex-based HTML parsing below on the
+ * fully-rendered result.
  *
- * Upgrade path: when Firecrawl MCP is available, replace the fetch+parse block
- * with a Firecrawl API call for better JS-rendered content extraction.
+ * FIRECRAWL_API_KEY absent is a named, surfaced failure — brandKit.status
+ * becomes "competitors" (never stuck) and brandKit.error explains why
+ * nothing was extracted. There is no silent fallback to native fetch.
  *
  * Stores results via internal.consultantProjects.updateBrandKit.
  */
@@ -15,6 +18,11 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 import { requireUser } from "../lib/auth";
+import {
+	FirecrawlKeyMissingError,
+	FirecrawlRequestError,
+	firecrawlScrape,
+} from "../lib/firecrawl";
 
 // ============================================================================
 // TYPES
@@ -276,6 +284,10 @@ export const run = action({
 	returns: v.object({
 		success: v.boolean(),
 		error: v.optional(v.string()),
+		// True only when FIRECRAWL_API_KEY is absent — distinguishes "not
+		// configured" from "extraction attempted and failed" so the UI can
+		// show a config-specific message rather than a generic failure.
+		configMissing: v.optional(v.boolean()),
 	}),
 	handler: async (ctx, args) => {
 		// Auth check
@@ -301,51 +313,36 @@ export const run = action({
 		let finalUrl = args.url;
 
 		try {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 15_000);
-
-			const response = await fetch(args.url, {
-				signal: controller.signal,
-				headers: {
-					"User-Agent":
-						"Mozilla/5.0 (compatible; VantageBot/1.0; +https://vantagestarter.com/bot)",
-					Accept:
-						"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-					"Accept-Language": "en-US,en;q=0.5",
-				},
-			});
-
-			clearTimeout(timeoutId);
-
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-			}
-
-			const contentType = response.headers.get("content-type") ?? "";
-			if (!contentType.includes("text/html")) {
-				throw new Error(
-					`Unexpected content type: ${contentType}. Expected text/html.`,
-				);
-			}
-
-			html = await response.text();
-			finalUrl = response.url; // Capture post-redirect URL
+			const result = await firecrawlScrape(args.url);
+			html = result.html;
+			finalUrl = result.finalUrl;
 		} catch (err) {
+			// Named, surfaced failure — never a silent fallback to native fetch.
+			// FirecrawlKeyMissingError (config gap) and FirecrawlRequestError
+			// (extraction failed) are distinguished in the stored message so the
+			// consultant knows whether to fix config or just retry/continue
+			// manually.
+			const configMissing = err instanceof FirecrawlKeyMissingError;
 			const errorMsg =
-				err instanceof Error ? err.message : "Unknown fetch error";
+				err instanceof FirecrawlKeyMissingError ||
+				err instanceof FirecrawlRequestError ||
+				err instanceof Error
+					? err.message
+					: "Unknown Firecrawl error";
 
 			// Store failure state — brandKit records the error, advance to competitors phase
 			await ctx.runMutation(internal.consultantProjects.updateBrandKit, {
 				projectId: args.projectId,
 				brandKit: {
 					error: errorMsg,
+					configMissing,
 					scrapedUrl: args.url,
 					scrapedAt: Date.now(),
 				},
 				status: "competitors",
 			});
 
-			return { success: false, error: errorMsg };
+			return { success: false, error: errorMsg, configMissing };
 		}
 
 		// Parse extracted data

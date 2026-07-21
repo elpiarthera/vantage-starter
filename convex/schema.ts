@@ -773,6 +773,8 @@ export default defineSchema({
 					differentiators: v.optional(v.string()),
 					scrapedAt: v.optional(v.number()),
 					error: v.optional(v.string()),
+					// True only when FIRECRAWL_API_KEY was absent at scrape time.
+					configMissing: v.optional(v.boolean()),
 				}),
 			),
 		),
