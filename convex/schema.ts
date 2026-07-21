@@ -1080,4 +1080,25 @@ export default defineSchema({
 		.index("by_provider", ["provider"])
 		.index("by_category", ["category"])
 		.index("by_enabled", ["isEnabled"]),
+
+	/**
+	 * contactSubmissions — public `/contact` page (mcpcn `contact-form` block,
+	 * docs/mcpcn-block-mapping.md §4 "contact-form", Batch 4).
+	 *
+	 * Unauthenticated write path: `contactSubmissions.create` (convex/contactSubmissions.ts)
+	 * is the only mutation touching this table. No attachment binary is stored
+	 * here — only its file name, if one was picked — see that file's header
+	 * comment for why a public unauthenticated blob-upload endpoint was
+	 * declined in this delivery.
+	 */
+	contactSubmissions: defineTable({
+		firstName: v.string(),
+		lastName: v.string(),
+		email: v.string(),
+		phoneNumber: v.optional(v.string()),
+		countryCode: v.optional(v.string()),
+		message: v.string(),
+		attachmentName: v.optional(v.string()),
+		createdAt: v.number(),
+	}).index("by_createdAt", ["createdAt"]),
 });

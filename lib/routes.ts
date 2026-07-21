@@ -42,6 +42,7 @@ export const ROUTES = {
 	accessibilite: "/accessibilite",
 	accessibility: "/accessibility",
 	accessibilityPlan: "/accessibility-plan",
+	contact: "/contact",
 	create: "/create",
 	legal: "/legal",
 	privacy: "/privacy",
