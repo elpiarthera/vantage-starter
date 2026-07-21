@@ -9,7 +9,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { type MutableRefObject, useEffect, useRef, useState } from "react";
 import {
 	TagSelect,
 	TagSelectActions,
@@ -186,6 +186,37 @@ function StatusTagItem({
 	);
 }
 
+// Exposes the block's OWN `clear()` context action to the panel-level
+// "Show All" button, which renders in the popover header — OUTSIDE the
+// `<TagSelect>` subtree, so it cannot call `useTagSelect()` directly. This
+// bridge is the only sanctioned way out: it mounts inside `TagSelect` (same
+// as `StatusClearButton`) and republishes `clear` onto a ref the parent
+// holds, so the panel's `clearAll` can trigger the block's own single write
+// path — `TagSelect` internal state -> StatusTagSync -> onFiltersChange —
+// instead of writing `onFiltersChange({ statuses: [] })` itself. That
+// second write path is exactly what raced `StatusTagSync`'s forwarding
+// effect and produced an infinite render loop (it read `selected` from the
+// SAME render pass the external reset was requested in, before `TagSelect`'s
+// own control-prop effect had applied it, so the two updates fought each
+// other on every subsequent commit) — caught by the mutation-proof step
+// below, which restores that exact direct write to prove the guard bites.
+function StatusClearBridge({
+	clearRef,
+}: {
+	clearRef: MutableRefObject<(() => void) | null>;
+}) {
+	const { clear } = useTagSelect();
+
+	useEffect(() => {
+		clearRef.current = clear;
+		return () => {
+			clearRef.current = null;
+		};
+	}, [clear, clearRef]);
+
+	return null;
+}
+
 // Routes through the block's OWN `clear()` context action rather than
 // writing `onFiltersChange({ statuses: [] })` directly: a second write path
 // bypassing `TagSelect`'s internal state raced against `StatusTagSync`'s
@@ -193,8 +224,16 @@ function StatusTagItem({
 // the external reset was requested in, before `TagSelect`'s own
 // control-prop effect had applied it — the two updates fought each other on
 // every subsequent commit, an infinite loop caught by the mutation-proof
-// step below). Calling context `clear()` keeps every mutation on the single
-// path `TagSelect` internal state -> StatusTagSync -> onFiltersChange.
+// step below).
+//
+// This button was not the only writer of `statuses`: the panel-level
+// "Show All" button (`clearAll`, rendered outside this subtree) wrote
+// `onFiltersChange({ statuses: [] })` directly, the exact second path this
+// comment used to claim was removed. It is now routed through the same
+// `clear()` action via `StatusClearBridge` — see that component's docstring.
+// Only after both call sites go through context `clear()` does every
+// mutation stay on the single path `TagSelect` internal state ->
+// StatusTagSync -> onFiltersChange.
 function StatusClearButton({ label }: { label: string }) {
 	const { clear, selected } = useTagSelect();
 
@@ -220,6 +259,7 @@ export function MissionFilters({
 }: MissionFiltersProps) {
 	const t = useTranslations("missions.filters");
 	const [open, setOpen] = useState(false);
+	const statusClearRef = useRef<(() => void) | null>(null);
 
 	const hasStatusFilter = filters.statuses.length > 0;
 	const hasPriorityFilter = filters.priorities.length > 0;
@@ -256,8 +296,15 @@ export function MissionFilters({
 		onFiltersChange({ ...filters, showArchived: !filters.showArchived });
 	};
 
+	// Statuses are cleared via the block's own `clear()` context action
+	// (through `statusClearRef`, populated by `StatusClearBridge`), never by
+	// writing `statuses: []` directly here — see `StatusClearBridge`'s
+	// docstring for why the direct write loops forever. Priorities and
+	// `showArchived` are not `TagSelect`'s concern, so they are still reset
+	// directly.
 	const clearAll = () => {
-		onFiltersChange({ statuses: [], priorities: [], showArchived: false });
+		statusClearRef.current?.();
+		onFiltersChange({ ...filters, priorities: [], showArchived: false });
 	};
 
 	return (
@@ -338,6 +385,7 @@ export function MissionFilters({
 										current={filters.statuses}
 										onChange={setStatuses}
 									/>
+									<StatusClearBridge clearRef={statusClearRef} />
 									<TagSelectContent>
 										<TagSelectTags className="gap-1.5">
 											{STATUS_OPTIONS.map((option) => (

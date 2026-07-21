@@ -130,4 +130,70 @@ describe("MissionFilters status selection (ported tag-select)", () => {
 		);
 		expect(onForward).toHaveBeenLastCalledWith([]);
 	});
+
+	it("clicking the panel-level 'Show All' button clears every status without looping", () => {
+		const onForward = jest.fn();
+		render(<ControlledMissionFilters onForward={onForward} />);
+		openPanel();
+
+		fireEvent.click(screen.getByRole("button", { name: "Pending" }));
+		expect(onForward).toHaveBeenLastCalledWith(["pending"]);
+
+		fireEvent.click(screen.getByRole("button", { name: /show all/i }));
+
+		expect(onForward).toHaveBeenLastCalledWith([]);
+		expect(screen.getByRole("button", { name: "Pending" })).toHaveAttribute(
+			"aria-pressed",
+			"false",
+		);
+	}, 10_000);
+
+	it("'Show All' also resets priorities and showArchived, and those keep forwarding correctly afterwards", () => {
+		function ControlledFull({
+			onForward: forward,
+		}: {
+			onForward: (state: MissionFilterState) => void;
+		}) {
+			const [filters, setFilters] = useState<MissionFilterState>({
+				statuses: [],
+				priorities: [],
+				showArchived: false,
+			});
+			return (
+				<MissionFilters
+					filters={filters}
+					onFiltersChange={(next) => {
+						forward(next);
+						setFilters(next);
+					}}
+				/>
+			);
+		}
+		const forward = jest.fn();
+		render(<ControlledFull onForward={forward} />);
+		openPanel();
+
+		fireEvent.click(screen.getByRole("checkbox", { name: /urgent/i }));
+		expect(forward).toHaveBeenLastCalledWith(
+			expect.objectContaining({ priorities: ["urgent"] }),
+		);
+
+		fireEvent.click(screen.getByRole("checkbox", { name: /archived/i }));
+		expect(forward).toHaveBeenLastCalledWith(
+			expect.objectContaining({ showArchived: true }),
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: /show all/i }));
+		expect(forward).toHaveBeenLastCalledWith({
+			statuses: [],
+			priorities: [],
+			showArchived: false,
+		});
+
+		// negative control: dimensions still forward correctly afterwards
+		fireEvent.click(screen.getByRole("checkbox", { name: /high/i }));
+		expect(forward).toHaveBeenLastCalledWith(
+			expect.objectContaining({ priorities: ["high"] }),
+		);
+	}, 10_000);
 });
