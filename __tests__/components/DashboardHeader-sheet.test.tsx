@@ -14,6 +14,19 @@
  * (child no longer rendered as the actual DOM node) or `SheetContent`'s
  * `Popup`/`Backdrop` swap leaving stale `data-[state=...]` selectors so the
  * sheet content never becomes queryable after the click.
+ *
+ * The anti-nesting assertion below guards a subtler regression: if
+ * `SheetTrigger` drops the `render={children}` bridge and instead wraps
+ * `children` in Base UI's default trigger element (e.g.
+ * `<SheetPrimitive.Trigger {...props}>{children}</SheetPrimitive.Trigger>`),
+ * the queried element still has `tagName === "BUTTON"` (Base UI's default
+ * trigger renders a `<button>`) but the real `<button aria-label="User menu">`
+ * is now NESTED inside it — an invalid button-in-button DOM. The tagName
+ * check alone stays green on this mutation. `trigger.parentElement?.closest
+ * ("button")` starts the ancestor search one level ABOVE the queried element
+ * (unlike `Element.closest`, which matches self first and would pass
+ * trivially even when nested), so it catches the wrapper `<button>` that the
+ * mutation introduces.
  */
 
 import { render, screen } from "@testing-library/react";
@@ -86,6 +99,14 @@ describe("DashboardHeader mobile user menu (Sheet migrated to Base UI)", () => {
 
 		const trigger = screen.getByRole("button", { name: "User menu" });
 		expect(trigger.tagName).toBe("BUTTON");
+		// Anti-nesting: the real button must have no ANCESTOR <button>
+		// (excluding itself — `Element.closest` matches self first, which
+		// would make this pass trivially on a nested button). If
+		// SheetTrigger wraps children in a default Base UI trigger element
+		// instead of rendering them directly, the parent chain contains
+		// another <button>, which is invalid DOM and the exact
+		// asChild -> render bridge regression this test guards against.
+		expect(trigger.parentElement?.closest("button") ?? null).toBeNull();
 	});
 
 	test("clicking the trigger opens the sheet and reveals its content", async () => {
