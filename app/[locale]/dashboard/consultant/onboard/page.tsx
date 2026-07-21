@@ -38,7 +38,7 @@ interface CompetitorRow {
 	id: string;
 	name: string;
 	url: string;
-	status: "idle" | "scraping" | "done" | "failed";
+	status: "idle" | "scraping" | "done" | "failed" | "unavailable";
 }
 
 // ============================================================================
@@ -365,6 +365,19 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 	);
 	const scrapeCompetitor = useAction(api.actions.scrapeCompetitor.run);
 
+	// Live read of the client-site scrape kicked off (fire-and-forget) from
+	// Step1ProjectForm. Reactivity closes the gap that used to make a failed
+	// or unconfigured extraction invisible: this query updates the instant
+	// `scrapeClient`'s internal mutations write `status`/`brandKit`, with no
+	// polling and no action needed from Step1.
+	const project = useQuery(api.consultantProjects.get, { projectId });
+	const clientScrapeError = project?.brandKit?.error as string | undefined;
+	const clientScrapeConfigMissing = project?.brandKit?.configMissing as
+		| boolean
+		| undefined;
+	const clientScrapePending =
+		project?.status === "created" || project?.status === "scraping";
+
 	const handleAdd = useCallback(async () => {
 		if (!newName.trim() || !newUrl.trim()) return;
 		if (competitors.length >= 5) {
@@ -406,11 +419,26 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 				name: trimmedName,
 				url: trimmedUrl,
 			});
-			// Fire-and-forget scrape — updates DB when done
+			// Fire-and-forget scrape — updates DB when done. `.then()` must read
+			// `result.success`: the action never rejects on an extraction failure
+			// (it catches internally and resolves `{ success: false, error }`), so
+			// checking only "the promise resolved" previously reported every
+			// scrape as "done" even when it had failed.
 			scrapeCompetitor({ projectId, competitorIndex, url: trimmedUrl })
-				.then(() => {
+				.then((result) => {
 					setCompetitors((prev) =>
-						prev.map((c) => (c.id === rowId ? { ...c, status: "done" } : c)),
+						prev.map((c) =>
+							c.id === rowId
+								? {
+										...c,
+										status: result.success
+											? "done"
+											: result.configMissing
+												? "unavailable"
+												: "failed",
+									}
+								: c,
+						),
 					);
 				})
 				.catch(() => {
@@ -446,6 +474,29 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 
 	return (
 		<div className="space-y-5">
+			{/* Client-site scrape status — makes the fire-and-forget scrape kicked
+			    off in Step1ProjectForm visible instead of a silent console.error. */}
+			{clientScrapePending && (
+				<output className="block text-xs px-3 py-2 border border-border bg-muted/20 text-muted-foreground animate-pulse">
+					{t("scrapeProgress")}
+				</output>
+			)}
+			{!clientScrapePending && clientScrapeError && (
+				<p
+					className="text-xs px-3 py-2 border border-[oklch(0.65_0.2_25)]/50 text-[oklch(0.65_0.2_25)]"
+					role="alert"
+				>
+					{clientScrapeConfigMissing
+						? t("scrapeUnavailable")
+						: t("scrapeFailed")}
+				</p>
+			)}
+			{!clientScrapePending && !clientScrapeError && project?.brandKit && (
+				<output className="block text-xs px-3 py-2 border border-[oklch(0.62_0.18_240)]/50 text-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)]/10">
+					{t("scrapeDone")}
+				</output>
+			)}
+
 			{/* Competitor list */}
 			{competitors.length > 0 && (
 				<ul className="space-y-2" aria-label={t("competitors")}>
@@ -469,7 +520,7 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 										"border-[oklch(0.62_0.18_240)]/50 text-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)]/10",
 									c.status === "scraping" &&
 										"border-border text-muted-foreground animate-pulse",
-									c.status === "failed" &&
+									(c.status === "failed" || c.status === "unavailable") &&
 										"border-[oklch(0.65_0.2_25)]/50 text-[oklch(0.65_0.2_25)]",
 									c.status === "idle" && "border-border text-muted-foreground",
 								)}
@@ -477,6 +528,7 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 								{c.status === "done" && t("competitorScraped")}
 								{c.status === "scraping" && t("competitorScraping")}
 								{c.status === "failed" && t("competitorFailed")}
+								{c.status === "unavailable" && t("competitorUnavailable")}
 								{c.status === "idle" && t("competitorAdded")}
 							</span>
 							<button

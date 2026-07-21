@@ -6,6 +6,29 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-21 — the consultant flow extracts through Firecrawl, and a failed extraction is now visible)
+
+Closes `k17b1js3w28ewhrj58q9j7z0cd8ax319`. The code announced this capability about itself and never shipped it — `convex/actions/scrapeClient.ts:6` read verbatim *"Uses native fetch + HTML parsing (no Firecrawl dependency — upgrade path noted)"*, with the upgrade path described two lines below.
+
+**What was broken for the user:** a regex over raw HTML sees nothing of a JavaScript-rendered site, which is most company sites. A consultant entered a client URL and got an empty or partial profile with no way to know why — because the call was fire-and-forget: `scrapeClient({ projectId, url }).catch((err) => console.error(...))` at `page.tsx:196-198`. **An extraction that fails silently is worse than no extraction**, and that silence is what hid the regex ceiling for as long as it lasted.
+
+**What was replaced, precisely:** the docstrings named *native fetch* as the thing to change, not the parsers. Firecrawl's `formats:["html"]` returns real HTML, so the existing extractors run unchanged against fully-rendered content. A thin REST client (`convex/lib/firecrawl.ts`, one endpoint) was chosen over the `@mendable/firecrawl-js` SDK — a boilerplate every fork inherits should not carry a dependency for a single endpoint; the reason is written in the file.
+
+**No fallback survives.** `git grep -n "await fetch(" -- convex/actions/scrapeClient.ts convex/actions/scrapeCompetitor.ts` -> 0. When `FIRECRAWL_API_KEY` is absent the client throws a named `FirecrawlKeyMissingError`, surfaced as a schema-typed `configMissing: true` on the brand kit and on each competitor, and rendered as a banner in seven locales. A missing key is a stated condition, never a quiet degradation — that was the whole point of the lot.
+
+**A second defect surfaced while testing and was fixed:** `Step2Competitors` marked every competitor scrape "done" in its `.then()` without ever checking `result.success` (`page.tsx:410-430`). It reported success for failures.
+
+Mutation proof reproduced independently by the orchestrator rather than relayed: replacing the key-missing `throw` with a silent empty return (grep-confirmed landed at `convex/lib/firecrawl.ts:77`) reddened exactly the two guards that exist to prevent it — `RED 3 (fixed): throws a named FirecrawlKeyMissingError…` and `RED 3 (fixed): FIRECRAWL_API_KEY absent -> observable configMissing state, no silent fallback` — 2 failed / 5 passed, restore byte-identical.
+
+CLASS: an architectural intent written as a comment and never built.
+- sweep: `git grep -inE "upgrade path|when .* (is|becomes) available|TODO:|FIXME" -- convex/ lib/ app/ components/ hooks/ providers/ | grep -v __tests__ | grep -vi placeholder` -> 13 hits, down from ~20; both Firecrawl docstrings are closed.
+- remaining, traced and deliberately NOT fixed here: `components/chat/ModelSelector.tsx:206`, `components/dashboard/account/tabs/ProfileTab.tsx:438`, the three `components/dashboard/home/*` stubs, `components/landing/WebComponentsLoader.tsx:9`, `convex/actions/scrapeClient.ts:45,51,257` (extraction *quality*, a different problem from JS rendering), `convex/credits.ts:1008`, `convex/http/orchestration.ts:12`.
+- **One of them is security-shaped and is named rather than counted:** `convex/messages.ts` carries six identical `TODO: add member check when workspaceMembers table is added` (l.80, 96, 142, 179, 287, 305), and `grep -c workspaceMembers convex/schema.ts` -> **0**. The table does not exist, so six authorization checks are absent. Out of this lot's scope, written down here so it cannot be discovered again as a surprise.
+
+**UNVERIFIED, and stated rather than implied: no live extraction was run.** There is no `FIRECRAWL_API_KEY` on this machine and none was added. Every claim about extraction quality rests on unit tests against a mocked response shape taken from Firecrawl's public API documentation — not on a real call. The end-to-end behaviour on a real JavaScript-rendered site is the owner's to confirm once the key is provisioned. Saying "it works" here would reproduce, in the changelog, exactly the silent-success defect this lot exists to remove.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec vitest run` -> 37 files, 360 passed / 0 failed / 7 skipped, 367 total. `pnpm exec jest` -> 51 suites, 238/238. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 16 touched files -> clean. No secret value appears in the diff.
+
 ### Fixed (2026-07-21 — consultant onboarding rejected the domain a human actually types)
 
 Closes `k1776bdqs2105aat7xcdre8s2n8aysb4`. Reported from the preview by the person using it: step 1 -> 2 failed when he typed his own site. The `progress-steps` block shipped in PR #81 is **not** at fault — it was masked by this.
