@@ -259,15 +259,24 @@ describe("ChatInterface — per-operation plan approval", () => {
 		fireEvent.click(op2Checkbox);
 		expect(op2Checkbox).toHaveAttribute("aria-checked", "false");
 
-		// The divergence this guard actually protects appears one frame
-		// later: a click that was truly IGNORED leaves op2 out of the
-		// manual-exclusion set, so re-checking op1 (the dependency) lifts
-		// the cascade and op2 comes back automatically. A click that was
-		// silently ACCEPTED instead (i.e. the guard above is missing) would
-		// have added op2 to the manual set — re-checking op1 would then
-		// NOT bring it back, because op2's own exclusion is now manual, not
-		// cascaded. Both worlds look identical at line 260; only this next
-		// assertion tells them apart.
+		// This documents the intended end-to-end behaviour: re-checking op1
+		// (the dependency) lifts the cascade and op2 comes back automatically.
+		//
+		// It does NOT guard the `blockedIds` early-return inside
+		// `toggleOperationExclusion` (lib/architect/operation-selection.ts).
+		// Proven by direct investigation: Base UI's `<Checkbox disabled>`
+		// swallows the click itself and never calls `onCheckedChange` on a
+		// blocked row, so `toggleOperation` is never invoked here at all —
+		// op2 never enters the manual-exclusion set, with or without that
+		// guard. The assertion below is green in both worlds; it cannot tell
+		// them apart, because no click-driven test can reach that branch.
+		//
+		// The guard is actually held — and unit-tested directly, bypassing
+		// the disabled Checkbox — by `toggleOperationExclusion` in
+		// lib/architect/operation-selection.ts, via the test
+		// "is a no-op when the operation is cascade-blocked" in
+		// __tests__/lib/architect/operation-selection.test.ts. That is the
+		// test that reddens if this guard is ever removed.
 		fireEvent.click(op1Checkbox); // re-check the dependency
 		expect(op2Checkbox).toHaveAttribute("aria-checked", "true");
 	});
