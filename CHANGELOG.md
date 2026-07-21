@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-21 — migration M7: `dialog` + `sheet` ported from Radix to Base UI, package removed)
+
+Migrated `dialog.tsx` and `sheet.tsx` together — both imported `@radix-ui/react-dialog` (verified `git grep -l "@radix-ui/react-dialog" -- components` -> only these two files), so the package could not be removed until both were done. Ported from the already-migrated `alert-dialog.tsx` reference: `Content`->`Popup`, `Overlay`/`SheetOverlay`->`Backdrop`, `data-[state=open]:`/`data-[state=closed]:`->`data-[open]:`/`data-[closed]:` across every className (overlay, popup, `sheetVariants` cva, in-component close buttons), `React.ElementRef`->`React.ComponentRef`, `.displayName` forwarded from the Radix part -> explicit string literals (Base UI parts do not consistently expose the same shape once destructured).
+
+`SheetTrigger` gained an `asChild`->`render` bridge (its two real consumers, `app/[locale]/admin/layout.tsx:212` and `components/dashboard/DashboardHeader.tsx:59`, both pass `asChild`) — same pattern as `AlertDialogTrigger`. `DialogTrigger` stayed a direct re-export: zero repo consumers pass `asChild` to it (verified `git grep -n "DialogTrigger asChild"` -> zero hits outside `docs/example`). `DialogClose`/`SheetClose` and the in-component close (`×`) buttons kept as direct `Close`-part usage — no consumer passes `asChild` there either.
+
+Removed `@radix-ui/react-dialog` from `package.json` — proven `remaining: 0` direct importers via `git grep -n "@radix-ui/react-dialog"` (only hits left: vendored `docs/example/*` snippets, `pnpm-lock.yaml`'s transitive entries). `pnpm-lock.yaml` regenerated via `pnpm remove @radix-ui/react-dialog`.
+
+Added one Jest consumer-mounting test per component: `InsufficientCreditsModal-dialog.test.tsx` (mounts the real desktop-branch `Dialog`/`DialogContent`, asserts the popup's title/description render and the sr-only "Close" button is a real clickable `<button>` that fires `onClose`) and `DashboardHeader-sheet.test.tsx` (mounts the real mobile user-menu `Sheet`, asserts `SheetTrigger asChild` renders the real `<button aria-label="User menu">` — not a Base UI default wrapper — and that clicking it reveals the sheet's real content).
+
+`docs/migration-base-ui.md` extended with a `dialog`/`sheet` section (§M7).
+
+Hardened `DashboardHeader-sheet.test.tsx` per Eta REVISE: the original `trigger.tagName === "BUTTON"` assertion stayed green even when `SheetTrigger`'s `asChild -> render` bridge is dropped and children get wrapped in Base UI's default trigger element (button-in-button), because the default trigger also renders a `<button>`. Added an anti-nesting assertion, `trigger.parentElement?.closest("button") ?? null` must be `null` — `Element.closest` matches self first so it had to start one level above the queried node to actually catch the wrapper. Bipolar-proven: RED with the mutation reapplied to `sheet.tsx` (`validateDOMNesting` warning + assertion failure pasted in review), GREEN after `git checkout components/ui/sheet.tsx` restored the bridge (diff empty).
+
 ### Changed (2026-07-21 — migration M6: `scroll-area` ported from Radix to Base UI, three consumers)
 
 Migrated `scroll-area.tsx` (consumers: `chat-interface.tsx`'s Architect chat, `onboarding-chat.tsx`'s Consultant chat, mission detail page's operations list) from `@radix-ui/react-scroll-area` to `@base-ui/react@1.6.0`. Public API (`ScrollArea`/`ScrollBar` exports, prop shapes) unchanged — zero consumer edits: all three consumers query `[data-slot="scroll-area-viewport"]` and read `scrollTop`/`scrollHeight`/`clientHeight` off it for their own stick-to-bottom auto-scroll logic, which still works because Base UI's `Viewport`, like Radix's, remains the actual scrolling element.
