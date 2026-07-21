@@ -122,4 +122,11 @@ describe("ProfileTab (Select migrated to Base UI)", () => {
 			locale: "fr",
 		});
 	});
+
+	test("the Full Name label stays associated with its input after the label.tsx native-<label> migration (M5)", () => {
+		render(<ProfileTab user={buildUser()} />);
+
+		const nameField = screen.getByLabelText(en.profile_tab.full_name);
+		expect(nameField).toHaveValue("Ada Lovelace");
+	});
 });

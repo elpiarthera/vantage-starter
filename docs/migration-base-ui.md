@@ -1,4 +1,4 @@
-# Radix -> Base UI migration pattern (M1: accordion, checkbox, collapsible, radio-group, slider; M2: select, separator; M3: switch, progress, tooltip)
+# Radix -> Base UI migration pattern (M1: accordion, checkbox, collapsible, radio-group, slider; M2: select, separator; M3: switch, progress, tooltip; M4: alert-dialog, avatar, tabs; M5: label -> native `<label>`, no Base UI equivalent used)
 
 This wave migrated the five `components/ui/*` primitives with **zero consumers** in the repo — chosen deliberately so a wrong mapping stays invisible while the pattern gets proven. Each mapping below is code-level, taken directly from `@base-ui/react@1.6.0`'s own `.d.ts` files (`node_modules/@base-ui/react/<primitive>/`), not assumed from Radix muscle memory.
 
@@ -366,3 +366,29 @@ Both migrations are covered end-to-end by real consumer-mounting tests: `TabNavi
 ## What M1 + M2 + M3 + M4 together did NOT touch
 
 Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `label`, `menubar`, `navigation-menu`, `popover`, `scroll-area`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should apply the same research-first process demonstrated across M2/M3/M4: read the primitive's own `.d.ts` before assuming a 1:1 API, check for missing `asChild`/`render` support on parts a real consumer depends on (not just the parts an isolated demo would exercise), and add consumer-mounting tests that click through to the real handler.
+
+## Packages removed this wave (M5) — the migration target is the platform, not Base UI
+
+### Label
+
+`components/ui/label.tsx` -> consumers: `components/dashboard/account/modals/ChangePasswordModal.tsx`, `components/dashboard/account/tabs/ProfileTab.tsx`. Both use the plain, universal pattern: `<Label htmlFor={id}>text</Label>` immediately followed by a matching `id` on the field.
+
+**Why NOT Base UI here — this is the one migration in the series where the correct target isn't the Base UI equivalent at all.** Base UI ships no standalone label primitive; its label lives inside the `field` package (`node_modules/@base-ui/react/field/label/FieldLabel.d.ts`) and its `Field.Label` **requires** a `Field.Root` ancestor context (confirmed by reading `field/root/FieldRoot.js` — `Field.Label` reads its `htmlFor` target from the `FieldRootContext`, it does not accept a bare `htmlFor` prop the way Radix's `Label.Root` does). Wrapping both consumers' existing `<Label htmlFor="name">…</Label>` markup in `<Field.Root>` to satisfy that context would mean rewriting each consumer's field markup and props — a red flag under this doc's own rule that a migration should not change a consumer's API. `Field` is the right tool when a form needs Base UI's validation/error-message wiring; it is the wrong tool for a page that just needs an accessible label-input pairing.
+
+**What Radix's `Label.Root` actually added over a plain `<label>`**: reading `node_modules/@radix-ui/react-label/dist/index.mjs`, the only behavior beyond rendering a native `<label>` is an `onMouseDown` handler that calls `event.preventDefault()` when the click target is not already inside the label (double-click text-selection prevention on the label text itself). Neither consumer relies on that behavior, and a plain `<label htmlFor>` already gives the browser's own native focus-forwarding to the associated control for free — no JavaScript required.
+
+**The migration**: `components/ui/label.tsx` now wraps a native `<label>` element directly. `React.forwardRef<HTMLLabelElement, React.ComponentPropsWithoutRef<"label"> & VariantProps<typeof labelVariants>>` replaces the old `React.ElementRef<typeof LabelPrimitive.Root>`/`ComponentPropsWithoutRef<typeof LabelPrimitive.Root>` pair — this is a mechanical narrowing (`typeof LabelPrimitive.Root` resolved to `"label"` anyway, since that's what Radix rendered under the hood). `Label.displayName` becomes the literal `"Label"` (previously derived from `LabelPrimitive.Root.displayName`, which no longer exists). The public export (`Label`), its props (`className` + any native `<label>` attribute, `htmlFor` included), and `labelVariants`'s classes are all unchanged — neither consumer needed an edit.
+
+`@radix-ui/react-label` proven `remaining: 0` direct importers:
+
+```
+grep -rn "@radix-ui/react-label" app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+```
+
+`pnpm-lock.yaml` regenerated via `pnpm install --lockfile-only`. `@radix-ui/react-label@2.1.8` still survives transitively (a different, newer version than the removed direct `2.1.1` entry) — per every prior wave's doctrine, transitive survival is irrelevant to the safety of this removal; `remaining: 0` **direct** importers is the only guarantee, and it holds.
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `ChangePasswordModal.test.tsx` (`getByLabelText` resolves all three password fields to their `<input>`) and `ProfileTab.test.tsx` (`getByLabelText` resolves the Full Name field to its populated `<input>`) — neither consumer's source needed any change.
+
+## What M1 + M2 + M3 + M4 + M5 together did NOT touch
+
+Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `scroll-area`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying the M5 lesson alongside M2/M3/M4's: before reaching for Base UI's nearest-named equivalent, check whether the Radix primitive is a thin wrapper over a native HTML element the consumer's usage doesn't actually need wrapped at all.

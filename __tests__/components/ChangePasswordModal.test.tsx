@@ -139,4 +139,14 @@ describe("ChangePasswordModal", () => {
 		expect(updatePasswordMock).not.toHaveBeenCalled();
 		expect(onClose).not.toHaveBeenCalled();
 	});
+
+	test("each password field stays associated with its label after the label.tsx native-<label> migration (M5)", () => {
+		render(<ChangePasswordModal isOpen onClose={jest.fn()} />);
+
+		expect(screen.getByLabelText(/current password/i).tagName).toBe("INPUT");
+		expect(screen.getByLabelText(/^new password/i).tagName).toBe("INPUT");
+		expect(screen.getByLabelText(/confirm new password/i).tagName).toBe(
+			"INPUT",
+		);
+	});
 });
