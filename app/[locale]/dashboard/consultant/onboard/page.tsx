@@ -15,6 +15,12 @@
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
+import {
+	ProgressStep,
+	type Step as ProgressStepData,
+	ProgressSteps,
+	ProgressStepsList,
+} from "@/components/ui/progress-steps";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "@/i18n/routing";
@@ -92,71 +98,51 @@ const SECTOR_I18N_KEYS: Record<Sector, string> = {
 // STEP INDICATOR
 // ============================================================================
 
+// Adapted onto the ported mcpcn `progress-steps` block
+// (components/ui/progress-steps.tsx) — see the block's own file header for
+// the upstream MIT attribution. Previously a hand-rolled numbered-circle
+// nav (checkmark svg + manually computed border/bg colors per step); the
+// block already renders exactly this shape (completed check / current
+// border / pending border) driven off the same `Step["status"]` union, so
+// the by-hand version is replaced rather than duplicated alongside it.
+// `aria-current="step"` is preserved explicitly per item — the block's data-
+// driven auto-render has no per-step slot for it, so the steps are rendered
+// through the block's own exported sub-components instead of its default
+// children.
 function StepIndicator({ current }: { current: Step }) {
 	const t = useTranslations("consultant");
-	const steps: { label: string; step: Step }[] = [
-		{ label: t("step1Title"), step: 1 },
-		{ label: t("step2Title"), step: 2 },
-		{ label: t("step3Title"), step: 3 },
+	const steps: (ProgressStepData & { step: Step })[] = [
+		{
+			label: t("step1Title"),
+			status: current > 1 ? "completed" : current === 1 ? "current" : "pending",
+			step: 1,
+		},
+		{
+			label: t("step2Title"),
+			status: current > 2 ? "completed" : current === 2 ? "current" : "pending",
+			step: 2,
+		},
+		{
+			label: t("step3Title"),
+			status: current === 3 ? "current" : "pending",
+			step: 3,
+		},
 	];
 
 	return (
-		<nav
-			aria-label={t("onboardingStepsAriaLabel")}
-			className="flex items-center gap-0 mb-8"
-		>
-			{steps.map((s, i) => (
-				<div key={s.step} className="flex items-center gap-0">
-					<div className="flex items-center gap-2">
-						<span
-							className={cn(
-								"w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold border transition-colors duration-150",
-								current === s.step
-									? "border-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)] text-white"
-									: current > s.step
-										? "border-[oklch(0.62_0.18_240)] bg-[oklch(0.62_0.18_240)]/20 text-[oklch(0.62_0.18_240)]"
-										: "border-border text-muted-foreground",
-							)}
-							aria-current={current === s.step ? "step" : undefined}
-						>
-							{current > s.step ? (
-								<svg
-									width="10"
-									height="10"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="3"
-									aria-hidden="true"
-								>
-									<polyline points="20 6 9 17 4 12" />
-								</svg>
-							) : (
-								s.step
-							)}
-						</span>
-						<span
-							className={cn(
-								"text-xs font-medium hidden sm:inline",
-								current === s.step
-									? "text-foreground"
-									: "text-muted-foreground",
-							)}
-						>
-							{s.label}
-						</span>
-					</div>
-					{i < steps.length - 1 && (
-						<div
-							className={cn(
-								"w-8 h-px mx-2 transition-colors duration-150",
-								current > s.step ? "bg-[oklch(0.62_0.18_240)]" : "bg-border",
-							)}
-							aria-hidden="true"
+		<nav aria-label={t("onboardingStepsAriaLabel")} className="mb-8">
+			<ProgressSteps data={{ steps }} className="bg-transparent p-0">
+				<ProgressStepsList>
+					{steps.map((s, i) => (
+						<ProgressStep
+							aria-current={s.status === "current" ? "step" : undefined}
+							index={i}
+							key={s.step}
+							step={s}
 						/>
-					)}
-				</div>
-			))}
+					))}
+				</ProgressStepsList>
+			</ProgressSteps>
 		</nav>
 	);
 }

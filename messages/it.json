@@ -2996,7 +2996,8 @@
 			"priority_urgent": "Urgente",
 			"priority_high": "Alta",
 			"priority_medium": "Media",
-			"priority_low": "Bassa"
+			"priority_low": "Bassa",
+			"clear_status_selection": "Cancella"
 		},
 		"list_view": {
 			"empty": "Nessuna missione da visualizzare",

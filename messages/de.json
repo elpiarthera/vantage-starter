@@ -2996,7 +2996,8 @@
 			"priority_urgent": "Dringend",
 			"priority_high": "Hoch",
 			"priority_medium": "Mittel",
-			"priority_low": "Niedrig"
+			"priority_low": "Niedrig",
+			"clear_status_selection": "Löschen"
 		},
 		"list_view": {
 			"empty": "Keine Missionen anzuzeigen",
