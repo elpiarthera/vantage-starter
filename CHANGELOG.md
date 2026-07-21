@@ -6,6 +6,27 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-21 — `docs/blocks-inventory.md`: what each component is, where it is used, and how to check it by eye)
+
+Closes `k17ax9sbhatva4b610hk14c6hd8azkcr`. The document a developer picking up this boilerplate opens first, and the one Laurent uses to verify with his own eyes without asking anyone. One row per registry block: what it does in a sentence a non-technical reader understands, the files consuming it **derived by command**, its state, and — the column that exists for him — the exact URL, the click path, and what he should see. A block not yet in service reads "not yet visible"; a dead address in that column costs more than an empty cell. No automated screenshot, no paid rendering service: the human is the verifier.
+
+No number in the file is typed. Block count, consumer counts and totals are each derived, with the command printed beside them, using the corrected import-path form from `docs/mcpcn-block-mapping.md` §3 — the bare-name form would have reproduced a defect this repository fixed the same day.
+
+**The guard shipped green on a document that lies, and that is the part worth recording.** Guard B refuses a row claiming "in service" without a consumer. Its first branch waved through any row it could not read a consumer count from:
+
+```
+if 'State: in service' in e and 'consumers=1' not in e and 'consumers=0' not in e:
+    continue
+```
+
+Caught by mutating a row its author had not chosen — `order-confirm`, a block not installed at all, whose row reads "Consumers: none — not installed". Declaring it `State: in service` left the guard reporting `none`, exit **0**. Green on a lie.
+
+Its bipolar proof had passed because the injected mutation happened to carry `consumers=0`, a shape the matcher already knew. **A guard proven only on cases its own author selected shows that the matcher understands itself, not that it bites.**
+
+Now it fails closed: a row it cannot read is reported by name in its own `UNPARSEABLE` bucket and fails the run at the same severity as a `consumers=0` row. Re-verified independently by the orchestrator on the same foreign row — mutation grep-confirmed landed **before any output was read**, guard reddening with `UNPARSEABLE: ['order-confirm']`, exit **1**; restored, both guards back to exit 0 on the intact file. Guard A was re-read for the same class of hole and has no third silent-pass path.
+
+The document is **living**: each merged batch updates it in the same delivery, never afterwards. A batch whose PR does not touch it is an incomplete delivery.
+
 ### Fixed (2026-07-21 — §3's derivation command counted prose, not consumers)
 
 Traced in batch 2's entry below rather than patched, until now. `docs/mcpcn-block-mapping.md` §3's command was `git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l` — it matched the bare block name anywhere in the tree, so `table` returned `consumers=43` (legal pages, `DataTable`, the word "acceptable") for a block one file actually imports. Every batch in the plan defines its own scope from this command's output, so a bare-name match could certify a block "in service" that nobody had wired — a guard that cannot fail.
