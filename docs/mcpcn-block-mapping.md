@@ -19,7 +19,25 @@ print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
 -> 30
 ```
 
-**30 blocks.** A "31" is in circulation in some contexts — that is the mcpcn project's GitHub star count, unrelated to the registry's item count. This document has 30 rows, one per block, none dropped, none rejected without a reason that survives a hostile reader.
+**30 blocks.** A "31" is in circulation in some contexts — that is the mcpcn project's GitHub star count, unrelated to the registry's item count.
+
+**30 blocks, 22 entries — and the difference is deliberate.** This sentence previously read "30 rows, one per block", which was not true of the file it describes and sent two separate readers to three different counts (19, 22, 30) depending on which pattern they grepped. Both numbers are derived below, never typed:
+
+```
+# blocks in the registry
+curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
+import json,sys; d=json.load(sys.stdin)
+print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
+-> 30
+
+# entries in this document (one per 'Feature it opens' triplet)
+grep -c '^1\. \*\*Feature it opens' docs/mcpcn-block-mapping.md
+-> 22
+```
+
+Eight entries cover more than one block, because those blocks do not open separate features — they ship one feature together and are worthless apart: `post-card`/`post-list`/`post-detail` are one blog surface; `x-post`/`instagram-post`/`linkedin-post`/`youtube-post` are one social-proof strip; `event-card`/`event-list`/`event-detail`/`event-confirmation` are one booking flow. Each block's individual role inside its shared feature is named in the entry. Splitting them into 30 entries would produce eight paragraphs repeating the same feature, not eight new use cases.
+
+**Every one of the 30 is covered. None dropped, none rejected.** Audit command in §5 — it prints the name of any registry block absent from this file, and it currently prints nothing.
 
 ---
 
@@ -181,15 +199,25 @@ curl -sS https://www.mcpcn.dev/r/registry.json \
   | python3 -c "import json,sys; d=json.load(sys.stdin); \
 print(len([i for i in d['items'] if i.get('type')=='registry:block']))"
 
-# which of them this document fails to mention — must print nothing
-curl -sS https://www.mcpcn.dev/r/registry.json \
-  | python3 -c "import json,sys; d=json.load(sys.stdin); \
-doc=open('docs/mcpcn-block-mapping.md').read(); \
-print('\n'.join(i['name'] for i in d['items'] \
-if i.get('type')=='registry:block' and i['name'] not in doc))"
+# which blocks have NO ENTRY in the mapping section — must print "none"
+python3 -c "
+import json,sys,re,urllib.request
+doc=open('docs/mcpcn-block-mapping.md').read()
+mapping=doc.split('## 4. The mapping',1)[1].split(chr(10)+'## 5.',1)[0]
+bold=set(re.findall(r'\*\*([a-z0-9-]+)\*\*', mapping))
+d=json.load(urllib.request.urlopen('https://www.mcpcn.dev/r/registry.json'))
+blocks=[i['name'] for i in d['items'] if i.get('type')=='registry:block']
+missing=[b for b in blocks if b not in bold]
+print(f'{len(blocks)-len(missing)}/{len(blocks)} blocks have an entry')
+print('MISSING:', missing if missing else 'none')
+sys.exit(1 if missing else 0)"
+-> 30/30 blocks have an entry
+-> MISSING: none
 ```
 
 The second command is the one that matters, and it is the one that caught a real defect: the first draft of this rewrite asserted "30 of 30, zero rejected" while **silently omitting `stat-card`** — 29 covered, one dropped without a word. The claim was typed, not derived, inside a document whose opening section preaches derivation. A count that nobody made fail is not a measurement.
+
+**And the first version of that very command could not fail.** It asked whether each block name appeared *anywhere in the file* (`i['name'] not in doc`). Names recur in prose — §6's ranked list alone mentions half of them — so deleting an entry outright left the check green. Proven, not assumed: replacing the `**stat-card**` entry heading with a placeholder still printed nothing missing. The command above scopes the search to §4 and requires the name **in bold**, i.e. as an entry heading. Same probe against it: `29/30`, `MISSING: ['stat-card']`, exit 1. It passes clean on the unmodified file and fails on a real deletion — a guard proven in both directions, which is the only kind worth citing.
 
 Every block in the registry opens at least one named feature in at least one of the five products. **Zero blocks rejected.** The previous version's 20 rejections were a scoping error — an artefact of asking "which existing screen uses this?" — not a fact about the components.
 
