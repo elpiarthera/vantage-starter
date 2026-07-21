@@ -11,6 +11,8 @@
  */
 
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import {
 	internalMutation,
 	internalQuery,
@@ -18,6 +20,36 @@ import {
 	query,
 } from "./_generated/server";
 import { getWorkspaceContext, requireAuthWithWorkspace } from "./lib/auth";
+
+/**
+ * Detect whether granting `operationId` the dependency set `newDeps` would
+ * create a cycle — i.e. whether `operationId` is reachable by walking
+ * `dependsOn` forward from any node in `newDeps`. BFS over the mission's
+ * operation graph (bounded by mission size, never unbounded).
+ */
+async function wouldCreateCycle(
+	ctx: MutationCtx,
+	operationId: Id<"operations">,
+	newDeps: Id<"operations">[],
+): Promise<boolean> {
+	const visited = new Set<string>();
+	const queue: Id<"operations">[] = [...newDeps];
+
+	while (queue.length > 0) {
+		// biome-ignore lint/style/noNonNullAssertion: queue.length > 0 guards this
+		const current = queue.shift()!;
+		if (current === operationId) return true;
+		if (visited.has(current)) continue;
+		visited.add(current);
+
+		const node = await ctx.db.get(current);
+		if (node && "dependsOn" in node && node.dependsOn) {
+			queue.push(...node.dependsOn);
+		}
+	}
+
+	return false;
+}
 
 // =============================================================================
 // QUERIES
@@ -382,6 +414,7 @@ export const update = mutation({
 		output: v.optional(v.string()),
 		error: v.optional(v.string()),
 		artifacts: v.optional(v.array(v.string())),
+		dependsOn: v.optional(v.array(v.id("operations"))),
 	},
 	handler: async (ctx, args) => {
 		const { operationId, ...updates } = args;
@@ -390,6 +423,30 @@ export const update = mutation({
 		if (!operation) throw new Error("Operation not found");
 
 		await requireAuthWithWorkspace(ctx, operation.workspaceId);
+
+		if (updates.dependsOn !== undefined) {
+			// Reject self-dependency
+			if (updates.dependsOn.includes(operationId)) {
+				throw new Error("An operation cannot depend on itself");
+			}
+
+			// Reject dependencies from another mission
+			for (const depId of updates.dependsOn) {
+				const dep = await ctx.db.get(depId);
+				if (!dep || dep.missionId !== operation.missionId) {
+					throw new Error(
+						"Dependencies must be operations within the same mission",
+					);
+				}
+			}
+
+			// Reject a dependency graph that would create a cycle
+			if (await wouldCreateCycle(ctx, operationId, updates.dependsOn)) {
+				throw new Error(
+					"This dependency would create a circular chain between operations",
+				);
+			}
+		}
 
 		const cleanUpdates = Object.fromEntries(
 			Object.entries(updates).filter(([, v]) => v !== undefined),
