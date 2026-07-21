@@ -2927,7 +2927,13 @@
 		"saving": "Wird gespeichert...",
 		"createProjectError": "Projekt konnte nicht erstellt werden",
 		"invalidUrl": "Ungültige URL. Bitte fügen Sie https:// hinzu",
-		"addCompetitorError": "Wettbewerber konnte nicht hinzugefügt werden"
+		"addCompetitorError": "Wettbewerber konnte nicht hinzugefügt werden",
+		"selectTeamsAgentsSkills": "Wahlen Sie aus, welche Teams, Agenten und Fahigkeiten einbezogen werden",
+		"toggleTeamAria": "Team {name} umschalten",
+		"toggleAgentAria": "Agent {name} umschalten",
+		"toggleSkillAria": "Fahigkeit {name} umschalten",
+		"agentBlockedByTeam": "Aktivieren Sie zuerst das Team dieses Agenten erneut.",
+		"skillBlockedByAgent": "Aktivieren Sie zuerst einen Agenten, der diese Fahigkeit nutzt."
 	},
 	"configurator": {
 		"title": "Design-Konfigurator",

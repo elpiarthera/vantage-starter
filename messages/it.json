@@ -2927,7 +2927,13 @@
 		"saving": "Salvataggio in corso...",
 		"createProjectError": "Impossibile creare il progetto",
 		"invalidUrl": "URL non valido. Includi https://",
-		"addCompetitorError": "Impossibile aggiungere il concorrente"
+		"addCompetitorError": "Impossibile aggiungere il concorrente",
+		"selectTeamsAgentsSkills": "Seleziona quali team, agenti e competenze includere",
+		"toggleTeamAria": "Attiva/disattiva team {name}",
+		"toggleAgentAria": "Attiva/disattiva agente {name}",
+		"toggleSkillAria": "Attiva/disattiva competenza {name}",
+		"agentBlockedByTeam": "Riseleziona prima il team di questo agente.",
+		"skillBlockedByAgent": "Riseleziona prima un agente che usa questa competenza."
 	},
 	"configurator": {
 		"title": "Configuratore di design",
