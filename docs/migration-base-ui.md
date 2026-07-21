@@ -432,6 +432,52 @@ The auto-scroll **decision logic** is also covered, but only because `chat-inter
 
 **Declared coverage limit — what is NOT and cannot be tested here.** The *physical* scroll — whether the viewport actually overflows and scrolls in a real browser, and whether the scrollbar thumb tracks it — has no jsdom coverage: jsdom renders no layout, so real overflow never happens under test. The stick-to-bottom test proves the *decision* (given geometry X, call scrollIntoView), and the content tests prove the *structure* (content nested in the queried viewport), but neither proves the browser scrolls. That last mile is a **human visual-verification item**: check `/dashboard/architect`, the consultant onboarding chat, and `/dashboard/missions/[id]` in a real browser — send several messages and confirm the view sticks to the bottom. Do not read the green suite as proof the viewport physically scrolls; a `scrollTop`-asserting test with real (unmocked) geometry would pass vacuously on `0 === 0` and be a false guard (the vacuous-test lesson from this series).
 
-## What M1 + M2 + M3 + M4 + M5 + M6 together did NOT touch
+## Packages removed this wave (M7)
 
-Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying the M5 lesson alongside M2/M3/M4's: before reaching for Base UI's nearest-named equivalent, check whether the Radix primitive is a thin wrapper over a native HTML element the consumer's usage doesn't actually need wrapped at all.
+### Dialog + Sheet — migrated together, one package coupling
+
+`components/ui/dialog.tsx` and `components/ui/sheet.tsx` both imported `@radix-ui/react-dialog` — confirmed via `git grep -l "@radix-ui/react-dialog" -- components` returning exactly these two files, no others. Radix's `Sheet` component is literally built on the same `@radix-ui/react-dialog` package (a slide-in variant styled via `cva`, not a distinct primitive), so the package could not be removed after migrating only one of the two — that would leave dead-weight `@radix-ui/react-dialog` in `package.json` with zero remaining reason to exist except the other half of this pair. This is why the two were treated as a single migration unit rather than two independent ones.
+
+Both were ported directly from the already-migrated `alert-dialog.tsx` (M4), which re-exports the same underlying `dialog` package's parts under the `alert-dialog` namespace — the mapping is therefore identical:
+
+| Radix part | Base UI part |
+|---|---|
+| `DialogPrimitive.Root` / `SheetPrimitive.Root` | `DialogPrimitive.Root` (imported as `import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"`, and the same import aliased to `SheetPrimitive` in `sheet.tsx`) |
+| `DialogPrimitive.Trigger` | `DialogPrimitive.Trigger` (unchanged name) |
+| `DialogPrimitive.Portal` | `DialogPrimitive.Portal` (unchanged) |
+| `DialogPrimitive.Close` | `DialogPrimitive.Close` (unchanged) |
+| `DialogPrimitive.Overlay` | `DialogPrimitive.Backdrop` (renamed, same as M4's alert-dialog `Overlay`->`Backdrop`) |
+| `DialogPrimitive.Content` | `DialogPrimitive.Popup` (renamed) |
+| `DialogPrimitive.Title` | `DialogPrimitive.Title` (unchanged) |
+| `DialogPrimitive.Description` | `DialogPrimitive.Description` (unchanged) |
+
+Confirmed against `node_modules/@base-ui/react/dialog/index.parts.d.ts`: the package exports exactly `Root`, `Trigger`, `Portal`, `Backdrop`, `Popup`, `Close`, `Title`, `Description`, `Viewport`, `Handle`/`createHandle` — the same set `alert-dialog`'s package re-exports under different names, confirming M4's finding that alert-dialog is a thin wrapper over this very `dialog` package.
+
+**Data attributes** — every `data-[state=open]:`/`data-[state=closed]:` selector across both files' className strings (the backdrop's fade classes, the popup's fade/zoom/slide classes, `sheetVariants`'s cva `side` variants, and both in-component close-button classes) was rewritten to `data-[open]:`/`data-[closed]:` (`DialogBackdropDataAttributes.open`/`.closed`, `DialogPopupDataAttributes.open`/`.closed` — same attribute names M4's alert-dialog migration already confirmed). `git grep -n "data-\[state=" -- components/ui/dialog.tsx components/ui/sheet.tsx` returns zero hits post-migration — no stale token survived.
+
+`displayName`: Radix's `.displayName` (forwarded from each part, e.g. `DialogOverlay.displayName = DialogPrimitive.Overlay.displayName`) replaced with explicit string literals (`DialogOverlay.displayName = "DialogOverlay"`), same rationale as every prior wave — Base UI's destructured parts do not consistently expose the same `.displayName` shape.
+
+**`asChild` — derived per-part from real consumer usage, not blanket-added.**
+
+- `SheetTrigger`: two real consumers pass `asChild` — confirmed via `git grep -n "SheetTrigger asChild"` -> `app/[locale]/admin/layout.tsx:212` and `components/dashboard/DashboardHeader.tsx:59` (the mobile user-menu trigger). `SheetTrigger` therefore became a small wrapper function mapping `asChild` + a valid single React-element child to Base UI's `render` prop — the identical pattern `AlertDialogTrigger` established in M4. Both consumers needed zero changes.
+- `DialogTrigger`: zero real consumers pass `asChild` (confirmed: `git grep -n "DialogTrigger asChild"` -> only hits are `docs/example/implementation-example.md`, a vendored reference doc, not repo code). `DialogTrigger` stayed a direct re-export (`const DialogTrigger = DialogPrimitive.Trigger`) — adding an unused render bridge here would be speculative code with no consumer to prove it, so it was not added.
+- `DialogClose`/`SheetClose` and the in-component `×` close buttons (rendered via `DialogPrimitive.Close`/`SheetPrimitive.Close` directly, not through the public `DialogClose`/`SheetClose` re-export) also stayed direct — no consumer passes `asChild` to either.
+
+`sheetVariants`'s cva definition and its `side` variant API (`top`/`bottom`/`left`/`right`) are unchanged — only the `data-state` tokens inside each variant's class string were rewritten, per the table above.
+
+`@radix-ui/react-dialog` proven `remaining: 0` direct importers:
+
+```
+git grep -n "@radix-ui/react-dialog"
+# remaining hits: docs/example/*.md|.txt (vendored reference snippets, not repo code),
+# pnpm-lock.yaml (regenerated lockfile bookkeeping), package.json (removed by this wave)
+# -- zero hits inside app/ components/ lib/ hooks/ providers/ src/
+```
+
+`pnpm-lock.yaml` regenerated via `pnpm remove @radix-ui/react-dialog` (not a hand edit).
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `InsufficientCreditsModal-dialog.test.tsx` (desktop-branch `Dialog`/`DialogContent` — asserts the popup's title/description render while open and the sr-only `t("close")` button is a real, clickable `<button>` that fires the consumer's `onClose`) and `DashboardHeader-sheet.test.tsx` (mobile user-menu `Sheet` — asserts `SheetTrigger asChild` renders the actual `<button aria-label="User menu">` DOM node, proving the render bridge landed rather than wrapping the child in a Base UI default element, and that clicking it reveals the sheet's real content). Neither consumer's source needed any change.
+
+## What M1 + M2 + M3 + M4 + M5 + M6 + M7 together did NOT touch
+
+Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dropdown-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying the M5 lesson alongside M2/M3/M4/M7's: before reaching for Base UI's nearest-named equivalent, check whether the Radix primitive is a thin wrapper over a native HTML element the consumer's usage doesn't actually need wrapped at all, and check whether two files share one underlying `@radix-ui/react-*` package (as `dialog.tsx`/`sheet.tsx` did) before declaring either migration complete on its own.
