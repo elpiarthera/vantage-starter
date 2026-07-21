@@ -121,7 +121,7 @@ export function AdaptiveNavigation({
 					<TabsTrigger
 						key={item.id}
 						value={item.id}
-						className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground"
+						className="flex items-center gap-2 data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground"
 					>
 						<div
 							className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${

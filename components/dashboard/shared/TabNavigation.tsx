@@ -37,9 +37,9 @@ export function TabNavigation({
 						key={tab.value}
 						value={tab.value}
 						className="
-              text-white 
-              data-[state=active]:bg-primary
-              data-[state=active]:text-white
+              text-white
+              data-[active]:bg-primary
+              data-[active]:text-white
               min-h-[44px] min-w-[44px]
               px-4 md:px-6
               text-sm md:text-base

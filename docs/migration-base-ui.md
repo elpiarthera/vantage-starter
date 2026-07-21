@@ -291,3 +291,78 @@ grep -rn "@radix-ui/react-tooltip"  app/ components/ lib/ hooks/ providers/ src/
 ## What M1 + M2 + M3 together did NOT touch
 
 Every other remaining `@radix-ui/react-*` package in `package.json` (`alert-dialog`, `aspect-ratio`, `avatar`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `label`, `menubar`, `navigation-menu`, `popover`, `scroll-area`, `slot`, `tabs`, `toast`, `toggle`, `toggle-group`, etc.) is still in active use by consumer components and was left untouched. A future wave should apply the same research-first process (read the primitive's own `.d.ts` before assuming a 1:1 API; most of these have real consumers, so they need the consumer-level review + consumer-mounting tests this doc's M2/M3 sections demonstrate, not just M1's zero-consumer proof pattern).
+
+## Packages removed this wave (M4)
+
+`@radix-ui/react-alert-dialog`, `@radix-ui/react-avatar`, `@radix-ui/react-tabs` — each had exactly two direct consumers in the repo before migration. Sweep before removal:
+
+```
+grep -rn "@radix-ui/react-alert-dialog" app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+grep -rn "@radix-ui/react-avatar"       app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+grep -rn "@radix-ui/react-tabs"         app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+```
+
+`pnpm-lock.yaml` regenerated via `pnpm install --lockfile-only`. `@radix-ui/react-alert-dialog` (1.1.15) and `@radix-ui/react-tabs` (1.1.13) still survive transitively via `@polar-sh/ui` -> `@polar-sh/checkout` -> `@convex-dev/polar` — different, newer versions than the removed direct entries (1.1.4 / 1.1.2). `@radix-ui/react-avatar` has zero entries left anywhere in the lockfile — no transitive puller at all. Per the M1/M2/M3 doctrine above, this difference is irrelevant to the safety of the removal; `remaining: 0` **direct** importers is the only guarantee, and it holds for all three.
+
+### Alert Dialog
+
+`components/ui/alert-dialog.tsx` -> consumers: `app/[locale]/dashboard/missions/[missionId]/page.tsx` (`CheckpointGate`'s reject flow), `components/dashboard/account/tabs/ProfileTab.tsx` (delete-account flow).
+
+| Radix part | Base UI part |
+|---|---|
+| `AlertDialogPrimitive.Root` | `AlertDialogPrimitive.Root` (unchanged name) |
+| `AlertDialogPrimitive.Trigger` | `AlertDialogPrimitive.Trigger` (unchanged name, but see `asChild` note below) |
+| `AlertDialogPrimitive.Portal` | `AlertDialogPrimitive.Portal` (unchanged) |
+| `AlertDialogPrimitive.Overlay` | `AlertDialogPrimitive.Backdrop` (renamed — Base UI's alert-dialog re-exports the underlying `dialog` package's parts, which name this part `Backdrop`) |
+| `AlertDialogPrimitive.Content` | `AlertDialogPrimitive.Popup` (renamed — also a `dialog`-package part; no `Positioner` split is needed here, unlike Select/Tooltip, because `Popup` alone owns fixed positioning + surface for a modal alert dialog) |
+| `AlertDialogPrimitive.Title` | `AlertDialogPrimitive.Title` (unchanged name) |
+| `AlertDialogPrimitive.Description` | `AlertDialogPrimitive.Description` (unchanged name, but see `asChild` note below) |
+| `AlertDialogPrimitive.Action` | **removed, no Base UI equivalent** — mapped onto `AlertDialogPrimitive.Close` (see below) |
+| `AlertDialogPrimitive.Cancel` | **removed, no Base UI equivalent** — mapped onto `AlertDialogPrimitive.Close` (see below) |
+
+Confirmed via `node_modules/@base-ui/react/alert-dialog/index.parts.d.ts`: Base UI's alert-dialog package exports `Root`, `Backdrop`, `Close`, `Description`, `Popup`, `Portal`, `Title`, `Trigger`, `Viewport`, `Handle`/`createHandle` — most of these are direct re-exports of the sibling `dialog` package's own parts (`DialogBackdrop`, `DialogClose`, `DialogDescription`, `DialogPopup`, `DialogPortal`, `DialogTitle`, `DialogViewport`), with only `AlertDialogRoot` and `AlertDialogTrigger` genuinely alert-dialog-specific (they set the dialog's ARIA `role` to `alertdialog` instead of `dialog` — confirmed in `dialog/root/useRenderDialogRoot.js`: `role = isAlertDialog ? 'alertdialog' : 'dialog'`, so `role="alertdialog"` is stamped automatically with zero wrapper code, verified end-to-end by `mission-detail-alert-dialog.test.tsx`'s `screen.findByRole("alertdialog")`).
+
+**`Action`/`Cancel` -> single `Close` part, with a composed `onClick`.** Radix modeled the destructive-confirm button (`Action`) and the dismiss button (`Cancel`) as two distinct parts, both of which close the dialog automatically on click. Base UI has neither — only a generic `Close` (confirmed by directory listing of `node_modules/@base-ui/react/dialog/`: no `action` or `cancel` subdirectory). Reading `DialogClose.js`'s compiled source: `Close`'s internal `handleClick` only closes the dialog; it does not know about a consumer-supplied `onClick`. The wrapper's `AlertDialogAction` and `AlertDialogCancel` both render `AlertDialogPrimitive.Close` and simply spread the consumer's own `onClick` through `{...props}` — Base UI's `useRenderElement`/`mergeProps` (confirmed in `merge-props/mergeProps.js`) composes multiple `onClick` props rather than overwriting: for two handlers passed at different positions in the internal `props` array, **the later-positioned (consumer, i.e. `elementProps`) handler executes before the earlier-positioned (`Close`'s own `handleClick`) one** ("merged and called in right-to-left order (rightmost handler executes first, leftmost last)", per the function's own doc comment). Concretely: `<AlertDialogAction onClick={handleReject}>` still calls `handleReject` first, then Base UI closes the dialog — exactly the pre-migration Radix behavior, verified end-to-end (not just by inspection) by both `mission-detail-alert-dialog.test.tsx` (asserts `rejectMock` was called with the real checkpoint id after clicking the confirm button) and `ProfileTab-danger-zone.test.tsx` (asserts `deleteAccountMock` was called after clicking "Delete permanently").
+
+**`asChild` — genuinely absent from two parts Radix had it on, added back by the wrapper.** `AlertDialogTriggerProps`/`DialogTriggerProps` and `DialogDescriptionProps` have no `asChild` field (confirmed by reading each `.d.ts`) — Base UI's replacement is the general `render` prop. Both of this wave's consumers depend on `asChild`: the mission page and `ProfileTab.tsx` both wrap a `<Button>` in `<AlertDialogTrigger asChild>`, and `ProfileTab.tsx` wraps a `<div>` of mixed content (paragraph + conditional warning blocks) in `<AlertDialogDescription asChild>` (Base UI's `Description` always renders its own `<p>`, so a `<div>` child needs `render`, not children-passthrough). The wrapper keeps `asChild` in its own public prop surface on both `AlertDialogTrigger` and `AlertDialogDescription`, mapping `asChild={true}` + a valid single React element child to Base UI's `render={children}` (the same asChild -> render mapping M3's `TooltipTrigger` established) — both consumers needed zero changes.
+
+**Data attributes** — confirmed via each part's own `*DataAttributes.d.ts` (all shared with the `dialog` package, since `Backdrop`/`Popup` are direct re-exports): Radix `data-[state=open]:`/`data-[state=closed]:` (on `Overlay`/`Content`) -> Base UI `data-[open]:`/`data-[closed]:` (on `Backdrop`/`Popup` — `DialogBackdropDataAttributes.open = "data-open"`, `DialogPopupDataAttributes.open = "data-open"`, `.closed = "data-closed"`).
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `mission-detail-alert-dialog.test.tsx` (mission page, drives the real `reject` mutation through the dialog) and `ProfileTab-danger-zone.test.tsx` (drives the real `deleteAccount` action through the dialog) — neither consumer's source needed any change.
+
+### Avatar
+
+`components/ui/avatar.tsx` -> consumers: `components/dashboard/DashboardHeader.tsx`, `components/dashboard/account/tabs/ProfileTab.tsx`.
+
+| Radix part | Base UI part |
+|---|---|
+| `AvatarPrimitive.Root` | `AvatarPrimitive.Root` (unchanged name, renders a `<span>` in both) |
+| `AvatarPrimitive.Image` | `AvatarPrimitive.Image` (unchanged name) |
+| `AvatarPrimitive.Fallback` | `AvatarPrimitive.Fallback` (unchanged name, same `delay` prop for deferred-fallback rendering) |
+
+The simplest migration in this wave — a straight 1:1 part-name and prop-shape mapping (confirmed against `node_modules/@base-ui/react/avatar/{root,image,fallback}/*.d.ts`), no `asChild`/`render` rewiring needed, no data-attribute selector used by either consumer. Both migrations are covered end-to-end by real consumer-mounting tests: `DashboardHeader-avatar.test.tsx` (desktop user-menu trigger) and `ProfileTab-danger-zone.test.tsx` (profile-picture card) — neither consumer's source needed any change.
+
+### Tabs
+
+`components/ui/tabs.tsx` -> consumers: `components/dashboard/shared/TabNavigation.tsx`, `components/adaptive/AdaptiveNavigation.tsx` (desktop branch).
+
+| Radix part | Base UI part |
+|---|---|
+| `TabsPrimitive.Root` | `TabsPrimitive.Root` (unchanged name) |
+| `TabsPrimitive.List` | `TabsPrimitive.List` (unchanged name) |
+| `TabsPrimitive.Trigger` | `TabsPrimitive.Tab` (renamed — confirmed in `node_modules/@base-ui/react/tabs/tab/TabsTab.d.ts`) |
+| `TabsPrimitive.Content` | `TabsPrimitive.Panel` (renamed — confirmed in `node_modules/@base-ui/react/tabs/panel/TabsPanel.d.ts`) |
+
+This repo's public export names (`TabsTrigger`, `TabsContent`) are preserved regardless of Base UI's internal `Tab`/`Panel` naming — only the wrapper's own internals reference the renamed parts.
+
+`role="tab"` (+ `aria-controls`, `aria-selected`) and `role="tabpanel"` (+ `aria-labelledby`) are stamped automatically (confirmed by grepping the compiled `TabsTab.js`/`TabsPanel.js`), verified end-to-end by `TabNavigation.test.tsx` and `AdaptiveNavigation.test.tsx` (`getByRole("tab")` + `toHaveAttribute("aria-selected", ...)`).
+
+**Active-tab data attribute — the one place a consumer edit was unavoidable.** Radix put the selected state in `data-state="active"` on the trigger; Base UI splits it into a valueless boolean presence attribute, `data-active` (confirmed in `TabsTabDataAttributes.active = "data-active"`), present only when the tab is active (absence implies inactive — no `data-inactive` counterpart, mirroring M1's Checkbox precedent). Both of this wave's Tabs consumers style the active state directly in their **own** `className` string (not through the wrapper's default styling) using Radix's raw selector: `data-[state=active]:bg-primary` in `TabNavigation.tsx`, `data-[state=active]:bg-primary data-[state=active]:text-primary-foreground` in `AdaptiveNavigation.tsx`. Since Base UI never emits `data-state`, these selectors would silently stop matching after migration — this is a real, unavoidable behavioral break, not a style preference, so per the brief's "if a consumer genuinely must change... edit minimally and report it loudly" rule, both selector strings were renamed to `data-[active]:` (mechanical Tailwind-selector rename only — no prop, logic, or markup change in either consumer file). The wrapper's own internal default styling for `TabsTrigger` (`components/ui/tabs.tsx`) was updated the same way.
+
+`onValueChange`'s second argument (`eventDetails`) is new in Base UI, same difference already documented for `select.tsx` in M2 — neither Tabs consumer's `onTabChange`/`onItemChange` signature reads it, so no consumer change was needed there.
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `TabNavigation.test.tsx` and `AdaptiveNavigation.test.tsx`, each driving a real tab click through to the consumer's real `onTabChange`/`onItemChange` handler.
+
+## What M1 + M2 + M3 + M4 together did NOT touch
+
+Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `label`, `menubar`, `navigation-menu`, `popover`, `scroll-area`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should apply the same research-first process demonstrated across M2/M3/M4: read the primitive's own `.d.ts` before assuming a 1:1 API, check for missing `asChild`/`render` support on parts a real consumer depends on (not just the parts an isolated demo would exercise), and add consumer-mounting tests that click through to the real handler.
