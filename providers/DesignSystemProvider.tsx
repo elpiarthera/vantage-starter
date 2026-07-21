@@ -5,9 +5,15 @@ import { useDesignSystem } from "@/hooks/use-design-system";
 import {
 	buildRegistryTheme,
 	DEFAULT_CONFIG,
+	DESIGN_SYSTEM_PARAM_KEYS,
 	type DesignSystemConfig,
 } from "@/lib/design-system/config";
 import { FONTS } from "@/lib/design-system/fonts";
+import {
+	hasDesignSystemUrlOverride,
+	loadPersistedDesignSystemConfig,
+	savePersistedDesignSystemConfig,
+} from "@/lib/design-system/persist";
 
 const THEME_STYLE_ID = "design-system-theme-vars";
 const MANAGED_BODY_PREFIXES = ["style-", "base-color-"] as const;
@@ -56,6 +62,32 @@ export function DesignSystemProvider({
 		menuColor,
 		radius,
 	} = params;
+
+	// Rehydrate the last saved selection when this provider mounts without an
+	// explicit URL override (e.g. navigating back to /dashboard/configurator
+	// after leaving it — see lib/design-system/persist.ts for the persistence
+	// decision and its declared boundary).
+	const hasHydratedRef = React.useRef(false);
+	React.useEffect(() => {
+		if (hasHydratedRef.current) return;
+		hasHydratedRef.current = true;
+		if (typeof window === "undefined") return;
+		if (
+			hasDesignSystemUrlOverride(
+				window.location.search,
+				DESIGN_SYSTEM_PARAM_KEYS,
+			)
+		) {
+			return;
+		}
+		const saved = loadPersistedDesignSystemConfig();
+		if (saved) setParams(saved);
+	}, [setParams]);
+
+	// Persist every change so it survives leaving and returning to this route.
+	React.useEffect(() => {
+		savePersistedDesignSystemConfig(params);
+	}, [params]);
 
 	const effectiveRadius = style === "lyra" ? "none" : radius;
 

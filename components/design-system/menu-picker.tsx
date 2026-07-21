@@ -44,6 +44,15 @@ const MENU_OPTIONS = [
 	},
 ] as const;
 
+// BOUNDARY (traced, not silent — see CHANGELOG.md "configurator: theme
+// persistence across navigation"): no element in the app carries the
+// `cn-menu-target` class that providers/DesignSystemProvider.tsx toggles
+// `.dark`/`.cn-menu-translucent` on, so this control currently has no visible
+// effect anywhere. The only always-present candidate surface
+// (components/ui/dropdown-menu.tsx) hardcodes an inline dark background that
+// bypasses the OKLCH tokens, so wiring this in would also require removing
+// that override — a cross-cutting change to a shared primitive used on every
+// page, out of scope for a configurator-only fix.
 export function MenuColorPicker() {
 	const t = useTranslations("design_system");
 	const [params, setParams] = useDesignSystem();
