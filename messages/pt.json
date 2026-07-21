@@ -481,6 +481,7 @@
 		"manual_topup_increase": "Aumentar valor da recarga",
 		"manual_topup_success": "{amount} créditos adicionados. Novo saldo: {balance}.",
 		"manual_topup_error": "Falha na recarga. Tente novamente.",
+		"manual_topup_disabled": "A recarga manual está atualmente desativada.",
 		"usage_statistics": "Estatísticas de Uso",
 		"images_generated": "Imagens Geradas",
 		"videos_generated": "Vídeos Gerados",

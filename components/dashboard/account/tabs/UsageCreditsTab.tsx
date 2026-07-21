@@ -101,6 +101,7 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 	// `recordManualTopUp` mutation it calls can never disagree on what a
 	// valid amount is.
 	const topUpPresets = useQuery(api.credits.getManualTopupPresets, {});
+	const topUpEnabled = useQuery(api.credits.isManualTopupEnabled, {});
 	const recordManualTopUp = useMutation(api.credits.recordManualTopUp);
 	const [topUpBalanceOverride, setTopUpBalanceOverride] = useState<
 		number | null
@@ -250,29 +251,38 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 					</div>
 					{/* Manual top-up control (mcpcn amount-input block) — only rendered
 					    once presets have loaded, so no tier ever appears as a literal
-					    fallback here. */}
+					    fallback here. Gated by `manual_topup_enabled` (off by
+					    default, convex/seedCredits.ts): when the switch is off the
+					    control is shown disabled with a reason, never as a live
+					    action that would throw on click. */}
 					{Array.isArray(topUpPresets) && topUpPresets.length > 0 && (
 						<div className="mt-4 border-t border-border pt-4">
 							<p className="text-sm text-muted-foreground mb-2">
 								{t("manual_topup_title")}
 							</p>
-							<AmountInput
-								appearance={{
-									label: t("manual_topup_label"),
-									decreaseLabel: t("manual_topup_decrease"),
-									increaseLabel: t("manual_topup_increase"),
-									currency: "EUR",
-								}}
-								data={{ presets: topUpPresets }}
-								actions={{ onConfirm: handleManualTopUp }}
-							>
-								<AmountInputControls>
-									<TopUpPresetButtons
-										disabled={isToppingUp}
-										onTopUp={handleManualTopUp}
-									/>
-								</AmountInputControls>
-							</AmountInput>
+							{topUpEnabled === false ? (
+								<p className="text-sm text-muted-foreground">
+									{t("manual_topup_disabled")}
+								</p>
+							) : (
+								<AmountInput
+									appearance={{
+										label: t("manual_topup_label"),
+										decreaseLabel: t("manual_topup_decrease"),
+										increaseLabel: t("manual_topup_increase"),
+										currency: "EUR",
+									}}
+									data={{ presets: topUpPresets }}
+									actions={{ onConfirm: handleManualTopUp }}
+								>
+									<AmountInputControls>
+										<TopUpPresetButtons
+											disabled={isToppingUp || topUpEnabled !== true}
+											onTopUp={handleManualTopUp}
+										/>
+									</AmountInputControls>
+								</AmountInput>
+							)}
 						</div>
 					)}
 				</Card>

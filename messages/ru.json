@@ -481,6 +481,7 @@
 		"manual_topup_increase": "Увеличить сумму пополнения",
 		"manual_topup_success": "Начислено {amount} кредитов. Новый баланс: {balance}.",
 		"manual_topup_error": "Не удалось пополнить баланс. Попробуйте снова.",
+		"manual_topup_disabled": "Ручное пополнение в настоящее время отключено.",
 		"usage_statistics": "Статистика использования",
 		"images_generated": "Сгенерировано изображений",
 		"videos_generated": "Сгенерировано видео",

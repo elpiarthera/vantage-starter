@@ -481,6 +481,7 @@
 		"manual_topup_increase": "Augmenter le montant de la recharge",
 		"manual_topup_success": "{amount} crédits ajoutés. Nouveau solde : {balance}.",
 		"manual_topup_error": "Échec de la recharge. Veuillez réessayer.",
+		"manual_topup_disabled": "La recharge manuelle est actuellement désactivée.",
 		"usage_statistics": "Statistiques d'utilisation",
 		"images_generated": "Appels API",
 		"videos_generated": "Générations IA",

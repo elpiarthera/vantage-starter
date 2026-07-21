@@ -76,6 +76,7 @@ jest.mock("@/convex/_generated/api", () => ({
 		polar: { generateCheckoutLink: "generateCheckoutLink" },
 		credits: {
 			getManualTopupPresets: "getManualTopupPresets",
+			isManualTopupEnabled: "isManualTopupEnabled",
 			recordManualTopUp: "recordManualTopUp",
 		},
 	},
@@ -105,6 +106,7 @@ beforeEach(() => {
 	jest.clearAllMocks();
 	mockUseQueryImpl.mockImplementation((query: string) => {
 		if (query === "getManualTopupPresets") return PRESETS;
+		if (query === "isManualTopupEnabled") return true;
 		return [];
 	});
 });

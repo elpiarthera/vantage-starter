@@ -481,6 +481,7 @@
 		"manual_topup_increase": "Aumenta importo di ricarica",
 		"manual_topup_success": "{amount} crediti aggiunti. Nuovo saldo: {balance}.",
 		"manual_topup_error": "Ricarica non riuscita. Riprova.",
+		"manual_topup_disabled": "La ricarica manuale è attualmente disabilitata.",
 		"usage_statistics": "Statistiche di utilizzo",
 		"images_generated": "Immagini generate",
 		"videos_generated": "Video generati",

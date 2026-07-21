@@ -1129,6 +1129,13 @@ export const deductCreditsPublic = mutation({
  * for `subscriptionTiers` — a value a customer can change without a code
  * deploy. If that config row is missing or malformed, the mutation refuses
  * loudly rather than falling back to a literal tier list.
+ *
+ * NO PAYMENT OCCURS ON THIS PATH. This is a self-service credit GRANT, not a
+ * purchase: it is gated by `systemConfig` key "manual_topup_enabled" (off by
+ * default — see convex/seedCredits.ts) and refuses loudly when that row is
+ * absent or not `true`, so a fork inherits a closed tap rather than an open
+ * one. The transaction it writes is typed "manual_grant" (never "purchase"),
+ * and it increments `totalBonusReceived` (never `totalPurchased`).
  */
 export const recordManualTopUp = mutation({
 	args: {
@@ -1149,6 +1156,20 @@ export const recordManualTopUp = mutation({
 		}
 		if (identity.subject !== clerkUserId) {
 			throw new Error("Unauthorized: cannot top up another user's credits");
+		}
+
+		// Off by default. No payment happens on this path — it is a
+		// self-service grant, not a purchase — so a fork must inherit a
+		// closed tap. Refuse loudly rather than silently no-op or fall back
+		// to a permissive default.
+		const enabledConfig = await ctx.db
+			.query("systemConfig")
+			.withIndex("by_key", (q) => q.eq("key", "manual_topup_enabled"))
+			.first();
+		if (enabledConfig?.value !== true) {
+			throw new Error(
+				"Manual top-up is disabled: systemConfig row 'manual_topup_enabled' is missing or false. Set its value to true (convex/seedCredits.ts) to enable this self-service credit grant.",
+			);
 		}
 
 		if (!Number.isInteger(amount) || amount <= 0) {
@@ -1204,18 +1225,22 @@ export const recordManualTopUp = mutation({
 
 		const newBalance = userCredits.balance + amount;
 
+		// This is a grant, not a purchase: no payment occurred on this path.
+		// It increments totalBonusReceived (same field used by
+		// addMonthlyRenewalCredits / addSubscriptionCredits for non-purchase
+		// grants), never totalPurchased — that field is a purchase total.
 		await ctx.db.patch(userCredits._id, {
 			balance: newBalance,
-			totalPurchased: userCredits.totalPurchased + amount,
+			totalBonusReceived: userCredits.totalBonusReceived + amount,
 			updatedAt: now,
 		});
 
 		const transactionId = await ctx.db.insert("creditTransactions", {
 			clerkUserId,
-			type: "purchase",
+			type: "manual_grant",
 			amount,
 			balanceAfter: newBalance,
-			description: `Manual credit top-up: ${amount} credits`,
+			description: `Manual credit top-up (grant, no payment): ${amount} credits`,
 			timestamp: now,
 		});
 
@@ -1335,5 +1360,30 @@ export const getManualTopupPresets = query({
 		}
 
 		return presets;
+	},
+});
+
+// ============================================
+// 13. isManualTopupEnabled (Query)
+// ============================================
+/**
+ * Reads `systemConfig` key "manual_topup_enabled" — the switch
+ * `recordManualTopUp` itself enforces. The client (`UsageCreditsTab.tsx`)
+ * uses this to decide whether to render the top-up control at all, so it
+ * never offers an action the mutation will throw on.
+ *
+ * PUBLIC-BY-DESIGN: same reasoning as `getManualTopupPresets` — a global,
+ * org-free feature switch, not per-user data.
+ */
+export const isManualTopupEnabled = query({
+	args: {},
+	returns: v.boolean(),
+	handler: async (ctx) => {
+		const enabledConfig = await ctx.db
+			.query("systemConfig")
+			.withIndex("by_key", (q) => q.eq("key", "manual_topup_enabled"))
+			.first();
+
+		return enabledConfig?.value === true;
 	},
 });

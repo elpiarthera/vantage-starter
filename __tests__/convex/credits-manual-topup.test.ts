@@ -46,6 +46,17 @@ async function seedPresets(t: ReturnType<typeof makeT>, presets: number[]) {
 	});
 }
 
+async function seedEnabled(t: ReturnType<typeof makeT>, enabled: boolean) {
+	await t.run(async (ctx) => {
+		await ctx.db.insert("systemConfig", {
+			key: "manual_topup_enabled",
+			value: enabled,
+			description: "Manual top-up feature switch (test)",
+			updatedAt: Date.now(),
+		});
+	});
+}
+
 async function seedUserCredits(t: ReturnType<typeof makeT>, balance: number) {
 	await t.run(async (ctx) => {
 		const now = Date.now();
@@ -68,8 +79,9 @@ describe("credits.recordManualTopUp", () => {
 		t = makeT();
 	});
 
-	it("RED 1: increments balance by EXACTLY the requested preset amount and writes EXACTLY ONE transaction row", async () => {
+	it("RED 1: increments balance by EXACTLY the requested preset amount and writes EXACTLY ONE transaction row, typed as a grant not a purchase", async () => {
 		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -88,6 +100,9 @@ describe("credits.recordManualTopUp", () => {
 				.first(),
 		);
 		expect(userCredits?.balance).toBe(125);
+		// A grant is not a purchase: it must not inflate the purchase total.
+		expect(userCredits?.totalPurchased).toBe(0);
+		expect(userCredits?.totalBonusReceived).toBe(25);
 
 		const transactions = await t.run(async (ctx) =>
 			ctx.db
@@ -98,11 +113,12 @@ describe("credits.recordManualTopUp", () => {
 		expect(transactions).toHaveLength(1);
 		expect(transactions[0]?.amount).toBe(25);
 		expect(transactions[0]?.balanceAfter).toBe(125);
-		expect(transactions[0]?.type).toBe("purchase");
+		expect(transactions[0]?.type).toBe("manual_grant");
 	});
 
 	it("initializes a new user's row when none exists yet, balance becomes exactly the amount", async () => {
 		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
 		const asUser = t.withIdentity({ subject: USER_A });
 
 		const result = await asUser.mutation(api.credits.recordManualTopUp, {
@@ -122,6 +138,7 @@ describe("credits.recordManualTopUp", () => {
 
 	it("rejects an amount that is not one of the configured presets, and writes nothing", async () => {
 		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -150,6 +167,7 @@ describe("credits.recordManualTopUp", () => {
 	});
 
 	it("rejects when no manual_topup_presets systemConfig row exists (fail loud, no hardcoded fallback tiers)", async () => {
+		await seedEnabled(t, true);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -163,6 +181,7 @@ describe("credits.recordManualTopUp", () => {
 
 	it("RED 2: refuses a top-up for a different user (self-only) and writes nothing", async () => {
 		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
 		await seedUserCredits(t, 100);
 		const asAttacker = t.withIdentity({ subject: ATTACKER_B });
 
@@ -184,6 +203,7 @@ describe("credits.recordManualTopUp", () => {
 
 	it("rejects an unauthenticated call", async () => {
 		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
 		await seedUserCredits(t, 100);
 
 		await expect(
@@ -192,6 +212,89 @@ describe("credits.recordManualTopUp", () => {
 				amount: 25,
 			}),
 		).rejects.toThrow();
+	});
+
+	it("RED 3: names the abuse — an authenticated user cannot grant themselves credits when the switch is absent (out of the box, a fork's tap is closed)", async () => {
+		await seedPresets(t, [10, 25, 50]);
+		await seedUserCredits(t, 100);
+		const asUser = t.withIdentity({ subject: USER_A });
+
+		await expect(
+			asUser.mutation(api.credits.recordManualTopUp, {
+				clerkUserId: USER_A,
+				amount: 25,
+			}),
+		).rejects.toThrow(/manual top-up is disabled/i);
+
+		const userCredits = await t.run(async (ctx) =>
+			ctx.db
+				.query("userCredits")
+				.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", USER_A))
+				.first(),
+		);
+		expect(userCredits?.balance).toBe(100);
+
+		const transactions = await t.run(async (ctx) =>
+			ctx.db
+				.query("creditTransactions")
+				.withIndex("by_user", (q) => q.eq("clerkUserId", USER_A))
+				.collect(),
+		);
+		expect(transactions).toHaveLength(0);
+	});
+
+	it("names the abuse — an authenticated user cannot self-grant credits when the switch is explicitly false", async () => {
+		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, false);
+		await seedUserCredits(t, 100);
+		const asUser = t.withIdentity({ subject: USER_A });
+
+		await expect(
+			asUser.mutation(api.credits.recordManualTopUp, {
+				clerkUserId: USER_A,
+				amount: 25,
+			}),
+		).rejects.toThrow(/manual top-up is disabled/i);
+
+		const userCredits = await t.run(async (ctx) =>
+			ctx.db
+				.query("userCredits")
+				.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", USER_A))
+				.first(),
+		);
+		expect(userCredits?.balance).toBe(100);
+
+		const transactions = await t.run(async (ctx) =>
+			ctx.db
+				.query("creditTransactions")
+				.withIndex("by_user", (q) => q.eq("clerkUserId", USER_A))
+				.collect(),
+		);
+		expect(transactions).toHaveLength(0);
+	});
+
+	it("allows the top-up once the switch is explicitly true, and types the row as a grant", async () => {
+		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
+		await seedUserCredits(t, 100);
+		const asUser = t.withIdentity({ subject: USER_A });
+
+		const result = await asUser.mutation(api.credits.recordManualTopUp, {
+			clerkUserId: USER_A,
+			amount: 25,
+		});
+
+		expect(result.success).toBe(true);
+		expect(result.newBalance).toBe(125);
+
+		const transactions = await t.run(async (ctx) =>
+			ctx.db
+				.query("creditTransactions")
+				.withIndex("by_user", (q) => q.eq("clerkUserId", USER_A))
+				.collect(),
+		);
+		expect(transactions).toHaveLength(1);
+		expect(transactions[0]?.type).toBe("manual_grant");
 	});
 });
 
@@ -229,5 +332,35 @@ describe("credits.getManualTopupPresets", () => {
 		const presets = await t.query(api.credits.getManualTopupPresets, {});
 
 		expect(presets).toEqual([]);
+	});
+});
+
+describe("credits.isManualTopupEnabled", () => {
+	let t: ReturnType<typeof makeT>;
+
+	beforeEach(() => {
+		t = makeT();
+	});
+
+	it("returns false when no manual_topup_enabled systemConfig row exists (closed tap out of the box)", async () => {
+		const enabled = await t.query(api.credits.isManualTopupEnabled, {});
+
+		expect(enabled).toBe(false);
+	});
+
+	it("returns false when the row is explicitly false", async () => {
+		await seedEnabled(t, false);
+
+		const enabled = await t.query(api.credits.isManualTopupEnabled, {});
+
+		expect(enabled).toBe(false);
+	});
+
+	it("returns true when the row is explicitly true", async () => {
+		await seedEnabled(t, true);
+
+		const enabled = await t.query(api.credits.isManualTopupEnabled, {});
+
+		expect(enabled).toBe(true);
 	});
 });

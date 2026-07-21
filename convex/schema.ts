@@ -297,6 +297,11 @@ export default defineSchema({
 			v.literal("usage"),
 			v.literal("refund"),
 			v.literal("bonus"),
+			// A manual, self-service credit grant recorded by
+			// credits.recordManualTopUp — no payment occurred, so it must never
+			// be written as "purchase". Gated by systemConfig key
+			// "manual_topup_enabled" (off by default, see convex/seedCredits.ts).
+			v.literal("manual_grant"),
 		),
 		amount: v.number(), // Positive = add, Negative = deduct
 		balanceAfter: v.number(),

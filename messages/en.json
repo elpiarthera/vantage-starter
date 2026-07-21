@@ -481,6 +481,7 @@
 		"manual_topup_increase": "Increase top-up amount",
 		"manual_topup_success": "{amount} credits added. New balance: {balance}.",
 		"manual_topup_error": "Top-up failed. Please try again.",
+		"manual_topup_disabled": "Manual top-up is currently disabled.",
 		"usage_statistics": "Usage Statistics",
 		"images_generated": "API Calls",
 		"videos_generated": "AI Generations",

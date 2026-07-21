@@ -481,6 +481,7 @@
 		"manual_topup_increase": "Aufladebetrag erhöhen",
 		"manual_topup_success": "{amount} Credits hinzugefügt. Neues Guthaben: {balance}.",
 		"manual_topup_error": "Aufladung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+		"manual_topup_disabled": "Die manuelle Aufladung ist derzeit deaktiviert.",
 		"usage_statistics": "Nutzungsstatistiken",
 		"images_generated": "Erstellte Bilder",
 		"videos_generated": "Erstellte Videos",
