@@ -1116,6 +1116,142 @@ export const deductCreditsPublic = mutation({
 	},
 });
 
+// ============================================
+// 11. recordManualTopUp (Mutation)
+// ============================================
+/**
+ * Record a manual credit top-up initiated from the `amount-input` block on
+ * `UsageCreditsTab` (docs/mcpcn-block-mapping.md §4 "amount-input", Batch 2).
+ *
+ * Preset amounts are never hardcoded here: the allowed set is read from
+ * `systemConfig` key "manual_topup_presets" (seeded in convex/seedCredits.ts),
+ * the same table this schema already uses for `initial_credits_default` and
+ * for `subscriptionTiers` — a value a customer can change without a code
+ * deploy. If that config row is missing or malformed, the mutation refuses
+ * loudly rather than falling back to a literal tier list.
+ *
+ * NO PAYMENT OCCURS ON THIS PATH. This is a self-service credit GRANT, not a
+ * purchase: it is gated by `systemConfig` key "manual_topup_enabled" (off by
+ * default — see convex/seedCredits.ts) and refuses loudly when that row is
+ * absent or not `true`, so a fork inherits a closed tap rather than an open
+ * one. The transaction it writes is typed "manual_grant" (never "purchase"),
+ * and it increments `totalBonusReceived` (never `totalPurchased`).
+ */
+export const recordManualTopUp = mutation({
+	args: {
+		clerkUserId: v.string(),
+		amount: v.number(),
+	},
+	returns: v.object({
+		success: v.literal(true),
+		transactionId: v.id("creditTransactions"),
+		newBalance: v.number(),
+	}),
+	handler: async (ctx, args) => {
+		const { clerkUserId, amount } = args;
+
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error("Unauthorized: Authentication required");
+		}
+		if (identity.subject !== clerkUserId) {
+			throw new Error("Unauthorized: cannot top up another user's credits");
+		}
+
+		// Off by default. No payment happens on this path — it is a
+		// self-service grant, not a purchase — so a fork must inherit a
+		// closed tap. Refuse loudly rather than silently no-op or fall back
+		// to a permissive default.
+		const enabledConfig = await ctx.db
+			.query("systemConfig")
+			.withIndex("by_key", (q) => q.eq("key", "manual_topup_enabled"))
+			.first();
+		if (enabledConfig?.value !== true) {
+			throw new Error(
+				"Manual top-up is disabled: systemConfig row 'manual_topup_enabled' is missing or false. Set its value to true (convex/seedCredits.ts) to enable this self-service credit grant.",
+			);
+		}
+
+		if (!Number.isInteger(amount) || amount <= 0) {
+			throw new Error("Invalid top-up amount: must be a positive integer");
+		}
+
+		const presetsConfig = await ctx.db
+			.query("systemConfig")
+			.withIndex("by_key", (q) => q.eq("key", "manual_topup_presets"))
+			.first();
+
+		const presets = presetsConfig?.value;
+		if (
+			!Array.isArray(presets) ||
+			presets.length === 0 ||
+			!presets.every((p) => typeof p === "number")
+		) {
+			throw new Error(
+				"Manual top-up is not configured: missing or invalid systemConfig row 'manual_topup_presets'",
+			);
+		}
+
+		if (!presets.includes(amount)) {
+			throw new Error(
+				`Invalid top-up amount: ${amount} is not one of the configured presets`,
+			);
+		}
+
+		const now = Date.now();
+
+		let userCredits = await ctx.db
+			.query("userCredits")
+			.withIndex("by_clerk_user", (q) => q.eq("clerkUserId", clerkUserId))
+			.first();
+
+		if (!userCredits) {
+			const newId = await ctx.db.insert("userCredits", {
+				clerkUserId,
+				balance: 0,
+				totalPurchased: 0,
+				totalUsed: 0,
+				totalBonusReceived: 0,
+				subscriptionTier: undefined,
+				createdAt: now,
+				updatedAt: now,
+			});
+			userCredits = await ctx.db.get(newId);
+		}
+
+		if (!userCredits) {
+			throw new Error("Failed to get or initialize user credits");
+		}
+
+		const newBalance = userCredits.balance + amount;
+
+		// This is a grant, not a purchase: no payment occurred on this path.
+		// It increments totalBonusReceived (same field used by
+		// addMonthlyRenewalCredits / addSubscriptionCredits for non-purchase
+		// grants), never totalPurchased — that field is a purchase total.
+		await ctx.db.patch(userCredits._id, {
+			balance: newBalance,
+			totalBonusReceived: userCredits.totalBonusReceived + amount,
+			updatedAt: now,
+		});
+
+		const transactionId = await ctx.db.insert("creditTransactions", {
+			clerkUserId,
+			type: "manual_grant",
+			amount,
+			balanceAfter: newBalance,
+			description: `Manual credit top-up (grant, no payment): ${amount} credits`,
+			timestamp: now,
+		});
+
+		return {
+			success: true as const,
+			transactionId,
+			newBalance,
+		};
+	},
+});
+
 export const refundCreditsPublic = mutation({
 	args: {
 		transactionId: v.id("creditTransactions"),
@@ -1187,5 +1323,67 @@ export const refundCreditsPublic = mutation({
 			timestamp: now,
 		});
 		return { success: true as const, refundedAmount: refundAmount, newBalance };
+	},
+});
+
+// ============================================
+// 12. getManualTopupPresets (Query)
+// ============================================
+/**
+ * Reads the preset amounts `recordManualTopUp` accepts, from `systemConfig`
+ * key "manual_topup_presets" (docs/mcpcn-block-mapping.md §4 "amount-input",
+ * Batch 2). The client (`UsageCreditsTab.tsx`) uses this to render the
+ * `amount-input` block's preset buttons instead of hardcoding a tier list —
+ * the mutation and this query read the exact same config row, so they can
+ * never drift apart.
+ *
+ * PUBLIC-BY-DESIGN: intentionally callable without authentication, same
+ * reasoning as `getCreditCost`/`listCreditCostsByTypes` above — this is a
+ * global, org-free pricing config, not per-user data.
+ */
+export const getManualTopupPresets = query({
+	args: {},
+	returns: v.array(v.number()),
+	handler: async (ctx) => {
+		const presetsConfig = await ctx.db
+			.query("systemConfig")
+			.withIndex("by_key", (q) => q.eq("key", "manual_topup_presets"))
+			.first();
+
+		const presets = presetsConfig?.value;
+		if (
+			!Array.isArray(presets) ||
+			presets.length === 0 ||
+			!presets.every((p) => typeof p === "number")
+		) {
+			return [];
+		}
+
+		return presets;
+	},
+});
+
+// ============================================
+// 13. isManualTopupEnabled (Query)
+// ============================================
+/**
+ * Reads `systemConfig` key "manual_topup_enabled" — the switch
+ * `recordManualTopUp` itself enforces. The client (`UsageCreditsTab.tsx`)
+ * uses this to decide whether to render the top-up control at all, so it
+ * never offers an action the mutation will throw on.
+ *
+ * PUBLIC-BY-DESIGN: same reasoning as `getManualTopupPresets` — a global,
+ * org-free feature switch, not per-user data.
+ */
+export const isManualTopupEnabled = query({
+	args: {},
+	returns: v.boolean(),
+	handler: async (ctx) => {
+		const enabledConfig = await ctx.db
+			.query("systemConfig")
+			.withIndex("by_key", (q) => q.eq("key", "manual_topup_enabled"))
+			.first();
+
+		return enabledConfig?.value === true;
 	},
 });

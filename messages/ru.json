@@ -475,6 +475,13 @@
 		"total_purchased": "Всего куплено:",
 		"total_used": "Всего использовано:",
 		"purchase_credits": "Купить кредиты",
+		"manual_topup_title": "Пополнить баланс",
+		"manual_topup_label": "Добавить кредиты",
+		"manual_topup_decrease": "Уменьшить сумму пополнения",
+		"manual_topup_increase": "Увеличить сумму пополнения",
+		"manual_topup_success": "Начислено {amount} кредитов. Новый баланс: {balance}.",
+		"manual_topup_error": "Не удалось пополнить баланс. Попробуйте снова.",
+		"manual_topup_disabled": "Ручное пополнение в настоящее время отключено.",
 		"usage_statistics": "Статистика использования",
 		"images_generated": "Сгенерировано изображений",
 		"videos_generated": "Сгенерировано видео",
@@ -3254,6 +3261,9 @@
 			"ariaLabel": "Сообщения чата",
 			"emptyTitle": "Начните беседу",
 			"emptyDescription": "Агент имеет доступ к вашей базе знаний и может использовать инструменты.",
+			"table": {
+				"emptyMessage": "Нет строк для отображения."
+			},
 			"quickReply": {
 				"ariaLabel": "Быстрые ответы",
 				"addNow": "Добавить сейчас",

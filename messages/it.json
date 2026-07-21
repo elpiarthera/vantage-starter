@@ -475,6 +475,13 @@
 		"total_purchased": "Totale acquistato:",
 		"total_used": "Totale utilizzato:",
 		"purchase_credits": "Acquista crediti",
+		"manual_topup_title": "Ricarica crediti",
+		"manual_topup_label": "Aggiungi crediti",
+		"manual_topup_decrease": "Diminuisci importo di ricarica",
+		"manual_topup_increase": "Aumenta importo di ricarica",
+		"manual_topup_success": "{amount} crediti aggiunti. Nuovo saldo: {balance}.",
+		"manual_topup_error": "Ricarica non riuscita. Riprova.",
+		"manual_topup_disabled": "La ricarica manuale è attualmente disabilitata.",
 		"usage_statistics": "Statistiche di utilizzo",
 		"images_generated": "Immagini generate",
 		"videos_generated": "Video generati",
@@ -3254,6 +3261,9 @@
 			"ariaLabel": "Messaggi della chat",
 			"emptyTitle": "Avvia una conversazione",
 			"emptyDescription": "L'agente ha accesso alla tua base di conoscenza e può usare strumenti.",
+			"table": {
+				"emptyMessage": "Nessuna riga da mostrare."
+			},
 			"quickReply": {
 				"ariaLabel": "Risposte rapide",
 				"addNow": "Aggiungi ora",

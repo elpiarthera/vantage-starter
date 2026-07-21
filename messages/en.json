@@ -475,6 +475,13 @@
 		"total_purchased": "Total purchased:",
 		"total_used": "Total used:",
 		"purchase_credits": "Purchase Credits",
+		"manual_topup_title": "Top Up Credits",
+		"manual_topup_label": "Add credits",
+		"manual_topup_decrease": "Decrease top-up amount",
+		"manual_topup_increase": "Increase top-up amount",
+		"manual_topup_success": "{amount} credits added. New balance: {balance}.",
+		"manual_topup_error": "Top-up failed. Please try again.",
+		"manual_topup_disabled": "Manual top-up is currently disabled.",
 		"usage_statistics": "Usage Statistics",
 		"images_generated": "API Calls",
 		"videos_generated": "AI Generations",
@@ -2843,6 +2850,9 @@
 			"ariaLabel": "Chat messages",
 			"emptyTitle": "Start a conversation",
 			"emptyDescription": "The agent has access to your knowledge base and can use tools.",
+			"table": {
+				"emptyMessage": "No rows to show."
+			},
 			"quickReply": {
 				"ariaLabel": "Quick replies",
 				"addNow": "Add now",

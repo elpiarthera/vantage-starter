@@ -6,6 +6,60 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — §3's derivation command counted prose, not consumers)
+
+Traced in batch 2's entry below rather than patched, until now. `docs/mcpcn-block-mapping.md` §3's command was `git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l` — it matched the bare block name anywhere in the tree, so `table` returned `consumers=43` (legal pages, `DataTable`, the word "acceptable") for a block one file actually imports. Every batch in the plan defines its own scope from this command's output, so a bare-name match could certify a block "in service" that nobody had wired — a guard that cannot fail.
+
+**Fix:** count files importing `components/ui/$b`, not files containing `$b`. The import path is the one string that appears only where the block is actually consumed. Checked that this is the only import form the repo uses for `components/ui/` — no relative `../components/ui/...` variant exists, confirmed via `git grep -n "from \"\.\./.*components/ui/" -- components app src` -> zero matches — so the fixed command has no blind spot to the aliasing side.
+
+**Proof the fixed command bites, on foreign material chosen for this probe, not by its author.** Four already-wired blocks had their import line deleted from their one real consumer, mutation-landing asserted via `grep -c` on the edited file before any count was read:
+- `message-bubble` removed from `components/chat/MessageList.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+- `chat-conversation` removed from `components/chat/MessageList.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+- `stat-card` removed from `components/missions/mission-stats.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+- `status-badge` removed from `components/chat/ToolCallIndicator.tsx` — landed (`grep -c` -> `0`) — command: `1` -> `0`.
+
+All four restored; `git diff --stat` against the three touched files returned empty. Re-run across every installed block (37 blocks) confirmed no other block regressed to `0` and `table` reports `1`, not `43`.
+
+CLASS: a "consumers" count derived from a substring match on the bare component name rather than its import path.
+- sweep: `grep -n 'git grep -l "\$b"' docs/mcpcn-block-mapping.md` -> zero matches (the fixed form is the only one left in the document); §3's fenced command and its surrounding prose, plus the `table` entry's now-redundant workaround footnote in §4, were all updated.
+- remaining: 0.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 55 suites, 249/249. `pnpm exec vitest run` -> 39 files, 381 passed / 0 failed / 7 skipped, 388 total. `pnpm exec tsc --noEmit` -> 0. No application file left modified (mutations restored, `git diff --stat` empty).
+
+### Added (2026-07-21 — mcpcn blocks, batch 2: a credits top-up that actually writes, and a selectable table in the chat thread)
+
+Closes `k1735z78vfe7vxs87hngvpqgf18ayh12`. Batch 2 of the plan in `docs/mcpcn-block-mapping.md` §5. Built on `tau/blocks-batch1`, not on `main`, so §3's derivation command sees batch 1's wiring and cannot re-wire a block already in service.
+
+**A free-credit tap shipped in the first version of this lot, and it was refused in review.** `recordManualTopUp` went out as a public mutation that created credits from nothing, with no payment step anywhere on its path. The guard it carried — `identity.subject !== clerkUserId` — does not close that abuse, it frames it: forbidding a user to credit *someone else* permits every user to credit *themselves*. Balance up, `totalPurchased` up, and a history row typed `purchase` for a purchase that never happened. This repository is the seed every product forks, so every fork would have inherited the tap open, and its owner would never have seen it. The lot's own test suite demonstrated the capability without naming it: the test was correct, what it validated was not.
+
+Both remedies ship together rather than one being chosen:
+- **A switch, off by default.** `systemConfig` key `manual_topup_enabled`, seeded **`false`** in `convex/seedCredits.ts`. The mutation refuses **loudly** when the row is absent or not `true`, naming the exact row to flip — never a silent no-op, never a permissive fallback. The check sits ahead of every write in the handler. A fork inherits a closed tap and an explicit way to open it on purpose.
+- **It is no longer called a purchase.** `creditTransactions.type` gains `manual_grant` (union widening; existing rows stay valid) and the granted amount increments `totalBonusReceived`, not `totalPurchased` — a purchase total that counts non-purchases is the same lie one field over. Consumers of `type`, `totalPurchased` and `totalBonusReceived` were enumerated: `UsageCreditsTab.tsx` displays `totalPurchased` and now correctly excludes grants, and the accounting invariant `balance = totalPurchased + totalBonusReceived - totalUsed` still holds.
+- The control is disabled with a stated reason when the switch is off, in all seven locales — a surface must not offer an action that will throw.
+
+The new tests **name the abuse** rather than describing the mechanism: an ordinary authenticated user with the switch absent is refused and nothing is written; the same with the switch explicitly `false`; with it `true` the grant proceeds and the row is typed `manual_grant`. Mutation proof: the switch check neutralised (marker grep-confirmed landed before any result was read), exactly the two abuse-naming tests reddened, restore proven at 0.
+
+**Residual, declared.** The shared accounting branch at `convex/credits.ts:288` handles `purchase`, `bonus` and `subscription_reset` and silently updates no total for anything else. `recordManualTopUp` does not use that helper — it patches directly — so there is no hole today. But a future path routing a `manual_grant` through the helper would move a balance and no total, with nothing failing. Written down rather than left to be met by surprise.
+
+Operator-role control on the grant — so that opening the switch does not reopen the tap for every user at once — is traced in `k17e8qc9nrev22v09wknwfafw18aznp3`. "Manual" should mean granted by a human entitled to grant, and the code carries no notion of that entitlement yet.
+
+**The first write path onto tables that already existed.** No new table. `convex/credits.ts` gains `recordManualTopUp`, which inserts one `creditTransactions` row and increments the matching `userCredits` row, plus a `getManualTopupPresets` read query. The mutation was driven from a test that asserts the balance increases by **exactly** the requested amount and that **exactly one** history row is written — for an operation that moves money, a test asserting only that nothing threw proves nothing. Mutation proof: `|| true` injected into the preset-membership check (marker grep-confirmed landed), two named tests reddened, restore proven by `git diff | grep -c` -> 0.
+
+**The plan named the mutation wrongly and the code is right.** §5 says `creditTransactions.recordManualTopUp`; it landed in `convex/credits.ts`, so the callable path is `api.credits.recordManualTopUp`. Recorded here rather than quietly resolved, because the document is the batch authority and a reader following it would call a path that does not exist.
+
+**Surfaces.** `components/ui/amount-input.tsx` and `components/ui/table.tsx` were ported from mcpcn (MIT-attributed, OKLCH-native, no colour remap needed). `components/dashboard/account/tabs/UsageCreditsTab.tsx` gains the top-up control — the tab previously displayed a balance and offered no way to change it. `components/chat/MessageList.tsx` gains a `data-table` message-part renderer; selecting a row surfaces that row's id. Both were proven red before green, each with its own mutation proof and restore.
+
+CLASS: a top-up tier written as a literal in code — a value the customer changes does not live in the code.
+- The presets are read from `systemConfig` (`manual_topup_presets`, seeded in `convex/seedCredits.ts`) and reach the host through `getManualTopupPresets`. No tier literal in host code.
+- sweep: `grep -rn "10, 25, 50\|DEFAULT_PRESETS = \[10" components/ convex/ | grep -v seedCredits.ts` -> **one survivor**, `components/ui/amount-input.tsx:71`.
+- **remaining: 1, declared.** That survivor is the ported block's own generic fallback for a consumer that renders it without passing presets. It is dead on this repository's path — `UsageCreditsTab.tsx` always supplies `data.presets` from Convex — and the reason is written at the line itself, where a reader of the code will meet it, not in an exclusion list at the bottom of a sweep. A divergence that is written down is a decision; a silent one is debt.
+
+**§3's derivation command is not trustworthy for a block whose name is a common English substring, and this lot found it the hard way.** It reported `table consumers=43`. That number is meaningless: the command greps the bare block name, and `table` matches prose in the legal pages, `DataTable`, `acceptable`, and much else. The real count of files importing the block is **1** — `git grep -ln "from \"@/components/ui/table\"" -- components app src` -> `components/chat/MessageList.tsx`. The block *is* wired, so the batch criterion holds; but the authority the whole plan rests on returned a figure that measures nothing, and would have returned `consumers >= 1` for `table` even if nobody had wired it. Traced, not patched here.
+
+Ratios measured by the orchestrator, invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 55 suites, 249/249. `pnpm exec vitest run` -> 39 files, 381 passed / 0 failed / 7 skipped, 388 total. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 17 changed files -> clean. i18n: `usage_tab.manual_topup_*` and `chat.messageList.table.emptyMessage` in all seven locales.
+
+Visual check (Laurent): `/dashboard/account?tab=usage` -> the Credit Balance card now carries a top-up preset row; tapping a preset moves the balance. And in a chat where the agent emits a `data-table` part, the table renders inline and a row can be selected.
+
 ### Added (2026-07-21 — mcpcn blocks, batch 1: `option-list` and `quick-reply` put into service)
 
 Closes `k1721t26exar0fahvfd32xfkmn8ay02k`. Batch 1 of the plan in `docs/mcpcn-block-mapping.md` §5.

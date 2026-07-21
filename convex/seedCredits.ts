@@ -36,6 +36,18 @@ export const seedAll = internalMutation({
 				value: false,
 				description: "Enable monthly credit reset (MVP: disabled)",
 			},
+			{
+				key: "manual_topup_presets",
+				value: [10, 25, 50],
+				description:
+					"Preset amounts offered by the manual credit top-up control (amount-input block, UsageCreditsTab) — edit this row to change tiers without a code deploy",
+			},
+			{
+				key: "manual_topup_enabled",
+				value: false,
+				description:
+					"Switch for credits.recordManualTopUp — a self-service credit grant with NO payment step. Off by default: a fork must inherit a closed tap. Set to true only after you have decided how (or whether) a manual grant should be gated/paid for in your product.",
+			},
 		];
 
 		for (const config of systemConfigs) {
