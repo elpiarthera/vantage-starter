@@ -6,6 +6,24 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-21 — migration M8: `dropdown-menu` + `picker` ported from Radix to Base UI, package removed)
+
+Migrated `components/ui/dropdown-menu.tsx` and `components/create/picker.tsx` together — both imported `@radix-ui/react-dropdown-menu` (verified `git grep -l "@radix-ui/react-dropdown-menu" -- components app src` -> only these two files; `picker.tsx` imports the Radix primitive directly, not via `dropdown-menu.tsx`), so the package could not be removed until both migrated — same one-package-two-files coupling M7 established for `dialog`/`sheet`.
+
+Structural change: Base UI's `Menu` package interposes `Positioner` between `Portal` and `Popup` (Radix's `Content`/`SubContent` combined positioning + surface into one part) — `DropdownMenuContent`, `DropdownMenuSubContent`, and `PickerContent` now nest `Portal > Positioner > Popup`, with `align`/`sideOffset`/`side` moved onto `Positioner`. `Sub`->`SubmenuRoot`, `SubTrigger`->`SubmenuTrigger` (renamed). `ItemIndicator` splits into `CheckboxItemIndicator`/`RadioItemIndicator`. `data-[state=open]:`/`data-[state=closed]:`->`data-[open]:`/`data-[closed]:` (Popup), `focus:bg-accent`->`data-[highlighted]:bg-accent` (Item — Base UI items don't receive real DOM focus), `data-[state=open]:bg-accent`->`data-[popup-open]:bg-accent` (SubTrigger, its own distinct data attribute).
+
+`DropdownMenuTrigger` and `DropdownMenuItem` gained `asChild`->`render` bridges (five real consumers pass `asChild` to Trigger — `DashboardHeader.tsx`, `LanguageSwitcher.tsx`, `step-header.tsx`, `sidebar-user-nav.tsx`, `message-bubble.tsx`; four pass it to Item, each wrapping a `<Link>`) — same pattern as `AlertDialogTrigger`/`SheetTrigger`. `PickerTrigger`/`PickerItem` stayed plain wrappers: zero consumers pass `asChild` to either.
+
+DIVERGENCE: no standalone `Label` part exists (only `GroupLabel`, requiring a `Group` ancestor) — `DropdownMenuLabel` and `PickerLabel` (both used standalone by their consumers, not inside a Group) now render a plain styled `<div>`, no semantic loss. DIVERGENCE (favorable, corrects an initial directory-listing-only hypothesis): `Menu.Separator` IS available — re-exported from the sibling `@base-ui/react/separator` package inside `menu/index.parts.d.ts`, invisible to a bare `ls node_modules/@base-ui/react/menu` — so both `DropdownMenuSeparator` and `PickerSeparator` use it directly, zero extra import, zero divergence.
+
+`picker.tsx`'s `PickerRadioItem` dropped its `onSelect` + `preventDefault` dance (a Radix-era workaround to keep the menu open on selection) in favor of Base UI's own first-class `closeOnClick` prop on `Menu.Item`.
+
+Removed `@radix-ui/react-dropdown-menu` from `package.json` — proven `remaining: 0` direct importers via `git grep -n "@radix-ui/react-dropdown-menu" -- components app lib hooks providers src` (no output). `pnpm-lock.yaml` regenerated via `pnpm remove @radix-ui/react-dropdown-menu`.
+
+Added two Jest consumer-mounting test files: `DashboardHeader-dropdown-menu.test.tsx` (desktop user menu — proves both `asChild -> render` bridges land the real `<button>`/`<a>` rather than a Base UI default wrapper, via anti-nesting assertions; each bipolar-proven RED on the bridge's removal, then restored GREEN) and `picker-content.test.tsx` (mounts `Picker`/`PickerTrigger`/`PickerContent`/`PickerGroup`/`PickerItem` directly, proving the `Portal > Positioner > Popup` insertion doesn't block the popup from mounting real item content; bipolar-proven RED on removing the `Positioner` wrapper, then restored GREEN).
+
+`docs/migration-base-ui.md` extended with a `dropdown-menu`/`picker` section (§M8).
+
 ### Changed (2026-07-21 — migration M7: `dialog` + `sheet` ported from Radix to Base UI, package removed)
 
 Migrated `dialog.tsx` and `sheet.tsx` together — both imported `@radix-ui/react-dialog` (verified `git grep -l "@radix-ui/react-dialog" -- components` -> only these two files), so the package could not be removed until both were done. Ported from the already-migrated `alert-dialog.tsx` reference: `Content`->`Popup`, `Overlay`/`SheetOverlay`->`Backdrop`, `data-[state=open]:`/`data-[state=closed]:`->`data-[open]:`/`data-[closed]:` across every className (overlay, popup, `sheetVariants` cva, in-component close buttons), `React.ElementRef`->`React.ComponentRef`, `.displayName` forwarded from the Radix part -> explicit string literals (Base UI parts do not consistently expose the same shape once destructured).

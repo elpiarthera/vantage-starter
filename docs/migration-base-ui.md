@@ -481,3 +481,61 @@ Both migrations are covered end-to-end by real consumer-mounting tests: `Insuffi
 ## What M1 + M2 + M3 + M4 + M5 + M6 + M7 together did NOT touch
 
 Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dropdown-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying the M5 lesson alongside M2/M3/M4/M7's: before reaching for Base UI's nearest-named equivalent, check whether the Radix primitive is a thin wrapper over a native HTML element the consumer's usage doesn't actually need wrapped at all, and check whether two files share one underlying `@radix-ui/react-*` package (as `dialog.tsx`/`sheet.tsx` did) before declaring either migration complete on its own.
+
+## Packages removed this wave (M8)
+
+### DropdownMenu + Picker — migrated together, one package coupling
+
+`components/ui/dropdown-menu.tsx` and `components/create/picker.tsx` both imported `@radix-ui/react-dropdown-menu` — confirmed via `git grep -l "@radix-ui/react-dropdown-menu" -- components app src` returning exactly these two files. `picker.tsx` imports the Radix primitive directly (`import * as DropdownMenu from "@radix-ui/react-dropdown-menu"`), not via `dropdown-menu.tsx`'s wrapper, so the package could not be removed until both migrated — the same one-package-two-files coupling M7 established for `dialog`/`sheet`.
+
+Confirmed against `node_modules/@base-ui/react/menu/index.parts.d.ts`:
+
+| Radix part | Base UI part | Note |
+|---|---|---|
+| `DropdownMenuPrimitive.Root` | `Menu.Root` | Unchanged shape |
+| `DropdownMenuPrimitive.Trigger` | `Menu.Trigger` | No `asChild` — see below |
+| `DropdownMenuPrimitive.Group` | `Menu.Group` | Unchanged |
+| `DropdownMenuPrimitive.Portal` | `Menu.Portal` | Unchanged |
+| `DropdownMenuPrimitive.Sub` | `Menu.SubmenuRoot` | Renamed |
+| `DropdownMenuPrimitive.RadioGroup` | `Menu.RadioGroup` | Unchanged name |
+| `DropdownMenuPrimitive.SubTrigger` | `Menu.SubmenuTrigger` | Renamed |
+| `DropdownMenuPrimitive.SubContent` | `Menu.Positioner` > `Menu.Popup` | See structural note below |
+| `DropdownMenuPrimitive.Content` | `Menu.Portal` > `Menu.Positioner` > `Menu.Popup` | See structural note below |
+| `DropdownMenuPrimitive.Item` | `Menu.Item` | No `asChild` — see below |
+| `DropdownMenuPrimitive.CheckboxItem` | `Menu.CheckboxItem` | Unchanged name |
+| `DropdownMenuPrimitive.RadioItem` | `Menu.RadioItem` | Unchanged name |
+| `DropdownMenuPrimitive.ItemIndicator` | split: `Menu.CheckboxItemIndicator` / `Menu.RadioItemIndicator` | See below |
+| `DropdownMenuPrimitive.Label` | **no equivalent** — see below | |
+| `DropdownMenuPrimitive.Separator` | `Menu.Separator` (re-exported from `@base-ui/react/separator`) | See below |
+
+**STRUCTURAL: `Content` requires `Portal > Positioner > Popup`.** Radix's `Content` combined anchor positioning (`side`/`align`/`sideOffset`) and visual surface into one part, rendered inside `Portal`. Base UI's menu package interposes `Positioner` (owns positioning) between `Portal` and `Popup` (owns only the visual surface) — the same split M2's Select, M3's Tooltip, and M7's Dialog/Sheet already established. Both `DropdownMenuContent` and `DropdownMenuSubContent` in `dropdown-menu.tsx`, and `PickerContent` in `picker.tsx`, now nest `Portal > Positioner > Popup`; the `align`/`sideOffset`/`side` props that were on `Content`/`SubContent` moved onto `Positioner`. This is the wave's primary migration-risk surface — verified bipolar in `picker-content.test.tsx` (removing the `Positioner` wrapper reddens the test; Base UI's `Popup` does not accept `align`/`sideOffset`/`side` directly).
+
+**`asChild` — derived per-part from real consumer usage, same as M7's `SheetTrigger`/`DialogTrigger` split.**
+- `DropdownMenuTrigger`: five real consumers pass `asChild` (`git grep -n "DropdownMenuTrigger asChild"` -> `DashboardHeader.tsx:170`, `LanguageSwitcher.tsx:69`, `step-header.tsx:96`, `sidebar-user-nav.tsx:53`, `message-bubble.tsx:443`). Became a small wrapper mapping `asChild` + a valid single element child to Base UI's `render` prop — the same pattern `AlertDialogTrigger` (M4) and `SheetTrigger` (M7) established.
+- `DropdownMenuItem`: four real consumers pass `asChild` (`DashboardHeader.tsx:221,239`, `step-header.tsx:122`, `sidebar-user-nav.tsx:95` — each wraps a `<Link>`). Same render-bridge mapping added.
+- `PickerTrigger`/`PickerItem` (picker.tsx): zero real consumers pass `asChild` (`git grep -n "PickerTrigger asChild\|PickerItem asChild"` -> no repo hits) — both stayed plain wrappers with no bridge, per the `DialogTrigger` precedent (M7): a speculative bridge with no consumer to prove it is not added.
+
+**DIVERGENCE: no standalone `Label` part.** Confirmed by directory listing of `node_modules/@base-ui/react/menu/` — only `group-label` exists, no `label`. `Menu.GroupLabel` requires a `Group` ancestor (reads its association from context). This repo's sole `DropdownMenuLabel` consumer (`DashboardHeader.tsx:196`) renders it standalone, not inside a `DropdownMenuGroup` — wrapping it in a `Group` just to use `GroupLabel` would be a consumer markup change this migration avoids (M5 doctrine: don't rewrite a consumer's field markup to fit the wrong primitive). Both `DropdownMenuLabel` and `PickerLabel` (picker.tsx has the identical divergence — no consumer wraps `PickerLabel` in `PickerGroup` either) now render a plain styled `<div>` — no semantic loss, since Radix's `Label` was already a plain `<div>` with no ARIA role.
+
+**DIVERGENCE (favorable): `Separator` IS available, just not where expected.** `ls node_modules/@base-ui/react/menu` has no `separator` subdirectory, which would suggest no equivalent exists (as with `Select`'s `Separator` in M2) — but `menu/index.parts.d.ts` re-exports the standalone `@base-ui/react/separator` package's `Separator` component directly as `Menu.Separator`: `export { Separator } from "../separator/Separator.js"`. So `Menu.Separator` (destructured from the same `import { Menu as DropdownMenuPrimitive } from "@base-ui/react/menu"` namespace import) works with zero extra import and zero divergence in either `dropdown-menu.tsx` or `picker.tsx` — this is the one place this wave's initial "no separator part" hypothesis (based on a directory-listing-only check, per `derive-never-type.md`'s phantom-string caution) turned out wrong on closer reading of the actual export index, and is recorded here so a future wave does not repeat the directory-only check.
+
+**`ItemIndicator` splits per item type.** Radix's single `ItemIndicator` (used inside both `CheckboxItem` and `RadioItem`) has no Base UI equivalent as one part — Base UI splits it into `Menu.CheckboxItemIndicator` (used only inside `CheckboxItem`) and `Menu.RadioItemIndicator` (used only inside `RadioItem`), each scoped to its own item type's checked state.
+
+**Data attributes** — confirmed via each part's own `*DataAttributes.d.ts`: `data-[state=open]:`/`data-[state=closed]:` (on `Content`) -> `data-[open]:`/`data-[closed]:` (on `Popup` — `MenuPopupDataAttributes.open`/`.closed`); Radix's `focus:bg-accent` (a real `:focus` pseudo-class, since Radix's item receives DOM focus) -> `data-[highlighted]:bg-accent` (Base UI's `Item` does not receive real DOM focus — highlighting is tracked via `data-highlighted`, `MenuItemDataAttributes.highlighted`, same finding M2's Select `Item` already established); `data-[state=open]:bg-accent` on `SubTrigger` -> `data-[popup-open]:bg-accent` (`MenuSubmenuTriggerDataAttributes.popupOpen = "data-popup-open"`, not the generic `data-open` — a submenu trigger's "open" state is named for the popup it controls, distinct from the plain `Trigger`'s own `data-popup-open`).
+
+**`picker.tsx`'s `PickerRadioItem` — `onSelect` + `preventDefault` dance replaced by Base UI's own `closeOnClick` prop.** Radix's `Item` always closes the menu on click; the pre-migration `PickerRadioItem` used `onSelect={(e) => { if (!closeOnClick) e.preventDefault(); ctx.onValueChange?.(value); }}` to keep the menu open by default (`closeOnClick` defaulted to `false`/undefined) while still notifying the radio context. Base UI's `Item` ships `closeOnClick` as its own first-class prop (default `true`, confirmed in `MenuItemProps`) — the wrapper now passes `closeOnClick={closeOnClick}` (still defaulting to `false` to preserve pre-migration behavior — the picker stays open after selecting a radio option) directly to `Menu.Item` and moves the context notification into a plain `onClick`, with no `preventDefault` needed since Base UI's own `closeOnClick` flag already governs the close behavior.
+
+`@radix-ui/react-dropdown-menu` proven `remaining: 0` direct importers:
+
+```
+git grep -n "@radix-ui/react-dropdown-menu" -- components app lib hooks providers src
+# (no output)
+```
+
+`pnpm-lock.yaml` regenerated via `pnpm remove @radix-ui/react-dropdown-menu`.
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `DashboardHeader-dropdown-menu.test.tsx` (desktop user menu — proves both the `DropdownMenuTrigger` and `DropdownMenuItem` `asChild -> render` bridges land the real `<button>`/`<a>` rather than a Base UI default wrapper, via anti-nesting assertions bipolar-proven against each bridge's removal) and `picker-content.test.tsx` (mounts `Picker`/`PickerTrigger`/`PickerContent`/`PickerGroup`/`PickerItem` directly, proving the `Portal > Positioner > Popup` structural insertion does not prevent the popup from mounting and exposing real item content — bipolar-proven against removing the `Positioner` wrapper). Declared coverage limit, same as M6's scroll-area precedent: jsdom performs no real floating-ui positioning math, so visual placement of the popup relative to its trigger is a human/browser verification item, not something these tests can prove.
+
+## What M1 + M2 + M3 + M4 + M5 + M6 + M7 + M8 together did NOT touch
+
+Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying every prior wave's lessons — and M8's new one: don't trust a directory-listing-only check for "no equivalent part exists" (`Menu.Separator` was re-exported from a sibling package, invisible to `ls node_modules/@base-ui/react/menu`) — always read the package's own `index.parts.d.ts` export list before declaring a divergence.
