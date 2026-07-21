@@ -6,6 +6,35 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-21 — `docs/blocks-inventory.md`: what each component is, where it is used, and how to check it by eye)
+
+Closes `k17ax9sbhatva4b610hk14c6hd8azkcr`. The document a developer picking up this boilerplate opens first, and the one Laurent uses to verify with his own eyes without asking anyone. One row per registry block: what it does in a sentence a non-technical reader understands, the files consuming it **derived by command**, its state, and — the column that exists for him — the exact URL, the click path, and what he should see. A block not yet in service reads "not yet visible"; a dead address in that column costs more than an empty cell. No automated screenshot, no paid rendering service: the human is the verifier.
+
+No number in the file is typed. Block count, consumer counts and totals are each derived, with the command printed beside them, using the corrected import-path form from `docs/mcpcn-block-mapping.md` §3 — the bare-name form would have reproduced a defect this repository fixed the same day.
+
+**The guard was caught twice more before it shipped, each time one level above the last fix, and that is the part worth recording.**
+
+Second catch, by review: **both guards reported success after inspecting zero rows.** Two nested faults. An empty row list left both buckets empty and exited 0 — the same silent escape hatch just closed one level down for *unreadable* rows, still open one level up for *no rows at all*. And the anchor both guards split on, the literal `## 3. The mapping`, appeared three times in the file because the guards' own source is printed further down: renaming the real heading made each guard silently re-anchor onto its own listing, parse the tail of the document — which contains no rows — and report clean. Guard A carried the same anchor and survived only because it compares against an external list and would have reddened on all thirty. Luck, not design.
+
+Both now answer in **three states**: checked and clean (0), checked and violated (1), and **could not check** (2) — the anchor missing, or zero rows parsed — printing what it could not read. A guard that cannot see its subject says so instead of returning quiet success. The row list is delimited by a dedicated marker pair, built in the guards' own source by string concatenation so their printed code never contains it contiguously.
+
+Third catch, on verification of that fix: the marker is also **quoted in the proof section**, so "the marker appears in the file" was never enough to identify the real delimiter. Both guards now require exactly **one** marker standing on its own line, and refuse with exit 2 when the count is anything else — an ambiguous span is a span the guard cannot know it is judging. Verified by renaming only the real marker and leaving the quoted copies: `COULD NOT CHECK: expected exactly one row marker on its own line, found start=0 end=1`, exit 2. Guard B also prints how many rows it inspected, so a reader can see the guard looked at something rather than inferring it from silence.
+
+**The first catch, kept for the record.** Guard B refuses a row claiming "in service" without a consumer. Its first branch waved through any row it could not read a consumer count from:
+
+```
+if 'State: in service' in e and 'consumers=1' not in e and 'consumers=0' not in e:
+    continue
+```
+
+Caught by mutating a row its author had not chosen — `order-confirm`, a block not installed at all, whose row reads "Consumers: none — not installed". Declaring it `State: in service` left the guard reporting `none`, exit **0**. Green on a lie.
+
+Its bipolar proof had passed because the injected mutation happened to carry `consumers=0`, a shape the matcher already knew. **A guard proven only on cases its own author selected shows that the matcher understands itself, not that it bites.**
+
+Now it fails closed: a row it cannot read is reported by name in its own `UNPARSEABLE` bucket and fails the run at the same severity as a `consumers=0` row. Re-verified independently by the orchestrator on the same foreign row — mutation grep-confirmed landed **before any output was read**, guard reddening with `UNPARSEABLE: ['order-confirm']`, exit **1**; restored, both guards back to exit 0 on the intact file. Guard A was re-read for the same class of hole and has no third silent-pass path.
+
+The document is **living**: each merged batch updates it in the same delivery, never afterwards. A batch whose PR does not touch it is an incomplete delivery.
+
 ### Fixed (2026-07-21 — §3's derivation command counted prose, not consumers)
 
 Traced in batch 2's entry below rather than patched, until now. `docs/mcpcn-block-mapping.md` §3's command was `git grep -l "$b" -- components app src | grep -v "components/ui/$b.tsx" | wc -l` — it matched the bare block name anywhere in the tree, so `table` returned `consumers=43` (legal pages, `DataTable`, the word "acceptable") for a block one file actually imports. Every batch in the plan defines its own scope from this command's output, so a bare-name match could certify a block "in service" that nobody had wired — a guard that cannot fail.
