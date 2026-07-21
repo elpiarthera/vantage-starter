@@ -26,6 +26,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "@/i18n/routing";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { normalizeUrl } from "@/lib/validation/url";
 
 // ============================================================================
 // TYPES
@@ -176,7 +177,14 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 		setError(null);
 
 		try {
-			const url = websiteUrl.trim();
+			let url: string;
+			try {
+				url = normalizeUrl(websiteUrl);
+			} catch {
+				setError(t("invalidUrl"));
+				setIsSubmitting(false);
+				return;
+			}
 			const projectId = await createProject({
 				workspaceId,
 				name: name.trim(),
@@ -260,14 +268,19 @@ function Step1ProjectForm({ workspaceId, onCreated }: Step1Props) {
 				</label>
 				<input
 					id="website-url"
-					type="url"
+					type="text"
+					inputMode="url"
 					value={websiteUrl}
 					onChange={(e) => setWebsiteUrl(e.target.value)}
 					placeholder={t("websiteUrlPlaceholder")}
 					required
 					aria-required="true"
+					aria-describedby="website-url-hint"
 					className={inputClass}
 				/>
+				<p id="website-url-hint" className="text-xs text-muted-foreground">
+					{t("websiteUrlHint")}
+				</p>
 			</div>
 
 			{/* Sector */}
@@ -364,11 +377,11 @@ function Step2Competitors({ projectId, onComplete, onBack }: Step2Props) {
 
 		const rowId = `comp-${Date.now()}`;
 		const trimmedName = newName.trim();
-		const trimmedUrl = newUrl.trim();
 
+		let trimmedUrl: string;
 		try {
-			// Validate URL client-side first
-			new URL(trimmedUrl);
+			// Normalize (add scheme if missing) then validate URL client-side first
+			trimmedUrl = normalizeUrl(newUrl);
 		} catch {
 			setAddError(t("invalidUrl"));
 			setIsAdding(false);
