@@ -123,11 +123,15 @@ Every installed block is listed with the number of screens consuming it. `consum
 1. **Feature it opens:** vantage-starter's dashboard chat gains a genuinely new agent capability at `components/chat/MessageList.tsx`: the architect agent emits a real sortable/selectable table inline in chat (e.g. "here are 6 candidate fixes, pick one") instead of a markdown wall of text.
 2. **Replaces:** nothing — the chat surface renders markdown tables today, not an interactive component.
 3. **Cost:** Base UI (shared); a new message-part renderer in `MessageList.tsx` for the table payload type.
+4. **See it (Laurent):** in a chat where the agent emits a `data-table` part, the table renders inline; a row can be selected and the selection carries that row's id. Whether the block is in service is `consumers` in §3's output, never a sentence here — but note §3's command over-counts this particular block: `table` is a common substring and it matched prose in the legal pages, `DataTable`, and `acceptable`. Count its importers instead: `git grep -l "components/ui/table" -- components app src | grep -v "components/ui/table.tsx"`. Traced in `k174h9yq0mfnfj7vfpbdvvnn0h8az003`.
 
 **amount-input** — numeric input with increment/decrement + presets.
 1. **Feature it opens:** a manual credit top-up control in vantage-starter's `components/dashboard/account/tabs/UsageCreditsTab.tsx` — a buyer taps to add $10/$25/$50 in usage credits instead of a bare number field.
 2. **Replaces:** nothing — `UsageCreditsTab.tsx` today has no manual top-up input at all, only a display of current credit balance. The `userCredits` and `creditTransactions` tables exist in `convex/schema.ts`; the mutation to accept a manual top-up amount does not exist yet and is built as part of this feature.
 3. **Cost:** Base UI (shared); a new Convex mutation accepting a manual top-up amount and creating the matching `creditTransactions` row.
+4. **Correction — the mutation's callable path.** The plan below names it `creditTransactions.recordManualTopUp`. It landed in `convex/credits.ts`, so the path is **`api.credits.recordManualTopUp`**, with `api.credits.getManualTopupPresets` beside it. The old name is struck rather than erased, because a reader following it would call something that does not exist.
+5. **The tier amounts are not in this document either.** They are a value the customer changes: they live in `systemConfig` under `manual_topup_presets` (seeded in `convex/seedCredits.ts`) and reach the control through `getManualTopupPresets`. Any figure typed here would be true the day it is typed and false after the first customer edits it.
+6. **See it (Laurent):** `/dashboard/account?tab=usage` -> the Credit Balance card carries a top-up preset row; tapping a preset moves the balance.
 
 ### Forms
 
