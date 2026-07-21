@@ -1,5 +1,6 @@
 import type React from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { DashboardDesignSystemMount } from "@/components/dashboard/DashboardDesignSystemMount";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import {
 	SidebarInset,
@@ -40,7 +41,9 @@ export default function DashboardLayout({
 							id="main-content"
 							className="flex-1 min-h-[calc(100vh-3.5rem)]"
 						>
-							{children}
+							<DashboardDesignSystemMount>
+								{children}
+							</DashboardDesignSystemMount>
 						</main>
 					</SidebarInset>
 				</div>

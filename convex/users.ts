@@ -238,8 +238,26 @@ export const getLanguagePreference = query({
 });
 
 /**
- * Update user preferences (theme, notifications, etc.)
+ * Update user preferences (theme, notifications, design system, etc.)
  * Note: Name and email are managed by Clerk and updated via syncUser
+ *
+ * SCOPE DECISION (configurator persistence, Day defect #2 — declared per
+ * .claude/rules/derive-never-type.md, not silent): the design system
+ * selection (style/baseColor/theme/etc.) is stored PER-USER on
+ * users.preferences.designSystem, not per-workspace.
+ *
+ * Reasoning: `workspaces.settings.theme` already exists as a single string
+ * field with no per-field structure — extending it to carry the full
+ * configurator shape (9 fields) plus a "personal override on top of a
+ * workspace default" resolution order is real product surface (who can
+ * change the workspace default, how override merges, migration of the
+ * existing lone `theme` field) that this fix's scope does not require to
+ * close the reported defect ("my choice does not survive reconnecting").
+ * Per-user is the lightest change that fully closes the reported gap: one
+ * signed-in user, one saved design, applied everywhere they go. Team-wide
+ * workspace defaults with per-member override remain a tracked enhancement,
+ * not a silent gap — it would extend `workspaces.settings` alongside this
+ * field, not replace it.
  */
 export const updatePreferences = mutation({
 	args: {
@@ -247,6 +265,19 @@ export const updatePreferences = mutation({
 			v.union(v.literal("light"), v.literal("dark"), v.literal("system")),
 		),
 		notifications: v.optional(v.boolean()),
+		designSystem: v.optional(
+			v.object({
+				style: v.optional(v.string()),
+				baseColor: v.optional(v.string()),
+				chartColor: v.optional(v.string()),
+				fontHeading: v.optional(v.string()),
+				font: v.optional(v.string()),
+				iconLibrary: v.optional(v.string()),
+				radius: v.optional(v.string()),
+				menuColor: v.optional(v.string()),
+				menuAccent: v.optional(v.string()),
+			}),
+		),
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -279,6 +310,12 @@ export const updatePreferences = mutation({
 				...(args.theme !== undefined && { theme: args.theme }),
 				...(args.notifications !== undefined && {
 					notifications: args.notifications,
+				}),
+				...(args.designSystem !== undefined && {
+					designSystem: {
+						...currentPreferences.designSystem,
+						...args.designSystem,
+					},
 				}),
 			},
 			updatedAt: now,

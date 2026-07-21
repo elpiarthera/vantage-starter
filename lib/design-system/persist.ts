@@ -1,21 +1,20 @@
-// Design system persistence — localStorage-scoped.
+// Design system persistence — localStorage-scoped (anonymous / fast path).
 //
 // PERSISTENCE DECISION (declared, not silent — see .claude/rules/derive-never-type.md):
 // The configurator's selection is stored in the browser's localStorage under
 // STORAGE_KEY and rehydrated by DesignSystemProvider whenever it mounts
 // without an explicit URL override. This makes a configured theme survive
 // navigating away from /dashboard/configurator (or /create) and back, and
-// survive a full page reload.
+// survive a full page reload — for the CURRENT browser.
 //
-// BOUNDARY: this does NOT make the theme apply site-wide across every
-// dashboard route in the same visit — DesignSystemProvider only mounts on
-// the two configurator routes (providers/DesignSystemProvider.tsx). Making
-// the choice apply on every dashboard page in the same visit would require
-// mounting the provider above the dashboard layout and moving its state off
-// nuqs's URL binding onto this same localStorage store — an architecture
-// change (who "owns" the applied theme fleet-wide, whether it should sync to
-// a Convex user preference) beyond the scope of this fix. Flagged here so it
-// is tracked debt, not a silent gap.
+// RESOLVED (Day defect #2 follow-up): reconnecting from another
+// browser/device is now covered by users.preferences.designSystem in Convex
+// (convex/users.ts updatePreferences), which DesignSystemProvider treats as
+// the source of truth for a signed-in user and localStorage as the
+// anonymous / fast-path fallback. RESOLVED (Day defect #3 follow-up):
+// DesignSystemProvider now also mounts in app/[locale]/dashboard/layout.tsx
+// (above every dashboard route), so a saved selection applies app-wide
+// within the dashboard, not only inside the configurator preview box.
 import type { DesignSystemSearchParams } from "./search-params";
 
 const STORAGE_KEY = "vantage-design-system-config";

@@ -34,6 +34,18 @@ import {
 import type { DesignSystemSearchParams } from "@/lib/design-system/search-params";
 import { DesignSystemProvider } from "@/providers/DesignSystemProvider";
 
+// Signed-out in this suite (convexUser === null) — Convex rehydration is a
+// no-op and the provider falls back to localStorage, exactly as before
+// Convex-backed persistence was added. See design-system-provider-convex.test.tsx
+// for the signed-in Convex-as-source-of-truth behavior (RED 1/2/3).
+jest.mock("convex/react", () => ({
+	useQuery: () => null,
+	useMutation: () => jest.fn().mockResolvedValue({ success: true }),
+}));
+jest.mock("@/convex/_generated/api", () => ({
+	api: { users: { getCurrentUser: "users.getCurrentUser" } },
+}));
+
 jest.mock("@/hooks/use-design-system", () => ({
 	useDesignSystem: () => {
 		const ReactActual = jest.requireActual("react");

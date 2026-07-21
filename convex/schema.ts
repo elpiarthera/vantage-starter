@@ -67,6 +67,25 @@ export default defineSchema({
 				),
 				language: v.string(),
 				notifications: v.boolean(),
+				// Configurator selection (design/configurator persistence — Day defect #2).
+				// SCOPE DECISION: per-user, not per-workspace (see convex/users.ts
+				// updatePreferences for the full reasoning). Every field optional so a
+				// user who never opened the configurator gets DEFAULT_CONFIG
+				// (lib/design-system/config.ts) client-side instead of a broken/blank
+				// screen — see DesignSystemProvider's fallback.
+				designSystem: v.optional(
+					v.object({
+						style: v.optional(v.string()),
+						baseColor: v.optional(v.string()),
+						chartColor: v.optional(v.string()),
+						fontHeading: v.optional(v.string()),
+						font: v.optional(v.string()),
+						iconLibrary: v.optional(v.string()),
+						radius: v.optional(v.string()),
+						menuColor: v.optional(v.string()),
+						menuAccent: v.optional(v.string()),
+					}),
+				),
 			}),
 		),
 		lastActiveAt: v.optional(v.number()),

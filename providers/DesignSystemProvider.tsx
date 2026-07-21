@@ -1,6 +1,8 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
 import * as React from "react";
+import { api } from "@/convex/_generated/api";
 import { useDesignSystem } from "@/hooks/use-design-system";
 import {
 	buildRegistryTheme,
@@ -14,6 +16,37 @@ import {
 	loadPersistedDesignSystemConfig,
 	savePersistedDesignSystemConfig,
 } from "@/lib/design-system/persist";
+import type { DesignSystemSearchParams } from "@/lib/design-system/search-params";
+
+// Fields of DesignSystemConfig that are mirrored to
+// users.preferences.designSystem (see convex/users.ts updatePreferences for
+// the per-user vs per-workspace scope decision). "theme" (dark/light/system)
+// intentionally excluded — that is a separate, already-existing preference.
+const CONVEX_DESIGN_SYSTEM_KEYS = [
+	"style",
+	"baseColor",
+	"chartColor",
+	"fontHeading",
+	"font",
+	"iconLibrary",
+	"radius",
+	"menuColor",
+	"menuAccent",
+] as const satisfies readonly (keyof DesignSystemSearchParams)[];
+
+type ConvexDesignSystemPref = Partial<
+	Pick<DesignSystemSearchParams, (typeof CONVEX_DESIGN_SYSTEM_KEYS)[number]>
+>;
+
+function pickConvexDesignSystemFields(
+	params: DesignSystemSearchParams,
+): ConvexDesignSystemPref {
+	const out: Record<string, string | boolean> = {};
+	for (const key of CONVEX_DESIGN_SYSTEM_KEYS) {
+		out[key] = params[key];
+	}
+	return out as ConvexDesignSystemPref;
+}
 
 const THEME_STYLE_ID = "design-system-theme-vars";
 const MANAGED_BODY_PREFIXES = ["style-", "base-color-"] as const;
@@ -63,13 +96,29 @@ export function DesignSystemProvider({
 		radius,
 	} = params;
 
+	// Convex is the source of truth for a SIGNED-IN user's design selection —
+	// it is what survives reconnecting on another device/browser, which
+	// localStorage alone cannot (Day defect #2). `undefined` = still loading,
+	// `null` = signed out. See convex/users.ts updatePreferences for the
+	// per-user scope decision.
+	const convexUser = useQuery(api.users.getCurrentUser);
+	const updateConvexPreferences = useMutation(api.users.updatePreferences);
+
 	// Rehydrate the last saved selection when this provider mounts without an
 	// explicit URL override (e.g. navigating back to /dashboard/configurator
 	// after leaving it — see lib/design-system/persist.ts for the persistence
-	// decision and its declared boundary).
+	// decision and its declared boundary). Convex pref wins for a signed-in
+	// user with a saved selection; localStorage remains the anonymous / fast
+	// path fallback (and the default when a signed-in user never saved one —
+	// see DEFECT-DEFAULTS: no saved pref -> DEFAULT_CONFIG, never a blank
+	// screen, because setParams is simply never called in that case).
 	const hasHydratedRef = React.useRef(false);
 	React.useEffect(() => {
 		if (hasHydratedRef.current) return;
+		// Wait for the Convex query to resolve (undefined = loading) before
+		// deciding — otherwise a signed-in user briefly sees the anonymous
+		// localStorage/default value flash before their real pref loads.
+		if (convexUser === undefined) return;
 		hasHydratedRef.current = true;
 		if (typeof window === "undefined") return;
 		if (
@@ -80,14 +129,31 @@ export function DesignSystemProvider({
 		) {
 			return;
 		}
+		const convexDesign = convexUser?.preferences?.designSystem;
+		if (convexDesign && Object.keys(convexDesign).length > 0) {
+			setParams(convexDesign as Partial<DesignSystemSearchParams>);
+			return;
+		}
 		const saved = loadPersistedDesignSystemConfig();
 		if (saved) setParams(saved);
-	}, [setParams]);
+	}, [convexUser, setParams]);
 
-	// Persist every change so it survives leaving and returning to this route.
+	// Persist every change so it survives leaving and returning to this route
+	// (localStorage — anonymous / fast path) and reconnecting from anywhere
+	// else (Convex — signed-in source of truth).
 	React.useEffect(() => {
 		savePersistedDesignSystemConfig(params);
-	}, [params]);
+		// Only signed-in users get server-side persistence; convexUser is
+		// `null` when signed out and `undefined` while the query is loading.
+		if (!convexUser) return;
+		updateConvexPreferences({
+			designSystem: pickConvexDesignSystemFields(params),
+		}).catch(() => {
+			// Best-effort — localStorage already holds the selection above, so
+			// a transient Convex write failure never loses the user's choice
+			// for the current browser session.
+		});
+	}, [params, convexUser, updateConvexPreferences]);
 
 	const effectiveRadius = style === "lyra" ? "none" : radius;
 
