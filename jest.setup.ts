@@ -41,3 +41,14 @@ if (typeof globalThis.PointerEvent === "undefined") {
 	}
 	Object.assign(globalThis, { PointerEvent: PointerEventPolyfill });
 }
+
+// jsdom ships no `Element.prototype.getAnimations`. Base UI's ScrollArea
+// viewport calls it (to wait out in-flight scrollbar fade animations before
+// hiding them) whenever a scroll event fires, so any suite mounting a
+// `ScrollArea` consumer and dispatching a real `scroll` event throws
+// `viewport.getAnimations is not a function`. Polyfill with a no-op
+// returning an empty animation list — sufficient since jsdom never runs
+// real CSS animations in the first place.
+if (typeof Element.prototype.getAnimations === "undefined") {
+	Element.prototype.getAnimations = () => [];
+}

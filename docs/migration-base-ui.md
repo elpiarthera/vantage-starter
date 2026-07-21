@@ -1,4 +1,4 @@
-# Radix -> Base UI migration pattern (M1: accordion, checkbox, collapsible, radio-group, slider; M2: select, separator; M3: switch, progress, tooltip; M4: alert-dialog, avatar, tabs; M5: label -> native `<label>`, no Base UI equivalent used)
+# Radix -> Base UI migration pattern (M1: accordion, checkbox, collapsible, radio-group, slider; M2: select, separator; M3: switch, progress, tooltip; M4: alert-dialog, avatar, tabs; M5: label -> native `<label>`, no Base UI equivalent used; M6: scroll-area)
 
 This wave migrated the five `components/ui/*` primitives with **zero consumers** in the repo — chosen deliberately so a wrong mapping stays invisible while the pattern gets proven. Each mapping below is code-level, taken directly from `@base-ui/react@1.6.0`'s own `.d.ts` files (`node_modules/@base-ui/react/<primitive>/`), not assumed from Radix muscle memory.
 
@@ -389,6 +389,45 @@ grep -rn "@radix-ui/react-label" app/ components/ lib/ hooks/ providers/ src/  #
 
 Both migrations are covered end-to-end by real consumer-mounting tests: `ChangePasswordModal.test.tsx` (`getByLabelText` resolves all three password fields to their `<input>`) and `ProfileTab.test.tsx` (`getByLabelText` resolves the Full Name field to its populated `<input>`) — neither consumer's source needed any change.
 
-## What M1 + M2 + M3 + M4 + M5 together did NOT touch
+## Packages migrated this wave (M6)
 
-Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `scroll-area`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying the M5 lesson alongside M2/M3/M4's: before reaching for Base UI's nearest-named equivalent, check whether the Radix primitive is a thin wrapper over a native HTML element the consumer's usage doesn't actually need wrapped at all.
+### ScrollArea
+
+`components/ui/scroll-area.tsx` -> consumers: `app/[locale]/dashboard/architect/_components/chat-interface.tsx`, `app/[locale]/dashboard/consultant/onboard/[projectId]/_components/onboarding-chat.tsx`, `app/[locale]/dashboard/missions/[missionId]/page.tsx`.
+
+Confirmed via `node_modules/@base-ui/react/scroll-area/index.parts.d.ts`:
+
+| Radix part | Base UI part |
+|---|---|
+| `ScrollAreaPrimitive.Root` | `ScrollAreaPrimitive.Root` (unchanged name) |
+| `ScrollAreaPrimitive.Viewport` | `ScrollAreaPrimitive.Viewport` (unchanged name — still the actual scrollable `<div>`: `scrollTop`/`scrollHeight`/`clientHeight` are read directly off it internally, confirmed in `ScrollAreaViewport.js`'s `computeThumbPosition`) |
+| (none — Radix's `Viewport` held children directly) | `ScrollAreaPrimitive.Content` (new — required nesting, see below) |
+| `ScrollAreaPrimitive.ScrollAreaScrollbar` | `ScrollAreaPrimitive.Scrollbar` (renamed — shorter, no `ScrollArea` prefix repeated) |
+| `ScrollAreaPrimitive.ScrollAreaThumb` | `ScrollAreaPrimitive.Thumb` (renamed, same simplification) |
+| `ScrollAreaPrimitive.Corner` | `ScrollAreaPrimitive.Corner` (unchanged name) |
+
+**`Viewport > Content` nesting is required, not optional.** Base UI interposes an explicit `Content` part (`ScrollAreaContent`, "A container for the content of the scroll area", per its own `.d.ts` doc comment) between `Viewport` and the consumer's children — Radix had no equivalent part; children went directly inside `Viewport`. The migrated wrapper wraps `{children}` in `<ScrollAreaPrimitive.Content data-slot="scroll-area-content">` inside `Viewport`. This is a structural DOM addition (one extra wrapper `<div>`), the same category of change M1's Slider `Control` interposition already established for this migration series — omitting it does not error at runtime, but the part exists specifically to isolate content-driven layout reflow from the viewport's own overflow-tracking measurements (confirmed by its state type `ScrollAreaContentState extends ScrollAreaRootState`, mirroring `Viewport`'s own state shape), so it was kept.
+
+**Import shape**: Base UI exports a single named object per M1-M5 convention: `import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area"` (whose keys are `.Root`/`.Viewport`/`.Content`/`.Scrollbar`/`.Thumb`/`.Corner`), replacing Radix's `import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"`.
+
+**No `asChild`/`render` rewiring needed** — none of the six parts used `asChild` in the existing wrapper.
+
+**No data-attribute selector rewrite needed** — unlike M4's Tabs, the wrapper's own Tailwind classes for `ScrollBar`/`ScrollAreaThumb` never selected on `data-state`; the only conditional styling (`orientation === "vertical"`/`"horizontal"`) reads the React prop directly, not a DOM attribute, so it survived unchanged. Base UI's `ScrollAreaScrollbarDataAttributes`/`ScrollAreaThumbDataAttributes` do expose `data-orientation`, `data-hovering`, `data-scrolling`, `data-has-overflow-x`/`-y` etc. for a future consumer that wants to style those states directly.
+
+**Zero consumer edits.** All three consumers query `document.querySelector('[data-slot="scroll-area-viewport"]')` and read `scrollTop`/`scrollHeight`/`clientHeight` off the returned element to drive their own stick-to-bottom auto-scroll logic — this works unchanged because Base UI's `Viewport`, like Radix's, remains the actual scrolling element (verified against `ScrollAreaViewport.js`'s internal `computeThumbPosition`, which reads exactly those three properties off `viewportRef.current`).
+
+**`@radix-ui/react-scroll-area` proven `remaining: 0` direct importers:**
+
+```
+grep -rn "@radix-ui/react-scroll-area" app/ components/ lib/ hooks/ providers/ src/  # remaining: 0
+```
+
+`pnpm-lock.yaml` regenerated via `pnpm install --lockfile-only`.
+
+**jsdom gap surfaced by this migration (fixed in `jest.setup.ts`, not per-test)**: Base UI's `ScrollAreaViewport` calls `Element.prototype.getAnimations()` on every real `scroll` event (to wait out any in-flight scrollbar fade-out animation before hiding it) — jsdom implements no Web Animations API, so any suite mounting a `ScrollArea` consumer and dispatching a `scroll` event throws `viewport.getAnimations is not a function`. Polyfilled globally as a no-op returning `[]`, alongside the existing `TransformStream`/`PointerEvent` jsdom polyfills already documented there.
+
+Both migrations are covered end-to-end by real consumer-mounting tests: `mission-detail-scroll-area.test.tsx` (mission page operations list — real operation rows), `chat-interface-scroll-area-content.test.tsx` (Architect chat — real user/assistant message bubbles), `onboarding-chat-scroll-area-content.test.tsx` (Consultant onboarding chat — real message bubbles), each asserting the real rendered content is nested inside `[data-slot="scroll-area-viewport"]`, not merely that the component mounts. The pre-existing `chat-interface-stick-to-bottom.test.tsx` (auto-scroll behavior against the real viewport's `scrollTop`/`scrollHeight`) continues to pass unchanged against the migrated primitive.
+
+## What M1 + M2 + M3 + M4 + M5 + M6 together did NOT touch
+
+Every other remaining `@radix-ui/react-*` package in `package.json` (`aspect-ratio`, `context-menu`, `dialog`, `dropdown-menu`, `hover-card`, `menubar`, `navigation-menu`, `popover`, `slot`, `toast`, `toggle`, `toggle-group`) is still in active use by consumer components and was left untouched. A future wave should keep applying the M5 lesson alongside M2/M3/M4's: before reaching for Base UI's nearest-named equivalent, check whether the Radix primitive is a thin wrapper over a native HTML element the consumer's usage doesn't actually need wrapped at all.

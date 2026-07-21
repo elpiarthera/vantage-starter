@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-21 — migration M6: `scroll-area` ported from Radix to Base UI, three consumers)
+
+Migrated `scroll-area.tsx` (consumers: `chat-interface.tsx`'s Architect chat, `onboarding-chat.tsx`'s Consultant chat, mission detail page's operations list) from `@radix-ui/react-scroll-area` to `@base-ui/react@1.6.0`. Public API (`ScrollArea`/`ScrollBar` exports, prop shapes) unchanged — zero consumer edits: all three consumers query `[data-slot="scroll-area-viewport"]` and read `scrollTop`/`scrollHeight`/`clientHeight` off it for their own stick-to-bottom auto-scroll logic, which still works because Base UI's `Viewport`, like Radix's, remains the actual scrolling element.
+
+Key API difference, documented in `docs/migration-base-ui.md`: Base UI interposes a required `Content` part between `Viewport` and children (Radix had none — children went straight inside `Viewport`) — the wrapper now nests `{children}` inside `<ScrollAreaPrimitive.Content data-slot="scroll-area-content">`. `ScrollAreaScrollbar`/`ScrollAreaThumb` renamed to `Scrollbar`/`Thumb` (mechanical, wrapper-internal only). No data-attribute selector rewrite needed (no `data-state` selectors existed in the wrapper's own styling).
+
+Removed `@radix-ui/react-scroll-area` from `package.json` — proven `remaining: 0` direct importers via `grep -rn "@radix-ui/react-scroll-area" app/ components/ lib/ hooks/ providers/ src/` before removal. `pnpm-lock.yaml` regenerated via `pnpm install --lockfile-only`.
+
+Added one Jest consumer-mounting test per consumer: `mission-detail-scroll-area.test.tsx`, `chat-interface-scroll-area-content.test.tsx`, `onboarding-chat-scroll-area-content.test.tsx` — each asserts real rendered content (operation rows / chat message bubbles) is nested inside `[data-slot="scroll-area-viewport"]`, not merely that the component mounts. Bite-proven on `scroll-area.tsx`: replaced `{children}` inside `ScrollAreaPrimitive.Content` with a `BITE-PROOF-MUTATION` comment (dropping the children entirely), confirmed the mutation landed (`grep -n BITE-PROOF-MUTATION components/ui/scroll-area.tsx` → line 24), all three consumer tests went RED (`Unable to find an element with the text: ...`), restored, `git diff components/ui/scroll-area.tsx` clean against the migrated (non-mutated) version.
+
+Surfaced and fixed a jsdom gap in `jest.setup.ts` (not per-test): Base UI's `ScrollAreaViewport` calls `Element.prototype.getAnimations()` on every real `scroll` event; jsdom implements no Web Animations API. Polyfilled globally as a no-op returning `[]`, alongside the pre-existing `TransformStream`/`PointerEvent` polyfills there — this fixed a real regression surfaced in the pre-existing `mission-detail-alert-dialog.test.tsx` suite (unrelated to alert-dialog itself; the mission page also renders the migrated `ScrollArea`).
+
+`docs/migration-base-ui.md` extended with a `scroll-area` section (M6).
+
 ### Changed (2026-07-21 — migration M4: `alert-dialog`, `avatar`, `tabs` ported from Radix to Base UI, six consumers)
 
 Migrated `alert-dialog.tsx` (consumers: mission detail page's checkpoint reject flow, `ProfileTab.tsx`'s delete-account flow), `avatar.tsx` (consumers: `DashboardHeader.tsx`, `ProfileTab.tsx`), `tabs.tsx` (consumers: `TabNavigation.tsx`, `AdaptiveNavigation.tsx`) from `@radix-ui/react-*` to `@base-ui/react@1.6.0`. Public API (exported names, prop shapes) unchanged for all three except two documented `asChild` additions on `alert-dialog.tsx` (see below) — every consumer file's *logic* was left untouched.
