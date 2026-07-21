@@ -2996,7 +2996,8 @@
 			"priority_urgent": "Срочно",
 			"priority_high": "Высокий",
 			"priority_medium": "Средний",
-			"priority_low": "Низкий"
+			"priority_low": "Низкий",
+			"clear_status_selection": "Очистить"
 		},
 		"list_view": {
 			"empty": "Нет миссий для отображения",

@@ -1,7 +1,23 @@
+/**
+ * Status filter section adapted onto the ported mcpcn `tag-select` block
+ * (components/ui/tag-select.tsx) — see the block's own file header for the
+ * upstream MIT attribution. Previously a hand-rolled list of
+ * `<input type="checkbox">` rows (`CheckboxRow`); `TagSelect` already does
+ * exactly this job (multi-select toggle chips + a "clear all" action), so
+ * the checkboxes are replaced rather than duplicated alongside it.
+ */
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+	TagSelect,
+	TagSelectActions,
+	TagSelectContent,
+	TagSelectItem,
+	TagSelectTags,
+	useTagSelect,
+} from "@/components/ui/tag-select";
 import { cn } from "@/lib/utils";
 
 export type MissionStatus =
@@ -113,6 +129,91 @@ function CheckboxRow({
 	);
 }
 
+// `TagSelect` is uncontrolled internally (its `selected` state is seeded
+// from `control.selectedTagIds` once, then only mutated by its own
+// toggle/clear) — it exposes no onChange prop, only `onValidate` on an
+// explicit submit. This mission filter panel has no submit step: every
+// toggle must apply immediately. `useTagSelect()` is the block's own
+// exported escape hatch for exactly this — a headless child reads the live
+// `selected` array from context and forwards it up. The content-equality
+// guard (rather than forwarding on every reference change) is required:
+// `control.selectedTagIds` and the forwarded `selected` array bounce new
+// array references back and forth every render, and forwarding on
+// reference alone loops forever; forwarding only on content change
+// converges within one round trip.
+function StatusTagSync({
+	current,
+	onChange,
+}: {
+	current: MissionStatus[];
+	onChange: (statuses: MissionStatus[]) => void;
+}) {
+	const { selected } = useTagSelect();
+
+	useEffect(() => {
+		const same =
+			selected.length === current.length &&
+			selected.every((id) => current.includes(id as MissionStatus));
+		if (!same) {
+			onChange(selected as MissionStatus[]);
+		}
+	}, [selected, current, onChange]);
+
+	return null;
+}
+
+function StatusTagItem({
+	value,
+	color,
+	label,
+}: {
+	value: MissionStatus;
+	color: string;
+	label: string;
+}) {
+	const { isSelected } = useTagSelect();
+	const selected = isSelected(value);
+
+	return (
+		<TagSelectItem
+			aria-pressed={selected}
+			tag={{ id: value, label }}
+			tagId={value}
+		>
+			<span className={cn("size-2 rounded-full", color)} aria-hidden="true" />
+			{label}
+		</TagSelectItem>
+	);
+}
+
+// Routes through the block's OWN `clear()` context action rather than
+// writing `onFiltersChange({ statuses: [] })` directly: a second write path
+// bypassing `TagSelect`'s internal state raced against `StatusTagSync`'s
+// forwarding effect (the effect reads `selected` from the SAME render pass
+// the external reset was requested in, before `TagSelect`'s own
+// control-prop effect had applied it — the two updates fought each other on
+// every subsequent commit, an infinite loop caught by the mutation-proof
+// step below). Calling context `clear()` keeps every mutation on the single
+// path `TagSelect` internal state -> StatusTagSync -> onFiltersChange.
+function StatusClearButton({ label }: { label: string }) {
+	const { clear, selected } = useTagSelect();
+
+	if (selected.length === 0) {
+		return null;
+	}
+
+	return (
+		<button
+			className="inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
+			onClick={clear}
+			type="button"
+		>
+			<IconX className="size-3" />
+			{label}
+		</button>
+	);
+}
+
 export function MissionFilters({
 	filters,
 	onFiltersChange,
@@ -140,11 +241,8 @@ export function MissionFilters({
 		});
 	};
 
-	const toggleStatus = (status: MissionStatus) => {
-		const newStatuses = filters.statuses.includes(status)
-			? filters.statuses.filter((s) => s !== status)
-			: [...filters.statuses, status];
-		onFiltersChange({ ...filters, statuses: newStatuses });
+	const setStatuses = (statuses: MissionStatus[]) => {
+		onFiltersChange({ ...filters, statuses });
 	};
 
 	const togglePriority = (priority: MissionPriority) => {
@@ -225,18 +323,37 @@ export function MissionFilters({
 								<h5 className="text-sm font-medium text-muted-foreground">
 									{t("status")}
 								</h5>
-								<div className="space-y-2">
-									{STATUS_OPTIONS.map((option) => (
-										<CheckboxRow
-											key={option.value}
-											id={`status-${option.value}`}
-											checked={filters.statuses.includes(option.value)}
-											onChange={() => toggleStatus(option.value)}
-											dotColor={option.color}
-											label={t(`status_${option.value}`)}
-										/>
-									))}
-								</div>
+								<TagSelect
+									appearance={{ mode: "multiple", showValidate: false }}
+									control={{ selectedTagIds: filters.statuses }}
+									data={{
+										tags: STATUS_OPTIONS.map((option) => ({
+											id: option.value,
+											label: t(`status_${option.value}`),
+										})),
+									}}
+									className="w-full rounded-none bg-transparent p-0"
+								>
+									<StatusTagSync
+										current={filters.statuses}
+										onChange={setStatuses}
+									/>
+									<TagSelectContent>
+										<TagSelectTags className="gap-1.5">
+											{STATUS_OPTIONS.map((option) => (
+												<StatusTagItem
+													key={option.value}
+													value={option.value}
+													color={option.color}
+													label={t(`status_${option.value}`)}
+												/>
+											))}
+										</TagSelectTags>
+										<TagSelectActions>
+											<StatusClearButton label={t("clear_status_selection")} />
+										</TagSelectActions>
+									</TagSelectContent>
+								</TagSelect>
 							</div>
 
 							<hr className="border-border" />

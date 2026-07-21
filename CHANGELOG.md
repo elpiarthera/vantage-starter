@@ -6,6 +6,28 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-07-21 — two orphan mcpcn blocks put to work, two refused by name)
+
+Closes `k174mnth8k4p3habftxavp63jd8awsy4`. A block nobody renders is not delivered.
+
+**The task's premise did not survive the sweep, and the corrected scope is what was built.** Its IRP read *"Input: 31 blocks present in the repo, used nowhere"*. Both halves were wrong. `git grep -rl "mcpcn" -- components src app` returns **8** block files, not 30 or 31 — the mapping (#55) covers 30, the implantation delivered 8 across two waves. And a per-block consumer count, derived by `git grep -l <block> -- components app src` minus each block's own file, showed **4 of the 8 already wired**: `message-bubble` (3 consumers — the chat already renders through it), `status-badge` (`ToolCallIndicator.tsx`), `stat-card` (`mission-stats.tsx`), `chat-conversation` (1). The real remaining scope was four orphans, not thirty-one blocks.
+
+**Wired — the block REPLACES hand-rolled markup, never sits beside it:**
+- `tag-select` -> the status filter in `components/missions/mission-filters.tsx`. Hand-rolled checkbox rows become the block's toggle chips plus a clear action. New i18n key `missions.filters.clear_status_selection` in all seven locales.
+- `progress-steps` -> `StepIndicator` in `app/[locale]/dashboard/consultant/onboard/page.tsx`. Hand-rolled numbered circles become the block; `aria-current="step"` is preserved by an explicit per-item override, since the block's data-driven default renders no such slot.
+
+**Refused, by name and with the reason — the point of the escape hatch is that it is written down:**
+- `option-list`: the only candidate surfaces are a 20-item sector `<select>` in the onboarding form (a 20-pill wall is a worse screen, not a better one) and the consultant team/agent/skill checklist, which needs the hierarchical cross-level blocking `lib/consultant/config-selection.ts` implements — a flat option model cannot express it without duplicating the cascade beside it, which is the anti-pattern this delivery exists to avoid.
+- `quick-reply`: no screen hand-rolls suggested replies today. Both chat empty states show static text and no approval flow exists to host it. Mounting it would invent a feature rather than replace one.
+
+**Single write path, declared in-code.** Bridging the block's uncontrolled state to live filtering by writing `onFiltersChange({ statuses: [] })` directly raced against the forwarding effect — the effect reads `selected` from the same render pass in which the external reset was requested, before the block's own control-prop effect has applied it, and the two updates fight on every subsequent commit. An infinite render loop, caught by the mutation-proof step. The clear action now routes through the block's own `clear()` context action, keeping every mutation on one path. Verified externally: `statuses` has exactly two other touchpoints — a write-once `useState` seed (`missions/page.tsx:21`) and a read (`mission-list-view.tsx:136-137`) — so nothing can desync the block after mount.
+
+**A test that over-claimed was strengthened, not renamed down.** Disabling the forwarding guard outright (`if (!same)` -> `if (false)`, grep-confirmed landed) left `"toggles a status tag on then off, updating the live filter state"` GREEN while the other two reddened: it asserted `aria-pressed` on the block's own button — the imported component's internal visual state — and never the live filter state its name promised. It now asserts the array actually forwarded to `onFiltersChange`. Re-probed by the orchestrator after the fix: **all three redden, 3 failed / 3 total**, restore byte-identical. This is the third instance in one week of the same family — PR #77 removed a file for asserting the wrong surface, PR #78 rewrote two titles that no longer described their assertions.
+
+Ratios measured by the orchestrator after rebasing onto `b6218ed`. Invocation `pnpm exec`, cwd repository root. `pnpm exec jest` -> 50/50 suites, 235/235 tests. `pnpm exec vitest run` -> 341 passed / 0 failed / 7 skipped, 348 total. `pnpm exec tsc --noEmit` -> 0. `pnpm exec biome check` on the 11 touched files -> clean.
+
+Laurent verifies visually. `/dashboard/missions` -> "Filters" -> the status chips toggle live and "Clear" empties them. `/dashboard/consultant/onboard` -> fill step 1 -> submit -> step 1 shows a checkmark and step 2 becomes current.
+
 ### Fixed (2026-07-21 — an Architect session now carries the name of what it produced, and dormant sessions are named too)
 
 Closes `k17d2s6dcanwzrs52zrhyf8rqx8aw19k`. On screen: a mission created from Architect mode has a name; the session that produced it was still listed as "New session", next to eight rows reading the same. A list where every row reads alike is a list nobody can re-read.

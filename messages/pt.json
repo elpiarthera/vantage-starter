@@ -2996,7 +2996,8 @@
 			"priority_urgent": "Urgente",
 			"priority_high": "Alta",
 			"priority_medium": "Média",
-			"priority_low": "Baixa"
+			"priority_low": "Baixa",
+			"clear_status_selection": "Limpar"
 		},
 		"list_view": {
 			"empty": "Sem missões para mostrar",
