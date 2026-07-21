@@ -34,8 +34,17 @@ describe("TabNavigation (Tabs migrated to Base UI)", () => {
 		const overviewTab = screen.getByRole("tab", { name: /Overview/ });
 		expect(overviewTab).toHaveAttribute("aria-selected", "true");
 
+		// Guard the exact migration risk: the active tab must carry BOTH the
+		// `data-active` presence attribute Base UI stamps AND the utility class
+		// keyed on it. Asserting only `aria-selected` (Base UI sets that
+		// independently) left the visual active styling unguarded — a wrong
+		// selector token (`data-[active]` -> `data-[bogus]`) passed silently.
+		expect(overviewTab).toHaveAttribute("data-active");
+		expect(overviewTab).toHaveClass("data-[active]:bg-primary");
+
 		const settingsTab = screen.getByRole("tab", { name: /Settings/ });
 		expect(settingsTab).toHaveAttribute("aria-selected", "false");
+		expect(settingsTab).not.toHaveAttribute("data-active");
 
 		await user.click(settingsTab);
 

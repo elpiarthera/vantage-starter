@@ -49,7 +49,15 @@ describe("AdaptiveNavigation (Tabs migrated to Base UI, desktop branch)", () => 
 		const introTab = screen.getByRole("tab", { name: /Intro/ });
 		expect(introTab).toHaveAttribute("aria-selected", "true");
 
+		// Guard the exact migration risk: the active tab must carry BOTH the
+		// `data-active` presence attribute Base UI stamps AND the utility class
+		// keyed on it. `aria-selected` alone (set independently by Base UI) left
+		// the active styling unguarded — a wrong selector token passed silently.
+		expect(introTab).toHaveAttribute("data-active");
+		expect(introTab).toHaveClass("data-[active]:bg-primary");
+
 		const outroTab = screen.getByRole("tab", { name: /Outro/ });
+		expect(outroTab).not.toHaveAttribute("data-active");
 		await user.click(outroTab);
 
 		expect(onItemChange).toHaveBeenCalledWith("outro", expect.anything());
