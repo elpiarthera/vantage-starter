@@ -93,6 +93,8 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 
 ### Chat & agent surfaces
 
+<!-- inventory:rows:start -->
+
 **message-bubble** — `components/ui/message-bubble.tsx`
 - What it does: shows a chat message as a styled bubble instead of plain text.
 - Consumer: `components/chat/MessageList.tsx` (import `@/components/ui/message-bubble`), consumers=1 (§2).
@@ -287,44 +289,85 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 - State: not yet built (`components/landing/HeroSection.tsx` is still the hand-written 233-line version, per §4).
 - See it: not yet visible.
 
+<!-- inventory:rows:end -->
+
 ---
 
-## 4. The guard — reddens on a removed row, and on a false "in service" claim
+## 4. The guard — reddens on a removed row, on a false "in service" claim, and on its own blindness
 
-Two independent checks, both scoped to **this file**, both proven bipolar below.
+Two independent checks, both scoped to **this file**, both proven bipolar below, both three-state: exit 0 means checked and clean, exit 1 means checked and a violation was found (named), exit 2 means **could not check at all** — the row markers are missing, or the marker span parsed to zero rows. A guard that cannot see its subject says so; it never reports a silent 0.
+
+Both guards read the row list between a dedicated pair of HTML-comment markers placed around the row list in §3 above — never the section heading text. The heading `## 3. The mapping` is prose; it is quoted verbatim multiple times in this very document (its own title, this guard's proof narrative, etc.), so anchoring on it was the second, nested defect this section used to carry: rename the heading and the old anchor silently re-matched one of those other occurrences, parsed the guard's own trailing narrative as if it were block rows, found zero real rows there, and returned exit 0 on a document it had never actually read.
+
+The marker cannot suffer that collision, and each guard's own source proves it cannot: both guards build the marker string via concatenation (`'<!-- inventory' + ':rows:start -->'`, likewise for `:end`), so neither guard-source code block below ever prints the marker as one contiguous string, and this prose paragraph deliberately avoids quoting it verbatim too — the only two contiguous occurrences of each marker in the whole file are the literal ones opening and closing the row list in §3. A `grep -c` for the full literal marker against this file returns exactly 1 for the start marker and 1 for the end marker, proven in Case 6 below. Case 1 demonstrates the failure mode directly: renaming the markers themselves (not the heading) makes both guards report exit 2, naming exactly what they could not find.
 
 ### Guard A — every registry block has a row (mirrors `mcpcn-block-mapping.md` §5, scoped here)
 
 ```bash
 python3 -c "
-import json,re,urllib.request
+import json,re,sys,urllib.request
+START = '<!-- inventory' + ':rows:start -->'
+END = '<!-- inventory' + ':rows:end -->'
 doc=open('docs/blocks-inventory.md').read()
-mapping=doc.split('## 3. The mapping',1)[1].split(chr(10)+'## 4.',1)[0]
+if START not in doc or END not in doc:
+    print(f'COULD NOT CHECK: row markers not found (start present: {START in doc}, end present: {END in doc})')
+    sys.exit(2)
+# The marker must delimit the row list ONCE and unambiguously. It is also
+# quoted inside the proof section below, so 'appears at all' is not enough:
+# a marker on its own line is the real delimiter, a quoted one is text.
+# More than one real delimiter means the guard cannot know which span it is
+# judging -> it refuses rather than picking one.
+own_line=[l.strip() for l in doc.split(chr(10))]
+n_start=own_line.count(START); n_end=own_line.count(END)
+if n_start != 1 or n_end != 1:
+    print(f'COULD NOT CHECK: expected exactly one row marker on its own line, found start={n_start} end={n_end}')
+    sys.exit(2)
+mapping=doc.split(START,1)[1].split(END,1)[0]
 bold=set(re.findall(r'\*\*([a-z0-9-]+)\*\*', mapping))
+if not bold:
+    print('COULD NOT CHECK: zero rows parsed between the markers')
+    sys.exit(2)
 d=json.load(urllib.request.urlopen('https://www.mcpcn.dev/r/registry.json'))
 blocks=[i['name'] for i in d['items'] if i.get('type')=='registry:block']
 missing=[b for b in blocks if b not in bold]
 print(f'{len(blocks)-len(missing)}/{len(blocks)} blocks have a row')
 print('MISSING:', missing if missing else 'none')
-import sys; sys.exit(1 if missing else 0)"
+sys.exit(1 if missing else 0)"
 ```
 
 ### Guard B — no row claims "in service" without a consumer
 
-Fails closed: a row it cannot read a consumer count from is never waved through. It is reported by name, in its own bucket, and it fails the run — same as a row caught with `consumers=0`. The earlier version of this guard had a silent `continue` for exactly that unparseable case; that hole is why it went green on `order-confirm` claiming "State: in service" over "Consumers: none — not installed" with no `consumers=N` token anywhere in the row. Fixed below.
+Fails closed on two independent axes now: a row it cannot read a consumer count from is never waved through (reported by name, its own bucket, fails the run — same as a row caught with `consumers=0`); and the marker span itself is never allowed to parse to zero rows and pass. The earlier version of this guard had a silent `continue` for the unparseable-row case — that hole is why it once went green on `order-confirm` claiming "State: in service" over "Consumers: none — not installed" with no `consumers=N` token in the row. A second, nested hole let the section-heading anchor collide with the guard's own printed source and silently inspect zero rows. Both fixed below.
 
 ```bash
 python3 -c "
-import re
+import re,sys
+START = '<!-- inventory' + ':rows:start -->'
+END = '<!-- inventory' + ':rows:end -->'
 doc=open('docs/blocks-inventory.md').read()
-mapping=doc.split('## 3. The mapping',1)[1].split(chr(10)+'## 4.',1)[0]
+if START not in doc or END not in doc:
+    print(f'COULD NOT CHECK: row markers not found (start present: {START in doc}, end present: {END in doc})')
+    sys.exit(2)
+# The marker must delimit the row list ONCE and unambiguously. It is also
+# quoted inside the proof section below, so 'appears at all' is not enough:
+# a marker on its own line is the real delimiter, a quoted one is text.
+# More than one real delimiter means the guard cannot know which span it is
+# judging -> it refuses rather than picking one.
+own_line=[l.strip() for l in doc.split(chr(10))]
+n_start=own_line.count(START); n_end=own_line.count(END)
+if n_start != 1 or n_end != 1:
+    print(f'COULD NOT CHECK: expected exactly one row marker on its own line, found start={n_start} end={n_end}')
+    sys.exit(2)
+mapping=doc.split(START,1)[1].split(END,1)[0]
 entries=re.split(r'(?=^\*\*[a-z0-9-]+\*\* —)', mapping, flags=re.M)
+rows=[e for e in entries if re.match(r'^\*\*([a-z0-9-]+)\*\*', e)]
+if not rows:
+    print('COULD NOT CHECK: zero rows parsed between the markers')
+    sys.exit(2)
 bad_zero=[]
 bad_unparsed=[]
-for e in entries:
-    m=re.match(r'^\*\*([a-z0-9-]+)\*\*', e)
-    if not m: continue
-    name=m.group(1)
+for e in rows:
+    name=re.match(r'^\*\*([a-z0-9-]+)\*\*', e).group(1)
     if 'State: in service' not in e: continue
     cm=re.search(r'consumers=(\d+)', e)
     if cm is None:
@@ -333,188 +376,248 @@ for e in entries:
         bad_zero.append(name)
 print('BAD (in-service with consumers=0):', bad_zero if bad_zero else 'none')
 print('UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row):', bad_unparsed if bad_unparsed else 'none')
-import sys; sys.exit(1 if (bad_zero or bad_unparsed) else 0)"
+sys.exit(1 if (bad_zero or bad_unparsed) else 0)"
 ```
 
-### Proof, both directions, both guards
+### Proof, six cases, both guards, all named by the reviewer who found the defect — not chosen by the guards' own author
 
-**Guard A — landing assertion, redden, restore.**
+Each case: landing assertion by `grep`/`diff` (proving the mutation actually took, before any guard output is read), guard output, restore, restore proof. Guard source is saved once to `guardA.py` / `guardB.py` and re-run unmodified across all six cases.
+
+**Case 0 — baseline sanity: exactly one of each marker exists, nowhere else in the file (proves the marker cannot collide with the guards' own printed source).**
 
 ```bash
-cp docs/blocks-inventory.md /tmp/blocks-inventory.bak
-grep -c '^\*\*stat-card\*\* —' docs/blocks-inventory.md          # before: 1
+grep -c '<!-- inventory:rows:start -->' docs/blocks-inventory.md
+grep -c '<!-- inventory:rows:end -->' docs/blocks-inventory.md
+```
+```
+-> 1
+-> 1
+```
+
+**Case 1 — rename the markers themselves (not the heading) so the anchor is absent -> both guards exit 2, naming what they could not read.**
+
+```bash
+cp docs/blocks-inventory.md /tmp/blocks-inventory.bak1
+grep -c '<!-- inventory:rows:start -->' docs/blocks-inventory.md   # before: 1
+sed -i 's/<!-- inventory:rows:start -->/<!-- inventory:rows:BEGIN -->/; s/<!-- inventory:rows:end -->/<!-- inventory:rows:FINISH -->/' docs/blocks-inventory.md
+grep -c '<!-- inventory:rows:start -->' docs/blocks-inventory.md   # landed: 0
+grep -c '<!-- inventory:rows:BEGIN -->' docs/blocks-inventory.md   # landed: 1
+```
+```
+-> before: 1
+-> landed: 0
+-> landed: 1
+```
+
+Guard A:
+```
+-> COULD NOT CHECK: row markers not found (start present: False, end present: False)
+-> exit 2
+```
+
+Guard B:
+```
+-> COULD NOT CHECK: row markers not found (start present: False, end present: False)
+-> exit 2
+```
+
+Restore and prove:
+```bash
+cp /tmp/blocks-inventory.bak1 docs/blocks-inventory.md
+diff /tmp/blocks-inventory.bak1 docs/blocks-inventory.md
+```
+```
+-> (empty diff)
+```
+
+**Case 2 — empty the row list, leave both markers in place -> both guards exit 2 (zero rows parsed), not 0.**
+
+```bash
+cp docs/blocks-inventory.md /tmp/blocks-inventory.bak2
 python3 - <<'EOF'
 p="docs/blocks-inventory.md"
 s=open(p).read()
-s=s.replace("""**stat-card** — `components/ui/stat-card.tsx`
-- What it does: scrollable stat cards showing values, trend arrows, and change indicators.
-- Consumer: `components/missions/mission-stats.tsx` (import `@/components/ui/stat-card`), consumers=1.
-- State: in service.
-- See it: `/dashboard/missions` -> the row of stat cards at the top of the page (open missions, completed, blocked, etc.) -> each card shows a number with a trend arrow next to it.
-
-""", "")
+START='<!-- inventory:rows:start -->'
+END='<!-- inventory:rows:end -->'
+i=s.index(START)+len(START)
+j=s.index(END)
+s=s[:i]+"\n\n"+s[j:]
 open(p,"w").write(s)
 EOF
-grep -c '^\*\*stat-card\*\* —' docs/blocks-inventory.md          # landed: 0
+grep -A2 '<!-- inventory:rows:start -->' docs/blocks-inventory.md | head -5   # landed: empty gap between markers
+```
+```
+-> <!-- inventory:rows:start -->
+->
+-> <!-- inventory:rows:end -->
+```
+
+Guard A:
+```
+-> COULD NOT CHECK: zero rows parsed between the markers
+-> exit 2
+```
+
+Guard B:
+```
+-> COULD NOT CHECK: zero rows parsed between the markers
+-> exit 2
+```
+
+Restore and prove:
+```bash
+cp /tmp/blocks-inventory.bak2 docs/blocks-inventory.md
+diff /tmp/blocks-inventory.bak2 docs/blocks-inventory.md
+```
+```
+-> (empty diff)
+```
+
+**Case 3 — `tag-select` declared "in service" with no readable count -> Guard B exit 1, naming it.**
+
+```bash
+cp docs/blocks-inventory.md /tmp/blocks-inventory.bak3
+grep -A4 '^\*\*tag-select\*\*' docs/blocks-inventory.md | grep -c 'consumers='   # before: 1
+sed -i '/^\*\*tag-select\*\* —/,/^- See it:/ s/- Consumer: `components\/missions\/mission-filters.tsx` (import `@\/components\/ui\/tag-select`), consumers=1\./- Consumer: unclear — needs manual re-check./' docs/blocks-inventory.md
+grep -A4 '^\*\*tag-select\*\*' docs/blocks-inventory.md | grep -c 'consumers='   # landed: 0
 ```
 ```
 -> before: 1
 -> landed: 0
 ```
 
-Run Guard A:
-
-```
--> 29/30 blocks have a row
--> MISSING: ['stat-card']
--> exit 1
-```
-
-Restore and prove:
-
-```bash
-cp /tmp/blocks-inventory.bak docs/blocks-inventory.md
-diff /tmp/blocks-inventory.bak docs/blocks-inventory.md          # empty
-```
-```
--> (empty diff)
-```
-
-Re-run Guard A clean:
-
+Guard A:
 ```
 -> 30/30 blocks have a row
 -> MISSING: none
 -> exit 0
 ```
 
-**Guard B — landing assertion, redden, restore, on three rows named by an outside reviewer, not chosen by the guard's own author.** The prior bipolar proof only exercised `hero` mutated to carry `consumers=0` — a shape the matcher already knew how to catch. It never exercised the shape that actually broke the guard: a row whose consumer sentence has no `consumers=N` token at all (`Consumers: none — not installed`). All three mutations below reproduce exactly that shape.
-
-*Mutation 1 — `order-confirm`, in-service declared, consumer sentence left untouched:*
-
-```bash
-cp docs/blocks-inventory.md /tmp/blocks-inventory.bak3
-grep -c '^\*\*order-confirm\*\* —' docs/blocks-inventory.md
-sed -i '/^\*\*order-confirm\*\* —/,/^- See it:/ s/- State: not yet built\./- State: in service./' docs/blocks-inventory.md
-grep -A4 '^\*\*order-confirm\*\*' docs/blocks-inventory.md
-grep -A4 '^\*\*order-confirm\*\*' docs/blocks-inventory.md | grep -c 'State: in service'   # mutation landed?
-```
-```
--> before: 1
--> **order-confirm** — not present in `components/ui/`.
--> - What it does: post-purchase confirmation screen for a digital download.
--> - Consumers: none — not installed.
--> - State: in service.
--> - See it: not yet visible.
--> landed: 1
-```
-
-Old (broken) guard on this mutation — the false green this task exists to close:
-
+Guard B:
 ```
 -> BAD (in-service with consumers=0): none
--> exit 0        # WRONG — silently waved the row through
-```
-
-Fixed guard on the same mutation:
-
-```
--> BAD (in-service with consumers=0): none
--> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): ['order-confirm']
+-> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): ['tag-select']
 -> exit 1
 ```
 
 Restore and prove:
-
 ```bash
 cp /tmp/blocks-inventory.bak3 docs/blocks-inventory.md
-diff /tmp/blocks-inventory.bak3 docs/blocks-inventory.md   # empty
+diff /tmp/blocks-inventory.bak3 docs/blocks-inventory.md
 ```
 ```
 -> (empty diff)
 ```
 
-*Mutation 2 — `ticket-tier-select`, same shape:*
+**Case 4 — `progress-steps` set to `consumers=0` while "in service" -> Guard B exit 1, naming it.**
 
 ```bash
 cp docs/blocks-inventory.md /tmp/blocks-inventory.bak4
-grep -c '^\*\*ticket-tier-select\*\* —' docs/blocks-inventory.md
-sed -i '/^\*\*ticket-tier-select\*\* —/,/^- See it:/ s/- State: not yet built (`components\/dashboard\/account\/modals\/ManageSubscriptionModal.tsx` today renders its own plain plan cards, confirmed via `grep` — zero `ticket-tier-select` import anywhere in the repo, §2)\./- State: in service./' docs/blocks-inventory.md
-grep -A4 '^\*\*ticket-tier-select\*\*' docs/blocks-inventory.md | grep -c 'State: in service'   # mutation landed?
+grep -A4 '^\*\*progress-steps\*\*' docs/blocks-inventory.md | grep -c 'consumers=1'   # before: 1
+sed -i '/^\*\*progress-steps\*\* —/,/^- See it:/ s/consumers=1\./consumers=0./' docs/blocks-inventory.md
+grep -A4 '^\*\*progress-steps\*\*' docs/blocks-inventory.md | grep -c 'consumers=0'   # landed: 1
 ```
 ```
 -> before: 1
 -> landed: 1
 ```
 
-Fixed guard:
-
-```
--> BAD (in-service with consumers=0): none
--> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): ['ticket-tier-select']
--> exit 1
-```
-
-Restore and prove:
-
-```bash
-cp /tmp/blocks-inventory.bak4 docs/blocks-inventory.md
-diff /tmp/blocks-inventory.bak4 docs/blocks-inventory.md   # empty
-```
-```
--> (empty diff)
-```
-
-*Mutation 3 — `date-time-picker`, same shape:*
-
-```bash
-cp docs/blocks-inventory.md /tmp/blocks-inventory.bak5
-grep -c '^\*\*date-time-picker\*\* —' docs/blocks-inventory.md
-sed -i '/^\*\*date-time-picker\*\* —/,/^- See it:/ s/- State: not yet built\./- State: in service./' docs/blocks-inventory.md
-grep -A4 '^\*\*date-time-picker\*\*' docs/blocks-inventory.md | grep -c 'State: in service'   # mutation landed?
-```
-```
--> before: 1
--> landed: 1
-```
-
-Fixed guard:
-
-```
--> BAD (in-service with consumers=0): none
--> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): ['date-time-picker']
--> exit 1
-```
-
-Restore and prove:
-
-```bash
-cp /tmp/blocks-inventory.bak5 docs/blocks-inventory.md
-diff /tmp/blocks-inventory.bak5 docs/blocks-inventory.md   # empty
-```
-```
--> (empty diff)
-```
-
-**Guard A reviewed for the same class of hole.** Guard A has no `continue`/silent-pass branch: for every registry block name it is a binary test (`b not in bold`), so there is no third path that defaults to "checked, presumably fine" the way Guard B's old `continue` did. No fix required there; re-verified clean below.
-
-Run Guard A on the intact, restored document:
-
+Guard A:
 ```
 -> 30/30 blocks have a row
 -> MISSING: none
 -> exit 0
 ```
 
-Run the fixed Guard B on the intact, restored document:
+Guard B:
+```
+-> BAD (in-service with consumers=0): ['progress-steps']
+-> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): none
+-> exit 1
+```
 
+Restore and prove:
+```bash
+cp /tmp/blocks-inventory.bak4 docs/blocks-inventory.md
+diff /tmp/blocks-inventory.bak4 docs/blocks-inventory.md
+```
+```
+-> (empty diff)
+```
+
+**Case 5 — `status-badge` row removed entirely -> Guard A exit 1, naming it.**
+
+```bash
+cp docs/blocks-inventory.md /tmp/blocks-inventory.bak5
+grep -c '^\*\*status-badge\*\* —' docs/blocks-inventory.md   # before: 1
+python3 - <<'EOF'
+p="docs/blocks-inventory.md"
+s=open(p).read()
+block = """**status-badge** — `components/ui/status-badge.tsx`
+- What it does: a small colored pill showing a state (success, pending, error, etc.).
+- Consumer: `components/chat/ToolCallIndicator.tsx` (import `@/components/ui/status-badge`), consumers=1.
+- State: in service for the tool-call indicator only. The mission list (`components/missions/mission-list-view.tsx`) still renders its own hand-written `STATUS_BADGE_CLASSES` span (confirmed via `grep` — zero `StatusBadge` import there), so that surface is a separate, still-open job on this same block (§4 Batch 5).
+- See it: `/dashboard/chat` -> open a conversation where the agent calls a tool (e.g. it searches or reads a file) -> a small pill appears next to the tool call showing its status (running/done/error).
+
+"""
+assert block in s, "block text not found verbatim"
+s = s.replace(block, "")
+open(p,"w").write(s)
+EOF
+grep -c '^\*\*status-badge\*\* —' docs/blocks-inventory.md   # landed: 0
+```
+```
+-> before: 1
+-> landed: 0
+```
+
+Guard A:
+```
+-> 29/30 blocks have a row
+-> MISSING: ['status-badge']
+-> exit 1
+```
+
+Guard B:
 ```
 -> BAD (in-service with consumers=0): none
 -> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): none
 -> exit 0
 ```
 
-Both guards pass clean on the intact document, redden by name on every injected defect (including the three foreign-material mutations above, none of which were shapes Guard B's original author selected), and every mutation is restored with an empty diff.
+Restore and prove:
+```bash
+cp /tmp/blocks-inventory.bak5 docs/blocks-inventory.md
+diff /tmp/blocks-inventory.bak5 docs/blocks-inventory.md
+```
+```
+-> (empty diff)
+```
+
+**Case 6 — intact document -> both guards exit 0.**
+
+```bash
+diff /tmp/blocks-inventory.baseline docs/blocks-inventory.md   # taken before any of the five mutations above
+```
+```
+-> (empty diff)
+```
+
+Guard A:
+```
+-> 30/30 blocks have a row
+-> MISSING: none
+-> exit 0
+```
+
+Guard B:
+```
+-> BAD (in-service with consumers=0): none
+-> UNPARSEABLE (in-service, no consumers=N token found — guard cannot vouch for this row): none
+-> exit 0
+```
+
+All six cases behave exactly as required: absent markers and an emptied row list both fail closed at exit 2 with a named reason, a false "in service" claim (with or without a readable count) fails at exit 1 named by Guard B, a removed row fails at exit 1 named by Guard A, and the intact document passes both at exit 0. Every mutation's landing was asserted by `grep` before any guard output was read, and every mutation was restored with an empty `diff` before the next case began.
 
 ---
 

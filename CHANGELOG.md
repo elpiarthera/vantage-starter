@@ -12,7 +12,15 @@ Closes `k17ax9sbhatva4b610hk14c6hd8azkcr`. The document a developer picking up t
 
 No number in the file is typed. Block count, consumer counts and totals are each derived, with the command printed beside them, using the corrected import-path form from `docs/mcpcn-block-mapping.md` §3 — the bare-name form would have reproduced a defect this repository fixed the same day.
 
-**The guard shipped green on a document that lies, and that is the part worth recording.** Guard B refuses a row claiming "in service" without a consumer. Its first branch waved through any row it could not read a consumer count from:
+**The guard was caught twice more before it shipped, each time one level above the last fix, and that is the part worth recording.**
+
+Second catch, by review: **both guards reported success after inspecting zero rows.** Two nested faults. An empty row list left both buckets empty and exited 0 — the same silent escape hatch just closed one level down for *unreadable* rows, still open one level up for *no rows at all*. And the anchor both guards split on, the literal `## 3. The mapping`, appeared three times in the file because the guards' own source is printed further down: renaming the real heading made each guard silently re-anchor onto its own listing, parse the tail of the document — which contains no rows — and report clean. Guard A carried the same anchor and survived only because it compares against an external list and would have reddened on all thirty. Luck, not design.
+
+Both now answer in **three states**: checked and clean (0), checked and violated (1), and **could not check** (2) — the anchor missing, or zero rows parsed — printing what it could not read. A guard that cannot see its subject says so instead of returning quiet success. The row list is delimited by a dedicated marker pair, built in the guards' own source by string concatenation so their printed code never contains it contiguously.
+
+Third catch, on verification of that fix: the marker is also **quoted in the proof section**, so "the marker appears in the file" was never enough to identify the real delimiter. Both guards now require exactly **one** marker standing on its own line, and refuse with exit 2 when the count is anything else — an ambiguous span is a span the guard cannot know it is judging. Verified by renaming only the real marker and leaving the quoted copies: `COULD NOT CHECK: expected exactly one row marker on its own line, found start=0 end=1`, exit 2. Guard B also prints how many rows it inspected, so a reader can see the guard looked at something rather than inferring it from silence.
+
+**The first catch, kept for the record.** Guard B refuses a row claiming "in service" without a consumer. Its first branch waved through any row it could not read a consumer count from:
 
 ```
 if 'State: in service' in e and 'consumers=1' not in e and 'consumers=0' not in e:
