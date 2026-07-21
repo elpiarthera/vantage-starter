@@ -11,7 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { resolveOperationSelection } from "@/lib/architect/operation-selection";
+import {
+	resolveOperationSelection,
+	toggleOperationExclusion,
+} from "@/lib/architect/operation-selection";
 import {
 	extractProposalFromSpec,
 	filterProposalOperations,
@@ -244,23 +247,11 @@ function ConfirmPlanBar({
 
 	const toggleOperation = useCallback(
 		(id: string) => {
-			const { blockedIds } = resolveOperationSelection(
-				operations,
-				manuallyExcludedIds,
+			setManuallyExcludedIds((prev) =>
+				toggleOperationExclusion(operations, prev, id),
 			);
-			if (blockedIds.has(id)) return; // cascade-blocked: re-check the dependency first
-
-			setManuallyExcludedIds((prev) => {
-				const next = new Set(prev);
-				if (next.has(id)) {
-					next.delete(id);
-				} else {
-					next.add(id);
-				}
-				return next;
-			});
 		},
-		[operations, manuallyExcludedIds],
+		[operations],
 	);
 
 	const completeSession = useMutation(api.architectSessions.complete);

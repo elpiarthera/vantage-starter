@@ -1,4 +1,7 @@
-import { resolveOperationSelection } from "@/lib/architect/operation-selection";
+import {
+	resolveOperationSelection,
+	toggleOperationExclusion,
+} from "@/lib/architect/operation-selection";
 
 describe("resolveOperationSelection", () => {
 	test("RED2 regression guard: no manual exclusion -> nothing excluded", () => {
@@ -74,5 +77,46 @@ describe("resolveOperationSelection", () => {
 
 		expect(excludedIds.size).toBe(0);
 		expect(blockedIds.size).toBe(0);
+	});
+});
+
+describe("toggleOperationExclusion", () => {
+	// The `<Checkbox disabled>` UI already prevents a user from ever
+	// clicking a cascade-blocked row (Base UI's own `disabled` handling
+	// swallows the click before `onCheckedChange` fires — verified directly:
+	// a disabled Checkbox's onCheckedChange spy is never called on
+	// fireEvent.click), so a component/UI-click test can never exercise this
+	// guard. Only a direct call to the pure function can.
+	test("is a no-op when the operation is cascade-blocked: it is neither added to nor removed from manuallyExcludedIds", () => {
+		const operations = [{ id: "op1" }, { id: "op2", dependsOn: ["op1"] }];
+		const manuallyExcludedIds = new Set(["op1"]); // op2 is cascade-blocked
+
+		const result = toggleOperationExclusion(
+			operations,
+			manuallyExcludedIds,
+			"op2",
+		);
+
+		expect(result).toEqual(new Set(["op1"]));
+	});
+
+	test("toggles a non-blocked operation on (adds to manuallyExcludedIds)", () => {
+		const operations = [{ id: "op1" }, { id: "op2" }];
+
+		const result = toggleOperationExclusion(operations, new Set(), "op1");
+
+		expect(result).toEqual(new Set(["op1"]));
+	});
+
+	test("toggles a non-blocked, already-excluded operation off (removes from manuallyExcludedIds)", () => {
+		const operations = [{ id: "op1" }, { id: "op2" }];
+
+		const result = toggleOperationExclusion(
+			operations,
+			new Set(["op1"]),
+			"op1",
+		);
+
+		expect(result).toEqual(new Set());
 	});
 });

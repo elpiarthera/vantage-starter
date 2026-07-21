@@ -65,3 +65,40 @@ export function resolveOperationSelection(
 
 	return { excludedIds, blockedIds };
 }
+
+/**
+ * Computes the next `manuallyExcludedIds` set for a single checkbox toggle.
+ * Returns a set EQUAL to (but a new instance of) the input, unchanged, when
+ * `id` is currently cascade-blocked — a blocked operation must not be added
+ * to or removed from `manuallyExcludedIds` while the dependency it relies
+ * on is still excluded, or a later re-check of that dependency could no
+ * longer distinguish "was cascaded" from "was manually excluded" and would
+ * fail to restore it.
+ *
+ * Extracted as its own pure function (rather than left inline in
+ * `chat-interface.tsx`'s `toggleOperation`) so this guard can be unit
+ * tested directly: the `<Checkbox disabled>` UI already prevents a user
+ * from ever clicking a blocked row (Base UI's `disabled` primitive
+ * swallows the click before `onCheckedChange` fires), which means no
+ * click-driven component test can ever exercise this branch — only a
+ * direct call to this function can.
+ */
+export function toggleOperationExclusion(
+	operations: readonly SelectableOperation[],
+	manuallyExcludedIds: ReadonlySet<string>,
+	id: string,
+): Set<string> {
+	const { blockedIds } = resolveOperationSelection(
+		operations,
+		manuallyExcludedIds,
+	);
+	if (blockedIds.has(id)) return new Set(manuallyExcludedIds);
+
+	const next = new Set(manuallyExcludedIds);
+	if (next.has(id)) {
+		next.delete(id);
+	} else {
+		next.add(id);
+	}
+	return next;
+}

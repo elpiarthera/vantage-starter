@@ -258,5 +258,17 @@ describe("ChatInterface — per-operation plan approval", () => {
 		// Attempting to click it must not re-include it.
 		fireEvent.click(op2Checkbox);
 		expect(op2Checkbox).toHaveAttribute("aria-checked", "false");
+
+		// The divergence this guard actually protects appears one frame
+		// later: a click that was truly IGNORED leaves op2 out of the
+		// manual-exclusion set, so re-checking op1 (the dependency) lifts
+		// the cascade and op2 comes back automatically. A click that was
+		// silently ACCEPTED instead (i.e. the guard above is missing) would
+		// have added op2 to the manual set — re-checking op1 would then
+		// NOT bring it back, because op2's own exclusion is now manual, not
+		// cascaded. Both worlds look identical at line 260; only this next
+		// assertion tells them apart.
+		fireEvent.click(op1Checkbox); // re-check the dependency
+		expect(op2Checkbox).toHaveAttribute("aria-checked", "true");
 	});
 });
