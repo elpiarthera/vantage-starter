@@ -19,6 +19,7 @@ import type React from "react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { api } from "@/convex/_generated/api";
+import { ROUTES } from "@/lib/routes";
 
 export default function AdminLayout({
 	children,
@@ -90,7 +91,7 @@ export default function AdminLayout({
 						{t("auth_required_description")}
 					</p>
 					<Link
-						href={`/${locale}/sign-in`}
+						href={`/${locale}${ROUTES.signIn}`}
 						className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-smooth"
 					>
 						{t("sign_in_button")}
@@ -115,7 +116,7 @@ export default function AdminLayout({
 						{t("admin_required_description")}
 					</p>
 					<Link
-						href={`/${locale}/dashboard`}
+						href={`/${locale}${ROUTES.dashboard}`}
 						className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-smooth"
 					>
 						{t("back_to_dashboard")}
@@ -131,7 +132,12 @@ export default function AdminLayout({
 			<div
 				className={`h-[88px] px-6 flex items-center border-b border-border ${collapsed ? "px-3" : ""}`}
 			>
-				<Link href={`/${locale}`} className="flex items-center gap-3 group">
+				{/* Locale root — ROUTES.home is "/", collapsed here to avoid a
+				double slash when concatenated with the locale segment. */}
+				<Link
+					href={`/${locale}${ROUTES.home === "/" ? "" : ROUTES.home}`}
+					className="flex items-center gap-3 group"
+				>
 					<div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
 						<Settings className="w-5 h-5 text-accent-foreground" />
 					</div>
@@ -167,7 +173,7 @@ export default function AdminLayout({
 			{!collapsed && (
 				<div className="px-6 py-4 border-t border-border">
 					<Link
-						href={`/${locale}`}
+						href={`/${locale}${ROUTES.home === "/" ? "" : ROUTES.home}`}
 						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
 					>
 						{t("sidebar.back_to_app")}

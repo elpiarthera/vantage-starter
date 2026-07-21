@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 /**
  * Locale-aware 404 for routes that fail to match INSIDE a valid `[locale]`
@@ -28,7 +29,7 @@ export default async function LocaleNotFound() {
 					{t("description")}
 				</p>
 				<Link
-					href="/"
+					href={ROUTES.home}
 					className="mt-8 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-ring"
 				>
 					{t("cta_home")}

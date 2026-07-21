@@ -111,7 +111,7 @@ export function AppSidebar() {
 				{/* ── Header: Logo ── */}
 				<SidebarHeader className="flex flex-row items-center px-4 h-14">
 					<Link
-						href="/dashboard"
+						href={ROUTES.dashboard}
 						onClick={handleNavClick}
 						aria-label={t("home_aria_label")}
 						className="font-heading font-bold tracking-[-0.03em] text-foreground hover:opacity-80 transition-opacity group-data-[collapsible=icon]:hidden"
@@ -133,7 +133,7 @@ export function AppSidebar() {
 									<div ref={newMenuRef} className="relative px-2">
 										<div className="flex items-center gap-1">
 											<Link
-												href="/dashboard/chat"
+												href={ROUTES.dashboardChat}
 												onClick={handleNavClick}
 												className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 											>
@@ -178,7 +178,7 @@ export function AppSidebar() {
 												}}
 											>
 												<Link
-													href="/dashboard/chat"
+													href={ROUTES.dashboardChat}
 													onClick={() => {
 														handleNavClick();
 														setNewMenuOpen(false);
@@ -188,7 +188,7 @@ export function AppSidebar() {
 													{t("new_chat")}
 												</Link>
 												<Link
-													href="/dashboard/missions"
+													href={ROUTES.dashboardMissions}
 													onClick={() => {
 														handleNavClick();
 														setNewMenuOpen(false);
@@ -198,7 +198,7 @@ export function AppSidebar() {
 													{t("new_mission")}
 												</Link>
 												<Link
-													href="/dashboard/architect"
+													href={ROUTES.dashboardArchitect}
 													onClick={() => {
 														handleNavClick();
 														setNewMenuOpen(false);
@@ -225,7 +225,7 @@ export function AppSidebar() {
 										className="flex h-9 min-h-[44px] w-full items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
 										aria-label={t("new_chat")}
 									>
-										<Link href="/dashboard/chat" onClick={handleNavClick}>
+										<Link href={ROUTES.dashboardChat} onClick={handleNavClick}>
 											<svg
 												width="18"
 												height="18"
@@ -301,7 +301,7 @@ export function AppSidebar() {
 										className={navItemClass}
 										style={{ transition: `color ${navTransition}` }}
 									>
-										<Link href="/dashboard" onClick={handleNavClick}>
+										<Link href={ROUTES.dashboard} onClick={handleNavClick}>
 											<svg
 												width="18"
 												height="18"
@@ -330,7 +330,7 @@ export function AppSidebar() {
 										className={navItemClass}
 										style={{ transition: `color ${navTransition}` }}
 									>
-										<Link href="/dashboard/chat" onClick={handleNavClick}>
+										<Link href={ROUTES.dashboardChat} onClick={handleNavClick}>
 											<svg
 												width="18"
 												height="18"
@@ -356,7 +356,10 @@ export function AppSidebar() {
 										className={navItemClass}
 										style={{ transition: `color ${navTransition}` }}
 									>
-										<Link href="/dashboard/missions" onClick={handleNavClick}>
+										<Link
+											href={ROUTES.dashboardMissions}
+											onClick={handleNavClick}
+										>
 											<svg
 												width="18"
 												height="18"
@@ -387,7 +390,10 @@ export function AppSidebar() {
 										className={navItemClass}
 										style={{ transition: `color ${navTransition}` }}
 									>
-										<Link href="/dashboard/architect" onClick={handleNavClick}>
+										<Link
+											href={ROUTES.dashboardArchitect}
+											onClick={handleNavClick}
+										>
 											<svg
 												width="18"
 												height="18"
@@ -416,7 +422,7 @@ export function AppSidebar() {
 										style={{ transition: `color ${navTransition}` }}
 									>
 										<Link
-											href="/dashboard/consultant/onboard"
+											href={ROUTES.dashboardConsultantOnboard}
 											onClick={handleNavClick}
 										>
 											<svg
@@ -501,7 +507,10 @@ export function AppSidebar() {
 										className={navItemClass}
 										style={{ transition: `color ${navTransition}` }}
 									>
-										<Link href="/dashboard/account" onClick={handleNavClick}>
+										<Link
+											href={ROUTES.dashboardAccount}
+											onClick={handleNavClick}
+										>
 											<svg
 												width="18"
 												height="18"

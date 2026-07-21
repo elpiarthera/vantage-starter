@@ -11,6 +11,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@/components/ui/card";
+import { ROUTES } from "@/lib/routes";
 
 export default function LocaleError({
 	error,
@@ -60,7 +61,7 @@ export default function LocaleError({
 						{t("try_again_button")}
 					</Button>
 					<Button variant="ghost" className="w-full" asChild>
-						<Link href="/dashboard">{tDashboard("go_to_dashboard")}</Link>
+						<Link href={ROUTES.dashboard}>{tDashboard("go_to_dashboard")}</Link>
 					</Button>
 				</CardFooter>
 			</Card>

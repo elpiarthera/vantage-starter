@@ -13,11 +13,18 @@
  *      tree is missing from the module) — this is what makes the
  *      `/dashboard/configurator` orphan detectable mechanically instead of
  *      by inspection.
- *   3. No `router.push` / `router.replace` / `redirect(` call site under
- *      `app/ components/ lib/ hooks/ providers/` uses a hand-typed internal
- *      path (a string/template literal starting with `/`) that is not
- *      produced by `ROUTES` — this is the guard that fails when someone
- *      types a path again.
+ *   3. Every `router.push` / `router.replace` / `redirect(...)` call and
+ *      every JSX `href` at a navigation site, under
+ *      `app/ components/ lib/ hooks/ providers/`, PROVES it consumed a
+ *      value produced by `lib/routes.ts` — never merely that a hand-typed
+ *      literal happens to be valid today. A literal string/template quoted
+ *      at the call site (`href="/dashboard"`, `` router.push(`/dashboard`) ``)
+ *      is a violation even when `/dashboard` is a real route, because the
+ *      call site bypassed the single source of truth; `lib/routes.ts`'s own
+ *      header requires every internal navigation to consume `ROUTES`, not
+ *      merely to agree with it by coincidence. This is a source-provenance
+ *      check (does the call site's source text reference `ROUTES.`), never
+ *      a value allow-list — see `.claude/rules/derive-never-type.md`.
  */
 
 import { execSync } from "node:child_process";
@@ -102,17 +109,52 @@ describe("lib/routes.ts matches the real route tree", () => {
 	});
 });
 
-describe("no hand-typed internal path bypasses lib/routes.ts", () => {
+describe("no navigation call site bypasses lib/routes.ts (provenance, not value validity)", () => {
 	const scanDirs = ["app", "components", "lib", "hooks", "providers"];
 	const targetPattern =
 		/\b(?:router\.push|router\.replace|redirect)\(\s*[`"](\/[^"`]*)[`"]/g;
 
-	function scanFile(
-		filePath: string,
-	): { line: number; literal: string; hasInterpolation: boolean }[] {
+	// JSX `href={...}` attribute, either a plain string literal
+	// (`href="/dashboard"`) or a template literal (`` href={`/dashboard/${id}`} ``).
+	// Deliberately distinct from `targetPattern` above (different call shape:
+	// an attribute, not a function call) rather than folded into one
+	// alternation, so each keeps its own capture semantics.
+	const hrefPattern = /\bhref=(?:[`"](\/[^"`]*)[`"]|\{\s*[`"](\/[^"`]*)[`"])/g;
+
+	/**
+	 * A literal internal path is exempt from the ROUTES check when it is
+	 * DERIVABLY not a navigable app route, never via a hand-typed filename
+	 * allow-list:
+	 *   - a static asset: its final path segment carries a file extension
+	 *     (e.g. `/styles/presets/amber.css`, `/favicon.ico`).
+	 *   - an external/special-scheme URL: `http(s)://`, `mailto:`, `tel:`,
+	 *     a bare `#anchor`, or a protocol-relative `//host/...`.
+	 * Both properties are read off the string itself — no filename or path
+	 * is named here (see `.claude/rules/derive-never-type.md`).
+	 */
+	function isExemptLiteral(literal: string): boolean {
+		if (/^(https?:)?\/\//.test(literal)) return true; // external / protocol-relative
+		if (/^(mailto|tel):/.test(literal)) return true;
+		if (literal.startsWith("#")) return true; // in-page anchor
+		const lastSegment = literal.split("/").pop() ?? "";
+		const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(lastSegment);
+		return hasFileExtension;
+	}
+
+	function scanFile(filePath: string): {
+		line: number;
+		literal: string;
+		hasInterpolation: boolean;
+		consumesRoutesModule: boolean;
+	}[] {
 		const content = fs.readFileSync(filePath, "utf-8");
-		const hits: { line: number; literal: string; hasInterpolation: boolean }[] =
-			[];
+		const hits: {
+			line: number;
+			literal: string;
+			hasInterpolation: boolean;
+			consumesRoutesModule: boolean;
+		}[] = [];
+
 		let match: RegExpExecArray | null;
 		targetPattern.lastIndex = 0;
 		// biome-ignore lint/suspicious/noAssignInExpressions: standard regex exec loop
@@ -120,8 +162,29 @@ describe("no hand-typed internal path bypasses lib/routes.ts", () => {
 			const raw = match[1];
 			const literal = raw.split("${")[0]; // static prefix of template literals
 			const line = content.slice(0, match.index).split("\n").length;
-			hits.push({ line, literal, hasInterpolation: raw.includes("${") });
+			hits.push({
+				line,
+				literal,
+				hasInterpolation: raw.includes("${"),
+				consumesRoutesModule: raw.includes("ROUTES."),
+			});
 		}
+
+		hrefPattern.lastIndex = 0;
+		// biome-ignore lint/suspicious/noAssignInExpressions: standard regex exec loop
+		while ((match = hrefPattern.exec(content)) !== null) {
+			const raw = match[1] ?? match[2];
+			if (isExemptLiteral(raw)) continue;
+			const literal = raw.split("${")[0];
+			const line = content.slice(0, match.index).split("\n").length;
+			hits.push({
+				line,
+				literal,
+				hasInterpolation: raw.includes("${"),
+				consumesRoutesModule: raw.includes("ROUTES."),
+			});
+		}
+
 		return hits;
 	}
 
@@ -140,7 +203,7 @@ describe("no hand-typed internal path bypasses lib/routes.ts", () => {
 		});
 	}
 
-	it("finds no router.push/router.replace/redirect call with a path absent from ROUTES", () => {
+	it("finds no router.push/router.replace/redirect/href call site whose literal path was typed instead of consumed from ROUTES", () => {
 		const files = scanDirs.flatMap(walk);
 		const violations: string[] = [];
 
@@ -149,22 +212,15 @@ describe("no hand-typed internal path bypasses lib/routes.ts", () => {
 			if (file === path.join("lib", "routes.ts")) continue;
 			const hits = scanFile(path.join(REPO_ROOT, file));
 			for (const hit of hits) {
-				// A pure static string (no `${...}`) must equal a ROUTES value
-				// exactly. A bare "/" only counts as the home route when nothing
-				// was interpolated — "/`${locale}`/dashboard/..." also reduces to
-				// a literal prefix of "/", but its FULL literal is dynamic, so it
-				// must instead prove itself against a real dynamic-route prefix
-				// that is more specific than the empty root.
-				const isKnownStatic =
-					!hit.hasInterpolation &&
-					STATIC_ROUTE_PATHS.some((routePath) => routePath === hit.literal);
-				const isKnownDynamicPrefix =
-					hit.hasInterpolation &&
-					hit.literal.length > 1 &&
-					DYNAMIC_ROUTE_PREFIXES.some((prefix) =>
-						`${hit.literal}/`.startsWith(prefix),
-					);
-				if (!isKnownStatic && !isKnownDynamicPrefix) {
+				// The ONLY thing that clears a hit: the call site's own source
+				// text references `ROUTES.` — proof the value was consumed from
+				// the module, not retyped. A literal that happens to equal a
+				// real, valid ROUTES value (e.g. a hand-typed `"/dashboard"`) is
+				// STILL a violation: value-validity is not provenance. This is
+				// the property `lib/routes.ts`'s header actually requires
+				// ("every internal navigation MUST consume a value produced by
+				// this module") — see the file docstring above.
+				if (!hit.consumesRoutesModule) {
 					violations.push(`${file}:${hit.line} -> "${hit.literal}..."`);
 				}
 			}

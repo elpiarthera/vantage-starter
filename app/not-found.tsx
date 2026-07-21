@@ -7,6 +7,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@/components/ui/card";
+import { ROUTES } from "@/lib/routes";
 
 /**
  * NAMED EXCEPTION (i18n): this root boundary only renders when the locale
@@ -47,7 +48,7 @@ export default function NotFound() {
 							className="w-full bg-[oklch(0.72_0.16_75)] hover:bg-[oklch(0.65_0.16_75)] text-white"
 							asChild
 						>
-							<Link href="/">Go home</Link>
+							<Link href={ROUTES.home}>Go home</Link>
 						</Button>
 					</CardFooter>
 				</Card>

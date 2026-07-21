@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 
 export function LandingFooter() {
 	const t = useTranslations("landing.footer");
@@ -121,12 +122,12 @@ export function LandingFooter() {
 						</h4>
 						<ul className="space-y-3">
 							<li>
-								<Link href="/legal" className={linkClass}>
+								<Link href={ROUTES.legal} className={linkClass}>
 									{t("legal")}
 								</Link>
 							</li>
 							<li>
-								<Link href="/privacy" className={linkClass}>
+								<Link href={ROUTES.privacy} className={linkClass}>
 									{t("privacy")}
 								</Link>
 							</li>

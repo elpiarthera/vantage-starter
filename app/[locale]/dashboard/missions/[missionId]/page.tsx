@@ -503,7 +503,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 						{t("not_found_description")}
 					</p>
 					<Button asChild variant="outline" className="rounded-full">
-						<Link href={`/${locale}/dashboard/missions`}>
+						<Link href={`/${locale}${ROUTES.dashboardMissions}`}>
 							{t("back_to_missions")}
 						</Link>
 					</Button>
@@ -536,7 +536,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 		<div className="max-w-6xl mx-auto px-6 lg:px-12 py-10 space-y-8">
 			{/* Back link */}
 			<Link
-				href={`/${locale}/dashboard/missions`}
+				href={`/${locale}${ROUTES.dashboardMissions}`}
 				className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
 			>
 				<ArrowLeft className="size-3.5" aria-hidden="true" />
