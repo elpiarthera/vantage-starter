@@ -40,6 +40,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 // ── Status configs ────────────────────────────────────────────────────────────
@@ -471,7 +472,7 @@ function MissionDetail({ missionId, locale }: MissionDetailProps) {
 		try {
 			await removeMission({ id: missionId });
 			toast.success(t("toast_mission_deleted"));
-			router.push(`/${locale}/dashboard/missions`);
+			router.push(ROUTES.dashboardMissions);
 		} catch (error) {
 			toast.error(t("toast_mission_delete_error"));
 			console.error(error);
