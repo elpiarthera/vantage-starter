@@ -30,6 +30,7 @@ import type * as http from "../http.js";
 import type * as http_agent from "../http/agent.js";
 import type * as http_ai from "../http/ai.js";
 import type * as http_orchestration from "../http/orchestration.js";
+import type * as issueReports from "../issueReports.js";
 import type * as lib_agentAuth from "../lib/agentAuth.js";
 import type * as lib_agentComposer from "../lib/agentComposer.js";
 import type * as lib_agentTokens from "../lib/agentTokens.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   "http/agent": typeof http_agent;
   "http/ai": typeof http_ai;
   "http/orchestration": typeof http_orchestration;
+  issueReports: typeof issueReports;
   "lib/agentAuth": typeof lib_agentAuth;
   "lib/agentComposer": typeof lib_agentComposer;
   "lib/agentTokens": typeof lib_agentTokens;

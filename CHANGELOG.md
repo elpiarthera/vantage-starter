@@ -6,6 +6,65 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-22 — the public issue-report page redirected to sign-up)
+
+`convex/issueReports.ts` calls itself "the ONE public, unauthenticated mutation" in the codebase; `convex/ratelimit.ts` justifies its `createIssueReportGlobal` bucket with "no per-caller identity exists on this public path". Both statements are true — and yet `middleware.ts` demanded a Clerk identity to view `/report` at all: every locale 307-redirected to `/sign-up`. 405 tests stayed green throughout, because nothing in the suite ever opened the page.
+
+The fix itself is two lines in `middleware.ts`'s `isPublicRoute` matcher, twinning the ones already there for `/contact` — the same public-lead-capture shape, same justification. The durable part is not those two lines; it is a new guard, `__tests__/integration/global-bucket-route-public.test.ts`, that DERIVES the set of routes required to be public from `convex/ratelimit.ts` itself: every rate-limit key ending in `Global` names a path with no caller identity, its call site resolves the Convex module/export, the client component calling it resolves the hosting `app/[locale]` page, and that page's route segment is asserted against the real `isPublicRoute` export. A future public path that declares a global bucket and forgets to expose its page is caught the same way this one was — without anyone hand-editing a route list.
+
+Verified by the orchestrator: the new guard reddened on the pre-fix matcher (`/report` failed, `/contact` passed) and greened after the two-line edit. `pnpm exec vitest run` -> 412 passed / 7 skipped (43 files). `pnpm exec jest` -> 257/257 (58 suites). `pnpm exec tsc --noEmit` -> 0 errors. `pnpm exec biome check .` -> 86 warnings, 0 errors (unchanged baseline).
+
+### Fixed (2026-07-22 — the same missing proof shipped twice, so it is closed as a class rather than patched a second time)
+
+A public write path declares two rate-limit buckets: one keyed per identity, one shared and global. **The global one is the only bound against an attacker who rotates that identity.** It was written correctly in `convex/contactSubmissions.ts`, then again in `convex/issueReports.ts` — and in both, no test touched it. Deleted entirely, every test stayed green.
+
+The reviewer's formulation is the lesson: **the parade travelled from one path to the next by copy; its proof stayed behind. What gets copied is the claim; what must be derived is the proof.** Both docstrings enumerated the three defences word for word, which is exactly why nobody noticed the second one was unguarded.
+
+Two deliverables, and the second is the point.
+
+**The instance.** `issueReports` gets the test its own docstring already promised: thirty submissions with a different identity each succeed, the thirty-first is refused, and the outbound call count is asserted at **exactly thirty** — not merely "not called again". No production file changed; the code was already right, only the proof was missing.
+
+**The class.** `__tests__/convex/global-rate-limit-guard.test.ts` derives every global bucket key **from `convex/ratelimit.ts` itself**, locates its single call site, resolves the wrapping public function and reads its argument shape through Convex's own `exportArgs()`, then drives a rotating-identity loop to capacity. No hand-maintained list of paths — a list is what failed twice. A public mutation written next month that declares a global bucket and forgets to enforce it makes this guard fail **without anyone editing the guard**.
+
+Domain-valid arguments come from a fixture file per path, and **a missing fixture fails loudly rather than skipping**. Verified by the orchestrator on a fixture it removed itself:
+
+```
+global-rate-limit-guard: api.issueReports.submit declares a global rate-limit bucket but has no
+__tests__/convex/fixtures/issueReports.ts exporting VALID_ARGS. Add one … this guard cannot call an
+arbitrary public path without knowing what a valid submission looks like, and refuses to guess rather
+than pass silently unchecked.
+```
+
+That refusal is the whole design: a guard that cannot check something must say which thing and why, never return quiet success. Zero or multiple call sites, a missing capacity, or a non-string required field fail the same way.
+
+**Proven biting on material the guard's author did not choose.** Neutralising the global check in `contactSubmissions` — a different path, already covered by its own test — reddens **exactly one** of the guard's three cases, naming the path and its bucket. Same for `issueReports`. Restores proven, production files untouched.
+
+Ratios measured by the orchestrator: `pnpm exec vitest run` -> 412 passed / 7 skipped, 419 total. `pnpm exec jest` -> 254/254. `pnpm exec tsc --noEmit` -> 0.
+
+### Fixed (2026-07-22 — the translation checker could not read the namespace form this repository actually uses)
+
+Found while delivering batch 4's second bullet, and larger than that bullet.
+
+`scripts/check-translations.js` resolved only the bare-string namespace form. Every page written the normal way —
+
+```ts
+const t = await getTranslations({ locale, namespace: "report" });
+```
+
+— was reported as `getTranslations(<non-literal namespace>) — every t() call through "t" is unresolvable`. The namespace **is** a literal; it is simply a property of an options object. **Seventeen call sites** were therefore outside the reach of the control whose entire job is to catch a translation key that exists in no locale, and the number grew with every new page.
+
+The test that should have surfaced this guarded the number with a **hand-typed threshold** (`unresolved.length < 33`). It did not report a coverage hole; it simply reddened when a legitimate new page pushed the count to 34 — a magic number that would need editing again on the next page, in a repository whose own rule is that typed state goes stale.
+
+- The options-object form now resolves through the same path as the bare argument, not a parallel one. `unresolved` falls **34 -> 17**, and the `"non-literal namespace"` reason count falls **17 -> 0**.
+- The seventeen that remain are a genuinely dynamic class (`t(keys.active)`, `` t(`status_${value}`) ``) and keep saying so. Widening the fix to "assume literal when in doubt" was refused: it would turn a visible blind spot into an invisible one, which is worse than the bug.
+- The typed threshold is replaced by a derived invariant that reads the source line of each remaining entry and names any site a resolver should have caught — it names sites, never prints two integers.
+
+**Proven checked, not merely delisted.** A name that leaves the "unresolvable" list without becoming verified is the same silence with better manners. Verified by the orchestrator on a file it chose rather than the author's: `t("tau_probe_key_absent_everywhere")` injected into `app/[locale]/contact/page.tsx` (landing confirmed before any output was read) -> Control 4 reported `contact.tau_probe_key_absent_everywhere`; restored, gone. The honest-unknown pole was proven too: a genuinely non-literal namespace still reports unresolvable.
+
+**Correction of the record:** the agent that delivered the bullet reported this failure as already present on the base branch. It was not — the base passes 75/75, verified by `git stash`. The failure was introduced by the new page and revealed the gap. A wrong "it was already broken" is how a real regression gets waved through.
+
+**One observation left open rather than dismissed:** a single full-suite run failed in `__tests__/components/ChangePasswordModal.test.tsx` immediately after a probe file was restored on disk; the same suite passes 4/4 in isolation and the full suite passed 254/254 on the three runs that followed. Not reproduced, so not diagnosed — recorded here rather than called nothing, because "it went away" is how the last intermittent failure survived two appearances.
+
 ### Fixed (2026-07-21 — the test suite was mutating live application source files while other workers read them)
 
 Closes `k17bmamgax6wfs9rt1s1s4j5an8aytym`. `__tests__/components/mission-stats.test.tsx` failed roughly one full run in three and passed every time in isolation. It had already been dismissed once as "a transient transform-cache flake"; a second appearance is not transient.

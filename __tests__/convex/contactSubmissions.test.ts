@@ -21,6 +21,7 @@ import schema from "../../convex/schema";
 // this is test-only wiring against the component's compiled output, same
 // pattern as __tests__/convex/session-auto-title.test.ts.
 import ratelimiterSchema from "../../node_modules/@convex-dev/ratelimiter/dist/esm/component/schema.js";
+import { VALID_ARGS } from "./fixtures/contactSubmissions";
 
 const modules = import.meta.glob([
 	"../../convex/**/*.ts",
@@ -37,15 +38,6 @@ function makeT() {
 	t.registerComponent("ratelimiter", ratelimiterSchema, ratelimiterModules);
 	return t;
 }
-
-const VALID_ARGS = {
-	firstName: "Ada",
-	lastName: "Lovelace",
-	email: "ada@example.com",
-	phoneNumber: "5551234567",
-	countryCode: "+1",
-	message: "I would like to discuss a project.",
-};
 
 describe("contactSubmissions.create", () => {
 	let t: ReturnType<typeof makeT>;

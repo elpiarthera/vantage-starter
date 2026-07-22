@@ -46,6 +46,13 @@ export const isPublicRoute = createRouteMatcher([
 	// design, same reasoning as the legal/accessibility pages above.
 	"/(en|fr|de|it|es|pt|ru)/contact(.*)",
 	"/contact(.*)",
+	// Public issue-report form (mcpcn `issue-report-form` block,
+	// docs/mcpcn-block-mapping.md §4 "issue-report-form") — unauthenticated
+	// by design: the mutation behind it (`convex/issueReports.ts`) is
+	// deliberately the ONE public, unauthenticated action in the codebase,
+	// so the page fronting it cannot demand a caller identity either.
+	"/(en|fr|de|it|es|pt|ru)/report(.*)",
+	"/report(.*)",
 	// Note: /api/chat and other protected API routes are NOT listed here
 	// They will be authenticated by Clerk middleware before the route handler runs
 ]);
