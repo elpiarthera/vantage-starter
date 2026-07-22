@@ -147,4 +147,25 @@ describe("contactSubmissions.create", () => {
 		);
 		expect(rows).toHaveLength(3);
 	});
+
+	it("stops a rotating-email attacker at the shared global bucket after 30 submissions", async () => {
+		for (let i = 0; i < 30; i++) {
+			await t.mutation(api.contactSubmissions.create, {
+				...VALID_ARGS,
+				email: `attacker-${i}@example.com`,
+			});
+		}
+
+		await expect(
+			t.mutation(api.contactSubmissions.create, {
+				...VALID_ARGS,
+				email: "attacker-30@example.com",
+			}),
+		).rejects.toThrow(/rate limit/i);
+
+		const rows = await t.run(async (ctx) =>
+			ctx.db.query("contactSubmissions").collect(),
+		);
+		expect(rows).toHaveLength(30);
+	});
 });
