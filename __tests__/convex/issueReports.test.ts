@@ -26,6 +26,7 @@ import {
 // No public subpath export for the ratelimiter component's internal schema —
 // same pattern as __tests__/convex/contactSubmissions.test.ts.
 import ratelimiterSchema from "../../node_modules/@convex-dev/ratelimiter/dist/esm/component/schema.js";
+import { VALID_ARGS } from "./fixtures/issueReports";
 
 const modules = import.meta.glob([
 	"../../convex/**/*.ts",
@@ -42,16 +43,6 @@ function makeT() {
 	t.registerComponent("ratelimiter", ratelimiterSchema, ratelimiterModules);
 	return t;
 }
-
-const VALID_ARGS = {
-	name: "Ada Lovelace",
-	email: "ada@example.com",
-	category: "Software",
-	subcategory: "Browser",
-	issueTitle: "Login button does nothing",
-	description: "Clicking Sign In produces no navigation and no error.",
-	urgency: "immediate",
-};
 
 describe("issueReports.submit", () => {
 	let t: ReturnType<typeof makeT>;
@@ -167,5 +158,26 @@ describe("issueReports.submit", () => {
 			/rate limit/i,
 		);
 		expect(fetchMock).toHaveBeenCalledTimes(3);
+	});
+
+	it("stops a rotating-email attacker at the shared global bucket after 30 submissions, and never calls create_task a 31st time", async () => {
+		for (let i = 0; i < 30; i++) {
+			await t.action(api.issueReports.submit, {
+				...VALID_ARGS,
+				email: `attacker-${i}@example.com`,
+			});
+		}
+		expect(fetchMock).toHaveBeenCalledTimes(30);
+
+		await expect(
+			t.action(api.issueReports.submit, {
+				...VALID_ARGS,
+				email: "attacker-30@example.com",
+			}),
+		).rejects.toThrow(/rate limit/i);
+
+		// The exact count, not merely the rejection: the 31st submission must
+		// never reach the outbound VantagePeers call.
+		expect(fetchMock).toHaveBeenCalledTimes(30);
 	});
 });

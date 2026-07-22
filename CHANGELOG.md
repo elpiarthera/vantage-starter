@@ -6,6 +6,33 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-22 — the same missing proof shipped twice, so it is closed as a class rather than patched a second time)
+
+A public write path declares two rate-limit buckets: one keyed per identity, one shared and global. **The global one is the only bound against an attacker who rotates that identity.** It was written correctly in `convex/contactSubmissions.ts`, then again in `convex/issueReports.ts` — and in both, no test touched it. Deleted entirely, every test stayed green.
+
+The reviewer's formulation is the lesson: **the parade travelled from one path to the next by copy; its proof stayed behind. What gets copied is the claim; what must be derived is the proof.** Both docstrings enumerated the three defences word for word, which is exactly why nobody noticed the second one was unguarded.
+
+Two deliverables, and the second is the point.
+
+**The instance.** `issueReports` gets the test its own docstring already promised: thirty submissions with a different identity each succeed, the thirty-first is refused, and the outbound call count is asserted at **exactly thirty** — not merely "not called again". No production file changed; the code was already right, only the proof was missing.
+
+**The class.** `__tests__/convex/global-rate-limit-guard.test.ts` derives every global bucket key **from `convex/ratelimit.ts` itself**, locates its single call site, resolves the wrapping public function and reads its argument shape through Convex's own `exportArgs()`, then drives a rotating-identity loop to capacity. No hand-maintained list of paths — a list is what failed twice. A public mutation written next month that declares a global bucket and forgets to enforce it makes this guard fail **without anyone editing the guard**.
+
+Domain-valid arguments come from a fixture file per path, and **a missing fixture fails loudly rather than skipping**. Verified by the orchestrator on a fixture it removed itself:
+
+```
+global-rate-limit-guard: api.issueReports.submit declares a global rate-limit bucket but has no
+__tests__/convex/fixtures/issueReports.ts exporting VALID_ARGS. Add one … this guard cannot call an
+arbitrary public path without knowing what a valid submission looks like, and refuses to guess rather
+than pass silently unchecked.
+```
+
+That refusal is the whole design: a guard that cannot check something must say which thing and why, never return quiet success. Zero or multiple call sites, a missing capacity, or a non-string required field fail the same way.
+
+**Proven biting on material the guard's author did not choose.** Neutralising the global check in `contactSubmissions` — a different path, already covered by its own test — reddens **exactly one** of the guard's three cases, naming the path and its bucket. Same for `issueReports`. Restores proven, production files untouched.
+
+Ratios measured by the orchestrator: `pnpm exec vitest run` -> 412 passed / 7 skipped, 419 total. `pnpm exec jest` -> 254/254. `pnpm exec tsc --noEmit` -> 0.
+
 ### Fixed (2026-07-22 — the translation checker could not read the namespace form this repository actually uses)
 
 Found while delivering batch 4's second bullet, and larger than that bullet.
