@@ -3553,5 +3553,27 @@
 		"success_title": "Chiamata prenotata",
 		"success_description": "La tua chiamata è prenotata per il {date} alle {time} (fuso orario di {zone}).",
 		"error_generic": "Qualcosa è andato storto. Riprova."
+	},
+	"events": {
+		"meta_title": "Eventi",
+		"meta_description": "Sfoglia i prossimi webinar e workshop e iscriviti.",
+		"back_home": "Torna alla home",
+		"back_events": "Torna agli eventi",
+		"title": "Prossimi eventi",
+		"loading": "Caricamento eventi...",
+		"empty": "Al momento non ci sono eventi in programma.",
+		"not_found": "Evento non trovato.",
+		"full": "Al completo",
+		"spots_left": "{count} posti disponibili",
+		"signed_out": "Accedi per iscriverti a questo evento.",
+		"sign_in": "Accedi",
+		"already_registered": "Sei già iscritto a questo evento.",
+		"register": "Iscriviti",
+		"registering": "Iscrizione in corso...",
+		"agenda_title": "Agenda",
+		"confirmation_heading": "Sei iscritto!",
+		"confirmation_description": "Sei iscritto a {title} il {when}.",
+		"error_full": "Questo evento si è appena riempito. Ricontrolla per un'altra data.",
+		"error_generic": "Qualcosa è andato storto. Riprova."
 	}
 }

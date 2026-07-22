@@ -3553,5 +3553,27 @@
 		"success_title": "Chamada agendada",
 		"success_description": "Sua chamada está agendada para {date} às {time} (fuso horário de {zone}).",
 		"error_generic": "Algo deu errado. Tente novamente."
+	},
+	"events": {
+		"meta_title": "Eventos",
+		"meta_description": "Explore os próximos webinars e workshops e inscreva-se.",
+		"back_home": "Voltar ao início",
+		"back_events": "Voltar aos eventos",
+		"title": "Próximos eventos",
+		"loading": "Carregando eventos...",
+		"empty": "Não há eventos agendados no momento.",
+		"not_found": "Evento não encontrado.",
+		"full": "Lotado",
+		"spots_left": "{count} vagas disponíveis",
+		"signed_out": "Entre para se inscrever neste evento.",
+		"sign_in": "Entrar",
+		"already_registered": "Você já está inscrito neste evento.",
+		"register": "Inscrever-se",
+		"registering": "Inscrevendo...",
+		"agenda_title": "Agenda",
+		"confirmation_heading": "Você está inscrito!",
+		"confirmation_description": "Você está inscrito em {title} em {when}.",
+		"error_full": "Este evento acabou de lotar. Volte para conferir outra data.",
+		"error_generic": "Algo deu errado. Tente novamente."
 	}
 }

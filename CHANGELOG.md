@@ -6,6 +6,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-22 — the browse-pick-register-confirm flow, over two new tables)
+
+Batch 4's fourth bullet, and the four `event-*` blocks it puts into service: `event-card`, `event-list`, `event-detail`, `event-confirmation`. Two new public routes — `app/[locale]/events` for the listing and `app/[locale]/events/[slug]` for one event — backed by two new Convex tables, with `middleware.ts` opening both. Browsing and viewing are unauthenticated by design, because `convex/events.ts`'s `list` and `getBySlug` are public reads; **only `register` demands a signed-in caller, and that is enforced Convex-side rather than by the page**. A route that is public in the middleware and a mutation that is not are two different statements, and each is made where it belongs.
+
+Dates and times are formatted through one helper, `lib/events/formatEventDateTime.ts`, rather than at each call site — the same reasoning as the booking work merged just before it: a displayed instant that does not carry its zone is a bug waiting for a reader in another country.
+
+**Recorded against ourselves:** this branch reached the gate with **no changelog entry at all**. It was written on top of three others, each of which had one, and the omission survived because nothing checks for it — the rule that says "no commit without a changelog entry" is held by discipline alone in this repository, since `.claude/hooks/enforce-quality-gate.sh` is present but still unwired. The entry was added before the pull request was opened, not after being asked for. The gap is worth naming because a rule enforced only by memory is a rule that will be missed again.
+
+Ratios measured by the orchestrator after the branch was replayed onto `main` merged through `#93`, `pnpm exec`, repository root: `tsc --noEmit` → 0. `vitest run` → 45 files, 427 passed / 7 skipped, 434 total. `jest` → 61 suites, 266/266.
+
+Known gap, already traced rather than left silent: an event address that matches no event renders **200 with an "not found" sentence instead of a real 404** (`k1702eac75b36tpvd7rb05x7c98b176z`). It is structural — every fork inherits it — and it is not fixed here.
+
 ### Fixed (2026-07-22 — the public issue-report page redirected to sign-up)
 
 `convex/issueReports.ts` calls itself "the ONE public, unauthenticated mutation" in the codebase; `convex/ratelimit.ts` justifies its `createIssueReportGlobal` bucket with "no per-caller identity exists on this public path". Both statements are true — and yet `middleware.ts` demanded a Clerk identity to view `/report` at all: every locale 307-redirected to `/sign-up`. 405 tests stayed green throughout, because nothing in the suite ever opened the page.

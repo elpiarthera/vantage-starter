@@ -3553,5 +3553,27 @@
 		"success_title": "Llamada reservada",
 		"success_description": "Tu llamada está reservada para el {date} a las {time} (hora de {zone}).",
 		"error_generic": "Algo salió mal. Inténtalo de nuevo."
+	},
+	"events": {
+		"meta_title": "Eventos",
+		"meta_description": "Explora los próximos webinars y talleres e inscríbete.",
+		"back_home": "Volver al inicio",
+		"back_events": "Volver a eventos",
+		"title": "Próximos eventos",
+		"loading": "Cargando eventos...",
+		"empty": "No hay eventos programados por ahora.",
+		"not_found": "Evento no encontrado.",
+		"full": "Completo",
+		"spots_left": "{count} plazas disponibles",
+		"signed_out": "Inicia sesión para inscribirte en este evento.",
+		"sign_in": "Iniciar sesión",
+		"already_registered": "Ya estás inscrito en este evento.",
+		"register": "Inscribirse",
+		"registering": "Inscribiendo...",
+		"agenda_title": "Agenda",
+		"confirmation_heading": "¡Estás inscrito!",
+		"confirmation_description": "Estás inscrito en {title} el {when}.",
+		"error_full": "Este evento se acaba de llenar. Vuelve a consultar otra fecha.",
+		"error_generic": "Algo salió mal. Inténtalo de nuevo."
 	}
 }

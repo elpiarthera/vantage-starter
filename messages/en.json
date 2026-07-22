@@ -3553,5 +3553,27 @@
 		"success_title": "Call booked",
 		"success_description": "Your call is booked for {date} at {time} ({zone} time).",
 		"error_generic": "Something went wrong. Please try again."
+	},
+	"events": {
+		"meta_title": "Events",
+		"meta_description": "Browse upcoming webinars and workshops and register for a seat.",
+		"back_home": "Back to home",
+		"back_events": "Back to events",
+		"title": "Upcoming events",
+		"loading": "Loading events...",
+		"empty": "No events are scheduled right now.",
+		"not_found": "Event not found.",
+		"full": "Full",
+		"spots_left": "{count} spots left",
+		"signed_out": "Sign in to register for this event.",
+		"sign_in": "Sign in",
+		"already_registered": "You are already registered for this event.",
+		"register": "Register",
+		"registering": "Registering...",
+		"agenda_title": "Agenda",
+		"confirmation_heading": "You're registered!",
+		"confirmation_description": "You are registered for {title} on {when}.",
+		"error_full": "This event just filled up. Please check back for another date.",
+		"error_generic": "Something went wrong. Please try again."
 	}
 }
