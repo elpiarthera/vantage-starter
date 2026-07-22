@@ -68,7 +68,7 @@ Convex is the backend: database, serverless functions, and file storage in one. 
 In your terminal, from the project root:
 
 ```bash
-npx convex dev
+pnpm exec convex dev
 ```
 
 The first time you run this, it will:
@@ -179,27 +179,27 @@ Clerk needs to know where your sign-in and sign-up pages live so it can redirect
    - **Page on development host** (under "Signing Out") → `/`
 4. Click **"Save"**
 
-> Note: The after-sign-in and after-sign-up redirect URLs are controlled by environment variables (step 4.7 below), NOT by any Clerk dashboard setting. Do not look for them in the dashboard — they are not there.
-
-### Step 4.7 — Configure redirect URLs in your env file
-
-These tell Clerk where to send users after sign-in and sign-up. They are already in `.env.example`. Verify they are in your `.env.local`:
-
-```
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/en/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
-```
+> **Corrected (T7 audit):** this repo does NOT read `NEXT_PUBLIC_CLERK_SIGN_IN_URL`,
+> `NEXT_PUBLIC_CLERK_SIGN_UP_URL`, `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`, or
+> `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` anywhere — a prior version of this guide
+> and of `.env.example` claimed otherwise. The actual paths are hardcoded via the
+> `localizedAuthPath()` helper in `app/[locale]/sign-in/[[...sign-in]]/page.tsx`
+> and `app/[locale]/sign-up/[[...sign-up]]/page.tsx`, and the post-auth redirect
+> is `signInFallbackRedirectUrl="/dashboard"` / `signUpFallbackRedirectUrl="/dashboard"`,
+> hardcoded in `app/ClientProviders.tsx`. Setting these four variables in
+> `.env.local` has **no effect** — do not add them, and do not look for a
+> Clerk dashboard toggle for them either, since none of the three exist as a
+> live wire in this codebase. To change the actual redirect target, edit
+> `app/ClientProviders.tsx` directly.
 
 ---
 
 ## Section 5 — Verify Convex + Clerk Connection
 
-In a new terminal (leave `npx convex dev` running in the first terminal), run:
+In a new terminal (leave `pnpm exec convex dev` running in the first terminal), run:
 
 ```bash
-npx convex dev --once
+pnpm exec convex dev --once
 ```
 
 This runs a single sync cycle and exits. Watch the output.
@@ -311,7 +311,7 @@ The webhook handler (`/api/webhooks/elevenlabs`) runs server-side but the credit
 - Voice sessions cost **10 credits/minute** (ElevenLabs Conversational AI rate). A user needs at least 10 credits to start a session.
 - Operation status announcements (TTS) cost **1 credit per announcement** and are opt-in (default off — user preference).
 - `searchContext` tool (Firecrawl inside voice session) costs **5 credits per search**.
-- All costs are configurable via the `creditCosts` table in Convex. Run `npx convex run seed:systemData` after seeding to add the `voice_session_minute` cost row.
+- All costs are configurable via the `creditCosts` table in Convex. Run `pnpm exec convex run seed:systemData` after seeding to add the `voice_session_minute` cost row.
 
 ---
 
@@ -322,7 +322,7 @@ You need two terminal windows running simultaneously.
 **Terminal 1 — Convex backend (if not already running):**
 
 ```bash
-npx convex dev
+pnpm exec convex dev
 ```
 
 **Terminal 2 — Next.js frontend:**
@@ -359,7 +359,7 @@ Work through this checklist after both servers are running.
 
 **"Could not connect to Convex" error**
 - `NEXT_PUBLIC_CONVEX_URL` is missing or has a trailing slash
-- Convex dev server (`npx convex dev`) is not running
+- Convex dev server (`pnpm exec convex dev`) is not running
 
 **Auth works but user data does not save**
 - `CLERK_JWT_ISSUER_DOMAIN` is missing from Convex dashboard environment variables (Section 4.5)
@@ -368,46 +368,68 @@ Work through this checklist after both servers are running.
 
 ## Section 11 — Environment Variables Reference
 
-Complete table of all environment variables.
+Complete table of all environment variables that this codebase actually
+reads. This table is generated from, and MUST stay reconciled with,
+`.env.example` — the enforced contract is `scripts/check-env-contract.mjs`
+(run via `pnpm exec jest scripts/__tests__/check-env-contract.test.js`, and
+wired into CI). If a variable is not here AND not in `.env.example`, this
+codebase does not read it — do not add it on faith.
 
 - **Set in `.env.local`** — required for local development
 - **Set in Vercel** — required for production deployment
-- **Set in Convex dashboard** — required for Convex functions to access the value at runtime
+- **Set in Convex dashboard** — required for Convex functions to access the value at runtime (Convex functions run in their own runtime and cannot read `.env.local` or Vercel's environment)
 
 | Variable | Required | Where to get it | Set in Vercel? | Example value |
 |----------|----------|-----------------|----------------|---------------|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Required | Clerk Dashboard → API Keys | Yes | `pk_test_abc...` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Required — read internally by `@clerk/nextjs`'s `ClerkProvider` | Clerk Dashboard → API Keys | Yes | `pk_test_abc...` |
 | `CLERK_SECRET_KEY` | Required | Clerk Dashboard → API Keys | Yes | `sk_test_xyz...` |
 | `CLERK_JWT_ISSUER_DOMAIN` | Required | Clerk Dashboard → JWT Templates → Convex template → Issuer (domain only, no `https://`) | No — Convex dashboard only | `your-app.clerk.accounts.dev` |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Required | Hard-coded value | Yes | `/sign-in` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Required | Hard-coded value | Yes | `/sign-up` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Required | Hard-coded value | Yes | `/en/dashboard` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Required | Hard-coded value | Yes | `/en/guided/step-1` |
-| `CONVEX_DEPLOYMENT` | Required | Auto-written by `npx convex dev` | Yes | `dev:your-project-name` |
-| `NEXT_PUBLIC_CONVEX_URL` | Required | Auto-written by `npx convex dev` | Yes | `https://your-project.convex.cloud` |
-| `NEXT_PUBLIC_CONVEX_SITE_URL` | Required for Vercel | Your Vercel production domain | Yes | `https://my-app.vercel.app` |
-| `CONVEX_URL` | Required for Vercel builds | Same value as `NEXT_PUBLIC_CONVEX_URL` | Yes | `https://your-project.convex.cloud` |
-| `POLAR_ACCESS_TOKEN` | Required | Polar Dashboard → Settings → Access Tokens | Yes | `polar_at_...` |
-| `RESEND_API_KEY` | Required | Resend Dashboard → API Keys | Yes | `re_abc123...` |
-| `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | Yes | `sk-proj-...` | Used by `app/api/chat/route.ts` (via `@ai-sdk/openai`) and `scripts/translate.js`. Not read directly by the raw `openai` package. |
-| `FAL_KEY` | Required for AI features | https://fal.ai/dashboard/keys | Yes | `key_id:key_secret` |
-| `TOGETHER_API_KEY` | Optional (fallback AI) | https://api.together.xyz/settings/api-keys | Yes | `abc123...` |
+| `CONVEX_DEPLOYMENT` | Required | Auto-written by `pnpm exec convex dev` | Yes | `dev:your-project-name` |
+| `NEXT_PUBLIC_CONVEX_URL` | Required | Auto-written by `pnpm exec convex dev` | Yes | `https://your-project.convex.cloud` |
+| `OPENAI_API_KEY` | Required — chat feature | https://platform.openai.com/api-keys | Yes | `sk-proj-...` — used by `app/api/chat/route.ts` (via `@ai-sdk/openai`) and `scripts/translate.js` |
+| `RESEND_API_KEY` | Optional — welcome/billing emails degrade gracefully (caught) when absent | Resend Dashboard → API Keys | Yes, and Convex dashboard | `re_abc123...` |
+| `POLAR_PRODUCT_TIER_1` / `_2` / `_3` | Optional — each falls back to `""`, which disables that pricing tier rather than crashing | Polar Dashboard → your organization → Products | Yes | `e5e6c9de-...` |
+| `NEXT_PUBLIC_CLERK_DOMAIN` | Optional — only if you configure a Clerk custom/satellite domain | Your Clerk custom domain settings | Yes | `clerk.your-domain.com` |
+| `NEXT_PUBLIC_SITE_URL` | Optional — falls back to `https://vantagestarter.ai`; set to your own domain for correct SEO metadata | Your production domain | Yes | `https://your-domain.com` |
+| `NEXT_PUBLIC_APP_URL` | Optional — falls back to `https://vantagestarter.com`; used to restrict CORS on Convex HTTP actions | Your production domain | Yes | `https://your-domain.com` |
+| `FIRECRAWL_API_KEY` | Optional — absent key surfaces a named `configMissing` state, never a silent failure | https://firecrawl.dev/app/api-keys | Yes | `fc-abc123...` |
 | `ELEVENLABS_API_KEY` | Optional (voice features) | https://elevenlabs.io → Profile + API Key | Yes | `sk_abc123...` |
 | `ELEVENLABS_ARCHITECT_AGENT_ID` | Optional (voice features) | ElevenLabs dashboard → your Architect agent | Yes | `abc123...` |
 | `ELEVENLABS_NARRATOR_VOICE_ID` | Optional (voice features) | ElevenLabs dashboard → Voices | Yes | `abc123...` |
 | `NEXT_PUBLIC_ELEVENLABS_ENABLED` | Optional | Hard-coded value | Yes | `false` |
-| `FIRECRAWL_API_KEY` | Optional (voice searchContext + scraping) | https://firecrawl.dev/app/api-keys | Yes | `fc-abc123...` |
 
-### Variables also required in Convex Dashboard
+> **Removed in the T7 audit (were listed here or in `.env.example` but are
+> confirmed DEAD or unrelated to this app — see `analysis/t7-first-run-audit.md`
+> for the per-name evidence):**
+> `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL`,
+> `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`
+> (paths are hardcoded, see Section 4.6 above), `CONVEX_URL` bare form (only
+> `NEXT_PUBLIC_CONVEX_URL` is read), `NEXT_PUBLIC_CONVEX_SITE_URL` (not read
+> anywhere in this codebase), `FAL_KEY` and `TOGETHER_API_KEY` (zero live
+> reads — residue from a fal.ai/Together integration that is not wired into
+> any route or Convex action), `POLAR_ACCESS_TOKEN` (Convex-dashboard-only —
+> see below, never `.env.local`).
 
-Convex serverless functions run in their own runtime. They cannot read `.env.local` or Vercel environment variables. These must be set separately.
+### Variables required in the Convex Dashboard (never in `.env.local`)
 
 Go to: https://dashboard.convex.dev → your project → Settings → Environment Variables
 
 | Variable | Value |
 |----------|-------|
-| `CLERK_JWT_ISSUER_DOMAIN` | Same domain-only value (no `https://`) |
-| `FAL_KEY` | Same value as in `.env.local` |
+| `CLERK_JWT_ISSUER_DOMAIN` | Same domain-only value as `.env.local` (no `https://`) |
+| `RESEND_API_KEY` | Same value as `.env.local`, if you provisioned one |
+| `POLAR_ORGANIZATION_TOKEN` | From Polar Dashboard → Settings → Access Tokens (`pnpm exec convex env set POLAR_ORGANIZATION_TOKEN ...`) |
+| `POLAR_WEBHOOK_SECRET` | From Polar Dashboard → your webhook endpoint |
+| `POLAR_SERVER` | `sandbox` or `production` |
+
+> **Fleet-wide finding, reported not fixed here (out of T7 scope):**
+> `lib/audio-processing.ts`, `lib/rendi-video-processing.ts`, and
+> `scripts/bb-create-context.ts` still read `BROWSERBASE_API_KEY`,
+> `BROWSERBASE_PROJECT_ID`, and `RENDI_API_KEY` — residue from the video
+> product this repository was forked from. Browserbase is banned
+> fleet-wide. A public repository shipping a paid-vendor key surface in its
+> contract is a real problem; the decision to remove these files is
+> deliberately left to the repo owner rather than made silently here.
 
 ---
 
@@ -427,20 +449,22 @@ In the "Environment Variables" section of the import screen, add all of the foll
 
 ```
 CONVEX_DEPLOYMENT=<from step 3>
-CONVEX_URL=<from step 3, same value as NEXT_PUBLIC_CONVEX_URL — required for Vercel prebuild>
 NEXT_PUBLIC_CONVEX_URL=<from step 3>
-NEXT_PUBLIC_CONVEX_SITE_URL=<from step 3>
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<from step 4>
 CLERK_SECRET_KEY=<from step 4>
-POLAR_ACCESS_TOKEN=<from step 6>
-RESEND_API_KEY=<from step 7>
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/en/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
+OPENAI_API_KEY=<your key>
+RESEND_API_KEY=<from step 7, optional>
+NEXT_PUBLIC_SITE_URL=<your production domain>
+NEXT_PUBLIC_APP_URL=<your production domain>
 ```
 
-> `NEXT_PUBLIC_CONVEX_SITE_URL` is the production URL Convex uses to generate absolute links. Set it to your Vercel domain once you know it (e.g. `https://my-app.vercel.app`). You can add it after the first deploy.
+> **Corrected (T7 audit):** `CONVEX_URL` (bare, non-`NEXT_PUBLIC_` form),
+> `NEXT_PUBLIC_CONVEX_SITE_URL`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL`,
+> `NEXT_PUBLIC_CLERK_SIGN_UP_URL`, `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`,
+> and `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` are NOT read anywhere in this
+> codebase (see Section 11) — setting them in Vercel has no effect. Do not
+> add them. `POLAR_ACCESS_TOKEN` is a Convex-dashboard-only variable (see
+> Section 11's Convex Dashboard table), never a Vercel/`.env.local` one.
 
 ### Step 12.3 — Deploy
 

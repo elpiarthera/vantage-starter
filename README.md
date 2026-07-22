@@ -45,25 +45,26 @@ git clone https://github.com/elpiarthera/vantage-starter.git
 cd vantage-starter
 pnpm install
 cp .env.example .env.local
-# Fill in Clerk, Convex, Polar, fal.ai keys
-npx convex dev
+# Fill in Clerk + Convex + OpenAI keys — see docs/SETUP.md for the full walkthrough
+pnpm exec convex dev
 pnpm dev
 ```
 
 ## Environment variables
 
+`.env.example` is the enforced contract (see `scripts/check-env-contract.mjs`) —
+required vs optional, and where to get each value, is documented there. Minimal
+set to reach a working first screen:
+
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 CLERK_SECRET_KEY=sk_...
+CLERK_JWT_ISSUER_DOMAIN=your-app.clerk.accounts.dev
+CONVEX_DEPLOYMENT=dev:your-project-name
 NEXT_PUBLIC_CONVEX_URL=https://...convex.cloud
-FAL_KEY=...
-FIRECRAWL_API_KEY=...
-POLAR_ACCESS_TOKEN=...
-# ElevenLabs voice (optional — set NEXT_PUBLIC_ELEVENLABS_ENABLED=true to activate)
-ELEVENLABS_API_KEY=
-ELEVENLABS_ARCHITECT_AGENT_ID=
-ELEVENLABS_NARRATOR_VOICE_ID=
-NEXT_PUBLIC_ELEVENLABS_ENABLED=false
+OPENAI_API_KEY=sk-proj-...
+# Optional — see .env.example for the full list (Resend, Polar, Firecrawl,
+# ElevenLabs voice) and docs/SETUP.md for the step-by-step guide.
 ```
 
 ## Translation QA

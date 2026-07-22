@@ -6,6 +6,24 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-22 — the first-run contract is now true, and a gate keeps it true)
+
+Part of `k170626sccmp2jqbhg80q737a58asrx2` (T7). This repository is about to be made **public**: whatever it contains that day is what every future user receives, verbatim. An undocumented required variable is invisible to us, who already have it configured, and blocking for everyone else — the user meets it in their first minute and has no way to know what is missing.
+
+**The contract and the code disagreed in both directions**, measured before anything was changed: the code read **16** environment variables, `.env.example` documented **18**, and the overlap was partial — **9 read but undocumented**, **11 documented but never read** through `process.env`.
+
+**The sweep is a lower bound, not the truth, and that is stated in the gate's own output.** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` appears in no `process.env` read yet is genuinely required, because the Clerk SDK reads it internally; the same is true of `RESEND_API_KEY` for Resend. So every one of the twenty names was decided individually, with its evidence, and recorded in `analysis/t7-first-run-audit.md` — required, optional-with-default, tooling-only, or dead. None was classified by pattern.
+
+Outcome: four genuinely required names added (`FIRECRAWL_API_KEY`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`, the three Polar tier ids), each with a comment naming the file or SDK that reads it; seven dead entries removed (`FAL_KEY` and `TOGETHER_API_KEY` — read by nothing; the bare `CONVEX_URL`; the four Clerk sign-in/up URL variables, which the code hardcodes at `middleware.ts:114` and in the auth pages rather than reading). `CLERK_TESTING_TOKEN` and `PLAYWRIGHT_BASE_URL` stay, labelled tooling-only.
+
+**`scripts/check-env-contract.mjs`** now fails the moment the code reads a name the contract does not carry, and **names it**. Verified by the orchestrator on a variable of its own choosing rather than the author's: removing `OPENAI_API_KEY` from `.env.example` (`grep -c` confirmed landed before any output was read) produced `FAIL — … are read by the running app but are NOT documented … - OPENAI_API_KEY`, exit 1; restored, exit 0. Its success message carries the lower-bound caveat rather than printing a bare "clean" — an untraced vendor-internal read remains a blind spot by construction, and the gate says so instead of implying completeness.
+
+**`npx` removed from the first-run path** (13 occurrences across `docs/SETUP.md`, `README.md`, `.env.example`, now 0). This repository's own rule is pnpm-only, and a first-run document is the worst possible place to contradict it; `convex` is a local dependency, so `pnpm exec convex --version` -> `1.34.0`.
+
+**Reported, remaining, not fixed here:** `lib/audio-processing.ts`, `lib/rendi-video-processing.ts` and `scripts/bb-create-context.ts` still read `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID` and `RENDI_API_KEY` — residue of the video product this repository was forked from, and Browserbase is banned fleet-wide. A public repository should not ship paid-vendor keys in its first-run contract. Named so the decision is taken rather than inherited.
+
+**Still owed before T7 can close:** the human first run. Nobody has yet cloned this repository fresh, followed only what is written, and reported the first screen. Until that happens the contract is proven consistent with the code, not proven sufficient for a stranger.
+
 ### Fixed (2026-07-21 — the test suite was mutating live application source files while other workers read them)
 
 Closes `k17bmamgax6wfs9rt1s1s4j5an8aytym`. `__tests__/components/mission-stats.test.tsx` failed roughly one full run in three and passed every time in isolation. It had already been dismissed once as "a transient transform-cache flake"; a second appearance is not transient.
