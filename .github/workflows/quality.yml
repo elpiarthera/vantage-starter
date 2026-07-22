@@ -163,6 +163,41 @@ jobs:
       - name: Translation QA — check-translations
         run: node scripts/check-translations.js
 
+      # The guard that ships WITH the namespace-deletion family it protects.
+      # 23 dead video-fork namespaces were removed from all seven locales in the
+      # commit that adds this step; nothing in this file would have noticed if
+      # they had come back, or if the next fork grew its own. That relapse was
+      # PROVEN invisible: `tsc --noEmit` at 0, jest 281/281, `pnpm build` exit 0,
+      # and all four check-translations controls PASS, with 40 further orphan
+      # namespaces still sitting in the catalog. Control 2 compares locales
+      # against each other and Control 4 compares called keys against locales —
+      # neither can see a namespace that is present, consistent, parity-clean in
+      # all seven files, and read by nobody. This repository is a seed everyone
+      # forks, so an emptied family without its guard reopens at every fork.
+      #
+      # Three outcomes, never two — same rule as the two gates at the top of
+      # this file:
+      #   exit 0 — every namespace resolved, every orphan accounted for
+      #   exit 1 — an undeclared orphan, or a declaration that has gone stale
+      #   exit 2 — could not check; names the file:line it could not resolve
+      # A namespace whose consumers cannot be resolved is NOT clean, it is
+      # unchecked, and it says so rather than passing.
+      #
+      # Green on the commit that introduces it, via a DECLARED baseline, not a
+      # silent exclusion: the 40 orphans that remain are each listed with a
+      # written reason in `DECLARED_ORPHANS` (scripts/check-orphan-namespaces.js),
+      # where a reader of the guard sees them. That baseline is a ratchet — an
+      # entry that stops being orphan is itself a FAILURE, so the list can only
+      # shrink. See the declared-absent list at the bottom of this file for the
+      # deletion of those 40, which is tracked rather than bundled here.
+      #
+      # Exit code is what is graded. `echo "$?"` after a command under `bash -e`
+      # is decorative: the step dies first, so that line can only ever print
+      # zero. This step runs the command bare, as its own `run:`, so the
+      # runner grades the real exit code.
+      - name: Translation QA — no orphan namespace in messages/en.json
+        run: node scripts/check-orphan-namespaces.js
+
       # tsc --noEmit is proven green on the commit that introduces this gate
       # (2026-07-17): root cause of the prior 16 errors was two missing/mismatched
       # deps (vite absent though vitest 4 requires it; @types/react pinned to ^18
@@ -188,9 +223,13 @@ jobs:
         env:
           NEXT_PUBLIC_CONVEX_URL: "https://placeholder-ci-build.convex.cloud"
           NEXT_PUBLIC_CONVEX_SITE_URL: "https://placeholder-ci-build.convex.site"
-        run: |
-          pnpm build
-          echo "BUILD_EXIT=$?"
+        # Run bare, not inside a `run: |` block that then echoes `$?`. Under the
+        # runner's `bash -e`, a failing `pnpm build` kills the step before the
+        # echo executes, so `BUILD_EXIT=$?` could only ever print 0 — it read as
+        # a proof of success while proving nothing at all. Same class as the
+        # `|| true` documented at the top of this file. The runner grades the
+        # command's own exit code.
+        run: pnpm build
 
       # biome check . is proven green on the commit that introduces this gate.
       # public/lit-ui (our own esbuild output) and convex/_generated (Convex
@@ -252,3 +291,16 @@ jobs:
 #    gets disabled by the end of the week, taking the four working gates with it.
 #    Tracked in docs/audits/t0bis-hardcoded-colors.md (severity NORM), which lists
 #    every occurrence file:line. Declared here rather than silently omitted.
+#
+# 4. deletion of the 40 orphan namespaces still in messages/*.json — every one
+#    of them belongs to the same retired video product as the 23 removed in the
+#    commit that added the orphan gate above, and not one is a false positive
+#    (their own values say "Manage your video projects", "Share your video
+#    invitation with guests", scene/frame/narration/transition/voice vocabulary).
+#    They are not deleted here for one reason, stated rather than implied: that
+#    deletion moves the flattened key count across all seven locales, and this
+#    commit's measurements are pinned to 1987. Each is named, with a written
+#    reason, in `DECLARED_ORPHANS` (scripts/check-orphan-namespaces.js); the
+#    gate treats that list as a ratchet, so it can only shrink and no NEW orphan
+#    can join it silently. The pass that removes them is the follow-up this
+#    baseline exists to make impossible to forget.
