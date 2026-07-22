@@ -80,10 +80,35 @@ const SDK_INTERNAL_REQUIRED = [
 	},
 ];
 
+/**
+ * This gate's own source and its test discuss `process.env.X` in prose and
+ * carry their own `ENV_CONTRACT_ROOT` override. Scanned like any other file
+ * they make the gate report itself: it went green the day it was written
+ * only because the file was still untracked and `git grep` could not see it,
+ * and turned red on the commit that added it — a guard reading its own text
+ * is the failure this repository has already closed twice elsewhere.
+ *
+ * They are excluded BY PATH, listed here where a reader meets them, never as
+ * a silent skip inside the matcher. Excluding a path is safe in a way that
+ * excluding a NAME would not be: a real read in one of these two files would
+ * still be tooling, never a value a stranger must provide.
+ */
+const SELF_PATHS = [
+	":!scripts/check-env-contract.mjs",
+	":!scripts/__tests__/check-env-contract.test.js",
+];
+
 function deriveReadNames() {
 	const out = execFileSync(
 		"git",
-		["grep", "-hoE", "process\\.env\\.[A-Z0-9_]+", "--", ...SCAN_DIRS],
+		[
+			"grep",
+			"-hoE",
+			"process\\.env\\.[A-Z0-9_]+",
+			"--",
+			...SCAN_DIRS,
+			...SELF_PATHS,
+		],
 		{ cwd: REPO_ROOT, encoding: "utf8" },
 	);
 	const names = new Set();
