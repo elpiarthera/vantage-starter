@@ -7,21 +7,19 @@
 
 import { isPublicRoute } from "@/middleware";
 
-// Mock Clerk + next-intl surfaces middleware.ts touches at module load time.
+// Mock next-intl surfaces middleware.ts touches at module load time. Only
+// `clerkMiddleware` is mocked -- it is not what this suite verifies, and the
+// real implementation requires a live request/auth context jsdom cannot
+// provide. `createRouteMatcher` is kept REAL (via `jest.requireActual`):
+// it is the primitive `isPublicRoute` is built on, and a re-typed regex
+// clone of it disagrees with the real one on malformed entries (a malformed
+// route string makes the real `createRouteMatcher` THROW -- see the
+// "malformed route entry" test below -- while a hand-rolled regex clone
+// would silently keep matching). A guard on a rewritten primitive proves
+// nothing about the primitive itself.
 jest.mock("@clerk/nextjs/server", () => ({
+	...jest.requireActual("@clerk/nextjs/server"),
 	clerkMiddleware: jest.fn((fn) => fn),
-	createRouteMatcher: jest.fn(
-		(routes: string[]) => (req: { nextUrl?: { pathname: string } }) => {
-			const path = req.nextUrl?.pathname ?? "";
-			return routes.some((route) => {
-				const pattern = route
-					.replace(/\(en\|fr\|de\|it\|es\|pt\|ru\)/g, "(en|fr|de|it|es|pt|ru)")
-					.replace(/\(\.\*\)/g, ".*");
-				const regex = new RegExp(`^${pattern}$`);
-				return regex.test(path);
-			});
-		},
-	),
 }));
 
 jest.mock("next-intl/middleware", () => ({
@@ -80,5 +78,10 @@ describe("middleware isPublicRoute -- legal/accessibility pages", () => {
 	it("no longer treats /watch or /shared as public (dead routes removed)", () => {
 		expect(isPublicRoute(mockRequest("/en/watch/abc"))).toBe(false);
 		expect(isPublicRoute(mockRequest("/en/shared/abc"))).toBe(false);
+	});
+
+	it("a malformed matcher entry throws on the real primitive instead of silently matching -- the class of defect a re-typed regex mock cannot catch", () => {
+		const { createRouteMatcher } = jest.requireActual("@clerk/nextjs/server");
+		expect(() => createRouteMatcher(["/report*"])).toThrow();
 	});
 });

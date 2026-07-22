@@ -29,6 +29,18 @@ const ownership = deriveOwnership();
 const config: Config = {
 	coverageProvider: "v8",
 	testEnvironment: "jsdom",
+	// `@clerk/backend`'s package.json resolves its "browser" condition to an
+	// ESM-only file (`dist/runtime/browser/crypto.mjs`) when the active
+	// environment is jsdom. Jest's transform pipeline (via next/jest) does
+	// not transform node_modules ESM by default, so any suite that imports
+	// the real (unmocked) `@clerk/nextjs/server` -- as the three
+	// `createRouteMatcher` suites now do, precisely so they exercise the
+	// real primitive instead of a re-typed mock -- fails with
+	// `SyntaxError: Unexpected token 'export'` before a single test runs.
+	// Forcing the "node" export condition makes Node's module resolution
+	// pick `@clerk/backend`'s CommonJS build instead, which Jest already
+	// knows how to load without a transform.
+	testEnvironmentOptions: { customExportConditions: ["node"] },
 	setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/$1",
