@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-21 — the test suite was mutating live application source files while other workers read them)
+
+Closes `k17bmamgax6wfs9rt1s1s4j5an8aytym`. `__tests__/components/mission-stats.test.tsx` failed roughly one full run in three and passed every time in isolation. It had already been dismissed once as "a transient transform-cache flake"; a second appearance is not transient.
+
+**A gate that lies one run in three is worse than no gate**, because it teaches everyone to re-run until green — and that is exactly how a real regression gets waved through. Every ratio reported on this repository comes from that suite.
+
+**The mechanism, named.** `scripts/__tests__/check-translations.test.js` proves its own controls by writing a mutated copy of a **real repository component to its live path**, then restoring it in a `finally`. Jest runs test files in parallel worker processes with no serialisation. Five of those mutation targets — `components/missions/mission-stats.tsx`, `components/chat/ToolCallIndicator.tsx`, `components/theme-toggle.tsx`, `app/[locale]/error.tsx`, `app/[locale]/accessibilite/page.tsx` — are the very files other suites import. When one worker held a file mutated at the instant another worker's module loader read it, that suite rendered the mutated component and failed. Invisible in isolation, because a single test file never races itself.
+
+The file already carried the correct remedy for this class, applied earlier to three other targets: copy the real content into an isolated scratch tree, mutate it there, and run the scanner against that root through its existing `CHECK_TRANSLATIONS_ROOT` override. Per fix-the-class, the sweep converted **all 11 remaining in-place sites** across the five racing files. The live file is never written, so no restore race can exist.
+
+Proof: `pnpm exec jest scripts/__tests__/check-translations.test.js` -> 75/75. Ten consecutive full runs by the agent, then five more by the orchestrator: `Tests: 249 passed, 249 total` every time, with `git status` clean of anything but the intended edit after each — a leaked mutation would show there. No banned workaround: no `--runInBand`, no retry, no skip, no assertion loosened; the diff shows it.
+
+**Residual, declared.** Some probes still mutate live paths — `components/missions/mission-column.tsx`, `app/[locale]/dashboard/error.tsx`, `messages/de.json`, `messages/fr.json`. They are safe **today** only because no other suite imports them (`messages/en.json`, which many suites do import, is read but never written). That is a snapshot exemption, not a property: it breaks silently the day someone adds a suite importing one of those files. The durable fix is a check that refuses any probe whose target is imported elsewhere. Written down rather than left to be rediscovered as another intermittent failure.
+
 ### Added (2026-07-21 — `docs/blocks-inventory.md`: what each component is, where it is used, and how to check it by eye)
 
 Closes `k17ax9sbhatva4b610hk14c6hd8azkcr`. The document a developer picking up this boilerplate opens first, and the one Laurent uses to verify with his own eyes without asking anyone. One row per registry block: what it does in a sentence a non-technical reader understands, the files consuming it **derived by command**, its state, and — the column that exists for him — the exact URL, the click path, and what he should see. A block not yet in service reads "not yet visible"; a dead address in that column costs more than an empty cell. No automated screenshot, no paid rendering service: the human is the verifier.
