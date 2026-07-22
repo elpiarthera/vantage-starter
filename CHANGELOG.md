@@ -6,6 +6,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-22 — the public issue-report page redirected to sign-up)
+
+`convex/issueReports.ts` calls itself "the ONE public, unauthenticated mutation" in the codebase; `convex/ratelimit.ts` justifies its `createIssueReportGlobal` bucket with "no per-caller identity exists on this public path". Both statements are true — and yet `middleware.ts` demanded a Clerk identity to view `/report` at all: every locale 307-redirected to `/sign-up`. 405 tests stayed green throughout, because nothing in the suite ever opened the page.
+
+The fix itself is two lines in `middleware.ts`'s `isPublicRoute` matcher, twinning the ones already there for `/contact` — the same public-lead-capture shape, same justification. The durable part is not those two lines; it is a new guard, `__tests__/integration/global-bucket-route-public.test.ts`, that DERIVES the set of routes required to be public from `convex/ratelimit.ts` itself: every rate-limit key ending in `Global` names a path with no caller identity, its call site resolves the Convex module/export, the client component calling it resolves the hosting `app/[locale]` page, and that page's route segment is asserted against the real `isPublicRoute` export. A future public path that declares a global bucket and forgets to expose its page is caught the same way this one was — without anyone hand-editing a route list.
+
+Verified by the orchestrator: the new guard reddened on the pre-fix matcher (`/report` failed, `/contact` passed) and greened after the two-line edit. `pnpm exec vitest run` -> 412 passed / 7 skipped (43 files). `pnpm exec jest` -> 257/257 (58 suites). `pnpm exec tsc --noEmit` -> 0 errors. `pnpm exec biome check .` -> 86 warnings, 0 errors (unchanged baseline).
+
 ### Fixed (2026-07-22 — the same missing proof shipped twice, so it is closed as a class rather than patched a second time)
 
 A public write path declares two rate-limit buckets: one keyed per identity, one shared and global. **The global one is the only bound against an attacker who rotates that identity.** It was written correctly in `convex/contactSubmissions.ts`, then again in `convex/issueReports.ts` — and in both, no test touched it. Deleted entirely, every test stayed green.
