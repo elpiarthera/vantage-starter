@@ -1578,12 +1578,45 @@ function runControl3FrEqualsEn() {
 // where `ns` is a variable) is reported as unresolved at the binding site
 // itself, because every `t()` call through that binding is then
 // unresolvable too.
+//
+// Options-object form: next-intl also accepts `getTranslations({ locale,
+// namespace: "report" })` / `useTranslations({ namespace: "report" })` — the
+// SAME literal namespace, only passed as a property of an options object
+// instead of a bare string argument. This is not a distinct binding shape;
+// it is the identical `namespace: <literal>` contract one AST level down.
+// Measured blind spot: `app/[locale]/report/page.tsx:12,21` and
+// `app/[locale]/contact/page.tsx:12,21` both use this form and were
+// reported as `<non-literal namespace>` although the namespace is a
+// literal. Resolution: read the `namespace` property off the object literal
+// exactly like the bare-string argument is read — if the property is a
+// string literal, resolve it; if the property exists but is NOT a string
+// literal (e.g. `{ namespace: someVar }`), it stays genuinely unresolved,
+// because that IS unknowable; if the object carries no `namespace` property
+// at all (e.g. `{ locale }` only), that is the same no-namespace root form
+// as the zero-argument call.
 function detectTranslationBindings(sourceFile) {
 	const bindings = new Map(); // name -> namespace string
 	const unresolvedBindings = []; // { line, reason }
 
 	function unwrapAwait(node) {
 		return ts.isAwaitExpression(node) ? node.expression : node;
+	}
+
+	// Reads the `namespace` property off an options-object argument, e.g.
+	// `{ locale, namespace: "report" }`. Returns:
+	//   { present: false }                      — no `namespace` key at all
+	//   { present: true, literal: true, value }  — `namespace: "literal"`
+	//   { present: true, literal: false }        — `namespace: someVar`
+	function readNamespaceProperty(objLiteral) {
+		for (const prop of objLiteral.properties) {
+			if (!ts.isPropertyAssignment(prop)) continue;
+			if (prop.name.getText() !== "namespace") continue;
+			if (ts.isStringLiteral(prop.initializer)) {
+				return { present: true, literal: true, value: prop.initializer.text };
+			}
+			return { present: true, literal: false };
+		}
+		return { present: false };
 	}
 
 	function walk(node) {
@@ -1600,12 +1633,29 @@ function detectTranslationBindings(sourceFile) {
 					init.expression.text === "getTranslations")
 			) {
 				const bindingName = node.name.text;
+				const firstArg = init.arguments[0];
 				if (init.arguments.length === 0) {
 					// No-namespace form: `t("some.full.path")` keys are already
 					// full dotted paths — namespace is legitimately "".
 					bindings.set(bindingName, "");
-				} else if (ts.isStringLiteral(init.arguments[0])) {
-					bindings.set(bindingName, init.arguments[0].text);
+				} else if (ts.isStringLiteral(firstArg)) {
+					bindings.set(bindingName, firstArg.text);
+				} else if (ts.isObjectLiteralExpression(firstArg)) {
+					const ns = readNamespaceProperty(firstArg);
+					if (!ns.present) {
+						// `{ locale }` with no `namespace` key — same root form.
+						bindings.set(bindingName, "");
+					} else if (ns.literal) {
+						bindings.set(bindingName, ns.value);
+					} else {
+						const { line } = sourceFile.getLineAndCharacterOfPosition(
+							init.getStart(),
+						);
+						unresolvedBindings.push({
+							line: line + 1,
+							reason: `${init.expression.text}({ namespace: <non-literal> }) — every t() call through "${bindingName}" is unresolvable`,
+						});
+					}
 				} else {
 					const { line } = sourceFile.getLineAndCharacterOfPosition(
 						init.getStart(),

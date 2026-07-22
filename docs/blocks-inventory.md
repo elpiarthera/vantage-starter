@@ -160,11 +160,11 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 - State: in service. Writes to Convex `contactSubmissions` via `api.contactSubmissions.create` — public, unauthenticated, rate-limited (3/min per submitted email, 30/min global). No attachment binary is stored, only its file name (declared scope decision, see `convex/contactSubmissions.ts` header).
 - See it: `/contact` -> fill in first name, last name, email, and message -> submit -> the form is replaced by a "Message sent" confirmation.
 
-**issue-report-form** — not present in `components/ui/`.
-- What it does: a compact bug/incident report form with category, impact, urgency, attachments.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**issue-report-form** — `components/ui/issue-report-form.tsx`
+- What it does: a compact bug/incident report form with category, urgency, and attachments, filing a triaged task directly instead of a client messaging Laurent by hand.
+- Consumer: `components/report/IssueReportFormSection.tsx` (import `@/components/ui/issue-report-form`), consumers=1 (§2).
+- State: in service. Submits via `api.issueReports.submit` (a Convex action, not a mutation — no new table, since the task itself is stored by VantagePeers) — public, unauthenticated, rate-limited (3/min per submitted email, 30/min global), same defense-in-depth as `contact-form`. Urgency -> priority and category -> assignee are read from the single declared table in `lib/issue-report/mapping.ts`. The outbound `create_task` call is OPTIONAL and CONFIGURABLE via `VANTAGE_PEERS_TASK_URL` / `VANTAGE_PEERS_API_KEY` — on a fresh fork with neither set (verified: no such env var or client exists anywhere else in this repo), the action still validates and rate-limits the submission but returns `configured: false` with a named reason instead of a silent no-op.
+- See it: `/report` -> fill in name, email, issue title, description, category, and urgency -> submit -> on a deployment with VantagePeers configured, the form is replaced by a "Report filed" confirmation; on an unconfigured deployment (e.g. this boilerplate out of the box), it shows a "Report recorded" state naming that automatic task creation is not configured.
 
 **date-time-picker** — not present in `components/ui/`.
 - What it does: a Calendly-style slot picker for booking a call.

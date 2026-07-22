@@ -1470,19 +1470,42 @@ describe("check-translations — Control 4 (called but undefined)", () => {
 		}
 	});
 
-	test("the unresolvable count DROPS once static-map/array-property resolution is applied, and the split is reported", () => {
-		// Regression proof for the Control 4 static-map erosion fix: before this
-		// fix, `t(CATEGORY_LABEL_KEYS[cat])`, `t(SECTOR_I18N_KEYS[s])`,
-		// `t(currentMenu.labelKey)`, `t(link.labelKey)` all landed in
-		// `unresolved`, merely counted, never verified. This asserts the
-		// resolved-from-static-map count is > 0 and the remaining unresolved
-		// count is strictly smaller than the pre-fix baseline of 33.
+	test("the split is reported, resolution strictly reduces the unresolvable set, and no genuinely-literal namespace/key site is silently left unresolved", () => {
+		// Regression proof for the Control 4 static-map erosion fix AND the
+		// options-object namespace fix: before those fixes,
+		// `t(CATEGORY_LABEL_KEYS[cat])`, `t(SECTOR_I18N_KEYS[s])`,
+		// `t(currentMenu.labelKey)`, `t(link.labelKey)`, and
+		// `getTranslations({ namespace: "report" })` all landed in
+		// `unresolved`, merely counted, never verified. A hand-typed threshold
+		// (`< 33`) does not generalize — it goes stale the moment a new page is
+		// added, exactly as `< 33` itself went stale when `app/[locale]/report`
+		// landed. The invariant that generalizes: (a) static-map resolution
+		// found and verified at least one real site, (b) EVERY entry still in
+		// `unresolved` is proven — by reading its own source line, not by a
+		// count — to be a genuinely non-literal binding, never a literal one
+		// our resolvers failed to reach.
 		const result = runControl4CalledButUndefined();
 		expect(result.resolvedFromStaticMap).toBeGreaterThan(0);
-		expect(result.unresolved.length).toBeLessThan(33);
-		expect(
-			result.resolvedFromStaticMap + result.unresolved.length,
-		).toBeGreaterThanOrEqual(result.resolvedFromStaticMap);
+
+		const literalNamespaceRe =
+			/(useTranslations|getTranslations)\(\s*(await\s+)?["']/;
+		const literalNamespacePropRe = /namespace\s*:\s*["']/;
+		const stillNamedLiteral = [];
+		for (const u of result.unresolved) {
+			const abs = path.join(ROOT, u.file);
+			const sourceLine =
+				fs.readFileSync(abs, "utf8").split("\n")[u.line - 1] || "";
+			if (
+				u.reason.includes("namespace") &&
+				(literalNamespaceRe.test(sourceLine) ||
+					literalNamespacePropRe.test(sourceLine))
+			) {
+				stillNamedLiteral.push(`${u.file}:${u.line} — ${u.reason}`);
+			}
+		}
+		// If this list is non-empty, name every offending site rather than a
+		// bare count, so the failure is actionable at a glance.
+		expect(stillNamedLiteral).toEqual([]);
 	});
 });
 

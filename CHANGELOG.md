@@ -6,6 +6,30 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-22 — the translation checker could not read the namespace form this repository actually uses)
+
+Found while delivering batch 4's second bullet, and larger than that bullet.
+
+`scripts/check-translations.js` resolved only the bare-string namespace form. Every page written the normal way —
+
+```ts
+const t = await getTranslations({ locale, namespace: "report" });
+```
+
+— was reported as `getTranslations(<non-literal namespace>) — every t() call through "t" is unresolvable`. The namespace **is** a literal; it is simply a property of an options object. **Seventeen call sites** were therefore outside the reach of the control whose entire job is to catch a translation key that exists in no locale, and the number grew with every new page.
+
+The test that should have surfaced this guarded the number with a **hand-typed threshold** (`unresolved.length < 33`). It did not report a coverage hole; it simply reddened when a legitimate new page pushed the count to 34 — a magic number that would need editing again on the next page, in a repository whose own rule is that typed state goes stale.
+
+- The options-object form now resolves through the same path as the bare argument, not a parallel one. `unresolved` falls **34 -> 17**, and the `"non-literal namespace"` reason count falls **17 -> 0**.
+- The seventeen that remain are a genuinely dynamic class (`t(keys.active)`, `` t(`status_${value}`) ``) and keep saying so. Widening the fix to "assume literal when in doubt" was refused: it would turn a visible blind spot into an invisible one, which is worse than the bug.
+- The typed threshold is replaced by a derived invariant that reads the source line of each remaining entry and names any site a resolver should have caught — it names sites, never prints two integers.
+
+**Proven checked, not merely delisted.** A name that leaves the "unresolvable" list without becoming verified is the same silence with better manners. Verified by the orchestrator on a file it chose rather than the author's: `t("tau_probe_key_absent_everywhere")` injected into `app/[locale]/contact/page.tsx` (landing confirmed before any output was read) -> Control 4 reported `contact.tau_probe_key_absent_everywhere`; restored, gone. The honest-unknown pole was proven too: a genuinely non-literal namespace still reports unresolvable.
+
+**Correction of the record:** the agent that delivered the bullet reported this failure as already present on the base branch. It was not — the base passes 75/75, verified by `git stash`. The failure was introduced by the new page and revealed the gap. A wrong "it was already broken" is how a real regression gets waved through.
+
+**One observation left open rather than dismissed:** a single full-suite run failed in `__tests__/components/ChangePasswordModal.test.tsx` immediately after a probe file was restored on disk; the same suite passes 4/4 in isolation and the full suite passed 254/254 on the three runs that followed. Not reproduced, so not diagnosed — recorded here rather than called nothing, because "it went away" is how the last intermittent failure survived two appearances.
+
 ### Fixed (2026-07-21 — the test suite was mutating live application source files while other workers read them)
 
 Closes `k17bmamgax6wfs9rt1s1s4j5an8aytym`. `__tests__/components/mission-stats.test.tsx` failed roughly one full run in three and passed every time in isolation. It had already been dismissed once as "a transient transform-cache flake"; a second appearance is not transient.

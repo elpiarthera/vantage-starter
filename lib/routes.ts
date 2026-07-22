@@ -46,6 +46,7 @@ export const ROUTES = {
 	create: "/create",
 	legal: "/legal",
 	privacy: "/privacy",
+	report: "/report",
 	schemaAccessibilite: "/schema-accessibilite",
 	signIn: "/sign-in",
 	signUp: "/sign-up",

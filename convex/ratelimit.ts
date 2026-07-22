@@ -18,6 +18,11 @@
  *   §4 "contact-form"), so it cannot be keyed on a Clerk user ID like every
  *   other limit here. See convex/contactSubmissions.ts for what this does
  *   and does not protect against.
+ * - issueReports.submit: 3 / minute, keyed per submitted email; plus a
+ *   30 / minute global bucket across all callers — same public,
+ *   unauthenticated shape as contactSubmissions.create
+ *   (docs/mcpcn-block-mapping.md §4 "issue-report-form"). See
+ *   convex/issueReports.ts for what this does and does not protect against.
  *
  * Internal mutations are exempt — called by trusted server-side actions only.
  */
@@ -88,6 +93,23 @@ export const rateLimiter = new RateLimiter(components.ratelimiter, {
 	// contactSubmissions.create — 30 per 60s, one shared global bucket
 	// (no per-caller identity exists on this public path to key on instead)
 	createContactSubmissionGlobal: {
+		kind: "token bucket",
+		rate: 30,
+		period: 60_000,
+		capacity: 30,
+	},
+
+	// issueReports.submit — 3 per 60s, keyed per submitted email
+	createIssueReport: {
+		kind: "token bucket",
+		rate: 3,
+		period: 60_000,
+		capacity: 3,
+	},
+
+	// issueReports.submit — 30 per 60s, one shared global bucket
+	// (no per-caller identity exists on this public path to key on instead)
+	createIssueReportGlobal: {
 		kind: "token bucket",
 		rate: 30,
 		period: 60_000,
