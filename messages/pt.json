@@ -3538,5 +3538,20 @@
 		"error_invalid_email": "Digite um endereco de e-mail valido.",
 		"error_missing_fields": "Selecione uma categoria e um nivel de urgencia.",
 		"error_generic": "Algo deu errado. Por favor, tente novamente."
+	},
+	"booking": {
+		"meta_title": "Agendar uma chamada",
+		"meta_description": "Agende uma chamada de integração de 30 minutos com nossa equipe de consultores.",
+		"back_home": "← Voltar ao painel",
+		"title": "Selecione uma data e hora",
+		"timezone_notice": "Os horários abaixo estão no fuso horário de {zone}. Isso não muda de acordo com o seu próprio fuso horário.",
+		"prev_month_aria": "Mês anterior",
+		"next_month_aria": "Próximo mês",
+		"next": "Próximo",
+		"date_available_aria": "{date}, disponível",
+		"date_unavailable_aria": "{date}, indisponível",
+		"success_title": "Chamada agendada",
+		"success_description": "Sua chamada está agendada para {date} às {time} (fuso horário de {zone}).",
+		"error_generic": "Algo deu errado. Tente novamente."
 	}
 }

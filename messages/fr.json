@@ -3538,5 +3538,20 @@
 		"error_invalid_email": "Veuillez saisir une adresse e-mail valide.",
 		"error_missing_fields": "Veuillez selectionner une categorie et un niveau d'urgence.",
 		"error_generic": "Une erreur est survenue. Veuillez reessayer."
+	},
+	"booking": {
+		"meta_title": "Réserver un appel",
+		"meta_description": "Réservez un appel d'intégration de 30 minutes avec notre équipe de consultants.",
+		"back_home": "← Retour au tableau de bord",
+		"title": "Choisissez une date et une heure",
+		"timezone_notice": "Les horaires ci-dessous sont exprimés en heure {zone}. Cela ne change pas selon votre propre fuseau horaire.",
+		"prev_month_aria": "Mois précédent",
+		"next_month_aria": "Mois suivant",
+		"next": "Suivant",
+		"date_available_aria": "{date}, disponible",
+		"date_unavailable_aria": "{date}, indisponible",
+		"success_title": "Appel réservé",
+		"success_description": "Votre appel est réservé le {date} à {time} (heure {zone}).",
+		"error_generic": "Une erreur est survenue. Veuillez réessayer."
 	}
 }

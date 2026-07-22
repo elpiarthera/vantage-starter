@@ -40,6 +40,23 @@ That refusal is the whole design: a guard that cannot check something must say w
 **Proven biting on material the guard's author did not choose.** Neutralising the global check in `contactSubmissions` — a different path, already covered by its own test — reddens **exactly one** of the guard's three cases, naming the path and its bucket. Same for `issueReports`. Restores proven, production files untouched.
 
 Ratios measured by the orchestrator: `pnpm exec vitest run` -> 412 passed / 7 skipped, 419 total. `pnpm exec jest` -> 254/254. `pnpm exec tsc --noEmit` -> 0.
+### Added (2026-07-22 — the consultant booking surface, and the timezone question answered rather than assumed)
+
+Batch 4's third bullet. New authenticated route `app/[locale]/dashboard/consultant/book`, the `date-time-picker` block, and one declared availability configuration — timezone, working days, opening and closing hour, slot length, blocked dates. None of those is a constant inside a component: they are values a customer edits, and the tests read the same declaration the code reads so the two cannot drift.
+
+**Timezone is the whole difficulty of this feature, so it is treated as the subject.** A slot means nothing without the zone it is expressed in. The configuration states the zone its hours are authored in, and the booking payload carries an absolute instant **plus** that zone. The UTC offset is read from the zone through `Intl` at the specific date — never a fixed constant, because daylight saving makes the offset date-dependent.
+
+**A second defect was found on verification, in the half nobody had looked at: the hours were zone-resolved, the days were not.** `generateAvailableSlots` built each day from `from.getFullYear()/getMonth()/getDate()` and filtered with `day.getDay()` — the machine's or the browser's local calendar. Near midnight, a visitor whose local date differs from the configured zone's sees a horizon window shifted by one day: a day already over in Paris, or the last one missing; at the boundary the weekday filter can classify a day differently too.
+
+It also made the file's own header **over-claim**: it stated that a visitor elsewhere sees exactly the same slots, which was true of the hours and false of the day set at the boundary. A comment promising more than the code delivers is the class this repository has spent two days closing, and it appeared inside the very paragraph written to be careful.
+
+Fixed by deriving the anchor day through the same `Intl` mechanism the offset already used — one mechanism, not two — then doing pure Gregorian arithmetic on that zone-resolved date, never touching a local `Date` accessor. The header now says what the code does, and the one honest residual is named: a visitor whose system clock is wrong.
+
+**The proof pins its own instant and zone, because a timezone bug cannot be proven by a test that inherits the machine's zone.** Two boundary tests anchored at `2026-07-20T23:30:00Z` — already the 21st in Paris, still the 20th in UTC — proven RED against the previous local-calendar code, green after. The suite passes under the default machine zone and under `TZ=Pacific/Kiritimati` (UTC+14), both pasted.
+
+Ratios measured by the orchestrator, re-measured after this branch was replayed onto the merged `/report` work rather than carried over from the earlier tree: `pnpm exec jest` -> 59 suites, 259/259. `pnpm exec vitest run` -> 44 files, 420 passed / 7 skipped, 427 total. `pnpm exec tsc --noEmit` -> 0. The earlier figures (256/256 and 415/422) were true on the tree they were taken from and are not true here; a ratio carries its command *and* the tree it ran on.
+
+Visual check (Laurent): `/dashboard/consultant/book` signed in -> pick a date, pick a time, confirm; the confirmation names the date, the time **and** the zone. Signed out, the middleware redirects before the page's code runs.
 
 ### Fixed (2026-07-22 — the translation checker could not read the namespace form this repository actually uses)
 

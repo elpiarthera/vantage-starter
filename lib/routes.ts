@@ -34,6 +34,7 @@ export const ROUTES = {
 	dashboardChat: "/dashboard/chat",
 	dashboardChatSession: (chatId: string) => `/dashboard/chat/${chatId}`,
 	dashboardConfigurator: "/dashboard/configurator",
+	dashboardConsultantBook: "/dashboard/consultant/book",
 	dashboardConsultantOnboard: "/dashboard/consultant/onboard",
 	dashboardConsultantOnboardProject: (projectId: string) =>
 		`/dashboard/consultant/onboard/${projectId}`,
