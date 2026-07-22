@@ -145,10 +145,9 @@ On **Step 5/6: Final Review & Polish** (`/guided/step-5`), the **Smooth Transiti
 
 #### 4. Assembly: final duration = video length (30s)
 
-- **Cause of 26s final:** Mixed audio length is currently driven by amix (effectively 26s when narration is 26s). Merge uses `-shortest` so final = min(30, 26) = 26s.
-- **Fix:** Pass the **expected video duration** (e.g. `expectedDuration` = 30s for 3×10s hard cut) from `videoAssembly.buildFinalVideoHandler` into `mixAudioWithRendi`.
-- **In `lib/audio-processing.ts`:** Add a parameter e.g. `targetDurationSeconds: number`. After the mix filter (amix + loudnorm), add FFmpeg trim/pad so the **output** duration is exactly `targetDurationSeconds`: e.g. `atrim=duration=N` then `apad=whole_dur=N` so the mix is exactly N seconds (pad with silence if mix is shorter).
-- **In `convex/actions/videoAssembly.ts`:** Compute `expectedDuration` (already done: hard cut = `numScenes * clipDuration`, xfade = that minus transition overlap). Pass `expectedDuration` into `mixAudioWithRendi(narrationUrl, musicUrl, expectedDuration)`. Then final = min(video, mix) = expectedDuration (30s).
+- **This item no longer has a host in this template.** The audio-mix helper it described, `mixAudioWithRendi` in `lib/audio-processing.ts`, together with the merge helpers in `lib/rendi-video-processing.ts`, belonged to the retired video fork and was removed on 2026-07-22. The assembly action it fed, `convex/actions/videoAssembly.ts`, is likewise absent from this repository.
+- **Kept for the record, not as a work item:** the original diagnosis was that mixed audio length is driven by amix (26s when narration is 26s) while the merge uses `-shortest`, so the final video came out at min(30, 26) = 26s. The intended fix was to pass an expected video duration down into the mix step and trim or pad the mix to exactly that length (`atrim=duration=N` then `apad=whole_dur=N`).
+- **If a video pipeline is ever reintroduced here,** this duration-trimming behaviour is worth designing in from the start, but there is currently no file in the template to change.
 
 #### 5. Rendi and Convex URLs
 
@@ -163,6 +162,6 @@ On **Step 5/6: Final Review & Polish** (`/guided/step-5`), the **Smooth Transiti
 
 1. **Narration:** In `generateNarration`, after Fal result, fetch audio → `ctx.storage.store` → return Convex URL. Verify Step 4 and assembly still work (assembly receives Convex URL, Rendi fetches it).
 2. **Music:** Same in `generateMusic`: fetch → store → return Convex URL.
-3. **Assembly duration:** Add `targetDurationSeconds` to `mixAudioWithRendi`, implement atrim+apad (or equivalent) in the filter; pass `expectedDuration` from `buildFinalVideoHandler`. Verify final video is 30s for 3×10s hard cut.
+3. **Assembly duration:** dropped. The helpers this step would have changed were removed with the retired video fork (see section 4 above); there is nothing in this template to modify.
 4. Optional: Backfill or migration for existing projects with Fal URLs (download + store to Convex, update project); or leave old projects as Fal until they re-generate.
 5. Optional: Populate `audioTracks` when saving a take, if product requires it.
