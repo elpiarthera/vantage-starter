@@ -3538,5 +3538,20 @@
 		"error_invalid_email": "Inserisci un indirizzo email valido.",
 		"error_missing_fields": "Seleziona una categoria e un livello di urgenza.",
 		"error_generic": "Qualcosa e andato storto. Riprova."
+	},
+	"booking": {
+		"meta_title": "Prenota una chiamata",
+		"meta_description": "Prenota una chiamata di onboarding di 30 minuti con il nostro team di consulenti.",
+		"back_home": "← Torna alla dashboard",
+		"title": "Seleziona data e ora",
+		"timezone_notice": "Gli orari mostrati di seguito sono nel fuso orario di {zone}. Questo non cambia in base al tuo fuso orario.",
+		"prev_month_aria": "Mese precedente",
+		"next_month_aria": "Mese successivo",
+		"next": "Avanti",
+		"date_available_aria": "{date}, disponibile",
+		"date_unavailable_aria": "{date}, non disponibile",
+		"success_title": "Chiamata prenotata",
+		"success_description": "La tua chiamata è prenotata per il {date} alle {time} (fuso orario di {zone}).",
+		"error_generic": "Qualcosa è andato storto. Riprova."
 	}
 }

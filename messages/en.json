@@ -3538,5 +3538,20 @@
 		"error_invalid_email": "Please enter a valid email address.",
 		"error_missing_fields": "Please select a category and an urgency level.",
 		"error_generic": "Something went wrong. Please try again."
+	},
+	"booking": {
+		"meta_title": "Book a call",
+		"meta_description": "Book a 30-minute onboarding call with our consultant team.",
+		"back_home": "← Back to dashboard",
+		"title": "Select a Date & Time",
+		"timezone_notice": "Times shown below are in {zone} time. This does not change based on your own timezone.",
+		"prev_month_aria": "Previous month",
+		"next_month_aria": "Next month",
+		"next": "Next",
+		"date_available_aria": "{date}, available",
+		"date_unavailable_aria": "{date}, unavailable",
+		"success_title": "Call booked",
+		"success_description": "Your call is booked for {date} at {time} ({zone} time).",
+		"error_generic": "Something went wrong. Please try again."
 	}
 }

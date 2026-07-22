@@ -3538,5 +3538,20 @@
 		"error_invalid_email": "Bitte geben Sie eine gueltige E-Mail-Adresse ein.",
 		"error_missing_fields": "Bitte waehlen Sie eine Kategorie und eine Dringlichkeitsstufe aus.",
 		"error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+	},
+	"booking": {
+		"meta_title": "Termin buchen",
+		"meta_description": "Buchen Sie ein 30-minütiges Onboarding-Gespräch mit unserem Beraterteam.",
+		"back_home": "← Zurück zum Dashboard",
+		"title": "Datum und Uhrzeit wählen",
+		"timezone_notice": "Die unten angezeigten Zeiten sind in {zone}-Zeit. Dies ändert sich nicht je nach Ihrer eigenen Zeitzone.",
+		"prev_month_aria": "Vorheriger Monat",
+		"next_month_aria": "Nächster Monat",
+		"next": "Weiter",
+		"date_available_aria": "{date}, verfügbar",
+		"date_unavailable_aria": "{date}, nicht verfügbar",
+		"success_title": "Termin gebucht",
+		"success_description": "Ihr Termin ist gebucht für {date} um {time} ({zone}-Zeit).",
+		"error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
 	}
 }

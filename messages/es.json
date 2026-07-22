@@ -3538,5 +3538,20 @@
 		"error_invalid_email": "Introduce una direccion de correo valida.",
 		"error_missing_fields": "Selecciona una categoria y un nivel de urgencia.",
 		"error_generic": "Algo salio mal. Por favor intenta de nuevo."
+	},
+	"booking": {
+		"meta_title": "Reservar una llamada",
+		"meta_description": "Reserve una llamada de incorporación de 30 minutos con nuestro equipo de consultores.",
+		"back_home": "← Volver al panel",
+		"title": "Selecciona una fecha y hora",
+		"timezone_notice": "Los horarios que se muestran a continuación están en hora de {zone}. Esto no cambia según tu propia zona horaria.",
+		"prev_month_aria": "Mes anterior",
+		"next_month_aria": "Mes siguiente",
+		"next": "Siguiente",
+		"date_available_aria": "{date}, disponible",
+		"date_unavailable_aria": "{date}, no disponible",
+		"success_title": "Llamada reservada",
+		"success_description": "Tu llamada está reservada para el {date} a las {time} (hora de {zone}).",
+		"error_generic": "Algo salió mal. Inténtalo de nuevo."
 	}
 }

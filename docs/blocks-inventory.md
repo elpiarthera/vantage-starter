@@ -39,12 +39,9 @@ done
 Output at the time this document was written (re-run the command above — this block is a pasted sample, not a claim):
 
 ```
-message-bubble installed consumers=1
-chat-conversation installed consumers=1
-quick-reply installed consumers=1
-contact-form installed consumers=1
-date-time-picker NOT_INSTALLED
-issue-report-form NOT_INSTALLED
+contact-form installed consumers=3
+date-time-picker installed consumers=1
+issue-report-form installed consumers=1
 order-confirm NOT_INSTALLED
 payment-confirmed NOT_INSTALLED
 product-list NOT_INSTALLED
@@ -74,7 +71,7 @@ event-confirmation NOT_INSTALLED
 hero NOT_INSTALLED
 ```
 
-Every installed block sits at `consumers=1` — none at `consumers=0` on this branch. The installed/missing split is derived too, never typed; the command and its output follow, and they are a **dated record**, re-run rather than trusted:
+`contact-form` reads `consumers=3` because this command counts every occurrence of the literal import-path string, including inside prose code comments (not only real `import` statements) — `components/ui/date-time-picker.tsx` and `components/ui/issue-report-form.tsx` both mention `components/ui/contact-form.tsx` in their own port-notes headers, a known characteristic of this substring-based command, not a new defect introduced by this delivery. `date-time-picker` is newly `installed consumers=1` (`components/consultant/BookingSection.tsx`, the sole real importer) as of this delivery (`docs/mcpcn-block-mapping.md` §4 "date-time-picker", Batch 4 third bullet). Every remaining installed block still sits at `consumers=1` — none at `consumers=0` on this branch. The installed/missing split is derived too, never typed; the command and its output follow, and they are a **dated record**, re-run rather than trusted:
 
 ```bash
 for b in $(curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
@@ -84,9 +81,11 @@ print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block')
 done | sort | uniq -c
 ```
 ```
--> 11 installed
--> 19 missing
+-> 13 installed
+-> 17 missing
 ```
+
+(Corrected from a prior `11`/`19` snapshot that had gone stale by one even before this delivery — `issue-report-form` was already installed in an earlier merged batch but the pasted sample had not been refreshed; this delivery adds `date-time-picker` as the 13th. Re-run the command above rather than trusting either number.)
 
 ---
 
@@ -166,11 +165,11 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 - State: in service. Submits via `api.issueReports.submit` (a Convex action, not a mutation — no new table, since the task itself is stored by VantagePeers) — public, unauthenticated, rate-limited (3/min per submitted email, 30/min global), same defense-in-depth as `contact-form`. Urgency -> priority and category -> assignee are read from the single declared table in `lib/issue-report/mapping.ts`. The outbound `create_task` call is OPTIONAL and CONFIGURABLE via `VANTAGE_PEERS_TASK_URL` / `VANTAGE_PEERS_API_KEY` — on a fresh fork with neither set (verified: no such env var or client exists anywhere else in this repo), the action still validates and rate-limits the submission but returns `configured: false` with a named reason instead of a silent no-op.
 - See it: `/report` -> fill in name, email, issue title, description, category, and urgency -> submit -> on a deployment with VantagePeers configured, the form is replaced by a "Report filed" confirmation; on an unconfigured deployment (e.g. this boilerplate out of the box), it shows a "Report recorded" state naming that automatic task creation is not configured.
 
-**date-time-picker** — not present in `components/ui/`.
-- What it does: a Calendly-style slot picker for booking a call.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**date-time-picker** — `components/ui/date-time-picker.tsx`
+- What it does: a Calendly-style slot picker for booking a consultant call.
+- Consumer: `components/consultant/BookingSection.tsx` (import `@/components/ui/date-time-picker`), consumers=1 (§2).
+- State: in service. Slots are generated from the single declared static config `lib/booking/availability.ts` (`BOOKING_AVAILABILITY` — opening hours, slot length, working days, blocked dates), not a table; a real calendar-integration data source is a separate, later feature (declared out of scope, §4). Confirming a slot produces a payload carrying both the selected start time (ISO instant with explicit UTC offset) and the configured IANA timezone — upstream's interactive timezone selector was intentionally not ported (see the component file header) because changing it never recomputed the slot list. This route is AUTHENTICATED (`/dashboard/consultant/...`, protected by `middleware.ts`'s default `clerkMiddleware` behavior) — unlike `contact-form` and `issue-report-form` above.
+- See it: `/dashboard/consultant/book` (signed in) -> pick an available date -> pick a time slot -> a "Next" button appears -> tap it -> the picker is replaced by a "Call booked" confirmation naming the date, time, and timezone. Signed out, the route redirects to `/sign-up?redirect_url=...` before any of this renders.
 
 **ticket-tier-select** — not present in `components/ui/`.
 - What it does: side-by-side plan comparison with seat quantity and price.
