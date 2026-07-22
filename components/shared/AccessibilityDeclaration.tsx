@@ -1,7 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import type { getTranslations } from "next-intl/server";
 
 const BASE_URL =
 	process.env.NEXT_PUBLIC_SITE_URL || "https://vantagestarter.ai";
+
+type AccessibilityDeclarationTranslator = Awaited<
+	ReturnType<typeof getTranslations<"legal.accessibility_declaration">>
+>;
 
 /**
  * Shared RGAA accessibility declaration content, rendered by both
@@ -13,13 +17,18 @@ const BASE_URL =
  * CONTENT now resolves from the request locale via `t()` — so `/de/accessibilite`
  * renders German, not hardcoded French, closing the cross-locale mismatch the
  * two separate hardcoded pages used to produce.
+ *
+ * Synchronous Server Component: the page (already an async Server Component)
+ * awaits `getTranslations` and passes the resolved translator down as `t`, so
+ * this component can be rendered as JSX (`<AccessibilityDeclaration t={t} />`)
+ * instead of invoked as a plain function — keeping it inside React's tree so
+ * Suspense/error boundaries and streaming apply to it.
  */
-export async function AccessibilityDeclaration({ locale }: { locale: string }) {
-	const t = await getTranslations({
-		locale,
-		namespace: "legal.accessibility_declaration",
-	});
-
+export function AccessibilityDeclaration({
+	t,
+}: {
+	t: AccessibilityDeclarationTranslator;
+}) {
 	return (
 		<main className="max-w-3xl mx-auto px-6 py-16">
 			<h1 className="text-3xl font-bold mb-8">{t("title")}</h1>

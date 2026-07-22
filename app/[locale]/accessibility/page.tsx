@@ -32,5 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AccessibilityDeclarationPage({ params }: Props) {
 	const { locale } = await params;
-	return await AccessibilityDeclaration({ locale });
+	const t = await getTranslations({
+		locale,
+		namespace: "legal.accessibility_declaration",
+	});
+	return <AccessibilityDeclaration t={t} />;
 }

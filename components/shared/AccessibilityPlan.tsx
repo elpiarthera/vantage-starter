@@ -1,17 +1,20 @@
-import { getTranslations } from "next-intl/server";
+import type { getTranslations } from "next-intl/server";
+
+type AccessibilityPlanTranslator = Awaited<
+	ReturnType<typeof getTranslations<"legal.accessibility_plan">>
+>;
 
 /**
  * Shared RGAA accessibility improvement plan, rendered by both
  * `app/[locale]/accessibility-plan/page.tsx` and
  * `app/[locale]/schema-accessibilite/page.tsx` — same cross-locale fix as
  * `AccessibilityDeclaration`: content resolves from the request locale.
+ *
+ * Synchronous Server Component: the page awaits `getTranslations` and passes
+ * the resolved translator down as `t`, so this renders as JSX instead of
+ * being invoked as a plain function.
  */
-export async function AccessibilityPlan({ locale }: { locale: string }) {
-	const t = await getTranslations({
-		locale,
-		namespace: "legal.accessibility_plan",
-	});
-
+export function AccessibilityPlan({ t }: { t: AccessibilityPlanTranslator }) {
 	const actions = [
 		{ priority: "P0", issue: t("action1"), date: "Q2 2026" },
 		{ priority: "P1", issue: t("action2"), date: "Q2 2026" },
