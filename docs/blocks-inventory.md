@@ -63,15 +63,17 @@ instagram-post NOT_INSTALLED
 linkedin-post NOT_INSTALLED
 youtube-post NOT_INSTALLED
 map-carousel NOT_INSTALLED
-event-card NOT_INSTALLED
-event-list NOT_INSTALLED
-event-detail NOT_INSTALLED
+event-card installed consumers=3
+event-list installed consumers=1
+event-detail installed consumers=1
 ticket-tier-select NOT_INSTALLED
-event-confirmation NOT_INSTALLED
+event-confirmation installed consumers=1
 hero NOT_INSTALLED
 ```
 
-`contact-form` reads `consumers=3` because this command counts every occurrence of the literal import-path string, including inside prose code comments (not only real `import` statements) — `components/ui/date-time-picker.tsx` and `components/ui/issue-report-form.tsx` both mention `components/ui/contact-form.tsx` in their own port-notes headers, a known characteristic of this substring-based command, not a new defect introduced by this delivery. `date-time-picker` is newly `installed consumers=1` (`components/consultant/BookingSection.tsx`, the sole real importer) as of this delivery (`docs/mcpcn-block-mapping.md` §4 "date-time-picker", Batch 4 third bullet). Every remaining installed block still sits at `consumers=1` — none at `consumers=0` on this branch. The installed/missing split is derived too, never typed; the command and its output follow, and they are a **dated record**, re-run rather than trusted:
+`contact-form` reads `consumers=3` because this command counts every occurrence of the literal import-path string, including inside prose code comments (not only real `import` statements) — `components/ui/date-time-picker.tsx` and `components/ui/issue-report-form.tsx` both mention `components/ui/contact-form.tsx` in their own port-notes headers, a known characteristic of this substring-based command, not a new defect introduced by this delivery. `date-time-picker` is newly `installed consumers=1` (`components/consultant/BookingSection.tsx`, the sole real importer) as of this delivery (`docs/mcpcn-block-mapping.md` §4 "date-time-picker", Batch 4 third bullet). `event-card` reads `consumers=3` for the same reason as `contact-form`: `components/events/EventListSection.tsx` (real import) and `components/ui/event-detail.tsx` (real import, `EventCardData` type) are two genuine consumers, plus `components/ui/event-list.tsx`'s own port-notes header mentioning `components/ui/event-card.tsx` in prose — the same substring-command characteristic, not a new defect. Every remaining installed block still sits at `consumers>=1` — none at `consumers=0` on this branch.
+
+**Command-on-this-branch note, named rather than silently worked around:** this command is `git grep -l`, which by default searches only TRACKED files. The four Events blocks and their consumers are new, untracked files on this branch (the tree is intentionally dirty per this delivery's brief) — a bare `git grep -l` against them returns 0 for all four, a false "not consumed yet" reading of files that plainly are. The output above was produced with `git grep --untracked -l`, which also searches untracked-but-present files; re-run with `--untracked` on this branch, and drop it again once these files are committed and tracked (either flag then reads the same true count).
 
 ```bash
 for b in $(curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
@@ -81,11 +83,11 @@ print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block')
 done | sort | uniq -c
 ```
 ```
--> 13 installed
--> 17 missing
+-> 17 installed
+-> 13 missing
 ```
 
-(Corrected from a prior `11`/`19` snapshot that had gone stale by one even before this delivery — `issue-report-form` was already installed in an earlier merged batch but the pasted sample had not been refreshed; this delivery adds `date-time-picker` as the 13th. Re-run the command above rather than trusting either number.)
+(Corrected from a prior `11`/`19`, then `13`/`17`, snapshot — this delivery adds `event-card`, `event-list`, `event-detail`, `event-confirmation` as the 14th through 17th installed blocks. Re-run the command above rather than trusting either number.)
 
 ---
 
@@ -245,29 +247,29 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 
 ### Events
 
-**event-card** — not present in `components/ui/`.
-- What it does: a preview card for one event/webinar listing.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**event-card** — `components/ui/event-card.tsx`
+- What it does: a preview card for one event/webinar listing (title, date/time with its own timezone, description, capacity).
+- Consumer: `components/events/EventListSection.tsx` (import `@/components/ui/event-card`) and `components/ui/event-detail.tsx` (import `@/components/ui/event-card`, the `EventCardData` type), consumers=3 — the third occurrence is a prose mention in `components/ui/event-list.tsx`'s own port-notes header, not a real import (§2's note on this branch's `--untracked` command run).
+- State: in service.
+- See it: `/events` -> each event renders as a card showing its title, date/time (with its authored timezone named alongside), a short description, and a "N spots left" or "Full" badge -> click a card to open its detail page.
 
-**event-list** — not present in `components/ui/`.
-- What it does: the layout arranging multiple event cards.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**event-list** — `components/ui/event-list.tsx`
+- What it does: the responsive grid layout arranging multiple event cards, plus the empty-state message when no events are scheduled.
+- Consumer: `components/events/EventListSection.tsx` (import `@/components/ui/event-list`), consumers=1.
+- State: in service.
+- See it: `/events` -> the cards render in a responsive grid (one column on mobile, up to three on desktop) -> with zero events seeded, the grid shows a dashed-border empty-state message instead.
 
-**event-detail** — not present in `components/ui/`.
-- What it does: the single-event page with agenda and registration.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**event-detail** — `components/ui/event-detail.tsx`
+- What it does: the single-event page — header (title, date/time+timezone, description, capacity badge), agenda list, and the registration control, which renders exactly one of four states (signed-out, full, already-registered, can-register).
+- Consumer: `components/events/EventDetailSection.tsx` (import `@/components/ui/event-detail`), consumers=1.
+- State: in service. Registration is wired to `api.events.register` (Convex mutation, auth-required); browsing (`api.events.list` / `api.events.getBySlug`) is public and unauthenticated, matching `middleware.ts`'s `/events(.*)` public-route entry.
+- See it: `/events/[slug]` (any real slug from `/events`) -> the agenda renders as a bulleted list under the header -> signed out, a "sign in to register" prompt replaces the register button; signed in and the event is full, a "Full" message replaces it instead; signed in and not full, an active "Register" button is offered.
 
-**event-confirmation** — not present in `components/ui/`.
-- What it does: the confirmation screen shown after registering for an event.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**event-confirmation** — `components/ui/event-confirmation.tsx`
+- What it does: the confirmation screen shown after registering for an event, naming the event title and its date/time in its own timezone.
+- Consumer: `components/events/EventDetailSection.tsx` (import `@/components/ui/event-confirmation`), consumers=1.
+- State: in service. Renders ONLY on a successful `api.events.register` call — never on a rejected attempt (full, already registered, or any other error), proven by a mutation-proof sequence in this delivery's PR body.
+- See it: `/events/[slug]` (signed in, event not full, not already registered) -> tap "Register" -> the page is replaced by a confirmation screen naming the event and the date/time you registered for.
 
 **map-carousel** — not present in `components/ui/`.
 - What it does: an interactive map with markers paired to a swipeable card carousel.

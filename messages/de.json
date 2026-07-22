@@ -3553,5 +3553,27 @@
 		"success_title": "Termin gebucht",
 		"success_description": "Ihr Termin ist gebucht für {date} um {time} ({zone}-Zeit).",
 		"error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+	},
+	"events": {
+		"meta_title": "Veranstaltungen",
+		"meta_description": "Durchsuchen Sie bevorstehende Webinare und Workshops und melden Sie sich an.",
+		"back_home": "Zurück zur Startseite",
+		"back_events": "Zurück zu den Veranstaltungen",
+		"title": "Bevorstehende Veranstaltungen",
+		"loading": "Veranstaltungen werden geladen...",
+		"empty": "Derzeit sind keine Veranstaltungen geplant.",
+		"not_found": "Veranstaltung nicht gefunden.",
+		"full": "Ausgebucht",
+		"spots_left": "{count} Plätze verfügbar",
+		"signed_out": "Melden Sie sich an, um sich für diese Veranstaltung anzumelden.",
+		"sign_in": "Anmelden",
+		"already_registered": "Sie sind bereits für diese Veranstaltung angemeldet.",
+		"register": "Anmelden",
+		"registering": "Anmeldung läuft...",
+		"agenda_title": "Agenda",
+		"confirmation_heading": "Sie sind angemeldet!",
+		"confirmation_description": "Sie sind für {title} am {when} angemeldet.",
+		"error_full": "Diese Veranstaltung ist gerade ausgebucht. Bitte schauen Sie später für einen anderen Termin vorbei.",
+		"error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
 	}
 }

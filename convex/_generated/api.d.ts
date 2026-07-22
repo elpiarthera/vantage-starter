@@ -25,6 +25,7 @@ import type * as customFrameworks from "../customFrameworks.js";
 import type * as customPersonas from "../customPersonas.js";
 import type * as customRoles from "../customRoles.js";
 import type * as email from "../email.js";
+import type * as events from "../events.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as http_agent from "../http/agent.js";
@@ -86,6 +87,7 @@ declare const fullApi: ApiFromModules<{
   customPersonas: typeof customPersonas;
   customRoles: typeof customRoles;
   email: typeof email;
+  events: typeof events;
   files: typeof files;
   http: typeof http;
   "http/agent": typeof http_agent;

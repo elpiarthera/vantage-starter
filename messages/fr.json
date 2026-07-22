@@ -3553,5 +3553,27 @@
 		"success_title": "Appel réservé",
 		"success_description": "Votre appel est réservé le {date} à {time} (heure {zone}).",
 		"error_generic": "Une erreur est survenue. Veuillez réessayer."
+	},
+	"events": {
+		"meta_title": "Événements",
+		"meta_description": "Parcourez les prochains webinaires et ateliers et inscrivez-vous.",
+		"back_home": "Retour à l'accueil",
+		"back_events": "Retour aux événements",
+		"title": "Événements à venir",
+		"loading": "Chargement des événements...",
+		"empty": "Aucun événement n'est prévu pour le moment.",
+		"not_found": "Événement introuvable.",
+		"full": "Complet",
+		"spots_left": "{count} places restantes",
+		"signed_out": "Connectez-vous pour vous inscrire à cet événement.",
+		"sign_in": "Se connecter",
+		"already_registered": "Vous êtes déjà inscrit à cet événement.",
+		"register": "S'inscrire",
+		"registering": "Inscription en cours...",
+		"agenda_title": "Programme",
+		"confirmation_heading": "Vous êtes inscrit !",
+		"confirmation_description": "Vous êtes inscrit à {title} le {when}.",
+		"error_full": "Cet événement vient de se remplir. Revenez consulter une autre date.",
+		"error_generic": "Une erreur est survenue. Veuillez réessayer."
 	}
 }

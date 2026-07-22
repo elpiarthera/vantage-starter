@@ -1101,4 +1101,54 @@ export default defineSchema({
 		attachmentName: v.optional(v.string()),
 		createdAt: v.number(),
 	}).index("by_createdAt", ["createdAt"]),
+
+	/**
+	 * events — public `/events` browse + `/events/[slug]` detail/registration
+	 * pages (mcpcn `event-card` / `event-list` / `event-detail` /
+	 * `event-confirmation` blocks, docs/mcpcn-block-mapping.md §4 "Events",
+	 * Batch 4 fourth bullet).
+	 *
+	 * `registeredCount` is a DENORMALIZED counter, not a `.collect().length`
+	 * on `eventRegistrations` — the guideline in
+	 * `convex/_generated/ai/guidelines.md` ("Never use `.collect().length`
+	 * to count rows... maintain a denormalized counter") applies directly,
+	 * and it is also the mechanism the capacity guarantee in
+	 * `convex/events.ts` relies on: reading and patching this single field
+	 * inside `register`'s one mutation transaction is what makes the
+	 * over-capacity race impossible, not a recount at read time.
+	 *
+	 * `startDateTime` is stored as an ISO-8601 instant WITH an explicit UTC
+	 * offset (e.g. `2026-08-01T18:00:00-04:00`), and `timezone` carries the
+	 * IANA zone the event is authored in (e.g. `America/New_York`) — the
+	 * same explicit-offset-plus-named-zone pattern `date-time-picker`
+	 * already uses in this repo (`lib/booking/availability.ts`), chosen
+	 * because the previous Batch-4 bullet found hours zone-resolved while
+	 * days were not; both fields travel together here so no renderer can
+	 * repeat that split.
+	 */
+	events: defineTable({
+		slug: v.string(),
+		title: v.string(),
+		description: v.string(),
+		agenda: v.array(v.string()), // bounded — a handful of agenda-item lines, not user-submitted, well under the 8192-item array cap
+		startDateTime: v.string(), // ISO-8601 instant, explicit UTC offset
+		timezone: v.string(), // IANA zone name the event is authored in
+		capacity: v.number(),
+		registeredCount: v.number(), // denormalized — see header note above
+		createdAt: v.number(),
+	}).index("by_slug", ["slug"]),
+
+	/**
+	 * eventRegistrations — one row per successful `events.register` call.
+	 * `by_event_and_user` is what makes the duplicate-registration decision
+	 * (see `convex/events.ts` header: REFUSED, not idempotent, not allowed)
+	 * enforceable as an index lookup rather than a table scan.
+	 */
+	eventRegistrations: defineTable({
+		eventId: v.id("events"),
+		clerkUserId: v.string(),
+		registeredAt: v.number(),
+	})
+		.index("by_event", ["eventId"])
+		.index("by_event_and_user", ["eventId", "clerkUserId"]),
 });

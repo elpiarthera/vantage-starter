@@ -53,6 +53,14 @@ export const isPublicRoute = createRouteMatcher([
 	// so the page fronting it cannot demand a caller identity either.
 	"/(en|fr|de|it|es|pt|ru)/report(.*)",
 	"/report(.*)",
+	// Public events browse + detail/registration pages (mcpcn `event-card` /
+	// `event-list` / `event-detail` / `event-confirmation` blocks,
+	// docs/mcpcn-block-mapping.md §4 "Events", Batch 4 fourth bullet) —
+	// browsing and viewing an event is unauthenticated by design
+	// (`convex/events.ts`'s `list`/`getBySlug` are public reads); only the
+	// `register` mutation itself requires sign-in, enforced Convex-side.
+	"/(en|fr|de|it|es|pt|ru)/events(.*)",
+	"/events(.*)",
 	// Note: /api/chat and other protected API routes are NOT listed here
 	// They will be authenticated by Clerk middleware before the route handler runs
 ]);
