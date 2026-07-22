@@ -192,12 +192,13 @@ frontend-design, polish, animate, arrange, audit, critique, colorize, typeset, a
 
 ### Hooks
 
-Wired in `.claude/settings.json` today:
+**Do not read the wired list from this document — derive it.** The table that stood here named two hooks. `.claude/settings.json` actually wires around twenty, and the gap went unnoticed because nothing re-reads a table. A hook inventory is *state*: it changes without this file being touched, so it is resolved when it is needed and never typed here.
 
-| Hook | File | Purpose |
-|------|------|---------|
-| SessionStart | `.claude/hooks/session-start.py` | Detects workspace, emits orchestrator identity + startup sequence |
-| PreToolUse (Agent) | `.claude/hooks/enforce-run-in-background.py` | Blocks foreground agent launches |
+```bash
+grep -o '[a-z-]*\.\(py\|sh\)' .claude/settings.json | sort -u
+```
+
+That command — not this document — is the answer to "is hook X active?". `session-start.py` (workspace detection, orchestrator identity, startup sequence) and `enforce-run-in-background.py` (blocks foreground agent launches) are the two you meet first; they are examples, not the inventory.
 
 Present in `.claude/hooks/` but **not yet wired** in `.claude/settings.json` — `.claude/settings.json` is permission-denied to Edit/Write for this agent, so the JSON patch below is staged for an operator with write access to apply. Until applied, do not cite these as active:
 

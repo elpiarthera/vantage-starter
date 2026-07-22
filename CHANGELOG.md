@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-22 — the project bible's own hook inventory had been lying, and the fix is to stop keeping one)
+
+Found while checking a claim before publishing it, not while looking for it. `CLAUDE.md` carried a table headed "Wired in `.claude/settings.json` today" listing **two** hooks. Derived from the file itself:
+
+```
+grep -o '[a-z-]*\.\(py\|sh\)' .claude/settings.json | sort -u
+```
+
+**around twenty.** The table was not slightly out of date; it was wrong by an order of magnitude, and it had been wrong long enough that a reader consulting it would have concluded the repository was almost unguarded.
+
+The table is not corrected — **it is removed**, and replaced by the command above. Re-typing a longer list would reproduce the defect on a slower clock: a hook inventory is *state*, it changes whenever `settings.json` changes, and nothing makes a prose table follow. This is the repository's own rule (`.claude/rules/derive-never-type.md`) applied to the document that hosts the rule. The two hooks a reader meets first are still named, explicitly as examples rather than as the inventory.
+
+One claim in the same file survives the check and is left standing because it is true: `.claude/hooks/enforce-quality-gate.sh` really is **not** wired — `grep -c enforce-quality-gate .claude/settings.json` → `0`. The rule "no commit without a changelog entry" therefore holds by discipline alone, which the events branch of the same day demonstrated by reaching the gate with no entry at all.
+
 ### Fixed (2026-07-22 — the public issue-report page redirected to sign-up)
 
 `convex/issueReports.ts` calls itself "the ONE public, unauthenticated mutation" in the codebase; `convex/ratelimit.ts` justifies its `createIssueReportGlobal` bucket with "no per-caller identity exists on this public path". Both statements are true — and yet `middleware.ts` demanded a Clerk identity to view `/report` at all: every locale 307-redirected to `/sign-up`. 405 tests stayed green throughout, because nothing in the suite ever opened the page.
