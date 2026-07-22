@@ -2495,8 +2495,8 @@ describe("check-translations — Control 1 RATCHET (gated scope vs out-of-scope 
 		const marker = "___I18N_FR_JSXTEXT_PROBE_MARKER___";
 		const injectedFrenchText = `Déclaration d'accessibilité probe ${marker}`;
 		const mutated = original.replace(
-			"export default async function DeclarationAccessibilitePage({ params }: Props) {\n\tconst { locale } = await params;\n\treturn await AccessibilityDeclaration({ locale });\n}",
-			`export default async function DeclarationAccessibilitePage({ params }: Props) {\n\tconst { locale } = await params;\n\treturn (\n\t\t<>\n\t\t\t<span>${injectedFrenchText}</span>\n\t\t\t{await AccessibilityDeclaration({ locale })}\n\t\t</>\n\t);\n}`,
+			'export default async function DeclarationAccessibilitePage({ params }: Props) {\n\tconst { locale } = await params;\n\tconst t = await getTranslations({\n\t\tlocale,\n\t\tnamespace: "legal.accessibility_declaration",\n\t});\n\treturn <AccessibilityDeclaration t={t} />;\n}',
+			`export default async function DeclarationAccessibilitePage({ params }: Props) {\n\tconst { locale } = await params;\n\tconst t = await getTranslations({\n\t\tlocale,\n\t\tnamespace: "legal.accessibility_declaration",\n\t});\n\treturn (\n\t\t<>\n\t\t\t<span>${injectedFrenchText}</span>\n\t\t\t<AccessibilityDeclaration t={t} />\n\t\t</>\n\t);\n}`,
 		);
 		expect(mutated).not.toBe(original);
 
