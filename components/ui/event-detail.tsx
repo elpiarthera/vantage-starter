@@ -22,7 +22,19 @@
  *
  * Wired into `components/events/EventDetailSection.tsx` (Batch 4 fourth
  * bullet, docs/mcpcn-block-mapping.md §4 "Events").
+ *
+ * "use client": shares its event/locale across sub-exports via
+ * `createContext`/`useContext` (client-only React APIs) and renders real
+ * `onClick` handlers via `EventDetailRegistration`'s `actions` — the same
+ * class of defect fixed in `post-card.tsx`/`post-detail.tsx`/
+ * `event-card.tsx` (`next build` fails closed the moment this module
+ * becomes reachable from a Server Component; today its only caller,
+ * `EventDetailSection.tsx`, is already `"use client"`, but the directive is
+ * added here too so this file is never the next occurrence of that class,
+ * per this repo's `fix-the-class` rule).
  */
+"use client";
+
 import type { ComponentProps } from "react";
 import { createContext, useContext } from "react";
 

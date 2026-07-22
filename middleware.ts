@@ -61,6 +61,14 @@ export const isPublicRoute = createRouteMatcher([
 	// `register` mutation itself requires sign-in, enforced Convex-side.
 	"/(en|fr|de|it|es|pt|ru)/events(.*)",
 	"/events(.*)",
+	// Public changelog browse + detail pages (mcpcn `post-card` / `post-list`
+	// / `post-detail` blocks, docs/mcpcn-block-mapping.md §4 "Content / blog",
+	// Batch 4 fifth bullet) — reading the changelog is unauthenticated by
+	// design, same reasoning as `/events` above: the content is
+	// `CHANGELOG.md` itself (`lib/changelog/parseChangelog.ts`), a
+	// version-controlled file with no notion of a caller identity.
+	"/(en|fr|de|it|es|pt|ru)/changelog(.*)",
+	"/changelog(.*)",
 	// Note: /api/chat and other protected API routes are NOT listed here
 	// They will be authenticated by Clerk middleware before the route handler runs
 ]);
