@@ -43,6 +43,8 @@ export const ROUTES = {
 	accessibilite: "/accessibilite",
 	accessibility: "/accessibility",
 	accessibilityPlan: "/accessibility-plan",
+	changelog: "/changelog",
+	changelogDetail: (slug: string) => `/changelog/${slug}`,
 	contact: "/contact",
 	create: "/create",
 	events: "/events",

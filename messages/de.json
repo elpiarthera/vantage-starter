@@ -3575,5 +3575,20 @@
 		"confirmation_description": "Sie sind für {title} am {when} angemeldet.",
 		"error_full": "Diese Veranstaltung ist gerade ausgebucht. Bitte schauen Sie später für einen anderen Termin vorbei.",
 		"error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+	},
+	"changelog": {
+		"meta_title": "Änderungsprotokoll",
+		"meta_description": "Was ist neu bei VantageStarter, direkt aus dem Änderungsprotokoll des Projekts.",
+		"back_home": "Zurück zur Startseite",
+		"back_changelog": "Zurück zum Änderungsprotokoll",
+		"title": "Neuigkeiten",
+		"empty": "Es wurde noch nichts erfasst.",
+		"read_more": "Weiterlesen",
+		"related": "Verwandte Einträge",
+		"carousel_previous": "Vorherige Einträge",
+		"carousel_next": "Nächste Einträge",
+		"pagination_previous": "Vorherige Seite",
+		"pagination_next": "Nächste Seite",
+		"pagination_status": "Seite {current} von {total}"
 	}
 }

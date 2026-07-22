@@ -52,9 +52,9 @@ quick-reply installed consumers=1
 progress-steps installed consumers=1
 status-badge installed consumers=1
 stat-card installed consumers=1
-post-card NOT_INSTALLED
-post-list NOT_INSTALLED
-post-detail NOT_INSTALLED
+post-card installed consumers=1
+post-list installed consumers=1
+post-detail installed consumers=1
 table installed consumers=1
 message-bubble installed consumers=1
 chat-conversation installed consumers=1
@@ -71,7 +71,7 @@ event-confirmation installed consumers=1
 hero NOT_INSTALLED
 ```
 
-`contact-form` reads `consumers=3` because this command counts every occurrence of the literal import-path string, including inside prose code comments (not only real `import` statements) — `components/ui/date-time-picker.tsx` and `components/ui/issue-report-form.tsx` both mention `components/ui/contact-form.tsx` in their own port-notes headers, a known characteristic of this substring-based command, not a new defect introduced by this delivery. `date-time-picker` is newly `installed consumers=1` (`components/consultant/BookingSection.tsx`, the sole real importer) as of this delivery (`docs/mcpcn-block-mapping.md` §4 "date-time-picker", Batch 4 third bullet). `event-card` reads `consumers=3` for the same reason as `contact-form`: `components/events/EventListSection.tsx` (real import) and `components/ui/event-detail.tsx` (real import, `EventCardData` type) are two genuine consumers, plus `components/ui/event-list.tsx`'s own port-notes header mentioning `components/ui/event-card.tsx` in prose — the same substring-command characteristic, not a new defect. Every remaining installed block still sits at `consumers>=1` — none at `consumers=0` on this branch.
+`contact-form` reads `consumers=3` because this command counts every occurrence of the literal import-path string, including inside prose code comments (not only real `import` statements) — `components/ui/date-time-picker.tsx` and `components/ui/issue-report-form.tsx` both mention `components/ui/contact-form.tsx` in their own port-notes headers, a known characteristic of this substring-based command, not a new defect introduced by this delivery. `date-time-picker` is newly `installed consumers=1` (`components/consultant/BookingSection.tsx`, the sole real importer) as of this delivery (`docs/mcpcn-block-mapping.md` §4 "date-time-picker", Batch 4 third bullet). `event-card` reads `consumers=3` for the same reason as `contact-form`: `components/events/EventListSection.tsx` (real import) and `components/ui/event-detail.tsx` (real import, `EventCardData` type) are two genuine consumers, plus `components/ui/event-list.tsx`'s own port-notes header mentioning `components/ui/event-card.tsx` in prose — the same substring-command characteristic, not a new defect. `post-card`, `post-list`, and `post-detail` are newly `installed consumers=1` each (`components/changelog/ChangelogListSection.tsx` for the first two, `components/changelog/ChangelogDetailSection.tsx` for the third) as of this delivery (Batch 4 fifth bullet). Every remaining installed block still sits at `consumers>=1` — none at `consumers=0` on this branch.
 
 **Command-on-this-branch note, named rather than silently worked around:** this command is `git grep -l`, which by default searches only TRACKED files. The four Events blocks and their consumers are new, untracked files on this branch (the tree is intentionally dirty per this delivery's brief) — a bare `git grep -l` against them returns 0 for all four, a false "not consumed yet" reading of files that plainly are. The output above was produced with `git grep --untracked -l`, which also searches untracked-but-present files; re-run with `--untracked` on this branch, and drop it again once these files are committed and tracked (either flag then reads the same true count).
 
@@ -83,11 +83,11 @@ print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block')
 done | sort | uniq -c
 ```
 ```
--> 17 installed
--> 13 missing
+-> 20 installed
+-> 10 missing
 ```
 
-(Corrected from a prior `11`/`19`, then `13`/`17`, snapshot — this delivery adds `event-card`, `event-list`, `event-detail`, `event-confirmation` as the 14th through 17th installed blocks. Re-run the command above rather than trusting either number.)
+(Corrected from a prior `11`/`19`, then `13`/`17`, then `17`/`13`, snapshot — this delivery adds `post-card`, `post-list`, `post-detail` as the 18th through 20th installed blocks. Re-run the command above rather than trusting either number.)
 
 ---
 
@@ -201,23 +201,23 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 
 ### Content / blog
 
-**post-card** — not present in `components/ui/`.
-- What it does: a preview card for one blog/changelog post.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**post-card** — `components/ui/post-card.tsx`
+- What it does: a preview card for one blog/changelog post — category badge, title, date, excerpt, and a "read more" link.
+- Consumer: `components/changelog/ChangelogListSection.tsx` (import `@/components/ui/post-card`), consumers=1.
+- State: in service.
+- See it: `/changelog` -> each `CHANGELOG.md` entry renders as a card showing its type (Added/Fixed/Changed), title, date, and first line of body -> click "Read more" to open its detail page.
 
-**post-list** — not present in `components/ui/`.
-- What it does: the layout that arranges multiple post cards into a list.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**post-list** — `components/ui/post-list.tsx`
+- What it does: the responsive grid layout arranging multiple post cards, plus the empty-state message when no entries are parsed.
+- Consumer: `components/changelog/ChangelogListSection.tsx` (import `@/components/ui/post-list`), consumers=1.
+- State: in service.
+- See it: `/changelog` -> the cards render in a responsive grid (one column on mobile, up to three on desktop).
 
-**post-detail** — not present in `components/ui/`.
-- What it does: the full single-post view with related posts.
-- Consumers: none — not installed.
-- State: not yet built.
-- See it: not yet visible.
+**post-detail** — `components/ui/post-detail.tsx`
+- What it does: the full single-entry view — header (type badge, title, date), body text, and a related-entries list (up to 3 other entries, most-recent-first).
+- Consumer: `components/changelog/ChangelogDetailSection.tsx` (import `@/components/ui/post-detail`), consumers=1.
+- State: in service. Built from `CHANGELOG.md` itself via `lib/changelog/parseChangelog.ts` — no Convex table (docs/mcpcn-block-mapping.md line ~392, a committed decision).
+- See it: `/changelog/[slug]` (any real slug from `/changelog`) -> the entry's full body renders under its header -> up to 3 related entries link below it.
 
 ### Social embeds
 

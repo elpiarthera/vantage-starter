@@ -3575,5 +3575,20 @@
 		"confirmation_description": "You are registered for {title} on {when}.",
 		"error_full": "This event just filled up. Please check back for another date.",
 		"error_generic": "Something went wrong. Please try again."
+	},
+	"changelog": {
+		"meta_title": "Changelog",
+		"meta_description": "What's new in VantageStarter, straight from the project's own changelog.",
+		"back_home": "Back to home",
+		"back_changelog": "Back to changelog",
+		"title": "What's new",
+		"empty": "Nothing has been recorded yet.",
+		"read_more": "Read more",
+		"related": "Related entries",
+		"carousel_previous": "Previous entries",
+		"carousel_next": "Next entries",
+		"pagination_previous": "Previous page",
+		"pagination_next": "Next page",
+		"pagination_status": "Page {current} of {total}"
 	}
 }

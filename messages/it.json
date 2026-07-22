@@ -3575,5 +3575,20 @@
 		"confirmation_description": "Sei iscritto a {title} il {when}.",
 		"error_full": "Questo evento si è appena riempito. Ricontrolla per un'altra data.",
 		"error_generic": "Qualcosa è andato storto. Riprova."
+	},
+	"changelog": {
+		"meta_title": "Registro modifiche",
+		"meta_description": "Le novità di VantageStarter, direttamente dal registro modifiche del progetto.",
+		"back_home": "Torna alla home",
+		"back_changelog": "Torna al registro modifiche",
+		"title": "Novità",
+		"empty": "Non è stato ancora registrato nulla.",
+		"read_more": "Continua a leggere",
+		"related": "Voci correlate",
+		"carousel_previous": "Voci precedenti",
+		"carousel_next": "Voci successive",
+		"pagination_previous": "Pagina precedente",
+		"pagination_next": "Pagina successiva",
+		"pagination_status": "Pagina {current} di {total}"
 	}
 }

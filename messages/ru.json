@@ -3575,5 +3575,20 @@
 		"confirmation_description": "Вы зарегистрированы на {title}, {when}.",
 		"error_full": "Мест только что не осталось. Проверьте другую дату позже.",
 		"error_generic": "Что-то пошло не так. Попробуйте снова."
+	},
+	"changelog": {
+		"meta_title": "Журнал изменений",
+		"meta_description": "Что нового в VantageStarter — прямо из журнала изменений проекта.",
+		"back_home": "На главную",
+		"back_changelog": "Назад к журналу изменений",
+		"title": "Что нового",
+		"empty": "Пока ничего не записано.",
+		"read_more": "Читать далее",
+		"related": "Похожие записи",
+		"carousel_previous": "Предыдущие записи",
+		"carousel_next": "Следующие записи",
+		"pagination_previous": "Предыдущая страница",
+		"pagination_next": "Следующая страница",
+		"pagination_status": "Страница {current} из {total}"
 	}
 }

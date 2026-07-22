@@ -3575,5 +3575,20 @@
 		"confirmation_description": "Vous êtes inscrit à {title} le {when}.",
 		"error_full": "Cet événement vient de se remplir. Revenez consulter une autre date.",
 		"error_generic": "Une erreur est survenue. Veuillez réessayer."
+	},
+	"changelog": {
+		"meta_title": "Journal des modifications",
+		"meta_description": "Les nouveautés de VantageStarter, directement issues du journal des modifications du projet.",
+		"back_home": "Retour à l'accueil",
+		"back_changelog": "Retour au journal",
+		"title": "Nouveautés",
+		"empty": "Rien n'a encore été enregistré.",
+		"read_more": "Lire la suite",
+		"related": "Entrées associées",
+		"carousel_previous": "Entrées précédentes",
+		"carousel_next": "Entrées suivantes",
+		"pagination_previous": "Page précédente",
+		"pagination_next": "Page suivante",
+		"pagination_status": "Page {current} sur {total}"
 	}
 }

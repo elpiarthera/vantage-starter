@@ -171,6 +171,27 @@ jobs:
       - name: TypeScript — tsc --noEmit
         run: npx tsc --noEmit
 
+      # `next build` is the only instrument that judges the Server/Client
+      # boundary — jest renders these components in jsdom, a world with no
+      # such boundary, so 281 green jest tests coexisted for a whole commit
+      # with an application `next build` refused to produce (`post-card.tsx`/
+      # `post-detail.tsx` imported `createContext` into a module reachable
+      # from a Server Component; `tsc --noEmit` does not see a `"use client"`
+      # directive either). This step is what closes that class going forward.
+      # It needs no real backend: `next build` compiles and prerenders with
+      # only a syntactically valid `NEXT_PUBLIC_CONVEX_URL`/
+      # `NEXT_PUBLIC_CONVEX_SITE_URL` (proven on this commit, both env-free
+      # and with these two placeholders — every other required var is either
+      # server-only and unread at build time, or has a safe fallback).
+      # Exit code is what is graded, never the log tail.
+      - name: Next.js — production build
+        env:
+          NEXT_PUBLIC_CONVEX_URL: "https://placeholder-ci-build.convex.cloud"
+          NEXT_PUBLIC_CONVEX_SITE_URL: "https://placeholder-ci-build.convex.site"
+        run: |
+          pnpm build
+          echo "BUILD_EXIT=$?"
+
       # biome check . is proven green on the commit that introduces this gate.
       # public/lit-ui (our own esbuild output) and convex/_generated (Convex
       # codegen) are excluded in biome.json — generated artifacts we never

@@ -20,7 +20,18 @@
  * bullet, docs/mcpcn-block-mapping.md §4 "Events"). All colors resolve to
  * this repo's OKLCH tokens (`bg-card`, `text-foreground`,
  * `text-muted-foreground`, `border-border`) — no hardcoded color.
+ *
+ * "use client": shares its event/isFull/locale across sub-exports via
+ * `createContext`/`useContext` (client-only React APIs) and renders a real
+ * `onClick` handler — both close the same class of defect fixed in
+ * `post-card.tsx`/`post-detail.tsx` (`next build` fails closed the moment
+ * this module becomes reachable from a Server Component; today its only
+ * caller, `EventListSection.tsx`, is already `"use client"`, but the
+ * directive is added here too so this file is never the next occurrence of
+ * that class, per this repo's `fix-the-class` rule).
  */
+"use client";
+
 import type { ComponentProps } from "react";
 import { createContext, useContext } from "react";
 
