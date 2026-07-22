@@ -12,6 +12,12 @@
  * - customRoles.create:     10 / minute  — user-defined role creation
  * - customPersonas.create:  10 / minute  — user-defined persona creation
  * - customFrameworks.create: 10 / minute  — user-defined framework creation
+ * - contactSubmissions.create: 3 / minute, keyed per submitted email;
+ *   plus a 30 / minute global bucket across all callers — this is the ONE
+ *   public, unauthenticated mutation in this list (docs/mcpcn-block-mapping.md
+ *   §4 "contact-form"), so it cannot be keyed on a Clerk user ID like every
+ *   other limit here. See convex/contactSubmissions.ts for what this does
+ *   and does not protect against.
  *
  * Internal mutations are exempt — called by trusted server-side actions only.
  */
@@ -69,5 +75,22 @@ export const rateLimiter = new RateLimiter(components.ratelimiter, {
 		rate: 10,
 		period: 60_000,
 		capacity: 10,
+	},
+
+	// contactSubmissions.create — 3 per 60s, keyed per submitted email
+	createContactSubmission: {
+		kind: "token bucket",
+		rate: 3,
+		period: 60_000,
+		capacity: 3,
+	},
+
+	// contactSubmissions.create — 30 per 60s, one shared global bucket
+	// (no per-caller identity exists on this public path to key on instead)
+	createContactSubmissionGlobal: {
+		kind: "token bucket",
+		rate: 30,
+		period: 60_000,
+		capacity: 30,
 	},
 });

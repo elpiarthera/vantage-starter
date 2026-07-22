@@ -42,36 +42,39 @@ Output at the time this document was written (re-run the command above — this 
 message-bubble installed consumers=1
 chat-conversation installed consumers=1
 quick-reply installed consumers=1
-option-list installed consumers=1
-tag-select installed consumers=1
-progress-steps installed consumers=1
-status-badge installed consumers=1
-table installed consumers=1
-amount-input installed consumers=1
-contact-form NOT_INSTALLED
-issue-report-form NOT_INSTALLED
+contact-form installed consumers=1
 date-time-picker NOT_INSTALLED
-ticket-tier-select NOT_INSTALLED
+issue-report-form NOT_INSTALLED
 order-confirm NOT_INSTALLED
 payment-confirmed NOT_INSTALLED
 product-list NOT_INSTALLED
+option-list installed consumers=1
+amount-input installed consumers=1
+tag-select installed consumers=1
+quick-reply installed consumers=1
+progress-steps installed consumers=1
+status-badge installed consumers=1
+stat-card installed consumers=1
 post-card NOT_INSTALLED
 post-list NOT_INSTALLED
 post-detail NOT_INSTALLED
+table installed consumers=1
+message-bubble installed consumers=1
+chat-conversation installed consumers=1
 x-post NOT_INSTALLED
 instagram-post NOT_INSTALLED
 linkedin-post NOT_INSTALLED
 youtube-post NOT_INSTALLED
+map-carousel NOT_INSTALLED
 event-card NOT_INSTALLED
 event-list NOT_INSTALLED
 event-detail NOT_INSTALLED
+ticket-tier-select NOT_INSTALLED
 event-confirmation NOT_INSTALLED
-map-carousel NOT_INSTALLED
-stat-card installed consumers=1
 hero NOT_INSTALLED
 ```
 
-10 installed (all with `consumers=1`, i.e. in service — none sitting at `consumers=0` on this branch), 20 not yet installed. That "10" and "20" are themselves derived, not typed:
+Every installed block sits at `consumers=1` — none at `consumers=0` on this branch. The installed/missing split is derived too, never typed; the command and its output follow, and they are a **dated record**, re-run rather than trusted:
 
 ```bash
 for b in $(curl -sS https://www.mcpcn.dev/r/registry.json | python3 -c "
@@ -81,8 +84,8 @@ print(' '.join(i['name'] for i in d['items'] if i.get('type')=='registry:block')
 done | sort | uniq -c
 ```
 ```
--> 10 installed
--> 20 missing
+-> 11 installed
+-> 19 missing
 ```
 
 ---
@@ -151,11 +154,11 @@ Column 2 ("What it does") is the one-sentence, non-technical summary already com
 
 ### Forms
 
-**contact-form** — not present in `components/ui/`.
+**contact-form** — `components/ui/contact-form.tsx`
 - What it does: name/phone/email/message/attachment lead-capture form for a public site.
-- Consumers: none — not installed (§2).
-- State: not yet built.
-- See it: not yet visible.
+- Consumer: `components/contact/ContactFormSection.tsx` (import `@/components/ui/contact-form`), consumers=1 (§2).
+- State: in service. Writes to Convex `contactSubmissions` via `api.contactSubmissions.create` — public, unauthenticated, rate-limited (3/min per submitted email, 30/min global). No attachment binary is stored, only its file name (declared scope decision, see `convex/contactSubmissions.ts` header).
+- See it: `/contact` -> fill in first name, last name, email, and message -> submit -> the form is replaced by a "Message sent" confirmation.
 
 **issue-report-form** — not present in `components/ui/`.
 - What it does: a compact bug/incident report form with category, impact, urgency, attachments.

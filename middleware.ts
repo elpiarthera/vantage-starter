@@ -41,6 +41,11 @@ export const isPublicRoute = createRouteMatcher([
 	"/accessibilite(.*)",
 	"/(en|fr|de|it|es|pt|ru)/schema-accessibilite(.*)",
 	"/schema-accessibilite(.*)",
+	// Public lead-capture form (mcpcn `contact-form` block,
+	// docs/mcpcn-block-mapping.md §4 "contact-form") — unauthenticated by
+	// design, same reasoning as the legal/accessibility pages above.
+	"/(en|fr|de|it|es|pt|ru)/contact(.*)",
+	"/contact(.*)",
 	// Note: /api/chat and other protected API routes are NOT listed here
 	// They will be authenticated by Clerk middleware before the route handler runs
 ]);

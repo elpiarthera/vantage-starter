@@ -18,7 +18,13 @@ The file already carried the correct remedy for this class, applied earlier to t
 
 Proof: `pnpm exec jest scripts/__tests__/check-translations.test.js` -> 75/75. Ten consecutive full runs by the agent, then five more by the orchestrator: `Tests: 249 passed, 249 total` every time, with `git status` clean of anything but the intended edit after each — a leaked mutation would show there. No banned workaround: no `--runInBand`, no retry, no skip, no assertion loosened; the diff shows it.
 
-**Residual, declared.** Some probes still mutate live paths — `components/missions/mission-column.tsx`, `app/[locale]/dashboard/error.tsx`, `messages/de.json`, `messages/fr.json`. They are safe **today** only because no other suite imports them (`messages/en.json`, which many suites do import, is read but never written). That is a snapshot exemption, not a property: it breaks silently the day someone adds a suite importing one of those files. The durable fix is a check that refuses any probe whose target is imported elsewhere. Written down rather than left to be rediscovered as another intermittent failure.
+**Residual, declared — and the list first published here was wrong, which is worth more than the list.** It named four files, typed from memory instead of derived, in an entry whose whole subject is that typed state goes stale. The reviewer caught it. Derived properly (`const target = path.join(ROOT, …)` across the probe file), there are **seven**:
+
+`app/[locale]/dashboard/error.tsx`, `components/chat/ModelSelector.tsx`, `components/design-system/menu-picker.tsx`, `components/landing/LandingNav.tsx`, `components/missions/mission-card.tsx`, `components/missions/mission-column.tsx`, `messages/de.json`.
+
+And `messages/fr.json`, which the four-name list *did* include, is **not** one of them — it is written through `buildFixtureRoot`, never live. So the published list was wrong in both directions at once. The durable fix will take this list as its input, and with four names it would have missed four files.
+
+They are safe **today** only because no suite imports any of the seven — measured, not assumed. `messages/en.json`, which many suites do import, is read but never written, which is why it never raced. That is a snapshot, not a property: it breaks silently the day someone adds a suite importing one of the seven. The durable fix is a check that refuses any probe whose target is imported elsewhere.
 
 ### Added (2026-07-21 — `docs/blocks-inventory.md`: what each component is, where it is used, and how to check it by eye)
 
