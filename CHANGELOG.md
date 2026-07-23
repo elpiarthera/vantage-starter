@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-23 — a characterisation test around the landing hero; the `hero` block itself is NOT ported)
+
+**This entry records an incomplete bullet as incomplete.** Batch 4's `hero` bullet asks for `components/landing/HeroSection.tsx` (234 hand-written lines) to be replaced in full by the upstream `hero` block, covering hero, logos, title, subtitle, CTAs and a tech-logo footer. That is **not** what shipped here, and calling it done would be a false statement of state.
+
+What shipped: `__tests__/components/HeroSection.test.tsx`, a characterisation test that did not exist before, asserting the title, the subtitle, both CTAs' accessible names and `href`s (`/sign-up`, the GitHub URL) and the labelled region — and a substitution of the block's actual CTA primitive (shadcn `Button` with `asChild`) for the hand-styled anchors. 45 insertions, 37 deletions, one file.
+
+**The test is the point, and it was proven against both sides.** It passed 6/6 against the untouched component before any markup changed, and passes 6/6 **unedited** against the rewrite: the orchestrator re-verified this independently by restoring the original file (`git checkout HEAD --`, `asChild` absent, confirmed) and re-running, then restoring the rewrite byte-exact (`diff -q`). A characterisation test that has to be edited to accommodate its own rewrite is not a characterisation test — it is a record of a regression.
+
+Proven by narrow mutation rather than by deletion: the primary CTA's `href` changed to `/mutated-path`, the mutation's landing asserted by `grep` before any result was read, exactly `renders the primary CTA with the sign-up href` reddening (1 failed / 5 passed) while the other five stayed green, then restored.
+
+**Why the block was not swapped wholesale, escalated rather than authorised here.** The upstream `hero` exposes a `HeroContext`/`useHero` provider over a fixed `HeroData` shape. Adopting it as-is would drop the animated word-cycling headline and the terminal-mockup copy affordance this landing page ships today — which the bullet's own TDD assertion requires to survive byte-identical. The contract therefore contradicts itself: "replaces in full" and "renders the same title, subtitle and CTA hrefs it does today" cannot both hold while the current hero carries affordances the block's data shape has no field for. The specialist reported the conflict instead of resolving it silently in either direction. The logos row and tech-logo footer named in the block description are **absent** — they were absent before this change too (`grep -ci logo` → 0, before and after), so nothing regressed, but nothing was added either. The bullet stays open.
+
+Ratios measured on **tau-vps**, `pnpm exec`, repository root, exit codes read from each command and never from an `echo "$?"` behind a pipe: `jest` → exit 0, 65 suites, **287/287**. `tsc --noEmit` → exit 0. `pnpm build` → exit 0. `check-translations.js` → exit 0, parity untouched — no `messages/*.json` key was added or changed.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.
