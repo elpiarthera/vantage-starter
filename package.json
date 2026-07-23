@@ -22,7 +22,8 @@
 		"test:coverage-parity": "node scripts/verify-test-runner-coverage.js",
 		"translate": "node scripts/translate.js",
 		"i18n:verify": "node scripts/verify-translations.js",
-		"check-translations": "node scripts/check-translations.js"
+		"check-translations": "node scripts/check-translations.js",
+		"check-orphan-namespaces": "node scripts/check-orphan-namespaces.js"
 	},
 	"dependencies": {
 		"@ai-sdk/anthropic": "^3.0.58",
