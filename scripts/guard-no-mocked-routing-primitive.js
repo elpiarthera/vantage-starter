@@ -50,7 +50,21 @@
 const { execSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
-const ts = require("typescript");
+// The instrument itself is a three-state question. A missing `typescript`
+// dependency made this guard exit 1 during review -- a red of BREAKDOWN
+// indistinguishable from a red of BITE, which is the same "absence of signal
+// read as a verdict" defect the guard exists to close. It now exits 2, naming
+// what is missing, before any file is scanned.
+let ts;
+try {
+	ts = require("typescript");
+} catch (err) {
+	process.stderr.write(
+		`COULD NOT CHECK — the guard's own instrument is unavailable: require("typescript") failed (${String(err)}). ` +
+			`Refusing to report clean on ground it cannot parse. Install dependencies (\`pnpm install\`) and re-run.\n`,
+	);
+	process.exit(2);
+}
 
 const ROOT = path.resolve(__dirname, "..");
 const SCAN_ROOT = "__tests__";
@@ -123,21 +137,54 @@ function factoryMocksExport(factoryNode) {
 
 	for (const prop of body.properties) {
 		if (ts.isSpreadAssignment(prop)) continue; // `...jest.requireActual(...)` — compliant
-		if (
-			ts.isPropertyAssignment(prop) &&
-			ts.isIdentifier(prop.name) &&
-			prop.name.text === MOCKED_EXPORT
-		) {
-			return { line: getLine(prop) };
+		// One normalisation for every way an object literal can name a
+		// property, and one membership test — never a per-form branch. The
+		// first version of this guard only accepted an Identifier key, so
+		// `"createRouteMatcher": fn`, `createRouteMatcher(p) { … }` and a
+		// computed key each executed identically and each passed as CLEAN.
+		// That is the single-formulation matcher this repository's own
+		// `derive-never-type.md` names, carried by the guard written to
+		// close it, and failing OPEN.
+		const named = propertyName(prop.name);
+		if (named.undecidable) {
+			return {
+				undecidable: `${named.undecidable} (line ${getLine(prop)}) — a computed property name that cannot be resolved statically. It may or may not be "${MOCKED_EXPORT}"; refusing to report clean on a key it cannot read.`,
+			};
 		}
-		if (
-			ts.isShorthandPropertyAssignment(prop) &&
-			prop.name.text === MOCKED_EXPORT
-		) {
-			return { line: getLine(prop) };
-		}
+		if (named.text === MOCKED_EXPORT) return { line: getLine(prop) };
 	}
 	return false;
+
+	/**
+	 * The property's name as written, whichever form the author used:
+	 * `k: fn` / `"k": fn` / `` `k`: fn `` / `["k"]: fn` / `k(p) {}` /
+	 * `get k() {}` / shorthand `k`. A computed key whose expression is not a
+	 * literal is NOT clean and NOT a violation — it is undecidable, and says so.
+	 */
+	function propertyName(nameNode) {
+		if (!nameNode) return { text: null };
+		if (ts.isComputedPropertyName(nameNode)) {
+			const expr = nameNode.expression;
+			if (
+				ts.isStringLiteral(expr) ||
+				ts.isNoSubstitutionTemplateLiteral(expr) ||
+				ts.isNumericLiteral(expr)
+			) {
+				return { text: expr.text };
+			}
+			return { undecidable: nameNode.getText(nameNode.getSourceFile()) };
+		}
+		if (
+			ts.isIdentifier(nameNode) ||
+			ts.isStringLiteral(nameNode) ||
+			ts.isNoSubstitutionTemplateLiteral(nameNode) ||
+			ts.isNumericLiteral(nameNode) ||
+			ts.isPrivateIdentifier(nameNode)
+		) {
+			return { text: nameNode.text };
+		}
+		return { undecidable: nameNode.getText(nameNode.getSourceFile()) };
+	}
 
 	function getLine(node) {
 		const sourceFile = factoryNode.getSourceFile();
@@ -171,6 +218,7 @@ function scanFile(relPath) {
 	}
 
 	const violations = [];
+	const undecidable = [];
 
 	function visit(node) {
 		if (
@@ -186,7 +234,9 @@ function scanFile(relPath) {
 		) {
 			const factory = node.arguments[1];
 			const hit = factoryMocksExport(factory);
-			if (hit) {
+			if (hit && hit.undecidable) {
+				undecidable.push(`${relPath}: ${hit.undecidable}`);
+			} else if (hit) {
 				violations.push({ file: relPath, line: hit.line });
 			}
 		}
@@ -194,7 +244,7 @@ function scanFile(relPath) {
 	}
 	visit(sourceFile);
 
-	return { violations };
+	return { violations, undecidable };
 }
 
 function main() {
@@ -210,6 +260,12 @@ function main() {
 		const result = scanFile(relPath);
 		if (result.couldNotRead) {
 			couldNotRead.push(result.couldNotRead);
+			continue;
+		}
+		// An undecidable key is neither clean nor a violation. Folding it into
+		// either pole is the silent-skip this guard refuses.
+		if (result.undecidable && result.undecidable.length > 0) {
+			couldNotRead.push(...result.undecidable);
 			continue;
 		}
 		violations.push(...result.violations);
