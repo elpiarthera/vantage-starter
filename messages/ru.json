@@ -1701,5 +1701,16 @@
 		"pagination_previous": "Предыдущая страница",
 		"pagination_next": "Следующая страница",
 		"pagination_status": "Страница {current} из {total}"
+	},
+	"order_confirmation": {
+		"digital_heading": "Спасибо за покупку!",
+		"digital_description": "Ваш файл готов к загрузке.",
+		"trackable_heading": "Оплата подтверждена",
+		"trackable_description": "Ваш заказ готовится к отправке.",
+		"product_label": "Товар",
+		"purchased_on_label": "Дата покупки",
+		"tracking_ref_label": "Номер отслеживания",
+		"track_button": "Скопировать номер отслеживания",
+		"track_copied": "Номер отслеживания скопирован"
 	}
 }

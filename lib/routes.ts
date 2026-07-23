@@ -40,6 +40,7 @@ export const ROUTES = {
 		`/dashboard/consultant/onboard/${projectId}`,
 	dashboardMissions: "/dashboard/missions",
 	dashboardMission: (missionId: string) => `/dashboard/missions/${missionId}`,
+	dashboardOrderConfirmed: "/dashboard/account/order-confirmed",
 	accessibilite: "/accessibilite",
 	accessibility: "/accessibility",
 	accessibilityPlan: "/accessibility-plan",
