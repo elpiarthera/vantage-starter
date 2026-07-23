@@ -106,6 +106,23 @@ polar.registerRoutes(http, {
 			} catch (error) {
 				console.error("Error processing order.paid:", error);
 			}
+
+			// Record a `purchases` row for one-time products (credit packages
+			// and any other one_time SKU) — separate try/catch so a failure
+			// here never touches the credits grant above.
+			if (tier.productType === "one_time") {
+				try {
+					await ctx.runMutation(internal.purchases.recordFromWebhookOrder, {
+						userId: user.clerkUserId,
+						productKey: tier.tierKey,
+						productType: tier.productType,
+						fulfillmentKind: tier.fulfillmentKind,
+						polarOrderId: orderId,
+					});
+				} catch (error) {
+					console.error("Error recording purchase for order.paid:", error);
+				}
+			}
 		},
 
 		// ============================================

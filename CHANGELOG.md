@@ -6,6 +6,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-23 — the purchase group of batch 4: a one-time purchase is recorded, and a misconfigured product records nothing)
+
+Batch 4's purchase bullet, backend half — the `purchases` table, its idempotent recording mutation, and the wiring from Polar's existing `order.paid` webhook handler. `docs/mcpcn-block-mapping.md` (~line 393) is the committed contract: `userId`, `productKey`, `kind: "digital" | "trackable"`, `trackingRef`, `purchasedAt`. Idempotency is on the Polar order id and reuses `credits.addPurchaseCredits`'s own mechanism rather than a second one: a re-delivered webhook writes nothing more.
+
+**The specialist stopped rather than guess, and it was right.** The contract requires `kind` to distinguish a digital from a trackable purchase, but `subscriptionTiers` — the only product record the `order.paid` handler resolves — carries just `productType: "subscription" | "one_time"` and cannot express that distinction. Rather than invent a hardcoded product-id list or pick a silent default, it wrote the gap into the code it shipped and reported the contradiction. The orchestrator then decided the path instead of the implementer deciding it quietly: `subscriptionTiers` gains one optional `fulfillmentKind` field, which is **operator-editable configuration** exactly as `isActive`, `description` and `priceUsd` already are — this is why it is config and not business knowledge hardcoded into the template (`.claude/rules/no-hardcoded-business-knowledge.md`).
+
+**The absent case is loud, never defaulted.** A `one_time` tier with no `fulfillmentKind` is a misconfiguration: the mutation logs an error naming the product and writes **nothing**. It does not fall back to `"digital"`. That is the assertion proven RED first — the guard was temporarily replaced by `args.fulfillmentKind ?? "digital"` and the suite went 13 passed / 1 failed on exactly that case, the row having been wrongly written; restoring the real guard returned 14/14. A subscription order records no purchase row at all.
+
+Credits behaviour is untouched: the new call sits in its own try/catch after the existing credits try/catch, and the eight Polar/webhook/credits suites still pass 69/69.
+
+Ratios measured on **tau-vps**, `pnpm exec`, repository root, exit codes read from each command and never from an `echo "$?"` behind a pipe: `vitest run __tests__/convex/purchases.test.ts` → exit 0, 14/14. `tsc --noEmit` → exit 0. `biome check` on the changed files → exit 0. The eight Polar-related suites → exit 0, 69/69.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.
