@@ -6,6 +6,26 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-23 — a Convex suite that never guarded anything, and asserted the exact behaviour a security fix had forbidden)
+
+`__tests__/convex/users.test.ts` contributed 6 failures the moment it became able to measure. Both hypotheses on the tracking task are now resolved, and the answer was in what the backend returns, not in the test's code:
+
+- `convex/users.ts:58` — `syncUser` calls `ctx.auth.getUserIdentity()` and throws `Unauthorized: Authentication required` without one. That guard was added deliberately by `fdc2714` (2026-07-18), *"close the twelve mutations reachable without authentication"*.
+- The suite called `syncUser` through an **unauthenticated** `ConvexHttpClient` and asserted it SUCCEEDED. It asserted precisely what that security fix exists to forbid — it encoded a pre-`fdc2714` world. **The backend was right; the test was wrong.** Nothing in `convex/users.ts` was weakened to make it pass.
+
+**A third defect neither hypothesis anticipated.** `vitest.config.ts:7` does `loadEnv("test", process.cwd(), "")`, which loads all of `.env.local` into `test.env`. `NEXT_PUBLIC_CONVEX_URL` is therefore always present on a developer machine, so the file's `describe.skipIf(!CONVEX_URL)` could never fire locally. The suite skipped exactly where nobody looks (CI, no `.env.local`) and ran exactly where it failed. Its "TRIPOLAR REFUSAL" header described a refusal that never happened — and that mismatch also explains the ratio divergences seen across machines all week: 14 skipped on one box, 7 on another, same commit.
+
+The suite is ported to `convexTest` + `withIdentity`, in-process, with no environment dependency and no conditional of any kind. It now asserts the security properties instead of contradicting them: an unauthenticated `syncUser` is **rejected**, an authenticated caller syncing themselves succeeds, and the cross-account guard (`identity.subject !== args.clerkUserId`) — which had **zero** test coverage until now — is asserted twice.
+
+**Proof the environment no longer decides whether it measures**: `NEXT_PUBLIC_CONVEX_URL` present → 13/13 executed and green; the variable explicitly unset (`env -u`) → **13/13 executed and green**. The equality of the executed count, not the greenness, is the proof. Proven by narrow mutation, re-run by the orchestrator rather than taken on report: `if (!identity) throw` neutralised to `if (false)` in `convex/users.ts`, the mutation's landing asserted by `grep` before any result was read, exactly ONE test reddening — `rejects an unauthenticated caller and writes nothing` — with 12/13 still green, then restored and the restore proven by an empty `git diff`.
+
+**CLASS**
+- *definition:* a suite whose execution depends on an environment variable or a conditional skip, so its green cannot distinguish "measured and passed" from "measured nothing".
+- *sweep:* `git ls-files '__tests__/**' | xargs grep -lnE "skipIf|\.skip\(|describe\.skip|it\.skip|test\.skip"`. The first sweep run used a narrower pattern and returned ONE file while the runner was reporting skips in another — a single-formulation matcher, caught and widened before any conclusion was drawn from it. Widened output: **2 files**.
+- *remaining:* **1**, declared rather than silent — `__tests__/convex/polar-product-mapping.test.ts` skips 7 tests via `ctx.skip(reason)` and **names its reason** each time (`cannot measure: POLAR_PRODUCT_CREDITS_ENTERPRISE not set in environment`). That is the tripolar refusal working as intended: a named, counted refusal, never a silent pass. It stays, and it is the shape the rewritten file no longer needs.
+
+Ratios measured on **tau-vps**, `pnpm exec`, repository root, `.env.local` present unless stated: `vitest run` → exit 0, **46 files, 438 passed / 7 skipped-with-named-reason / 445 total, 0 failed** — the 6 failures this file contributed are gone. `tsc --noEmit` → exit 0. Only `__tests__/convex/users.test.ts` changed: 198 insertions, 115 deletions, one file.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.
