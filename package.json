@@ -23,7 +23,8 @@
 		"translate": "node scripts/translate.js",
 		"i18n:verify": "node scripts/verify-translations.js",
 		"check-translations": "node scripts/check-translations.js",
-		"check-orphan-namespaces": "node scripts/check-orphan-namespaces.js"
+		"check-orphan-namespaces": "node scripts/check-orphan-namespaces.js",
+		"guard:no-component-called-as-function": "node scripts/guard-no-component-called-as-function.js"
 	},
 	"dependencies": {
 		"@ai-sdk/anthropic": "^3.0.58",

@@ -6,6 +6,35 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-23 — the guard for the component-called-as-a-function family, born green)
+
+PR #97 emptied this family: four accessibility pages that did `return await AccessibilityDeclaration({ locale })` instead of rendering `<AccessibilityDeclaration … />`. Emptying it was not finishing it. **A relapse here was proven invisible** — the form was reintroduced and `tsc --noEmit` stayed at 0 with the whole suite green. In a repository everyone forks, a family emptied without its guard reopens at every fork, and the next person looking for "how is it done here" reads the wrong shape again.
+
+`scripts/guard-no-component-called-as-function.js` fails when a component is INVOKED as a plain function rather than rendered as JSX. Because the four sites were already clean, the guard is **born green** instead of landing red on existing debt — that window is why it was written now.
+
+Nothing in it is typed: the file inventory comes from `git ls-files`, and the set of names that count as components is derived in a first pass (rendered as a JSX tag anywhere, or imported from a `components/` path, or declared PascalCase in a component/page file) before a second pass looks at call sites. It decides on the AST, **never on prose** — and that is asserted, not asserted-to: a comment containing `AccessibilityDeclaration({ locale })` in a historical note leaves the guard at exit 0.
+
+**Three states, never two**: clean (0) / violated (1, naming file and line) / could-not-check (2, naming exactly what it failed to read).
+
+**Bite proven on material the author did not choose**, twice by the specialist and twice again independently by the orchestrator, each injection appended as **executable code** with its landing asserted on the file's last line *before* any guard output was read:
+- the family's exact shape — `await AccessibilityDeclaration({ locale: "fr" })` — in `components/shared/RouteAnnouncer.tsx`, a file unrelated to the family → exit 1 naming `:52`;
+- a synchronous call, `Button({ children: null })` in `lib/utils.ts` → exit 1 naming `:8`;
+- and by the specialist, a locally-declared `EmptyState({ … })` in `app/[locale]/dashboard/architect/page.tsx` → exit 1 naming `:217`.
+
+**The legitimate pole, counted, because it is the pole that decides whether a guard survives** — one that refuses everything scores perfectly on a one-sided probe and gets switched off within the week. Zero false positives across **388 scanned files / 553 tracked component names**, and three deliberately adversarial legitimate shapes each staying at exit 0: a hook call (`useMobile()`), a PascalCase plain function that is not a component (`TauHelper(1)`), and the prose mention above. Could-not-check proven by a tracked file removed from disk while still in `git ls-files` → exit 2 naming that file.
+
+Wired as `pnpm guard:no-component-called-as-function` and as a `quality.yml` step (line 218), run bare so the runner grades the real exit code.
+
+**Class sweep — every family closed so far, against the guard that keeps it closed**, derived from `git ls-files 'scripts/*.js'` and `grep` against the workflow rather than from memory:
+- dead i18n namespaces → `check-orphan-namespaces.js`, wired (3 references) ✅
+- i18n key parity → `check-translations.js`, wired (6) ✅
+- component called as a function → this guard, wired ✅
+- a test that re-implements the routing primitive → `guard-no-mocked-routing-primitive.js`, **written and proven but still on its branch, not yet on `main`** (PR #99) — traced, not claimed
+- the Server/Client boundary → `pnpm build` in `quality.yml`, wired ✅
+- *remaining, traced rather than silent*: the soft-404 on a non-existent event address is still open debt (`k1702eac75b36tpvd7rb05x7c98b176z`) and has no guard yet; the new `order-confirmed` route was built with a real server-side `notFound()` precisely so it does not become that family's second instance.
+
+Ratios measured on **tau-vps**, `pnpm exec`, repository root, exit codes read from each command and never from an `echo "$?"` behind a pipe: guard on the clean trunk → exit 0, 388 files, 0 violations. `tsc --noEmit` → 0. `biome check .` → 0. `jest` → 64 suites, 281/281. `pnpm build` → exit 0.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.
