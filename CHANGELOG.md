@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-23 — a missing event address returned 200 with a "not found" paragraph; now a real server-side 404)
+
+`/events/<missing-slug>` returned **HTTP 200** with a client-rendered "not found" paragraph — a soft-404. The page delegated the read to a client `useQuery`, so the server had already answered 200 by the time the absence was known, and `generateMetadata` returned the same generic title for a missing event as for a real one. A `notFound()` in the client component cannot fix that. This is a seed repo: every fork copies this pattern for its own slug pages, so this is closed at the source.
+
+`app/[locale]/events/[slug]/page.tsx` now reads the event **server-side** with `fetchQuery(api.events.getBySlug, { slug })` from `convex/nextjs` — the repo's existing server-read idiom, the same one `app/[locale]/dashboard/account/order-confirmed/page.tsx` uses — and calls `notFound()` before any render, so the response carries a real 404. `generateMetadata` reads server-side too and returns distinct not-found metadata rather than the generic title. `EventDetailSection` keeps its client `useQuery` for live capacity/registration state but no longer owns the absence decision — its soft-404 branch is gone, the server now guarantees the event exists by the time it renders.
+
+The registration journey on a valid slug is untouched: the existing `EventDetailSection` suite (registration / full / signed-out / confirmation) passes unmodified.
+
+Proven by narrow mutation, re-run by the orchestrator rather than taken on report: the render-path `notFound()` neutralised to `if (false) notFound()`, the mutation's landing asserted by `grep` before any result was read, exactly ONE of four tests reddening — `a slug matching no event calls notFound(), never renders a 200 page` — the other three green, then restored with the probe gone.
+
+The confirmation route shipped earlier today (`order-confirmed`) was deliberately built with the same server-side `notFound()` so it would not become this family's second instance; with this fix the family — a slug page discovering absence only after a 200 — is closed at both known sites. A guard that would refuse the soft-404 shape structurally is not written here: the correct pattern is now demonstrated at two sites and its divergence would need a rendered-route prober, which is a larger instrument; tracked, not silently skipped.
+
+Ratios measured on **tau-vps**, `pnpm exec`, repository root, exit codes read from each command and never from an `echo "$?"` behind a pipe: `jest` → exit 0, **65 suites, 285/285** (283 before — the delta is the new 4-test suite minus none). `tsc --noEmit` → 0. `pnpm build` → exit 0, `/[locale]/events/[slug]` compiled dynamic (`ƒ`). `check-translations.js` → parity PASS, no key added.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.
