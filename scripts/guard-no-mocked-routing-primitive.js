@@ -117,6 +117,56 @@ function deriveScannedFiles() {
 }
 
 /**
+ * THE normalisation, at module scope so every caller shares it.
+ *
+ * Returns `{ text }` when a node's value is a compile-time string, and
+ * `{ undecidable }` when it is any expression whose value cannot be known
+ * statically. Both the mocked MODULE PATH (argument 0 of the mock call) and
+ * the mocked MEMBER NAME go through this one function. They did not, once:
+ * the member name accepted a template literal while the module path was
+ * tested with a bare `ts.isStringLiteral`, so `jest.mock(`@clerk/nextjs/server`, …)`
+ * — a template with no substitution, identical at run time — was never
+ * examined at all. The normalisation existed; it was missing a caller.
+ */
+/**
+ * Is this expression statically the mocked module — `require("<mod>")`,
+ * `jest.requireMock("<mod>")`, `await import("<mod>")`? The module path goes
+ * through `staticStringOf`, like everywhere else.
+ */
+function isModuleReference(expr) {
+	let e = expr;
+	while (ts.isParenthesizedExpression(e)) e = e.expression;
+	if (ts.isAwaitExpression(e)) e = e.expression;
+	while (ts.isParenthesizedExpression(e)) e = e.expression;
+	if (!ts.isCallExpression(e)) return false;
+	const callee = e.expression;
+	const isRequireLike =
+		(ts.isIdentifier(callee) && callee.text === "require") ||
+		callee.kind === ts.SyntaxKind.ImportKeyword ||
+		(ts.isPropertyAccessExpression(callee) &&
+			ts.isIdentifier(callee.expression) &&
+			MOCK_NAMESPACES.includes(callee.expression.text) &&
+			[...PASSTHROUGH_CALLS, "requireMock"].includes(callee.name.text));
+	if (!isRequireLike) return false;
+	const arg = staticStringOf(e.arguments[0]);
+	return arg.text === MOCKED_MODULE;
+}
+
+function staticStringOf(node) {
+	if (!node) return { undecidable: "<missing>" };
+	let n = node;
+	while (ts.isParenthesizedExpression(n)) n = n.expression;
+	if (
+		ts.isStringLiteral(n) ||
+		ts.isNoSubstitutionTemplateLiteral(n) ||
+		ts.isNumericLiteral(n)
+	) {
+		return { text: n.text };
+	}
+	return { undecidable: n.getText(n.getSourceFile()).replace(/\s+/g, " ") };
+}
+
+/**
  * Does this `jest.mock`/`vi.mock` factory supply its OWN `createRouteMatcher`
  * (a violation), or does it only spread the real module (compliant, even if
  * it also mocks other exports like `clerkMiddleware`)?
@@ -291,16 +341,50 @@ function scanFile(relPath) {
 			ts.isIdentifier(node.expression.expression) &&
 			MOCK_NAMESPACES.includes(node.expression.expression.text) &&
 			MOCK_CALLS.includes(node.expression.name.text) &&
-			node.arguments.length >= 2 &&
-			ts.isStringLiteral(node.arguments[0]) &&
-			node.arguments[0].text === MOCKED_MODULE
+			node.arguments.length >= 2
 		) {
-			const factory = node.arguments[1];
-			const hit = factoryMocksExport(factory);
-			if (hit && hit.undecidable) {
-				undecidable.push(`${relPath}: ${hit.undecidable}`);
-			} else if (hit) {
-				violations.push({ file: relPath, line: hit.line });
+			// Same normalisation as the member name — its second caller.
+			const modulePath = staticStringOf(node.arguments[0]);
+			if (modulePath.undecidable) {
+				const sf = node.getSourceFile();
+				const line =
+					sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+				undecidable.push(
+					`${relPath}: mock call at line ${line} names its module as \`${modulePath.undecidable}\`, not a compile-time string — cannot tell whether it mocks "${MOCKED_MODULE}"`,
+				);
+			} else if (modulePath.text === MOCKED_MODULE) {
+				const factory = node.arguments[1];
+				const hit = factoryMocksExport(factory);
+				if (hit && hit.undecidable) {
+					undecidable.push(`${relPath}: ${hit.undecidable}`);
+				} else if (hit) {
+					violations.push({ file: relPath, line: hit.line });
+				}
+			}
+		}
+
+		// Automock + late assignment: `jest.mock("<mod>")` with no factory, then
+		// `require("<mod>").createRouteMatcher = fn`. It reintroduces the clone
+		// without ever passing through a factory, so the checks above cannot see
+		// it. Any assignment to a member of this name is therefore examined here:
+		// a violation when its object is statically the mocked module, exit 2
+		// otherwise. It is never waved through — a silent skip on an unmatched
+		// case is exactly what the three quiet returns before it cost.
+		if (
+			ts.isBinaryExpression(node) &&
+			node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+			ts.isPropertyAccessExpression(node.left) &&
+			ts.isIdentifier(node.left.name) &&
+			node.left.name.text === MOCKED_EXPORT
+		) {
+			const sf = node.getSourceFile();
+			const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+			if (isModuleReference(node.left.expression)) {
+				violations.push({ file: relPath, line });
+			} else {
+				undecidable.push(
+					`${relPath}: assignment to \`.${MOCKED_EXPORT}\` at line ${line} targets \`${node.left.expression.getText(sf).replace(/\s+/g, " ")}\`, whose identity cannot be resolved statically — cannot tell whether it overwrites "${MOCKED_MODULE}"`,
+				);
 			}
 		}
 		ts.forEachChild(node, visit);
