@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-07-23 — "manual" credit grant now means "granted by an operator", not "any user tops up themselves")
+
+`api.credits.recordManualTopUp` was gated only by a global `systemConfig` switch (`manual_topup_enabled`, off by default) plus a self-only guard: a user could top up THEMSELVES. "Manual" is supposed to mean "granted by a human who has the right", and the code carried no notion of that right — so flipping the switch reopened the tap for **all** authenticated users at once.
+
+The self-only guard (`identity.subject !== clerkUserId → throw`) is replaced by `requireAdmin(ctx)` — the role helper the repo already exposes (`convex/lib/auth.ts`, role `admin`|`owner`), reused rather than reinvented. A non-operator is now refused **even when the switch is `true`**, and the beneficiary is an argument that may differ from the caller: that is what an operator grant is. The `manual_topup_enabled` switch and the amount/tier validation stay exactly as they were — the role gate is a lock added on top, not a replacement.
+
+`creditTransactions` gains an optional `grantedByClerkUserId`, populated on this path with the OPERATOR's `identity.subject` (the granter, never the beneficiary), so a grant carries who authorised it. Optional because existing rows and every other transaction type have no granter.
+
+Proven by narrow mutation, re-run by the orchestrator — and the first attempt was too broad and corrected: neutralising `requireAdmin` to fall back to the beneficiary reddened all 4 tests (destructive, not neutralising). The narrow form — `requireAdmin` resolving to a fixed admin identity so a non-operator is wrongly allowed — reddened **exactly the two refusal tests** (member and client), with the two operator-grant tests staying green, the mutation's landing asserted by `grep` before any result was read, and `git diff | grep -c` → 0 after restore. The test that names the remaining abuse — a non-operator refused with the switch at `true`, balance unchanged, zero rows — is RED before the fix. The granter-id assertion (`grantedByClerkUserId === operator`, `!== beneficiary` on a cross-user grant) passes.
+
+Class sweep of every public mutation touching a credit balance in `credits.ts`: `deductCreditsPublic` and `refundCreditsPublic` keep their self-only guards (correct — a user deducts/refunds their own balance); `recordManualTopUp` is the only grant path and is now operator-gated. 0 ungated balance-increasing public mutations remain.
+
+Ratios on **tau-vps**, `pnpm exec`: the three credit suites → exit 0, **45/45**. `tsc --noEmit` → 0. The full `vitest run` shows the 6 `__tests__/convex/users.test.ts` failures that reproduce on `origin/main` and are fixed on `tau/debt-skipping-suite` (@08ed883, in review) — they are ours, named here, not this branch's and not background noise.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.

@@ -72,6 +72,32 @@ async function seedUserCredits(t: ReturnType<typeof makeT>, balance: number) {
 	});
 }
 
+/**
+ * recordManualTopUp is an OPERATOR action (requireAdmin) since
+ * debt-operator-role-manual-grant: the caller must be an admin/owner user row,
+ * not merely an authenticated identity. Seed the caller as an operator so the
+ * mutation clears the role gate before its switch/preset validation. Cross-user
+ * grants (operator != beneficiary) are covered in
+ * credits-manual-topup-operator-gate.test.ts.
+ */
+async function seedOperator(
+	t: ReturnType<typeof makeT>,
+	clerkUserId: string,
+	role: "owner" | "admin" = "admin",
+) {
+	await t.run(async (ctx) => {
+		const now = Date.now();
+		await ctx.db.insert("users", {
+			clerkUserId,
+			organizationId: undefined,
+			role,
+			email: `${clerkUserId}@test.com`,
+			createdAt: now,
+			updatedAt: now,
+		});
+	});
+}
+
 describe("credits.recordManualTopUp", () => {
 	let t: ReturnType<typeof makeT>;
 
@@ -82,6 +108,7 @@ describe("credits.recordManualTopUp", () => {
 	it("RED 1: increments balance by EXACTLY the requested preset amount and writes EXACTLY ONE transaction row, typed as a grant not a purchase", async () => {
 		await seedPresets(t, [10, 25, 50]);
 		await seedEnabled(t, true);
+		await seedOperator(t, USER_A);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -119,6 +146,7 @@ describe("credits.recordManualTopUp", () => {
 	it("initializes a new user's row when none exists yet, balance becomes exactly the amount", async () => {
 		await seedPresets(t, [10, 25, 50]);
 		await seedEnabled(t, true);
+		await seedOperator(t, USER_A);
 		const asUser = t.withIdentity({ subject: USER_A });
 
 		const result = await asUser.mutation(api.credits.recordManualTopUp, {
@@ -139,6 +167,7 @@ describe("credits.recordManualTopUp", () => {
 	it("rejects an amount that is not one of the configured presets, and writes nothing", async () => {
 		await seedPresets(t, [10, 25, 50]);
 		await seedEnabled(t, true);
+		await seedOperator(t, USER_A);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -168,6 +197,7 @@ describe("credits.recordManualTopUp", () => {
 
 	it("rejects when no manual_topup_presets systemConfig row exists (fail loud, no hardcoded fallback tiers)", async () => {
 		await seedEnabled(t, true);
+		await seedOperator(t, USER_A);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -179,7 +209,7 @@ describe("credits.recordManualTopUp", () => {
 		).rejects.toThrow();
 	});
 
-	it("RED 2: refuses a top-up for a different user (self-only) and writes nothing", async () => {
+	it("refuses a top-up from a non-operator identity (no admin user row) and writes nothing", async () => {
 		await seedPresets(t, [10, 25, 50]);
 		await seedEnabled(t, true);
 		await seedUserCredits(t, 100);
@@ -214,8 +244,9 @@ describe("credits.recordManualTopUp", () => {
 		).rejects.toThrow();
 	});
 
-	it("RED 3: names the abuse — an authenticated user cannot grant themselves credits when the switch is absent (out of the box, a fork's tap is closed)", async () => {
+	it("names the abuse — even an operator cannot grant credits when the switch is absent (out of the box, a fork's tap is closed)", async () => {
 		await seedPresets(t, [10, 25, 50]);
+		await seedOperator(t, USER_A);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -243,9 +274,10 @@ describe("credits.recordManualTopUp", () => {
 		expect(transactions).toHaveLength(0);
 	});
 
-	it("names the abuse — an authenticated user cannot self-grant credits when the switch is explicitly false", async () => {
+	it("names the abuse — even an operator cannot grant credits when the switch is explicitly false", async () => {
 		await seedPresets(t, [10, 25, 50]);
 		await seedEnabled(t, false);
+		await seedOperator(t, USER_A);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
@@ -276,6 +308,7 @@ describe("credits.recordManualTopUp", () => {
 	it("allows the top-up once the switch is explicitly true, and types the row as a grant", async () => {
 		await seedPresets(t, [10, 25, 50]);
 		await seedEnabled(t, true);
+		await seedOperator(t, USER_A);
 		await seedUserCredits(t, 100);
 		const asUser = t.withIdentity({ subject: USER_A });
 
