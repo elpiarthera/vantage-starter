@@ -1701,5 +1701,16 @@
 		"pagination_previous": "Previous page",
 		"pagination_next": "Next page",
 		"pagination_status": "Page {current} of {total}"
+	},
+	"order_confirmation": {
+		"digital_heading": "Thanks for your purchase!",
+		"digital_description": "Your download is ready.",
+		"trackable_heading": "Payment confirmed",
+		"trackable_description": "Your order is being prepared for shipment.",
+		"product_label": "Product",
+		"purchased_on_label": "Purchased on",
+		"tracking_ref_label": "Tracking reference",
+		"track_button": "Copy tracking number",
+		"track_copied": "Tracking number copied"
 	}
 }
