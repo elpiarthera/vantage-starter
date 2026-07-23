@@ -354,6 +354,16 @@ export default defineSchema({
 		productType: v.optional(
 			v.union(v.literal("subscription"), v.literal("one_time")),
 		),
+		// Operator-editable config, meaningful ONLY when productType === "one_time":
+		// tells the order.paid webhook handler (convex/http.ts) whether this
+		// one-time product is a digital download or a trackable deliverable, so
+		// it knows which `kind` to pass to `purchases.recordFromWebhookOrder`.
+		// Same idiom as `isActive`/`description`/`priceUsd` above — this is
+		// config, not hardcoded business knowledge, because it lives on the
+		// operator-editable tier row rather than in application code.
+		fulfillmentKind: v.optional(
+			v.union(v.literal("digital"), v.literal("trackable")),
+		),
 		priceUsd: v.optional(v.number()),
 		createdAt: v.number(),
 		updatedAt: v.number(),
@@ -1101,6 +1111,38 @@ export default defineSchema({
 		attachmentName: v.optional(v.string()),
 		createdAt: v.number(),
 	}).index("by_createdAt", ["createdAt"]),
+
+	/**
+	 * purchases — post-purchase confirmation screen at new route
+	 * `app/[locale]/dashboard/account/order-confirmed/page.tsx` (mcpcn
+	 * `order-confirm` / `payment-confirmed` blocks,
+	 * docs/mcpcn-block-mapping.md §4 line ~393, Batch 4).
+	 *
+	 * Write path: `purchases.recordPurchase` (convex/purchases.ts), an
+	 * internalMutation called from the `order.paid` Polar webhook handler in
+	 * `convex/http.ts`, idempotent on `polarOrderId` the same way
+	 * `credits.addPurchaseCredits` is idempotent on that field — a second
+	 * webhook delivery for the same order must not write a second row.
+	 *
+	 * `kind` distinguishes the digital-download branch (`order-confirm`) from
+	 * the trackable-deliverable branch (`payment-confirmed`) of the shared
+	 * confirmation route. `subscriptionTiers.fulfillmentKind` is the
+	 * operator-editable config field that lets the webhook handler resolve
+	 * this signal for a `one_time` product — see that field's comment in this
+	 * schema and `purchases.recordFromWebhookOrder`, which is the caller that
+	 * resolves it and refuses (loudly, no default) to record a purchase when
+	 * a `one_time` tier has no `fulfillmentKind` set.
+	 */
+	purchases: defineTable({
+		userId: v.string(), // clerkUserId — same identity key as userCredits.clerkUserId
+		productKey: v.string(), // subscriptionTiers.tierKey for the purchased one-time product
+		kind: v.union(v.literal("digital"), v.literal("trackable")),
+		trackingRef: v.optional(v.string()),
+		purchasedAt: v.number(),
+		polarOrderId: v.string(), // idempotency key — one row per Polar order
+	})
+		.index("by_user", ["userId", "purchasedAt"])
+		.index("by_polar_order_id", ["polarOrderId"]),
 
 	/**
 	 * events — public `/events` browse + `/events/[slug]` detail/registration

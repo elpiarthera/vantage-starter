@@ -53,6 +53,8 @@ export async function seedTier(
 		productType?: "subscription" | "one_time";
 		priceUsd?: number;
 		bonusCredits?: number;
+		// Batch 4 purchases wiring — only meaningful when productType === "one_time"
+		fulfillmentKind?: "digital" | "trackable";
 	} = {},
 ) {
 	const {
@@ -65,6 +67,7 @@ export async function seedTier(
 		productType,
 		priceUsd,
 		bonusCredits,
+		fulfillmentKind,
 	} = opts;
 	await t.run(async (ctx) => {
 		await ctx.db.insert("subscriptionTiers", {
@@ -79,6 +82,7 @@ export async function seedTier(
 			productType,
 			priceUsd,
 			bonusCredits,
+			fulfillmentKind,
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
 		});
