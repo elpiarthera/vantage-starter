@@ -891,6 +891,20 @@
 			"placeholder_sr": "Cet emplacement est réservé à un futur témoignage client.",
 			"eyebrow": "Témoignages"
 		},
+		"socialProof": {
+			"eyebrow": "Preuve sociale",
+			"heading": "Vu sur",
+			"subheading": "De vraies publications de bâtisseurs qui déploient VantageStarter — sur X, Instagram, LinkedIn et YouTube.",
+			"view_post": "Voir la publication",
+			"network_x": "X",
+			"network_instagram": "Instagram",
+			"network_linkedin": "LinkedIn",
+			"network_youtube": "YouTube",
+			"metric_likes": "j'aime",
+			"metric_comments": "commentaires",
+			"metric_shares": "partages",
+			"metric_views": "vues"
+		},
 		"decorative": {
 			"tree_title": "Animation d'arbre génératif",
 			"shader_title": "Fond animé"

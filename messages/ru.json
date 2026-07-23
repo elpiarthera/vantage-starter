@@ -891,6 +891,20 @@
 			"placeholder_sr": "Это место зарезервировано для будущего отзыва клиента.",
 			"eyebrow": "Отзывы"
 		},
+		"socialProof": {
+			"eyebrow": "Социальное доказательство",
+			"heading": "Замечено в",
+			"subheading": "Реальные публикации команд, запускающих проекты на VantageStarter — в X, Instagram, LinkedIn и YouTube.",
+			"view_post": "Смотреть публикацию",
+			"network_x": "X",
+			"network_instagram": "Instagram",
+			"network_linkedin": "LinkedIn",
+			"network_youtube": "YouTube",
+			"metric_likes": "лайки",
+			"metric_comments": "комментарии",
+			"metric_shares": "репосты",
+			"metric_views": "просмотры"
+		},
 		"decorative": {
 			"tree_title": "Анимация генеративного дерева",
 			"shader_title": "Анимированный фон"

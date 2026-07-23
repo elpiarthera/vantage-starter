@@ -7,6 +7,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { TechStackSection } from "@/components/landing/TechStackSection";
 import { WebComponentsLoader } from "@/components/landing/WebComponentsLoader";
 
@@ -66,6 +67,7 @@ export default async function LandingPage({ params }: Props) {
 			<LandingNav />
 			<main id="main-content">
 				<HeroSection />
+				<SocialProofSection />
 				<FeaturesSection />
 				<TechStackSection />
 				<PricingSection />

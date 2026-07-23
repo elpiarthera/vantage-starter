@@ -891,6 +891,20 @@
 			"placeholder_sr": "This testimonial slot is reserved for a future customer story.",
 			"eyebrow": "Testimonials"
 		},
+		"socialProof": {
+			"eyebrow": "Social proof",
+			"heading": "As seen on",
+			"subheading": "Real posts from builders shipping on VantageStarter — across X, Instagram, LinkedIn, and YouTube.",
+			"view_post": "View post",
+			"network_x": "X",
+			"network_instagram": "Instagram",
+			"network_linkedin": "LinkedIn",
+			"network_youtube": "YouTube",
+			"metric_likes": "likes",
+			"metric_comments": "comments",
+			"metric_shares": "shares",
+			"metric_views": "views"
+		},
 		"decorative": {
 			"tree_title": "Generative tree animation",
 			"shader_title": "Animated background shader"

@@ -891,6 +891,20 @@
 			"placeholder_sr": "Questo spazio è riservato a una futura storia cliente.",
 			"eyebrow": "Testimonianze"
 		},
+		"socialProof": {
+			"eyebrow": "Riprova sociale",
+			"heading": "Visto su",
+			"subheading": "Post reali di team che lanciano progetti con VantageStarter — su X, Instagram, LinkedIn e YouTube.",
+			"view_post": "Vedi il post",
+			"network_x": "X",
+			"network_instagram": "Instagram",
+			"network_linkedin": "LinkedIn",
+			"network_youtube": "YouTube",
+			"metric_likes": "mi piace",
+			"metric_comments": "commenti",
+			"metric_shares": "condivisioni",
+			"metric_views": "visualizzazioni"
+		},
 		"decorative": {
 			"tree_title": "Animazione dell'albero generativo",
 			"shader_title": "Sfondo animato"
