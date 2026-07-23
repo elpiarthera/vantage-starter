@@ -3,7 +3,10 @@
 .env*.local
 
 # Dependencies
-node_modules/
+# No trailing slash: the pattern must cover the directory AND a same-named
+# symlink. With `node_modules/` a symlink was not ignored, and `git add -A`
+# absorbed one pointing at a developer's disk into a commit.
+node_modules
 .pnpm-store/
 
 # Next.js build output

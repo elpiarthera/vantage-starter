@@ -45,6 +45,22 @@
  * it requires editing this file's own review-visible diff, never a quiet
  * JSON bump.
  *
+ * DECLARED OUT OF SCOPE, with its reason, rather than left silent
+ * (`derive-never-type.md`: "une divergence tue est une dette; une divergence
+ * déclarée est une décision"):
+ *
+ *   `Object.assign(require("<mod>"), { createRouteMatcher: fn })` — and the
+ *   same through any other reflective writer (`Reflect.set`,
+ *   `Object.defineProperty`, a helper that takes the module as an argument).
+ *   Covering ONE of them would be the single-formulation matcher this guard
+ *   has already been caught by three times: the next reviewer would simply
+ *   pick the writer that was not enumerated. Closing the family properly
+ *   means deciding on the module OBJECT's flow rather than on the syntax of
+ *   the call that writes to it, which is a different instrument from this
+ *   one. It is therefore named here, in the file a reviewer of this guard
+ *   reads, instead of being quietly absent — and it is NOT counted as clean:
+ *   it is simply not looked for.
+ *
  * Usage: node scripts/guard-no-mocked-routing-primitive.js
  */
 const { execSync } = require("node:child_process");
@@ -150,6 +166,72 @@ function isModuleReference(expr) {
 	if (!isRequireLike) return false;
 	const arg = staticStringOf(e.arguments[0]);
 	return arg.text === MOCKED_MODULE;
+}
+
+/**
+ * Every `const X = require("<mod>")` / `import X from "<mod>"` binding in one
+ * file, so an assignment through an identifier can be resolved instead of
+ * refused. Collected once per file.
+ */
+function collectBindings(sourceFile) {
+	const bindings = new Map();
+	function walk(node) {
+		if (
+			ts.isVariableDeclaration(node) &&
+			ts.isIdentifier(node.name) &&
+			node.initializer &&
+			moduleOfRequireLike(node.initializer) !== null
+		) {
+			bindings.set(node.name.text, moduleOfRequireLike(node.initializer));
+		}
+		if (
+			ts.isImportDeclaration(node) &&
+			ts.isStringLiteral(node.moduleSpecifier) &&
+			node.importClause
+		) {
+			const spec = node.moduleSpecifier.text;
+			const clause = node.importClause;
+			if (clause.name) bindings.set(clause.name.text, spec);
+			if (clause.namedBindings && ts.isNamespaceImport(clause.namedBindings)) {
+				bindings.set(clause.namedBindings.name.text, spec);
+			}
+		}
+		ts.forEachChild(node, walk);
+	}
+	walk(sourceFile);
+	return bindings;
+}
+
+/** The module path a `require`/`importActual`/dynamic-import call names, or null. */
+function moduleOfRequireLike(expr) {
+	let e = expr;
+	while (ts.isParenthesizedExpression(e)) e = e.expression;
+	if (ts.isAwaitExpression(e)) e = e.expression;
+	while (ts.isParenthesizedExpression(e)) e = e.expression;
+	if (!ts.isCallExpression(e)) return null;
+	const callee = e.expression;
+	const isRequireLike =
+		(ts.isIdentifier(callee) && callee.text === "require") ||
+		callee.kind === ts.SyntaxKind.ImportKeyword ||
+		(ts.isPropertyAccessExpression(callee) &&
+			ts.isIdentifier(callee.expression) &&
+			MOCK_NAMESPACES.includes(callee.expression.text) &&
+			[...PASSTHROUGH_CALLS, "requireMock"].includes(callee.name.text));
+	if (!isRequireLike) return null;
+	const arg = staticStringOf(e.arguments[0]);
+	return arg.text ?? null;
+}
+
+/** `{ module }` — the module an assignment target resolves to, or null if unresolvable. */
+function resolveBinding(expr, bindings) {
+	let e = expr;
+	while (ts.isParenthesizedExpression(e)) e = e.expression;
+	const direct = moduleOfRequireLike(e);
+	if (direct !== null) return { module: direct };
+	if (ts.isIdentifier(e) && bindings.has(e.text)) {
+		return { module: bindings.get(e.text) };
+	}
+	return { module: null };
 }
 
 function staticStringOf(node) {
@@ -333,6 +415,7 @@ function scanFile(relPath) {
 
 	const violations = [];
 	const undecidable = [];
+	const bindings = collectBindings(sourceFile);
 
 	function visit(node) {
 		if (
@@ -379,7 +462,19 @@ function scanFile(relPath) {
 		) {
 			const sf = node.getSourceFile();
 			const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
-			if (isModuleReference(node.left.expression)) {
+			// Resolve a plain identifier through the file's own bindings before
+			// refusing to judge. `const other = require("some-other-module")`
+			// followed by `other.createRouteMatcher = fn` is legitimate and
+			// statically readable — exiting 2 on it would block CI exactly like
+			// exit 1, and a guard that refuses code it could have read gets
+			// switched off. Only a target that is genuinely unresolvable is
+			// undecidable.
+			const target = resolveBinding(node.left.expression, bindings);
+			if (target.module === MOCKED_MODULE) {
+				violations.push({ file: relPath, line });
+			} else if (target.module !== null) {
+				// Resolvable, and it is some other module — legitimately clean.
+			} else if (isModuleReference(node.left.expression)) {
 				violations.push({ file: relPath, line });
 			} else {
 				undecidable.push(
