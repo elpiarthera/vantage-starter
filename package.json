@@ -20,6 +20,7 @@
 		"test:convex": "vitest run __tests__/convex",
 		"test:convex:watch": "vitest watch __tests__/convex",
 		"test:coverage-parity": "node scripts/verify-test-runner-coverage.js",
+		"guard:no-mocked-routing-primitive": "node scripts/guard-no-mocked-routing-primitive.js",
 		"translate": "node scripts/translate.js",
 		"i18n:verify": "node scripts/verify-translations.js",
 		"check-translations": "node scripts/check-translations.js",

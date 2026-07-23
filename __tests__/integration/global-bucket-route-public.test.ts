@@ -37,20 +37,12 @@ import { isPublicRoute } from "@/middleware";
 
 // Same module-load-time stubs as legal-pages-public.test.ts -- middleware.ts
 // touches Clerk/next-intl/CSP at import time in a way jsdom can't satisfy.
+// Only `clerkMiddleware` is mocked; `createRouteMatcher` stays REAL (via
+// `jest.requireActual`) -- see legal-pages-public.test.ts for why a re-typed
+// regex clone of it cannot be trusted to agree with the real primitive.
 jest.mock("@clerk/nextjs/server", () => ({
+	...jest.requireActual("@clerk/nextjs/server"),
 	clerkMiddleware: jest.fn((fn) => fn),
-	createRouteMatcher: jest.fn(
-		(routes: string[]) => (req: { nextUrl?: { pathname: string } }) => {
-			const path = req.nextUrl?.pathname ?? "";
-			return routes.some((route) => {
-				const pattern = route
-					.replace(/\(en\|fr\|de\|it\|es\|pt\|ru\)/g, "(en|fr|de|it|es|pt|ru)")
-					.replace(/\(\.\*\)/g, ".*");
-				const regex = new RegExp(`^${pattern}$`);
-				return regex.test(path);
-			});
-		},
-	),
 }));
 
 jest.mock("next-intl/middleware", () => ({

@@ -5,22 +5,14 @@
 
 import { createRouteMatcher } from "@clerk/nextjs/server";
 
-// Mock Clerk middleware
-jest.mock("@clerk/nextjs/server", () => ({
-	clerkMiddleware: jest.fn((fn) => fn),
-	createRouteMatcher: jest.fn(
-		(routes) => (req: { nextUrl?: { pathname: string }; url: string }) => {
-			const path = req.nextUrl?.pathname || req.url;
-			return routes.some((route: string) => {
-				if (route.includes("(.*)")) {
-					const baseRoute = route.replace("(.*)", "");
-					return path.startsWith(baseRoute);
-				}
-				return path === route;
-			});
-		},
-	),
-}));
+// `createRouteMatcher` runs REAL here, unmocked: it is the exact primitive
+// `middleware.ts` uses to decide public vs. protected on every request, and
+// a re-typed `startsWith`/regex clone of it disagrees with the real one --
+// the real primitive THROWS on a malformed entry (e.g. "/report*") while a
+// hand-rolled clone would silently match. See the "malformed matcher entry"
+// test below, which is the assertion that would have caught that
+// divergence. `clerkMiddleware` is not imported/used by this suite, so
+// nothing else needs mocking.
 
 describe("Authentication Middleware Integration", () => {
 	const mockRequest = (pathname: string) =>
@@ -177,6 +169,15 @@ describe("Authentication Middleware Integration", () => {
 		it("should match API routes", () => {
 			expect("/api/users").toMatch(/\/api/);
 			expect("/trpc/users").toMatch(/\/trpc/);
+		});
+
+		it("throws on a malformed matcher entry instead of silently treating it as public -- the exact divergence a re-typed mock hid", () => {
+			// "/report*" is not a valid path-to-regexp pattern (the trailing "*"
+			// is a bare modifier with nothing to repeat). The real
+			// `createRouteMatcher` rejects it at construction time, so a
+			// misconfigured route list fails the middleware loudly instead of
+			// quietly deciding every request against it is "public".
+			expect(() => createRouteMatcher(["/report*"])).toThrow();
 		});
 	});
 });

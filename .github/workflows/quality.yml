@@ -257,6 +257,25 @@ jobs:
       - name: Test suites — Jest + Vitest (both runners that own real suites)
         run: pnpm test
 
+      # A test that mocks the routing primitive it claims to verify cannot
+      # catch that primitive's own failure modes. Three suites re-typed
+      # `createRouteMatcher` (@clerk/nextjs/server) as a hand-rolled
+      # `startsWith`/regex clone: on the delivered matcher it agreed with the
+      # real one, but on a MALFORMED entry ("/report*") the real primitive
+      # THROWS at construction (taking the whole middleware down on every
+      # request) while the clone silently kept matching and declared the
+      # route public. All three suites stayed green on a middleware that
+      # would be down. This gate fails the moment ANY file under
+      # `__tests__/` reintroduces its own `createRouteMatcher` via
+      # `jest.mock`/`vi.mock` instead of letting the real export through
+      # (a `jest.requireActual`/`vi.importActual` spread that mocks only
+      # unrelated exports, e.g. `clerkMiddleware`, stays legitimate). Proven
+      # green on the commit that introduces it — see
+      # scripts/guard-no-mocked-routing-primitive.js for the three states
+      # (clean / violated / could-not-check) and their proof.
+      - name: No mocked routing primitive in tests
+        run: pnpm guard:no-mocked-routing-primitive
+
       # Same family as check-translations.js Control 4: never trust a single
       # runner's self-reported "N passed" in isolation — compare it against
       # the independently DERIVED on-disk inventory
