@@ -47,6 +47,7 @@ import type * as operations from "../operations.js";
 import type * as orchestration from "../orchestration.js";
 import type * as polar from "../polar.js";
 import type * as projects from "../projects.js";
+import type * as purchases from "../purchases.js";
 import type * as rateLimits from "../rateLimits.js";
 import type * as ratelimit from "../ratelimit.js";
 import type * as registry from "../registry.js";
@@ -109,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   orchestration: typeof orchestration;
   polar: typeof polar;
   projects: typeof projects;
+  purchases: typeof purchases;
   rateLimits: typeof rateLimits;
   ratelimit: typeof ratelimit;
   registry: typeof registry;
