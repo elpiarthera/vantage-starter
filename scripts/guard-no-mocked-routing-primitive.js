@@ -71,6 +71,16 @@ const SCAN_ROOT = "__tests__";
 const MOCKED_MODULE = "@clerk/nextjs/server";
 const MOCKED_EXPORT = "createRouteMatcher";
 
+// The mocking vocabulary, declared ONCE and consulted everywhere, rather than
+// a literal "mock" typed at the call site. `jest.doMock` installs exactly the
+// same factory as `jest.mock`; the guard used to know only the spelling its
+// author had written, which is the same single-formulation defect as the
+// Identifier-only property name. Adding a spelling here reaches every use.
+const MOCK_NAMESPACES = ["jest", "vi"];
+const MOCK_CALLS = ["mock", "doMock"];
+// Calls that pass the REAL module through — the only compliant spread source.
+const PASSTHROUGH_CALLS = ["requireActual", "importActual", "importMock"];
+
 // Ratchet: every currently-declared, reasoned exception. Editing this array
 // IS the declaration `derive-never-type.md` requires ("a divergence tue est
 // une dette; une divergence déclarée est une décision") -- it lives in the
@@ -130,13 +140,33 @@ function factoryMocksExport(factoryNode) {
 			body = factoryNode.body;
 		}
 	}
-	if (!body) return false;
+	// A factory whose shape this guard cannot follow is NOT clean. Returning
+	// false here is a silent decision, and this header already promises "no
+	// silent skip on an unmatched case".
+	if (!body) {
+		return {
+			undecidable: `mock factory at line ${lineOf(factoryNode)} has no resolvable returned value (not an arrow/function expression with a return) — cannot tell whether it supplies "${MOCKED_EXPORT}"`,
+		};
+	}
 	// Unwrap a parenthesised object literal: `() => ({ ... })`.
 	while (ts.isParenthesizedExpression(body)) body = body.expression;
-	if (!ts.isObjectLiteralExpression(body)) return false;
+	if (!ts.isObjectLiteralExpression(body)) {
+		return {
+			undecidable: `mock factory at line ${lineOf(body)} returns \`${short(body)}\`, not an object literal — its properties cannot be read statically, so whether it supplies "${MOCKED_EXPORT}" is unknown`,
+		};
+	}
 
 	for (const prop of body.properties) {
-		if (ts.isSpreadAssignment(prop)) continue; // `...jest.requireActual(...)` — compliant
+		if (ts.isSpreadAssignment(prop)) {
+			// A spread is compliant ONLY when it is demonstrably the real module
+			// passed through. `...someAuthoredObject` executes exactly like an
+			// authored `createRouteMatcher` property and used to be waved past by
+			// a bare `continue` — the original defect moved one level out.
+			if (isPassThroughSpread(prop.expression)) continue;
+			return {
+				undecidable: `spread \`...${short(prop.expression)}\` at line ${lineOf(prop)} is not a direct ${PASSTHROUGH_CALLS.join("/")} of "${MOCKED_MODULE}" — its members cannot be read statically, so whether it supplies "${MOCKED_EXPORT}" is unknown`,
+			};
+		}
 		// One normalisation for every way an object literal can name a
 		// property, and one membership test — never a per-form branch. The
 		// first version of this guard only accepted an Identifier key, so
@@ -154,6 +184,40 @@ function factoryMocksExport(factoryNode) {
 		if (named.text === MOCKED_EXPORT) return { line: getLine(prop) };
 	}
 	return false;
+
+	function lineOf(node) {
+		const sf = node.getSourceFile();
+		return sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+	}
+
+	function short(node) {
+		const text = node.getText(node.getSourceFile()).replace(/\s+/g, " ");
+		return text.length > 60 ? `${text.slice(0, 57)}...` : text;
+	}
+
+	/**
+	 * Is this spread the real module passed through — `...jest.requireActual("…")`
+	 * / `...vi.importActual("…")` / `...await vi.importActual("…")` — as opposed to
+	 * an authored object whose members this guard cannot read?
+	 */
+	function isPassThroughSpread(expr) {
+		let e = expr;
+		while (ts.isParenthesizedExpression(e)) e = e.expression;
+		if (ts.isAwaitExpression(e)) e = e.expression;
+		while (ts.isParenthesizedExpression(e)) e = e.expression;
+		if (!ts.isCallExpression(e)) return false;
+		const callee = e.expression;
+		if (!ts.isPropertyAccessExpression(callee)) return false;
+		if (
+			!ts.isIdentifier(callee.expression) ||
+			!MOCK_NAMESPACES.includes(callee.expression.text)
+		) {
+			return false;
+		}
+		if (!PASSTHROUGH_CALLS.includes(callee.name.text)) return false;
+		const arg = e.arguments[0];
+		return Boolean(arg && ts.isStringLiteral(arg) && arg.text === MOCKED_MODULE);
+	}
 
 	/**
 	 * The property's name as written, whichever form the author used:
@@ -225,9 +289,8 @@ function scanFile(relPath) {
 			ts.isCallExpression(node) &&
 			ts.isPropertyAccessExpression(node.expression) &&
 			ts.isIdentifier(node.expression.expression) &&
-			(node.expression.expression.text === "jest" ||
-				node.expression.expression.text === "vi") &&
-			node.expression.name.text === "mock" &&
+			MOCK_NAMESPACES.includes(node.expression.expression.text) &&
+			MOCK_CALLS.includes(node.expression.name.text) &&
 			node.arguments.length >= 2 &&
 			ts.isStringLiteral(node.arguments[0]) &&
 			node.arguments[0].text === MOCKED_MODULE
