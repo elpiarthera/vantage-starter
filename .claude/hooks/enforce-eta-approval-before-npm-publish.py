@@ -112,6 +112,40 @@ ETA_NEGATIVE_VERDICT_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Markdown heading line — a verdict word here is a DECISION, not data.
+ETA_HEADING_LINE_RE = re.compile(r"^\s*#{1,6}\s")
+
+
+def verdict_scope(body: str) -> str:
+    """Return the region(s) of a comment body where a verdict word is a DECISION.
+
+    The negative-verdict guard must run HERE, never on the whole body. Eta's
+    verdict lives in the comment's HEADING lines (markdown `#`-prefixed) and, for a
+    heading-less comment, in its first non-empty line. Everywhere else a verdict
+    word is DATA: a measurement label ("legitimate REJECTED : [] <- 0 of 11"), a
+    citation of a past state ("the publish was BLOCKED; it is not now"), or a probe
+    report ("MUST_BLOCK 3/3: each probe BLOCKED as expected"). A body-wide scan
+    reads that data as a decision and refuses a genuine approval whose only crime is
+    proving its own zero-false-positive discipline — and the more rigorous the
+    review, the more surely it is refused.
+
+    Decision region = every markdown heading line PLUS the first non-empty line of
+    the comment (which carries the verdict when there is no heading). Returns the
+    newline-joined decision lines; "" when the body is empty — fail closed, because
+    no scope means no verdict, never a silent pass.
+    """
+    scope: list[str] = []
+    seen_first_nonempty = False
+    for line in body.splitlines():
+        is_first_nonempty = False
+        if not seen_first_nonempty and line.strip():
+            seen_first_nonempty = True
+            is_first_nonempty = True
+        if is_first_nonempty or ETA_HEADING_LINE_RE.match(line):
+            scope.append(line)
+    return "\n".join(scope)
+
+
 # Back-compat: explicit machine-readable SHA line inside the approval comment.
 ETA_APPROVED_SHA_IN_BODY_RE = re.compile(r"ETA_APPROVED_COMMIT_SHA:\s*([0-9a-f]{7,40})", re.IGNORECASE)
 
@@ -514,10 +548,12 @@ def _comment_is_eta_approval(body: str, operator_sha: str) -> tuple[bool, str]:
 
     Returns (is_approval, bound_sha). bound_sha is '' when not an approval.
     """
-    # Must carry a POSITIVE verdict word AND no negative-verdict marker.
+    # Must carry a POSITIVE verdict word AND no negative-verdict marker. The
+    # negative scan runs on the DECISION region only (verdict_scope), so a verdict
+    # word used as a measurement label in the body does not invalidate an approval.
     if not ETA_APPROVED_VERDICT_RE.search(body):
         return False, ""
-    if ETA_NEGATIVE_VERDICT_RE.search(body):
+    if ETA_NEGATIVE_VERDICT_RE.search(verdict_scope(body)):
         return False, ""
 
     # Format A — explicit machine-readable SHA line (authoritative).
@@ -584,7 +620,7 @@ def validate_pr_approval(
     for c in comments:
         body = c.get("body") or ""
         author = ((c.get("user") or {}).get("login") or "").lower()
-        if ETA_APPROVED_VERDICT_RE.search(body) and not ETA_NEGATIVE_VERDICT_RE.search(body):
+        if ETA_APPROVED_VERDICT_RE.search(body) and not ETA_NEGATIVE_VERDICT_RE.search(verdict_scope(body)):
             saw_verdict_word = True
             if author not in allowed:
                 saw_wrong_author = True
