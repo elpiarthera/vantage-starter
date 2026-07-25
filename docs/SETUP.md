@@ -368,6 +368,8 @@ Work through this checklist after both servers are running.
 
 ## Section 11 — Environment Variables Reference
 
+> **The authoritative first-run contract is not this table.** Which variables a fresh fork MUST set to reach its first authenticated screen is derived — by machine — from the `# @required` markers in [`.env.example`](../.env.example), and documented in [`docs/first-run.md`](./first-run.md). That single source is enforced by `__tests__/lib/first-run-env-contract.test.ts`. The table below is a human convenience covering dashboard placement (Vercel / Convex) and optional features; if it ever disagrees with `.env.example`, the markers win. Do not treat the "Required" column here as a second authority.
+
 Complete table of all environment variables.
 
 - **Set in `.env.local`** — required for local development
