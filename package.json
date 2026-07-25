@@ -52,6 +52,7 @@
 		"@json-render/react": "^0.14.1",
 		"@lit/task": "^1.0.3",
 		"@polar-sh/sdk": "^0.35.4",
+		"@vantageos/cloud-identity": "^0.3.0",
 		"@vercel/analytics": "latest",
 		"ai": "^6.0.116",
 		"class-variance-authority": "^0.7.1",
