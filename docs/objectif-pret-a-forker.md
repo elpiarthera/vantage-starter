@@ -36,9 +36,7 @@ Un bloquant = ce sans quoi un fork casse, ou l'ouverture est impossible. Chaque 
    Preuve : `grep -c cloud-identity package.json` → **0** ; `ls convex/lib/auth.ts` → **présent** (copie locale toujours en place). `@vantageos/cloud-identity 0.3.0` a été **publié aujourd'hui** par Sigma (PR #8, prouvé au registre) — je suis donc **débloqué**.
    Route : consommer 0.3.0, supprimer la copie locale `convex/lib/auth.ts`, faire monter la règle d'appartenance maison (comptes sans organisation) dans le paquet — jamais en variante locale. Débloque Hestia. Voir §4.
 
-3. **Six pages légales/accessibilité derrière un compte + deux routes publiques inexistantes** — `k177ra86x2a0g1sfvxx10dv9xh8awfpd` (haut).
-   Un fork hérite de pages légales illisibles sans connexion et de deux liens publics en 404.
-   Route : ouvrir les six pages au public dans `middleware.ts`, retirer ou rediriger les deux routes mortes ; même famille que le faux 404 déjà fermé (`986060d`).
+> **Correction Day 143 (décision Laurent via Pi) :** les six pages légales sont **parquées jusqu'au SIRET** — la société n'est pas encore immatriculée, leur contenu légal en dépend. `k177ra86x2a0g1sfvxx10dv9xh8awfpd` passe en `blocked`, raison « en attente SIRET / immatriculation ». Ce n'est **plus** un bloqueur d'ouverture. Le défaut technique (six pages derrière un compte + deux routes mortes) reste tracé, à revoir à l'immatriculation.
 
 **Débit du portillon (non un défaut de code, mais un reste-à-faire réel) :** **8** livrables Day 140 vérifiés attendent le portillon désormais libre — achat, preuves sociales, faux 404 événements, rôle opérateur crédits, garde composant-appelé-comme-fonction, suite Convex users, règle post-merge-cleanup, hero (bloqué). (Preuve dérivée par `git diff --quiet origin/main...<branche>` ; `debt-routematcher-mocks` ressortait à tort « non fusionné » — squash de #99, SHA neuf — corrigé par preuve de PR fusionnée, exactement le piège que `.claude/rules/post-merge-cleanup.md` §squash nomme.) Elles passent une par une, une PR au portillon.
 
@@ -58,15 +56,14 @@ Un bloquant = ce sans quoi un fork casse, ou l'ouverture est impossible. Chaque 
 
 ## 5. Verdict go / no-go
 
-**NO-GO pour ouvrir le dépôt aujourd'hui.** Trois bloquants nommés, tous avec route, aucun « bientôt » :
+**NO-GO pour ouvrir le dépôt aujourd'hui — DEUX bloquants restants** (les pages légales sont parquées jusqu'au SIRET, voir §2), tous deux avec route, aucun « bientôt » :
 
-1. `k170626` — [T7] déploiement en un clic (le bouton Deploy manque au README).
-2. `k17feynmn` — [T4] identité partagée non consommée, copie locale non supprimée (débloqué ce jour par 0.3.0).
-3. `k177ra86` — six pages légales derrière un compte + deux routes publiques mortes.
+1. `k17feynmn` — [T4] identité partagée non consommée, copie locale `convex/lib/auth.ts` non supprimée (débloqué ce jour par `cloud-identity 0.3.0`). Débloque Hestia.
+2. `k170626` — [T7] déploiement en un clic (le bouton Deploy manque au README).
 
 Non-bloquants (tracés, pas un frein) : tokens couleur gray-* codés en dur (`k17cgbh`, `k174gz4`, `k17cab5`), mention fal.ai sur la landing (`k17ea58`, décision produit de Laurent, reportée par lui), dette de garde/test déjà largement fermée par #99 + les branches en file, et les tâches inter-projets périmées (pilotes de skill, configurateur M2) à trier hors de cette mission.
 
-Ordre proposé une fois le portillon vidé : **T4 d'abord** (débloque Hestia, déblocage frais), puis **T7** (la porte d'ouverture), puis **k177ra86** (pages légales). Ces trois-là fermés, l'ouverture du dépôt est un go franc.
+**Ordre validé (Laurent, Day 143) : T4 → T7.** T4 d'abord car il débloque Hestia et le déblocage est frais (0.3.0 publié) ; puis T7, la porte d'ouverture. Ces deux fermés, l'ouverture du dépôt est un **go franc** (hors légal, différé au SIRET).
 
 ---
 
