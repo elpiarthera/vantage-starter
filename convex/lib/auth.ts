@@ -16,6 +16,8 @@
  *   const identity = await requireUser(ctx);
  */
 
+import type { OAuthCtx } from "@vantageos/cloud-identity";
+import { passesScopeFilter } from "@vantageos/cloud-identity";
 import type { ActionCtx, MutationCtx, QueryCtx } from "../_generated/server";
 
 // ============================================================================
@@ -87,6 +89,19 @@ export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
  * deliberately structural (arg omitted vs. `{ targetOrganizationId:
  * undefined }` passed) so "org-less target" can never be silently
  * mistaken for "no target dimension to check".
+ *
+ * DIVERGENCE FROM `@vantageos/cloud-identity` (T4, written per
+ * derive-never-type.md): this function's org check does NOT delegate to the
+ * package's `requireTenantId`. `requireTenantId` REFUSES org-less callers by
+ * design (VantagePeers Cloud invariant #1123 — every tenant MUST carry an
+ * organization). This socle is org-OPTIONAL by design: `organizationId:
+ * undefined` is a legitimate personal-account tenant bucket here, and
+ * `orgScope` above deliberately treats org-less-matches-org-less as a PASS.
+ * Routing this through `requireTenantId` would reject every personal
+ * account. The two are opposite semantics, not two implementations of the
+ * same rule — so the local exact-match comparison (`user.organizationId !==
+ * orgScope.targetOrganizationId`, including `undefined === undefined`) is
+ * kept, not reimplemented from the package.
  */
 export async function requireAdmin(
 	ctx: QueryCtx | MutationCtx,
@@ -156,13 +171,27 @@ export async function getAuthUserIdOptional(
 /**
  * Check if the current user owns a resource (by clerkUserId).
  * Throws if the IDs don't match.
+ *
+ * DELEGATED to `@vantageos/cloud-identity`'s `passesScopeFilter` (T4): this
+ * is a genuine semantic match — `passesScopeFilter` returns true iff
+ * `row.createdBy` is a member of `oauthCtx.fromAllowList`. Feeding it
+ * `fromAllowList: [callerId]` and `row: { createdBy: resourceClerkUserId }`
+ * reproduces the exact `callerId === resourceClerkUserId` equality this
+ * function always performed — the comparison now lives in one place across
+ * the fleet instead of being reimplemented locally.
  */
 export async function assertUserOwnsResource(
 	ctx: QueryCtx | MutationCtx | ActionCtx,
 	resourceClerkUserId: string,
 ): Promise<void> {
 	const userId = await getAuthUserId(ctx);
-	if (userId !== resourceClerkUserId) {
+	const oauthCtx: OAuthCtx = {
+		fromAllowList: [userId],
+		namespaceReadPrefixes: [],
+		namespaceWritePrefixes: [],
+	};
+	const owns = passesScopeFilter(oauthCtx, { createdBy: resourceClerkUserId });
+	if (!owns) {
 		throw new Error("Unauthorized — you don't own this resource");
 	}
 }
@@ -181,6 +210,15 @@ import type { Id } from "../_generated/dataModel";
  * Require auth AND validate workspace access.
  * Returns { user, workspace }.
  * Throws if: not authenticated, workspace not found, user has no access.
+ *
+ * DIVERGENCE FROM `@vantageos/cloud-identity` (T4): does NOT delegate to
+ * `getEffectiveTenantId` (equality against a bearer-derived `TenantContext`)
+ * or `requireTenantId` (refuses org-less). Neither matches this function's
+ * shape: access here is `isOwner (personal, org-less-legitimate) OR
+ * isOrgMember (organizationId match)`, resolved from the Convex `users` /
+ * `workspaces` tables — there is no `TenantContext` bearer object in this
+ * socle's request path, and the personal-account branch must keep working
+ * for org-less users, which `requireTenantId` would reject outright.
  */
 export async function requireAuthWithWorkspace(
 	ctx: QueryCtx | MutationCtx,
@@ -213,6 +251,12 @@ export async function requireAuthWithWorkspace(
  *
  * KEY DIFFERENCE from vantage-studio: vantage-studio reads org_id from JWT.
  * vantage-starter reads organizationId from users row (stable, set at webhook sync).
+ *
+ * DIVERGENCE FROM `@vantageos/cloud-identity` (T4): does NOT delegate to
+ * `requireTenantId` — `isPersonal: !user.organizationId` is a legitimate,
+ * intentionally-returned state here (a solo account), not a refusal case.
+ * `requireTenantId` throws on exactly this condition, so using it would
+ * break every personal-account caller of this function.
  */
 export async function getWorkspaceContext(ctx: QueryCtx | MutationCtx) {
 	const user = await requireAuth(ctx);
