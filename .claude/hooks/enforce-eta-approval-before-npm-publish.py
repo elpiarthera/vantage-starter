@@ -115,6 +115,37 @@ ETA_NEGATIVE_VERDICT_RE = re.compile(
 # Back-compat: explicit machine-readable SHA line inside the approval comment.
 ETA_APPROVED_SHA_IN_BODY_RE = re.compile(r"ETA_APPROVED_COMMIT_SHA:\s*([0-9a-f]{7,40})", re.IGNORECASE)
 
+
+def verdict_scope(body: str) -> str:
+    """Return the part of a review comment where a VERDICT is stated.
+
+    The negative-verdict guard must never read free prose. A verdict word can
+    appear in a body as the LABEL OF A MEASUREMENT rather than as a decision —
+    a reviewer proving zero false positives writes a line reading
+    "legitimate REJECTED : [] <- 0 of 11", and a body-wide scan turns that
+    proof into a refusal. The word is data there, not a decision.
+
+    The verdict is stated on the comment's headline. Scope is therefore:
+      - the first non-empty line, and
+      - every markdown heading line naming the reviewer (### Eta — <VERDICT> —)
+    Everything else in the body is evidence, and evidence is data.
+
+    Returns the empty string for an empty body, which fails closed at the
+    caller: no verdict scope means no verdict.
+    """
+    lines = body.splitlines()
+    scope: list[str] = []
+    for line in lines:
+        if line.strip():
+            scope.append(line)
+            break
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith("#") and re.search(r"\bEta\b", stripped, re.IGNORECASE):
+            if line not in scope:
+                scope.append(line)
+    return "\n".join(scope)
+
 # Task ID format: k followed by exactly 31 lowercase alphanumeric chars (32 total)
 TASK_ID_RE = re.compile(r"^k[a-z0-9]{31}$")
 
@@ -515,9 +546,10 @@ def _comment_is_eta_approval(body: str, operator_sha: str) -> tuple[bool, str]:
     Returns (is_approval, bound_sha). bound_sha is '' when not an approval.
     """
     # Must carry a POSITIVE verdict word AND no negative-verdict marker.
+    # The negative guard reads the VERDICT SCOPE only — see verdict_scope().
     if not ETA_APPROVED_VERDICT_RE.search(body):
         return False, ""
-    if ETA_NEGATIVE_VERDICT_RE.search(body):
+    if ETA_NEGATIVE_VERDICT_RE.search(verdict_scope(body)):
         return False, ""
 
     # Format A — explicit machine-readable SHA line (authoritative).
@@ -584,7 +616,7 @@ def validate_pr_approval(
     for c in comments:
         body = c.get("body") or ""
         author = ((c.get("user") or {}).get("login") or "").lower()
-        if ETA_APPROVED_VERDICT_RE.search(body) and not ETA_NEGATIVE_VERDICT_RE.search(body):
+        if ETA_APPROVED_VERDICT_RE.search(body) and not ETA_NEGATIVE_VERDICT_RE.search(verdict_scope(body)):
             saw_verdict_word = True
             if author not in allowed:
                 saw_wrong_author = True

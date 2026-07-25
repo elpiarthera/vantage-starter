@@ -6,6 +6,18 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-25 — first-run environment contract + its enforcing test, the preparatory half of T7)
+
+The one-click deploy **button is NOT shipped** here — it waits on the identity layer (T4) per T7's own constraint, since a public repo serves whatever it contains verbatim. What ships is the manual first-run *contract* a forker follows today and the test that keeps it true.
+
+`docs/first-run.md` reconciles the two counts T7's CLASS names, both from pasted commands: **13** env vars READ in code vs **18** DOCUMENTED in `.env.example`. Gap A (9 read but undocumented) and Gap B (14 documented but unread) are each classified — test-only, vendor-SDK-consumed (the `NEXT_PUBLIC_CLERK_*` the code sweep understates by construction), and stale/residue (`FAL_KEY`, `OPENAI_API_KEY`, `TOGETHER_API_KEY`, the `CONVEX_URL` duplicate) — rather than lumped. The tenant-residue re-sweep is pasted: `VANTAGE_PEERS_*` is optional and fails soft (`convex/issueReports.ts`), no hard tenant value baked in; one soft finding — the variable *names* leak the fleet task system, rename traced not done.
+
+`lib/env/requiredEnv.ts` (new) declares the 5 required-to-first-screen vars ONCE (`REQUIRED_FIRST_RUN_ENV`, pointing to the doc) and exposes `assertRequiredEnv` / `MissingRequiredEnvError` that **names which variable is missing** rather than crashing — a first-run that fails silently loses the user in the first minute. `__tests__/lib/first-run-env-contract.test.ts` (7 tests) asserts each required var is present in `.env.example` and that a missing one is named.
+
+Proven by narrow mutation, re-run by the orchestrator: the missing-var filter in `requiredEnv.ts` neutralised to `[]`, the mutation's landing grepped before any result was read, exactly 3 of 7 tests reddening, restored byte-exact and green again. RED-then-green on the naming: `CLERK_JWT_ISSUER_DOMAIN` removed from the declared list → 3/7 red each naming that var → restored → 7/7.
+
+Ratios on **tau-vps**, `pnpm exec`: `vitest run __tests__/lib/first-run-env-contract.test.ts` → exit 0, **7/7**. `tsc --noEmit` → 0. The whole `vitest run` carries the 6 `__tests__/convex/users.test.ts` failures fixed on `tau/debt-skipping-suite` (in review), not this branch's — ours, named, not background noise.
+
 ### Removed (2026-07-22 — the dead video product's remaining translation namespaces, all seven locales)
 
 23 top-level `messages/*.json` namespaces belonging to the retired video product this template was forked from — `storyboard`, `scene_editor`, `scene_preview_modal`, `scene_card`, `scene_manager`, `scenes`, `scenes_tab`, `video_generator`, `voice_generator`, `frame_assignment`, `transitions`, `watch_page`, `video_models`, `generate_audio_modal`, `audio_tab`, `image_generator`, `guided_step1` through `guided_step5` — proven dead per namespace via `scripts/check-translations.js` Control 4 (which resolves every `useTranslations`/`getTranslations` binding to its call sites) plus a whole-tree grep for the namespace string in any form: zero live consumers, in any of the seven locales. Deleted from `en`, `fr`, `de`, `it`, `es`, `pt`, `ru` in the same change — cleaning one locale alone would have created a parity divergence worse than the residue it was meant to close.
