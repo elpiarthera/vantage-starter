@@ -135,7 +135,7 @@ If no candidate exists (queue empty or all blocked):
 
 **Step 6A — Never ask Laurent**
 
-Never produce output like "What do you want to accomplish today?" or "Which task should I pick?" to Laurent or to Pi. Autonomous orchestrators decide in their brief. Only escalate via `send_message channel=pi-chromebook` for genuine blockers (missing external dependency, ambiguous requirement that cannot be resolved from the task description).
+Never produce output like "What do you want to accomplish today?" or "Which task should I pick?" to Laurent or to Pi. Autonomous orchestrators decide in their brief. Only escalate via `send_message recipientAgentIds=[<coordinator agentId>]` (the coordinator's `agentId` from `list_peers`) for genuine blockers (missing external dependency, ambiguous requirement that cannot be resolved from the task description).
 
 ---
 
@@ -144,7 +144,7 @@ Never produce output like "What do you want to accomplish today?" or "Which task
 - Never skip Step 1 + Step 2. Mode detection + context loading are mandatory.
 - Routines must be listed in human mode; skipped in autonomous (unless a routine is explicitly scheduled as a task in VantagePeers).
 - After the plan is set or a task is picked, start executing. No waiting.
-- Blockers: human mode → surface to Laurent. Autonomous → send_message to pi-chromebook and exit to standby.
+- Blockers: human mode → surface to Laurent. Autonomous → `send_message recipientAgentIds=[<coordinator agentId>]` and exit to standby.
 
 ---
 

@@ -22,7 +22,7 @@ Generate a structured standup report and file it as a briefing note in VantageMe
 4. Get git state: `git status --short` and `git log --oneline -10`
 5. Build the report (see format below)
 6. File: `mcp__vantage-peers__create_briefing_note` title="Standup {role} {date}", topic="standup", participants=["{role}"], createdBy="{role}"
-7. Ping: `mcp__vantage-peers__send_message` from="{role}", channel="pi-chromebook", content="Standup filed — {summary}"
+7. Ping: `mcp__vantage-peers__send_message` from="{role}", recipientAgentIds=["<coordinator agentId>"], content="Standup filed — {summary}" (the coordinator agentId is the `agentId` of its row in `list_peers`, recorded in `.claude/config/coordinator.json`)
 
 ## OUTPUT FORMAT
 

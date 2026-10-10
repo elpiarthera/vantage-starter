@@ -66,14 +66,20 @@ Orchestrator: <Name> — <Team> | <YYYY-MM-DD>
 2. Detect `instanceId` from the CLAUDE.md header or `hostname`; fall back to the role name if no instance suffix is declared.
 3. Build the signature exactly: `Orchestrator: <Name> — <Team> | <YYYY-MM-DD>` with em dash `—` (U+2014), role capitalized, team from CLAUDE.md, today's date.
 
-**Step 2 — Resolve channel (recipient encoded entirely via `channel=`)**
+**Step 2 — Resolve the recipients (a specific agent = its agent ID)**
 
-The live `mcp__vantage-peers__send_message` schema takes `channel=<string>` ONLY. There is NO `recipient=`, NO `recipientInstanceId=`, NO `broadcast=true` param — passing any of them returns `MCP error -32602 Input validation error: channel expected string, received undefined`. Channel-only signature is enforced since Day 111 (memory `k17fv06e`). Recovery cost when ignored: a round-trip failed send + Laurent friction. Always set `channel=`.
+`mcp__vantage-peers__send_message` takes EXACTLY ONE of `recipientAgentIds` or `channel`. A specific agent — the fleet coordinator or a peer — is addressed by its unique agent ID, never by its name. There is NO `recipient=`, NO `recipientInstanceId=`, NO `broadcast=true` param.
 
-- `DM <orch>` / `reply to <orch>` / `tell <orch> X` → single peer. `channel=<role>` (e.g. `channel=sigma`). For instance disambiguation use `channel=<role>-<host>` (e.g. `channel=pi-vps`, `channel=sigma-vps`).
-- `broadcast` / `tell everyone` → `channel=broadcast`.
-- `tell <orch1> and <orch2>` → `channel=<orch1>,<orch2>` (comma-separated) OR one `send_message` per channel with identical grid body.
-- If the channel target is ambiguous ("tell the reviewer"), ask once.
+1. Call `mcp__vantage-peers__list_peers`. Each row carries `agentId` (`null` = not addressable).
+2. Take the `agentId` of the row of each intended recipient, as printed. Never derive, guess or type an ID from a name; if no row matches, or the row's `agentId` is `null`, stop and report it — do not fall back to a name.
+3. Map the intent:
+   - `DM <agent>` / `reply to <agent>` / `tell <agent> X` → `recipientAgentIds=[<agentId>]`.
+   - `tell <a> and <b>` → `recipientAgentIds=[<a agentId>, <b agentId>]` (1-50 IDs).
+   - `broadcast` / `tell everyone` → `channel=broadcast` (a name by design; the ONLY use of `channel`).
+   - Report to the coordinator → `recipientAgentIds=[<coordinator agentId>]`, the value recorded at onboarding in `.claude/config/coordinator.json` (it is the coordinator row's `agentId` in `list_peers`).
+- If the target is ambiguous ("tell the reviewer"), ask once.
+
+Transition note: until the backend reaches M1b, a fleet name in `channel=` (e.g. `channel=sigma`) is still routed; it stops working at M1b. Do not write new sends that way.
 
 **Step 3 — Pick the tag + resolve the task-ref**
 
@@ -95,10 +101,10 @@ Concatenate: tag line → `evidence:` → `finding:` → `action:` → `next:` �
 
 - `from=<your role>` (REQUIRED)
 - `fromInstanceId=<your instance>` (REQUIRED)
-- `channel=<target>` (REQUIRED — role / instance / comma-list / `broadcast`)
+- `recipientAgentIds=[<agentId>, ...]` (REQUIRED for a specific agent — IDs from `list_peers`) OR `channel=broadcast` (fleet-wide only). Never both.
 - `content=<grid>` (REQUIRED)
 
-There is NO `recipient=`, NO `recipientInstanceId=`, NO `broadcast=true` — the live schema rejects them. All targeting is encoded entirely via `channel=`. For multi-recipient dispatch, either pass a comma-separated `channel=<a>,<b>` or emit one call per channel sequentially. Surface each returned `receiptId`.
+There is NO `recipient=`, NO `recipientInstanceId=`, NO `broadcast=true` — the live schema rejects them. For multi-recipient dispatch, list every agent ID in one `recipientAgentIds` array. Surface each returned `receiptId`.
 
 **Step 6 — Optional mark_as_read on inbound**
 
@@ -107,7 +113,7 @@ Only if the user said "reply and mark read", call `mcp__vantage-peers__mark_as_r
 ## RULES
 
 - The grid is mandatory. Tag line + `evidence`/`finding`/`action`/`next` + signature. No other fields.
-- **`channel=` is mandatory on every `send_message` call.** `recipient=`/`recipientInstanceId=`/`broadcast=true` were retired Day 111; the live MCP schema rejects them with `MCP error -32602` (memory `k17fv06e`). Encode the target entirely via `channel=` (role / instance / comma-list / `broadcast`).
+- **A specific agent is addressed by `recipientAgentIds`, read from `list_peers`.** `channel=` is only for `broadcast`. Exactly one of the two per call. `recipient=`/`recipientInstanceId=`/`broadcast=true` were retired Day 111; the live MCP schema rejects them (memory `k17fv06e`).
 - **No narrative slot.** There is no `context`/`background`/`summary`/`recap` field, by design. Chronological prose has nowhere to go.
 - **No relative-time mentions** — elapsed or upcoming, factual or estimate. No elapsed-since asides, no upcoming-deadline phrasing, no duration figures. A real timestamp that matters goes in `evidence:` as a command output, never as prose.
 - Every message opens with `[STATUS]`/`[BLOCKER]`/`[DONE]`/`[INFO ONLY]` (or `[META]`/`[ADMIN]` single-line exception) and ends with the canonical signature (em dash `—`). `enforce-no-task-in-message` + `enforce-signature` are non-negotiable.
@@ -179,7 +185,9 @@ Orchestrator: Sigma — VantageOS Team | 2026-06-06
 - ❌ `[BLOCKER]` with no `task k<id>` ref — trips `enforce-no-task-in-message`.
 - ❌ `[DONE]` with `evidence: n/a` — completion needs a verifiable token.
 - ❌ A free paragraph after the grid — the signature follows `next:` directly.
-- ❌ Passing `recipient=`/`recipientInstanceId=`/`broadcast=true` to `send_message` — retired Day 111; live schema rejects with `MCP error -32602` (validation error: channel expected string, received undefined). Use `channel=` for ALL targeting.
+- ❌ Passing `recipient=`/`recipientInstanceId=`/`broadcast=true` to `send_message` — retired Day 111; live schema rejects them.
+- ❌ Addressing a specific agent by name (`channel=sigma`, `channel=pi-vps`) — names stop routing at M1b. Use `recipientAgentIds=[<agentId from list_peers>]`.
+- ❌ Guessing or constructing an agent ID from a name — the ID is read from `list_peers` output, nowhere else.
 
 ## MIGRATION v1 → v2 (zero breaking)
 
