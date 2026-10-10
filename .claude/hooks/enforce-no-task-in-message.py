@@ -6,7 +6,16 @@ numbered-action-lists (>=3 items) without referencing an existing task ID.
 
 Skip rules (priority order):
   1. tool_name != "mcp__vantage-peers__send_message"   -> allow
-  2. channel in CHANNEL_EXEMPT                          -> allow
+  2. exempt recipient                                   -> allow
+       a. recipientAgentIds given: allow iff EVERY id equals the fleet
+          coordinator agentId read from .claude/config/coordinator.json
+          (written at onboarding from list_peers). Missing/unusable config ->
+          no exemption (fail closed). The hook never resolves a name to an ID.
+       b. channel given (no recipientAgentIds): channel in CHANNEL_EXEMPT.
+          "broadcast" is a name by design and stays. The coordinator NAMES
+          ("pi-chromebook", "pi-vps") are the LEGACY path, today's contract
+          during the M1a transition; they are REMOVED at M1b, when the backend
+          stops routing channel names to coordinators.
   3. content short (<120 chars) + no verb + no list    -> allow (ack)
   4. content matches TASK_REF_PATTERNS                  -> allow
   5. content matches INFO_MARKERS                       -> allow
@@ -16,11 +25,19 @@ Skip rules (priority order):
 Fail-open: any unexpected exception -> sys.exit(0).
 
 Spec: analysis/no-task-in-message-hook-spec-2026-04-24.md
-Version: 1.0.1
+Version: 1.1.0 (1.1.0: coordinator addressed by agent ID, M1a)
 """
 import json
 import re
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+try:
+    from _lib.coordinator import addressed_only_to_coordinator  # noqa: E402
+except Exception:  # module unavailable -> no ID exemption (fail closed)
+    def addressed_only_to_coordinator(recipient_agent_ids, config_path=None):
+        return False
 
 IMPERATIVE_VERBS_PATTERN = re.compile(
     r"\b("
@@ -75,9 +92,9 @@ INFO_MARKERS = [
 ]
 
 CHANNEL_EXEMPT = {
-    "pi-chromebook",  # Laurent-facing channel
-    "pi-vps",         # Pi herself (self-dispatches aren't task assignments)
-    "broadcast",      # Announcements, not task dispatches
+    "pi-chromebook",  # LEGACY coordinator name (Laurent-facing). Removed at M1b.
+    "pi-vps",         # LEGACY coordinator name (Pi herself). Removed at M1b.
+    "broadcast",      # Announcements, not task dispatches. A name by design; stays.
 }
 
 STDERR_MSG = (
@@ -88,10 +105,11 @@ STDERR_MSG = (
     "    (a) `[INFO ONLY]` — informational, no action requested.\n"
     "    (b) `[STATUS]`   — status update (verbs check/verify/fix are routine here).\n"
     "    (c) `[DONE]`     — completion confirmation.\n\n"
-    "  Channels (exempt by default — no marker needed):\n"
-    "    (d) `pi-chromebook` — Laurent-facing channel.\n"
-    "    (e) `pi-vps`        — Pi instance (self-dispatches aren't task assignments).\n"
-    "    (f) `broadcast`     — fleet-wide announcements, not task dispatches.\n\n"
+    "  Recipients (exempt by default — no marker needed):\n"
+    "    (d) `recipientAgentIds=[<coordinator agentId>]` — the fleet coordinator, by the\n"
+    "        agent ID configured in .claude/config/coordinator.json (from list_peers).\n"
+    "    (e) `channel=broadcast` — fleet-wide announcements, not task dispatches.\n"
+    "    (f) `channel=pi-chromebook` / `pi-vps` — legacy coordinator names, removed at M1b.\n\n"
     "  Task reference (proves work is tracked):\n"
     "    (g) `task k<id>` / `taskId: k<id>` / `Task ID: k<id>` somewhere in content.\n\n"
     "Why: free-form \"do X then do Y\" text bypasses the task system — no VERIFICATION, no TESTS,\n"
@@ -116,11 +134,15 @@ try:
 
     tool_input = data.get("tool_input", {})
     channel = tool_input.get("channel", "")
+    recipient_agent_ids = tool_input.get("recipientAgentIds")
     content = tool_input.get("content", "")
 
     if not isinstance(content, str) or not content.strip():
         sys.exit(0)
-    if isinstance(channel, str) and channel in CHANNEL_EXEMPT:
+    if recipient_agent_ids is not None:
+        if addressed_only_to_coordinator(recipient_agent_ids):
+            sys.exit(0)
+    elif isinstance(channel, str) and channel in CHANNEL_EXEMPT:
         sys.exit(0)
 
     has_verb = bool(IMPERATIVE_VERBS_PATTERN.search(content))

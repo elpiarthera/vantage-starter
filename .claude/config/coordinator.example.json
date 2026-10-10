@@ -1,0 +1,4 @@
+{
+	"_doc": "Onboarding: copy this file to .claude/config/coordinator.json and set agentId to the agentId of the fleet coordinator's row in list_peers output (copy it as printed; never type or derive it from a name). Read by .claude/hooks/_lib/coordinator.py for the send_message hooks' coordinator exemption. This example file is never read: until coordinator.json holds an ID-shaped value (lowercase letters and digits, 16-64 characters), no exemption is granted by agent ID.",
+	"agentId": ""
+}

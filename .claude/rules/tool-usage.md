@@ -51,6 +51,7 @@ The schema is in the current context — opening it costs 2 seconds; missing it 
 | `mcp__vantage-registry__upsert_runbook` | Content too large in placeholder + retry | Send full content on first call |
 | `mcp__vantage-peers__create_task` | Missing `VERIFICATION:` / `TESTS:` blocks | Use skill `dispatch-task-create` which injects them |
 | `mcp__vantage-peers__send_message` | Free narrative paragraph instead of grid | Use skill `dispatch-message` v2 (`evidence/finding/action/next` grid) |
+| `mcp__vantage-peers__send_message` | Specific agent addressed by name (`channel="pi-chromebook"`) | `recipientAgentIds=[<agentId from list_peers>]`; `channel` only for `broadcast` (Rule 5) |
 | `mcp__vantage-peers__start_task` | Stale `in_progress` not clean → IRP block | Use skill `dispatch-task-start` which sweeps first |
 
 ### General pattern: enum union values
@@ -157,17 +158,14 @@ Only when a tool truly exposes no JSON schema (mostly experimental MCP servers).
 
 ---
 
-## Rule 5 — `send_message` requires `channel=`, NEVER `recipient=` (Day 114)
+## Rule 5 — `send_message` addresses a specific agent by `recipientAgentIds`; `channel=` is only for `broadcast` (Day 114, rewritten for M1)
 
-### Bad pattern (banned)
+### Bad patterns (banned)
 
-Calling `mcp__vantage-peers__send_message` with `recipient=<role>`, `recipientInstanceId=<host>`, or `broadcast=true` — these belong to the OLD signature retired on Day 111.
-
-**Symptom**: `MCP error -32602 Input validation error: channel expected string, received undefined`. Surfaced to Laurent. Day 114 — Pi typed `recipient=omega` instead of `channel=omega` after 110+ days of doctrine.
-
-**Why it happens**: pre-Day 111 muscle memory plus plugin cache 2.8.1 still documenting the old `recipient=` signature in Step 2 / Step 5. Skills shipped via plugin cache reflect the packaging-day state, not the current VR canonical.
-
-**Friction source**: memory `j57er0j2wr53x42qcfrqd74q6989eeg1` (audit/friction Day 114).
+- Addressing a specific agent — the fleet coordinator or a peer — by NAME: `channel="pi-chromebook"`, `channel="sigma"`, `channel="tau,phi"`. Identity is the unique agent ID, never a name. Channel names to specific agents stop being routed at backend M1b.
+- Guessing, typing, or deriving an agent ID from a name. The ID is READ from `list_peers` output, nowhere else.
+- Passing both `recipientAgentIds` and `channel` in one call (the backend refuses: `INVALID_RECIPIENTS`).
+- Passing `recipient=<role>`, `recipientInstanceId=<host>`, or `broadcast=true` — the OLD signature retired on Day 111 (`MCP error -32602`). Day 114 — Pi typed `recipient=omega` after 110+ days of doctrine; friction memory `j57er0j2wr53x42qcfrqd74q6989eeg1`.
 
 ### Good pattern (recipe)
 
@@ -177,7 +175,7 @@ Calling `mcp__vantage-peers__send_message` with `recipient=<role>`, `recipientIn
    ToolSearch query="select:mcp__vantage-peers__send_message"
    ```
 
-2. **Read the required params**: `from`, `fromInstanceId`, `channel`, `content`. That is ALL targeting needs. No `recipient`, no `recipientInstanceId`, no `broadcast=true`.
+2. **Resolve the recipient's agent ID from `list_peers`**: call `mcp__vantage-peers__list_peers`; each row carries `agentId` (`null` = not addressable). Take the `agentId` of the intended recipient's row exactly as printed. No row, or `agentId: null` → stop and report it; never fall back to a name.
 
 3. **Invoke typed-params** (PRINCIPLE 6 + Rule 4) with exactly:
 
@@ -185,32 +183,36 @@ Calling `mcp__vantage-peers__send_message` with `recipient=<role>`, `recipientIn
    {
      "from": "<your role>",
      "fromInstanceId": "<your instance>",
-     "channel": "<target>",
+     "recipientAgentIds": ["<agentId from list_peers>"],
      "content": "<grid>"
    }
    ```
 
-### Channel value shape
+### Target value shape
 
-| Target | `channel` value |
+| Target | Parameter |
 |---|---|
-| Single peer by role | `"sigma"`, `"omega"`, `"xi"` |
-| Single peer by instance | `"pi-vps"`, `"sigma-chromebook"` |
-| Multi-recipient | `"sigma,omega"` (comma-separated, no space) |
-| Fleet-wide | `"broadcast"` |
+| One specific agent (coordinator or peer) | `recipientAgentIds: ["<agentId>"]` |
+| Several specific agents | `recipientAgentIds: ["<agentId-a>", "<agentId-b>"]` (1-50) |
+| The fleet coordinator | `recipientAgentIds: ["<coordinator agentId>"]` — recorded at onboarding in `.claude/config/coordinator.json` (copy it from the coordinator's `list_peers` row) |
+| Fleet-wide | `channel: "broadcast"` (a name by design — the ONLY use of `channel`) |
 
-### Recurring anti-pattern: confusing `channel` and `recipient`
+### Coordinator ID at onboarding
 
-The param's historic name was `recipient` (v1 of skill `dispatch-message`). The live MCP now uses `channel`. **Always verify the current schema via ToolSearch before the first `send_message` of a session** — doctrine evolves, the schema is the source of truth.
+Copy `.claude/config/coordinator.example.json` to `.claude/config/coordinator.json` and set `agentId` to the `agentId` of the coordinator's row in `list_peers` output. The `send_message` hooks (`enforce-decisive-messaging`, `enforce-no-task-in-message`) grant the coordinator its exemption by THIS ID only; with the file absent, empty or not ID-shaped, no exemption is granted by ID (fail closed).
+
+### Transition (M1a → M1b)
+
+Backend M1a accepts `recipientAgentIds` beside the legacy name path; M1b removes the name path for specific agents. Until M1b a name in `channel=` is still routed and the hooks still honour the legacy coordinator names — do not write new sends that way.
 
 ### Canonical skill applying this recipe
 
-`dispatch-message` v2.0.1 (VR contentHash `68150c2f2080d1e6...`) — Step 2 and Step 5 specify `channel=` only, RULES enforce `channel=` mandatory, ANTI-PATTERNS forbid `recipient=` / `recipientInstanceId=` / `broadcast=true`. Any orchestrator invoking the skill inherits the recipe.
+`dispatch-message` (Step 2 + Step 5): `list_peers` → `agentId` → `recipientAgentIds`; `channel=broadcast` only for fleet-wide.
 
 ### Cross-ref
 
 - Friction: memory `j57er0j2wr53x42qcfrqd74q6989eeg1` (Day 114)
-- Canonical skills: `dispatch-message` v2.0.1 + `mission-bootstrap` v1.3.1 (PRINCIPLE 6 typed-params)
+- Canonical skills: `dispatch-message` + `mission-bootstrap` v1.3.1 (PRINCIPLE 6 typed-params)
 - Schema source of truth: `ToolSearch query="select:mcp__vantage-peers__send_message"` at every session start
 - Fleet-shared rule (this file): always loaded
 

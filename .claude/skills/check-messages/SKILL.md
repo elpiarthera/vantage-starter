@@ -35,7 +35,7 @@ Incident Day 127: orchestrators emitted a literal one-word reply ("court") on ev
 4. If messages exist:
    - Display each as `[from] (fromInstanceId): content`.
    - `mcp__vantage-peers__mark_as_read` all receiptIds.
-   - Respond via `send_message` to any that ask a question or request action.
+   - Respond via `send_message` to any that ask a question or request action, addressed to the sender by agent ID: `recipientAgentIds=[<sender agentId>]`, the `agentId` of the sender's row in `list_peers` output (never derived from the sender's name).
    - Never duplicate a task from message content — emitter owns task creation (memory `j575x33mx14k47eevh3vq3gwc185c685`).
 
 **Step 2.5 — HUMAN MODE only: pull completed dispatched tasks**

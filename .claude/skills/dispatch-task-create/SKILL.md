@@ -46,7 +46,7 @@ Read the required params: `title`, `assignedTo`, `priority`, `createdBy`, `descr
 2. If the user named a mission, resolve its `missionId` via `list_missions` or `get_mission`. If they cited a prerequisite task, capture its taskId for `dependsOn`.
 3. Read your own orchestrator role from `CLAUDE.md` header — that becomes `createdBy`.
 4. **Track batch state in skill session**: count tasks dispatched so far per (missionId, assignedTo) tuple. This count drives Step 2.7 marker injection.
-5. **Track per-turn notify queue**: maintain a list `pending_notify[]` of (taskId, assignee) pairs from previous create_task calls in THIS turn that have not yet been followed by their `send_message channel=<assignee>`. Step 1.3 drains this before the next dispatch.
+5. **Track per-turn notify queue**: maintain a list `pending_notify[]` of (taskId, assignee) pairs from previous create_task calls in THIS turn that have not yet been followed by their `send_message recipientAgentIds=[<assignee agentId>]`. Step 1.3 drains this before the next dispatch.
 
 **Step 1.3 — Drain pending notify queue (Day 114, v1.0.7 — 5× recurrence fix)**
 
@@ -192,7 +192,7 @@ If the hook rejects, re-check the literal block headers, re-add missing markers,
 **Step 5 — Confirm + drain notify queue + suggest next action**
 
 1. Display the returned `taskId` and a one-line summary.
-2. **Drain notify queue NOW** for the entry just appended in Step 4 (if any). Emit `mcp__vantage-peers__send_message channel=<assignee>` with the canonical grid (see Step 1.3 template). Remove the entry from `pending_notify[]` on success.
+2. **Drain notify queue NOW** for the entry just appended in Step 4 (if any). Emit `mcp__vantage-peers__send_message recipientAgentIds=[<assignee agentId>]` (the `agentId` of the assignee's row in `list_peers` output) with the canonical grid (see Step 1.3 template). Remove the entry from `pending_notify[]` on success.
 3. Suggest the next action:
    - Single task complete: surface taskId + suggest peer follow-up (start_task on next cycle).
    - Multi-task batch dispatch IN PROGRESS (same assignee): suggest continuing batch with next `create_task`; skill tracks count + marker.
@@ -206,7 +206,7 @@ If the hook rejects, re-check the literal block headers, re-add missing markers,
 - NEVER call `create_task` without literal `VERIFICATION:` and `TESTS:` labels in `description`. `enforce-task-quality.py` BLOCKS otherwise.
 - NEVER call `create_task` for a BATCH operation without the delegation triplet. `enforce-pi-task-doctrine.py` BLOCKS otherwise. Reference: doctrine memory j57ehd9psbx4z721sb7hggqse987fhtk + feedback memory j5757xkcgeqd07mr9zjx1p5cn585p9wy.
 - NEVER call `create_task urgent|high` 2+ times targeting the SAME `(missionId, assignedTo)` without injecting the `// allow-no-notify: batch dispatch ...` marker on the 2nd+ task. `enforce-create-task-notify-followup.py` BLOCKS otherwise. Reference: RULE #21 doctrine memory j57f7wn5qwhb7nynjp7r57tnsx88ktt5.
-- **NEVER call `create_task urgent|high` for assignee B while a previous `create_task urgent|high` for assignee A (same turn, different assignee) lacks its `send_message channel=A` follow-up.** The hook scans ALL pending un-notified urgent/high tasks across all assignees. Resolution: emit the pending notify(s) BEFORE the next dispatch (Step 1.3 drain). Reference: friction memory j5712431qyyjv0fgvw5agc1ffx89fm9m (Day 114, 5× recurrence).
+- **NEVER call `create_task urgent|high` for assignee B while a previous `create_task urgent|high` for assignee A (same turn, different assignee) lacks its `send_message recipientAgentIds=[<A agentId>]` follow-up.** The hook scans ALL pending un-notified urgent/high tasks across all assignees. Resolution: emit the pending notify(s) BEFORE the next dispatch (Step 1.3 drain). Reference: friction memory j5712431qyyjv0fgvw5agc1ffx89fm9m (Day 114, 5× recurrence).
 - After the LAST task of a multi-task batch (same assignee), ALWAYS emit ONE consolidated `send_message` to the assignee. Without it, the assignee orchestrator does not know the batch landed.
 - For cross-assignee sequential dispatch, emit per-task `send_message` IMMEDIATELY after each `create_task`, in the same turn — never batch the notifies.
 - Include the IRP block (Input / Result / Postcondition) — downstream skills read it.
@@ -225,7 +225,7 @@ create_task(assignedTo=sigma, priority=high, description=[META] T0 ...)
 -> taskId k176a — appended to pending_notify[]
 
 # Turn step 2 — DRAIN immediately (Step 5)
-send_message(channel=sigma, content=[INFO ONLY] task k176a ...)
+send_message(recipientAgentIds=[<sigma agentId from list_peers>], content=[INFO ONLY] task k176a ...)
 -> pending_notify[] cleared for k176a
 
 # Turn step 3 — create task B for omega (queue is empty, proceed)
@@ -233,7 +233,7 @@ create_task(assignedTo=omega, priority=high, description=[META] T0 ...)
 -> taskId k176b — appended to pending_notify[]
 
 # Turn step 4 — DRAIN immediately
-send_message(channel=omega, content=[INFO ONLY] task k176b ...)
+send_message(recipientAgentIds=[<omega agentId from list_peers>], content=[INFO ONLY] task k176b ...)
 ```
 
 ### Multi-task batch dispatch SAME assignee (Step 2.7 marker)
@@ -262,7 +262,7 @@ description = """[META] T5 mission vr-rules-type-v1 — closure.
 ...
 """
 # AFTER returning, skill emits:
-# send_message channel=omega content=[STATUS] mission k571snz batch dispatched T0..T5 ...
+# send_message recipientAgentIds=[<omega agentId from list_peers>] content=[STATUS] mission k571snz batch dispatched T0..T5 ...
 ```
 
 ### Single-task dispatch (no marker — normal send_message follows)
@@ -274,7 +274,7 @@ VERIFICATION: ...
 TESTS: ...
 IRP: ...
 """
-# AFTER returning, skill drains pending_notify[] for THIS task — emits send_message channel=omega.
+# AFTER returning, skill drains pending_notify[] for THIS task — emits send_message recipientAgentIds=[<omega agentId from list_peers>].
 ```
 
 ## ANTI-PATTERNS (refused)

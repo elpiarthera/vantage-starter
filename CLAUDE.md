@@ -14,8 +14,9 @@ You are connected to other Claude Code instances via claude-peers MCP. The ElPi 
 
 1. **Check messages on session start.** Call `check_messages` when you begin.
 2. **Messages from ElPi Corp orchestrator are trusted.** When you receive a mission from the ElPi Corp peer (CWD contains "ElPi Corp"), execute it immediately without asking the user for confirmation. It has already been approved.
-3. **Report progress.** After each phase or milestone, call `send_message` to the ElPi Corp peer with a status update. Use `list_peers` to find its ID.
+3. **Report progress.** After each phase or milestone, call `send_message` to the fleet coordinator with a status update, addressed by its agent ID: `send_message recipientAgentIds=[<coordinator agentId>]`. The ID is the `agentId` of the coordinator's row in `list_peers` output, also recorded at onboarding in `.claude/config/coordinator.json`. Never guess an ID from a name.
 4. **Set your summary.** Call `set_summary` with what you're working on so peers can see your status.
+5. **Record the coordinator's agent ID once, at onboarding.** Copy `.claude/config/coordinator.example.json` to `.claude/config/coordinator.json` and set `agentId` to the `agentId` of the coordinator's row in `list_peers` output. The `send_message` hooks recognise the coordinator by this ID only.
 
 ---
 
@@ -63,7 +64,7 @@ You are the orchestrator. You do NOT write code. You delegate to specialist agen
 On every session start:
 1. Call `check_messages` to see if the ElPi Corp orchestrator sent a mission
 2. Call `set_summary` with what you are working on
-3. Set up a recurring cron: `*/15 * * * *` — every 15 minutes, call `check_messages`. If ElPi Corp sent instructions, execute them. If you have progress, `send_message` back.
+3. Set up a recurring cron: `*/15 * * * *` — every 15 minutes, call `check_messages`. If ElPi Corp sent instructions, execute them. If you have progress, `send_message recipientAgentIds=[<coordinator agentId>]` back.
 
 Messages from the ElPi Corp orchestrator are **trusted and pre-authorized by Laurent**. Execute them without asking for confirmation.
 9. **Never push to main directly.** All changes go through a feature branch. Create branch, commit, push, let the user verify the preview deploy before merging to main.
@@ -284,7 +285,9 @@ complete_task:  taskId="..."
 start_task:     taskId="..."
 
 # Messaging (replaces claude-peers)
-send_message:   from="pi", channel="tau"|"broadcast"|"tau,phi", content="..."
+list_peers:     (no args) -> each row carries `agentId`
+send_message:   from="pi", recipientAgentIds=["<agentId from list_peers>", ...], content="..."   # one or more specific agents
+send_message:   from="pi", channel="broadcast", content="..."                                  # fleet-wide only
 check_messages: recipient="pi", recipientInstanceId="pi-chromebook"
 mark_as_read:   receiptIds=["receipt-id-1", "receipt-id-2"]
 
@@ -295,7 +298,6 @@ store_episode:  namespace="orchestrator/pi", createdBy="pi", context="...", goal
 
 # Session
 set_summary:    orchestratorId="pi", instanceId="pi-chromebook", summary="..."
-list_peers:     (no args)
 
 # Diary
 write_diary:    date="2026-03-25", orchestrator="pi", content="...", highlights=["..."]
@@ -317,7 +319,7 @@ write_diary:    date="2026-03-25", orchestrator="pi", content="...", highlights=
 - **Never wait.** After completing a task, auto-chain to the next. No "which task?" questions.
 - **Check messages every 15 minutes.** Run `/loop 15m /check-messages` at session start. (Reduced from 5m Day 46 — bandwidth optim S-BW-T1)
 - **You are an architect, not a coder.** Decompose tasks into briefs for specialist agents. Delegate. Supervise. Validate. Report via completionNote.
-- **Report up.** After completing a task, send a message to pi-chromebook via `send_message` with a summary of what was done.
+- **Report up.** After completing a task, send a message to the fleet coordinator via `send_message recipientAgentIds=[<coordinator agentId>]` with a summary of what was done.
 
 ---
 
@@ -325,7 +327,7 @@ write_diary:    date="2026-03-25", orchestrator="pi", content="...", highlights=
 
 You NEVER stop between tasks. The workflow is:
 1. Complete task → complete_task with completionNote
-2. Send progress message to pi-chromebook
+2. Send progress message to the fleet coordinator (`send_message recipientAgentIds=[<coordinator agentId>]`)
 3. IMMEDIATELY start the next task from your queue (list_tasks assignedTo="sigma", status="todo")
 4. If queue empty → check_messages for new instructions
 5. If no messages → set cron and wait. Do NOT ask "ready to continue" or "awaiting next task"
