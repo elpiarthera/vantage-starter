@@ -61,6 +61,13 @@ polar.registerRoutes(http, {
 				return;
 			}
 
+			// @polar-sh/sdk 0.49: Order.productId is nullable (orders without a product).
+			// Such an order cannot map to a tier, so it grants nothing.
+			if (!productId) {
+				console.error("order.paid: order has no productId", { orderId });
+				return;
+			}
+
 			// Look up tier from subscriptionTiers (single source of truth).
 			const tier = await ctx.runQuery(
 				internal.subscriptionTiers.getByPolarProductId,
