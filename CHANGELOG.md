@@ -6,6 +6,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Security (2026-10-23 — bump `next` 16.2.10 → 16.4.1 for CVE-2026-94482)
+
+`next` and `eslint-config-next` move together from `16.2.10` to `16.4.1` (exact pins kept in `package.json`; `pnpm-lock.yaml` regenerated, no `next@16.2.10` entry remains). 16.4.1 is the patched release for CVE-2026-94482 (fixed in 16.4.1 and 15.5.28). No application code changed. Proof: the installed `next/package.json` version check exits 1 at 16.2.10 and 0 at 16.4.1; `tsc --noEmit` and `next build` pass.
+
 ### Changed (2026-10-10 — VantagePeers Cloud M1: a specific agent is addressed by its agent ID, not its name)
 
 Client instructions now address the fleet coordinator and every peer by unique agent ID: `list_peers` → the row's `agentId` → `send_message recipientAgentIds=[<agentId>]`. `channel=` remains only for `broadcast` (a name by design). Rewritten: `.claude/rules/tool-usage.md` Rule 5 (+ a common-errors row), `.claude/skills/dispatch-message/SKILL.md` Step 2/5, RULES, ANTI-PATTERNS, `.claude/skills/dispatch-task-create/SKILL.md` notify steps and examples, `standup`, `daily-start`, `check-messages`, `CLAUDE.md` peer-messaging + cheat sheet + report-up lines, `hooks/session-start-tau.py`. No instruction maps a name to an ID; the ID is read from `list_peers` output.
