@@ -1,0 +1,4 @@
+{
+  "dirs": ["dist", ".next", "build", ".turbo", "coverage", "out", ".vercel"],
+  "minAgeDays": 7
+}

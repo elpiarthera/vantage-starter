@@ -22,13 +22,16 @@ try:
     tool_input = data.get("tool_input", {})
 
     agent_type = tool_input.get("subagent_type", "")
-    run_in_background = tool_input.get("run_in_background", False)
+    # The runtime now launches sub-agents in the background by default and some
+    # versions drop the key when it equals that default. An ABSENT key is the
+    # default (background); only an explicit false is a foreground request.
+    run_in_background = tool_input.get("run_in_background", True)
 
     # Exempt agent types that need synchronous results
     if agent_type in EXEMPT_AGENTS:
         sys.exit(0)
 
-    if not run_in_background:
+    if run_in_background is False:
         print(
             f"BLOCKED: Agent calls must use run_in_background=true.\n"
             f"Add run_in_background: true to the Agent call.\n"
