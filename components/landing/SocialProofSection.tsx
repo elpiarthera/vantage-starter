@@ -28,11 +28,17 @@ const METRIC_KINDS: SocialPostMetricKind[] = [
  * (`components/landing/PricingSection.tsx`) — matching that sibling's idiom
  * rather than introducing a client boundary this section does not need.
  *
- * Content source: `lib/social-proof/socialPosts.ts` — a fork-replaceable
- * fixture, not hardcoded testimonials in this component.
+ * Content source: `lib/social-proof/socialPosts.ts` — a fork-supplied list
+ * that ships empty (the section is hidden until a fork adds real posts).
  */
 export function SocialProofSection() {
 	const t = useTranslations("landing.socialProof");
+
+	// Ships empty: no fabricated testimonials. Render nothing (no heading, no
+	// empty region) until a fork supplies its own real posts.
+	if (SOCIAL_PROOF_POSTS.length === 0) {
+		return null;
+	}
 
 	const labels: SocialPostCardLabels = {
 		viewPost: t("view_post"),

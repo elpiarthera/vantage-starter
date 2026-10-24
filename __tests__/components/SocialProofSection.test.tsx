@@ -19,11 +19,16 @@
  * silently).
  */
 import { render, screen } from "@testing-library/react";
+import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import {
 	SocialPostCard,
 	type SocialPostCardLabels,
 } from "@/components/ui/social-post-card";
 import type { SocialPostData } from "@/lib/social-proof/socialPosts";
+
+jest.mock("next-intl", () => ({
+	useTranslations: () => (key: string) => key,
+}));
 
 const labels: SocialPostCardLabels = {
 	viewPost: "View post",
@@ -45,9 +50,9 @@ const FIXTURES: Record<SocialPostData["network"], SocialPostData> = {
 	x: {
 		id: "fixture-x",
 		network: "x",
-		author: { name: "Fixture X Author", handle: "@fixturex" },
+		author: { name: "Example Author", handle: "@example" },
 		text: "Fixture X post body text.",
-		url: "https://x.com/fixturex/status/1",
+		url: "https://example.com/posts/x",
 		publishedAt: "2026-01-01",
 		metrics: [
 			{ kind: "likes", value: "10" },
@@ -59,7 +64,7 @@ const FIXTURES: Record<SocialPostData["network"], SocialPostData> = {
 		network: "instagram",
 		author: { name: "Fixture Instagram Author", handle: "@fixtureig" },
 		text: "Fixture Instagram caption text.",
-		url: "https://instagram.com/p/fixture/",
+		url: "https://example.com/posts/instagram",
 		publishedAt: "2026-01-02",
 		metrics: [{ kind: "likes", value: "20" }],
 		media: { thumbnailUrl: "/placeholder.svg", alt: "Fixture Instagram media" },
@@ -69,7 +74,7 @@ const FIXTURES: Record<SocialPostData["network"], SocialPostData> = {
 		network: "linkedin",
 		author: { name: "Fixture LinkedIn Author", handle: "Founder, Fixture Co" },
 		text: "Fixture LinkedIn post body text.",
-		url: "https://www.linkedin.com/posts/fixture",
+		url: "https://example.com/posts/linkedin",
 		publishedAt: "2026-01-03",
 		metrics: [
 			{ kind: "likes", value: "30" },
@@ -81,7 +86,7 @@ const FIXTURES: Record<SocialPostData["network"], SocialPostData> = {
 		network: "youtube",
 		author: { name: "Fixture YouTube Channel", handle: "@fixtureyt" },
 		text: "Fixture YouTube video description.",
-		url: "https://www.youtube.com/watch?v=fixture",
+		url: "https://example.com/posts/youtube",
 		publishedAt: "2026-01-04",
 		metrics: [{ kind: "views", value: "40" }],
 		media: {
@@ -94,8 +99,8 @@ const FIXTURES: Record<SocialPostData["network"], SocialPostData> = {
 describe("SocialPostCard — social-embed blocks", () => {
 	test("x-post: renders author, text, and engagement metrics", () => {
 		render(<SocialPostCard data={FIXTURES.x} labels={labels} />);
-		expect(screen.getByText("Fixture X Author")).toBeInTheDocument();
-		expect(screen.getByText("@fixturex")).toBeInTheDocument();
+		expect(screen.getByText("Example Author")).toBeInTheDocument();
+		expect(screen.getByText("@example")).toBeInTheDocument();
 		expect(screen.getByText("Fixture X post body text.")).toBeInTheDocument();
 		expect(screen.getByText("10")).toBeInTheDocument();
 		expect(screen.getByText("2")).toBeInTheDocument();
@@ -137,5 +142,28 @@ describe("SocialPostCard — social-embed blocks", () => {
 		const link = screen.getByRole("link", { name: "View post" });
 		expect(link).toHaveAttribute("href", FIXTURES.linkedin.url);
 		expect(link.tagName).toBe("A");
+	});
+});
+
+describe("SocialProofSection - shipped default", () => {
+	test("the shipped list is empty, so the section renders nothing (no heading, no region)", () => {
+		const { container } = render(<SocialProofSection />);
+		expect(container).toBeEmptyDOMElement();
+		expect(screen.queryByRole("heading")).toBeNull();
+		expect(screen.queryByRole("region")).toBeNull();
+	});
+
+	test("an explicitly empty list renders nothing, independent of the shipped default", () => {
+		jest.isolateModules(() => {
+			jest.doMock("@/lib/social-proof/socialPosts", () => ({
+				SOCIAL_PROOF_POSTS: [],
+			}));
+			const {
+				SocialProofSection: Isolated,
+			} = require("@/components/landing/SocialProofSection");
+			const { container } = render(<Isolated />);
+			expect(container).toBeEmptyDOMElement();
+		});
+		jest.dontMock("@/lib/social-proof/socialPosts");
 	});
 });
