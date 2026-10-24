@@ -167,10 +167,10 @@ describe("credits.recordManualTopUp — operator role gate", () => {
 		await seedUserCredits(t, BENEFICIARY, 100);
 		const asOperator = t.withIdentity({ subject: OPERATOR });
 
-		const result = await asOperator.mutation(
-			api.credits.recordManualTopUp,
-			{ clerkUserId: BENEFICIARY, amount: 25 },
-		);
+		const result = await asOperator.mutation(api.credits.recordManualTopUp, {
+			clerkUserId: BENEFICIARY,
+			amount: 25,
+		});
 
 		expect(result.success).toBe(true);
 		expect(result.newBalance).toBe(125);

@@ -103,6 +103,17 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 	const topUpPresets = useQuery(api.credits.getManualTopupPresets, {});
 	const topUpEnabled = useQuery(api.credits.isManualTopupEnabled, {});
 	const recordManualTopUp = useMutation(api.credits.recordManualTopUp);
+	// `recordManualTopUp` is an OPERATOR action (convex/credits.ts calls
+	// `requireAdmin`): a member's call is refused server-side. The control is
+	// therefore rendered for admin/owner only, so a regular user is never
+	// offered a button that always fails. Same role signal the admin layout
+	// uses (`api.users.getCurrentUser`); the server stays the real gate.
+	const currentUser = useQuery(
+		api.users.getCurrentUser,
+		user?.id ? {} : "skip",
+	);
+	const isOperator =
+		currentUser?.role === "admin" || currentUser?.role === "owner";
 	const [topUpBalanceOverride, setTopUpBalanceOverride] = useState<
 		number | null
 	>(null);
@@ -249,42 +260,44 @@ export function UsageCreditsTab({ user: _user }: UsageCreditsTabProps) {
 							{t("purchase_credits")}
 						</Button>
 					</div>
-					{/* Manual top-up control (mcpcn amount-input block) — only rendered
-					    once presets have loaded, so no tier ever appears as a literal
+					{/* Manual top-up control (mcpcn amount-input block) — operator
+					    (admin/owner) only, and only rendered once presets have loaded, so no tier ever appears as a literal
 					    fallback here. Gated by `manual_topup_enabled` (off by
 					    default, convex/seedCredits.ts): when the switch is off the
 					    control is shown disabled with a reason, never as a live
 					    action that would throw on click. */}
-					{Array.isArray(topUpPresets) && topUpPresets.length > 0 && (
-						<div className="mt-4 border-t border-border pt-4">
-							<p className="text-sm text-muted-foreground mb-2">
-								{t("manual_topup_title")}
-							</p>
-							{topUpEnabled === false ? (
-								<p className="text-sm text-muted-foreground">
-									{t("manual_topup_disabled")}
+					{isOperator &&
+						Array.isArray(topUpPresets) &&
+						topUpPresets.length > 0 && (
+							<div className="mt-4 border-t border-border pt-4">
+								<p className="text-sm text-muted-foreground mb-2">
+									{t("manual_topup_title")}
 								</p>
-							) : (
-								<AmountInput
-									appearance={{
-										label: t("manual_topup_label"),
-										decreaseLabel: t("manual_topup_decrease"),
-										increaseLabel: t("manual_topup_increase"),
-										currency: "EUR",
-									}}
-									data={{ presets: topUpPresets }}
-									actions={{ onConfirm: handleManualTopUp }}
-								>
-									<AmountInputControls>
-										<TopUpPresetButtons
-											disabled={isToppingUp || topUpEnabled !== true}
-											onTopUp={handleManualTopUp}
-										/>
-									</AmountInputControls>
-								</AmountInput>
-							)}
-						</div>
-					)}
+								{topUpEnabled === false ? (
+									<p className="text-sm text-muted-foreground">
+										{t("manual_topup_disabled")}
+									</p>
+								) : (
+									<AmountInput
+										appearance={{
+											label: t("manual_topup_label"),
+											decreaseLabel: t("manual_topup_decrease"),
+											increaseLabel: t("manual_topup_increase"),
+											currency: "EUR",
+										}}
+										data={{ presets: topUpPresets }}
+										actions={{ onConfirm: handleManualTopUp }}
+									>
+										<AmountInputControls>
+											<TopUpPresetButtons
+												disabled={isToppingUp || topUpEnabled !== true}
+												onTopUp={handleManualTopUp}
+											/>
+										</AmountInputControls>
+									</AmountInput>
+								)}
+							</div>
+						)}
 				</Card>
 			</div>
 			{/* Usage Statistics */}

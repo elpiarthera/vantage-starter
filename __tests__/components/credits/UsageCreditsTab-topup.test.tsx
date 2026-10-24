@@ -74,6 +74,7 @@ jest.mock("@/convex/_generated/api", () => ({
 		usageTracking: { listByUser: "listByUser" },
 		subscriptionTiers: { listCreditPackages: "listCreditPackages" },
 		polar: { generateCheckoutLink: "generateCheckoutLink" },
+		users: { getCurrentUser: "getCurrentUser" },
 		credits: {
 			getManualTopupPresets: "getManualTopupPresets",
 			isManualTopupEnabled: "isManualTopupEnabled",
@@ -107,6 +108,7 @@ beforeEach(() => {
 	mockUseQueryImpl.mockImplementation((query: string) => {
 		if (query === "getManualTopupPresets") return PRESETS;
 		if (query === "isManualTopupEnabled") return true;
+		if (query === "getCurrentUser") return { role: "admin" };
 		return [];
 	});
 });
@@ -154,6 +156,7 @@ describe("UsageCreditsTab — manual top-up (amount-input block)", () => {
 	test("renders no preset literal that is not sourced from the getManualTopupPresets query", async () => {
 		mockUseQueryImpl.mockImplementation((query: string) => {
 			if (query === "getManualTopupPresets") return [7, 13];
+			if (query === "getCurrentUser") return { role: "admin" };
 			return [];
 		});
 
@@ -162,5 +165,36 @@ describe("UsageCreditsTab — manual top-up (amount-input block)", () => {
 		expect(screen.getByRole("button", { name: "€7" })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "€13" })).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "€10" })).toBeNull();
+	});
+
+	test.each([
+		"member",
+		"client",
+		undefined,
+	])("a non-operator (role=%s) is offered no manual top-up control", (role) => {
+		mockUseQueryImpl.mockImplementation((query: string) => {
+			if (query === "getManualTopupPresets") return PRESETS;
+			if (query === "isManualTopupEnabled") return true;
+			if (query === "getCurrentUser") return role ? { role } : null;
+			return [];
+		});
+
+		render(<UsageCreditsTab user={{} as UserResource} />);
+
+		expect(screen.queryByRole("button", { name: "€25" })).toBeNull();
+		expect(screen.queryByText(en.usage_tab.manual_topup_title)).toBeNull();
+	});
+
+	test("an owner sees the manual top-up control", () => {
+		mockUseQueryImpl.mockImplementation((query: string) => {
+			if (query === "getManualTopupPresets") return PRESETS;
+			if (query === "isManualTopupEnabled") return true;
+			if (query === "getCurrentUser") return { role: "owner" };
+			return [];
+		});
+
+		render(<UsageCreditsTab user={{} as UserResource} />);
+
+		expect(screen.getByRole("button", { name: "€25" })).toBeInTheDocument();
 	});
 });
