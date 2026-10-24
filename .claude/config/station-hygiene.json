@@ -1,0 +1,7 @@
+{
+  "maxPorcelainFiles": 0,
+  "maxExtraBranches": 0,
+  "ignored_local_paths": [".claude/settings.local.json"],
+  "wipLimitConfig": ".claude/config/wip-limit.json",
+  "buildOutputConfig": ".claude/config/build-output-dirs.json"
+}

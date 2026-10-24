@@ -1,0 +1,23 @@
+{
+  "thresholdHours": 24,
+  "prsFile": ".claude/state/station-prs.json",
+  "githubOwners": ["elpiarthera", "vantageos-agency"],
+  "githubSearchLimit": 1000,
+  "nonStationPrefixes": ["feat", "fix", "chore", "docs", "hotfix", "refactor", "test", "ci", "build", "perf", "release", "dependabot", "renovate"],
+  "repoOwners": {
+    "perfect-ai-agent": "phi",
+    "vantage-marketing-studio": "rho",
+    "vantage-peers-dashboard": "kappa",
+    "vantage-immo-market-intel": "xi",
+    "ElPi-Corp": "pi"
+  },
+  "prOwners": {
+    "immobiliere-pujol-automatisation#128": "omicron",
+    "immobiliere-pujol-automatisation#117": "epsilon",
+    "vantage-ds#1": "prometheus",
+    "vantage-ds#2": "prometheus",
+    "vantage-immo#47": "xi",
+    "vantage-immo#376": "omicron",
+    "vantage-crm-extension#5": "athena"
+  }
+}
