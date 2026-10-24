@@ -6,6 +6,20 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-07-23 — the landing social-proof strip: four networks, one card, no third-party call)
+
+Batch 4's social bullet and the four blocks it puts into service — `x-post`, `instagram-post`, `linkedin-post`, `youtube-post` — as ONE section, per `docs/mcpcn-block-mapping.md` (~line 394): they share one landing strip and one card-rendering pattern reused four times, not four unrelated integrations. `components/ui/social-post-card.tsx` is that single component, parameterised by network; `components/landing/SocialProofSection.tsx` is the strip, a plain Server Component placed directly after `HeroSection`.
+
+**No Convex table, no API key, no third-party call.** The contract says each card renders from its network's own public oEmbed-shaped data, and nothing here fetches x.com, instagram.com, linkedin.com or youtube.com at build or run time. The example content lives in `lib/social-proof/socialPosts.ts` and nowhere else: a forker replaces that one file, because testimonials baked into component source would be exactly the hardcoded business knowledge this template must not ship (`.claude/rules/no-hardcoded-business-knowledge.md`).
+
+The YouTube card renders a static thumbnail with a styled play overlay rather than a bare `<iframe>` — the contract asks for a native-looking card, and the side effect is that no third-party script or cookie loads until the visitor chooses to click through. Asserted, not assumed: the suite checks `container.querySelector("iframe")` is null.
+
+**The specialist's RED proof was replaced, because it destroyed instead of neutralising.** It had moved the card module out of place and watched the suite fail with `Cannot find module` — which proves the import exists, not that any assertion can catch a defect. The orchestrator re-proved it with a narrow mutation instead: the metric list rendered from `[]` rather than `data.metrics`, the mutation's landing asserted by `grep` **before** any result was read. Exactly the four per-network tests reddened and the accessibility test — which asserts no metric — stayed green, which is what distinguishes a neutralising mutation from a destructive one. Restore proven byte-exact by `diff`, and the suite green again after it.
+
+One declared divergence from the orchestrator's own brief: the strings went into `landing.socialProof`, nested under the existing `landing` namespace next to its sibling `landing.testimonials`, rather than into the new top-level namespace the brief asked for. The sibling idiom won; `check-orphan-namespaces.js` still passes because `landing` has consumers.
+
+Ratios measured on **tau-vps**, `pnpm exec`, repository root, exit codes read from each command and never from an `echo "$?"` behind a pipe: `jest` → exit 0, **65 suites, 286/286**. `tsc --noEmit` → exit 0. `pnpm build` → exit 0, `/[locale]` compiled and generated. `check-translations.js` → exit 0, parity PASS across the seven locales. `check-orphan-namespaces.js` → exit 0, 0 orphans.
+
 ### Fixed (2026-10-24 — a fresh fork recorded no purchases: the credit packs were seeded without `fulfillmentKind`, and the `order.paid` -> `purchases` wiring was untested)
 
 `recordFromWebhookOrder` refuses to record a `one_time` purchase whose tier has no `fulfillmentKind` (misconfiguration, never defaulted), and `convex/seedCredits.ts` inserted the four credit packs (`credits_starter`, `credits_popular`, `credits_pro`, `credits_enterprise`) without it. In a fresh fork every credit-pack order therefore granted credits and wrote no `purchases` row. The four packs are now seeded `fulfillmentKind: "digital"` (nothing ships). Rows already inserted in a deployment never receive a field from the insert path, so `patchSubscriptionTiersPolarIds` also patches an existing pack row that has none, idempotently and never overwriting a value the operator set; the mutation now also returns `fulfillmentKindPatched`.
