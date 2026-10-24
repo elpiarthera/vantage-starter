@@ -41,12 +41,13 @@ async function seedUser(
 	t: ReturnType<typeof makeT>,
 	clerkUserId: string,
 	role: "owner" | "admin" | "member" | "client",
+	organizationId: string | undefined = undefined,
 ) {
 	await t.run(async (ctx) => {
 		const now = Date.now();
 		await ctx.db.insert("users", {
 			clerkUserId,
-			organizationId: undefined,
+			organizationId,
 			role,
 			email: `${clerkUserId}@test.com`,
 			createdAt: now,
@@ -201,5 +202,73 @@ describe("credits.recordManualTopUp — operator role gate", () => {
 			}),
 		).rejects.toThrow(/disabled/i);
 		expect((await balanceOf(t, BENEFICIARY))?.balance).toBe(100);
+	});
+
+	it("same-org: an admin of org A grants to a member of org A — ALLOWED, exactly one transaction row, grantedBy = the admin", async () => {
+		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
+		await seedUser(t, OPERATOR, "admin", "org_a");
+		await seedUser(t, BENEFICIARY, "member", "org_a");
+		await seedUserCredits(t, BENEFICIARY, 100);
+		const asOperator = t.withIdentity({ subject: OPERATOR });
+
+		const result = await asOperator.mutation(api.credits.recordManualTopUp, {
+			clerkUserId: BENEFICIARY,
+			amount: 25,
+		});
+
+		expect(result.newBalance).toBe(125);
+		expect((await balanceOf(t, BENEFICIARY))?.balance).toBe(125);
+		const txs = await txsOf(t, BENEFICIARY);
+		expect(txs).toHaveLength(1);
+		expect(txs[0]?.grantedByClerkUserId).toBe(OPERATOR);
+	});
+
+	it("cross-org: an admin of org A is REFUSED a grant to a member of org B — zero transaction rows, beneficiary balance unchanged", async () => {
+		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
+		await seedUser(t, OPERATOR, "admin", "org_a");
+		await seedUser(t, BENEFICIARY, "member", "org_b");
+		await seedUserCredits(t, BENEFICIARY, 100);
+		const asOperator = t.withIdentity({ subject: OPERATOR });
+
+		await expect(
+			asOperator.mutation(api.credits.recordManualTopUp, {
+				clerkUserId: BENEFICIARY,
+				amount: 25,
+			}),
+		).rejects.toThrow(/admin access required for this organization/i);
+
+		expect((await balanceOf(t, BENEFICIARY))?.balance).toBe(100);
+		expect(await txsOf(t, BENEFICIARY)).toHaveLength(0);
+	});
+
+	it("no users row for the beneficiary: follows the adminHelpers precedent — the target org is undefined, so an org-bound admin is REFUSED (zero rows) while an org-less admin is allowed", async () => {
+		await seedPresets(t, [10, 25, 50]);
+		await seedEnabled(t, true);
+		await seedUser(t, OPERATOR, "admin", "org_a");
+		await seedUserCredits(t, BENEFICIARY, 100);
+
+		await expect(
+			t
+				.withIdentity({ subject: OPERATOR })
+				.mutation(api.credits.recordManualTopUp, {
+					clerkUserId: BENEFICIARY,
+					amount: 25,
+				}),
+		).rejects.toThrow(/admin access required for this organization/i);
+		expect((await balanceOf(t, BENEFICIARY))?.balance).toBe(100);
+		expect(await txsOf(t, BENEFICIARY)).toHaveLength(0);
+
+		const ORGLESS = "user_orgless_admin";
+		await seedUser(t, ORGLESS, "admin");
+		const result = await t
+			.withIdentity({ subject: ORGLESS })
+			.mutation(api.credits.recordManualTopUp, {
+				clerkUserId: BENEFICIARY,
+				amount: 25,
+			});
+		expect(result.newBalance).toBe(125);
+		expect(await txsOf(t, BENEFICIARY)).toHaveLength(1);
 	});
 });
