@@ -6,6 +6,14 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-10-24 — a fresh fork recorded no purchases: the credit packs were seeded without `fulfillmentKind`, and the `order.paid` -> `purchases` wiring was untested)
+
+`recordFromWebhookOrder` refuses to record a `one_time` purchase whose tier has no `fulfillmentKind` (misconfiguration, never defaulted), and `convex/seedCredits.ts` inserted the four credit packs (`credits_starter`, `credits_popular`, `credits_pro`, `credits_enterprise`) without it. In a fresh fork every credit-pack order therefore granted credits and wrote no `purchases` row. The four packs are now seeded `fulfillmentKind: "digital"` (nothing ships). Rows already inserted in a deployment never receive a field from the insert path, so `patchSubscriptionTiersPolarIds` also patches an existing pack row that has none, idempotently and never overwriting a value the operator set; the mutation now also returns `fulfillmentKindPatched`.
+
+The wiring was untested: the other `polar-*.test.ts` files re-create the handler's call sequence by hand, so deleting `fulfillmentKind: tier.fulfillmentKind` at `convex/http.ts:126` left every test green. `__tests__/convex/polar-order-paid-purchases.test.ts` signs an `order.paid` event and POSTs it to the real `/polar/events` route through `t.fetch`, asserting on the `purchases` table: one row of kind `digital`; the same event twice still one row; a null `productId` no row; a `one_time` tier without `fulfillmentKind` no row. Two further cases cover the seed insert and the existing-row patch.
+
+Station tooling: `.claude/scripts/boat_test_run.sh` (runs a repository's test command at a commit inside a Boat sandbox) is committed with this change.
+
 ### Added (2026-07-23 — the purchase group of batch 4: a one-time purchase is recorded, and a misconfigured product records nothing)
 
 Batch 4's purchase bullet, backend half — the `purchases` table, its idempotent recording mutation, and the wiring from Polar's existing `order.paid` webhook handler. `docs/mcpcn-block-mapping.md` (~line 393) is the committed contract: `userId`, `productKey`, `kind: "digital" | "trackable"`, `trackingRef`, `purchasedAt`. Idempotency is on the Polar order id and reuses `credits.addPurchaseCredits`'s own mechanism rather than a second one: a re-delivered webhook writes nothing more.
