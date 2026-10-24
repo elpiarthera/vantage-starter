@@ -10,6 +10,8 @@ All notable changes to VantageStarter are documented in this file.
 
 `api.credits.recordManualTopUp` was gated only by a global `systemConfig` switch (`manual_topup_enabled`, off by default) plus a self-only guard: a user could top up THEMSELVES. "Manual" is supposed to mean "granted by a human who has the right", and the code carried no notion of that right — so flipping the switch reopened the tap for **all** authenticated users at once.
 
+The admin check is scoped to the **beneficiary's organization** (`requireAdmin(ctx, { targetOrganizationId })`, as in `convex/adminHelpers.ts`), so an admin of org A can no longer credit a member of org B; a beneficiary with no `users` row binds the check to `undefined`, which only an org-less admin satisfies.
+
 The self-only guard (`identity.subject !== clerkUserId → throw`) is replaced by `requireAdmin(ctx)` — the role helper the repo already exposes (`convex/lib/auth.ts`, role `admin`|`owner`), reused rather than reinvented. A non-operator is now refused **even when the switch is `true`**, and the beneficiary is an argument that may differ from the caller: that is what an operator grant is. The `manual_topup_enabled` switch and the amount/tier validation stay exactly as they were — the role gate is a lock added on top, not a replacement.
 
 `creditTransactions` gains an optional `grantedByClerkUserId`, populated on this path with the OPERATOR's `identity.subject` (the granter, never the beneficiary), so a grant carries who authorised it. Optional because existing rows and every other transaction type have no granter.

@@ -1133,7 +1133,8 @@ export const deductCreditsPublic = mutation({
  *
  * NO PAYMENT OCCURS ON THIS PATH. This is an OPERATOR-issued credit GRANT, not
  * a purchase. Two independent locks guard it: (1) the caller MUST be an
- * admin/owner (`requireAdmin`) — a plain authenticated member/client is
+ * admin/owner of the beneficiary's organization (`requireAdmin` with an
+ * org scope) — a plain authenticated member/client is
  * refused even when the switch below is on; and (2) it is gated by
  * `systemConfig` key "manual_topup_enabled" (off by default — see
  * convex/seedCredits.ts) and refuses loudly when that row is absent or not
@@ -1156,17 +1157,24 @@ export const recordManualTopUp = mutation({
 	handler: async (ctx, args) => {
 		const { clerkUserId, amount } = args;
 
-		// Operator-only. A credit grant is an ADMIN action: the caller must be
-		// an admin/owner (requireAdmin throws otherwise), NOT merely
-		// authenticated. Gating on the systemConfig switch alone reopened the
-		// tap for EVERY authenticated user the moment the switch was flipped on
-		// — the defect this closes. No orgScope argument is passed: a manual
-		// grant is global (userCredits carries no organizationId column to
-		// verify against), the documented "no org check possible or meaningful"
-		// case per requireAdmin's JSDoc. The beneficiary (clerkUserId) may
-		// legitimately differ from the operator — that is the point of an
-		// operator granting credits to another user.
-		const operator = await requireAdmin(ctx);
+		// Operator-only, and scoped to the BENEFICIARY's organization. A credit
+		// grant is an ADMIN action: the caller must be an admin/owner AND belong
+		// to the same organization as the user being credited. Gating on role
+		// alone let an admin of org A credit a member of org B. The beneficiary's
+		// `users` row is resolved first (same shape as convex/adminHelpers.ts) so
+		// there is a target organizationId to compare the caller's against; no
+		// balance data is touched before authorization. When the beneficiary has
+		// no `users` row, `targetOrganizationId` is `undefined` and, per the
+		// requireAdmin contract, only an org-less admin passes — an org-bound
+		// admin is refused. `userCredits` carries no organizationId column, so
+		// the `users` row is the org source of truth.
+		const beneficiary = await ctx.db
+			.query("users")
+			.withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", clerkUserId))
+			.unique();
+		const operator = await requireAdmin(ctx, {
+			targetOrganizationId: beneficiary?.organizationId,
+		});
 
 		// Off by default. No payment happens on this path — it is an
 		// operator grant, not a purchase — so a fork must inherit a
