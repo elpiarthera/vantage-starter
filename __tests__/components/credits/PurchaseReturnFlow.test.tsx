@@ -64,6 +64,8 @@ jest.mock("@/convex/_generated/api", () => ({
 		subscriptionTiers: { listCreditPackages: "listCreditPackages" },
 		polar: { generateCheckoutLink: "generateCheckoutLink" },
 		usageTracking: { listByUser: "listByUser" },
+		// UsageCreditsTab reads the caller's role to gate the operator top-up.
+		users: { getCurrentUser: "getCurrentUser" },
 		credits: {
 			getManualTopupPresets: "getManualTopupPresets",
 			recordManualTopUp: "recordManualTopUp",
@@ -244,6 +246,8 @@ describe("UsageCreditsTab", () => {
 		// shape matching what it actually renders (avoids a spurious React
 		// "missing key" warning from usageHistory rows keying off `_id`).
 		mockUseQueryImpl.mockImplementation((query: string) => {
+			// A regular member: no operator role, so the top-up control stays hidden.
+			if (query === "getCurrentUser") return { role: "member" };
 			if (query === "listCreditPackages") {
 				return [
 					{
