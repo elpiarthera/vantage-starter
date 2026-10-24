@@ -21,6 +21,7 @@ import {
 	mutation,
 	query,
 } from "./_generated/server";
+import { requireAdmin } from "./lib/auth";
 
 // ============================================
 // 1. getUserCredits (Query)
@@ -1130,12 +1131,17 @@ export const deductCreditsPublic = mutation({
  * deploy. If that config row is missing or malformed, the mutation refuses
  * loudly rather than falling back to a literal tier list.
  *
- * NO PAYMENT OCCURS ON THIS PATH. This is a self-service credit GRANT, not a
- * purchase: it is gated by `systemConfig` key "manual_topup_enabled" (off by
- * default — see convex/seedCredits.ts) and refuses loudly when that row is
- * absent or not `true`, so a fork inherits a closed tap rather than an open
- * one. The transaction it writes is typed "manual_grant" (never "purchase"),
- * and it increments `totalBonusReceived` (never `totalPurchased`).
+ * NO PAYMENT OCCURS ON THIS PATH. This is an OPERATOR-issued credit GRANT, not
+ * a purchase. Two independent locks guard it: (1) the caller MUST be an
+ * admin/owner (`requireAdmin`) — a plain authenticated member/client is
+ * refused even when the switch below is on; and (2) it is gated by
+ * `systemConfig` key "manual_topup_enabled" (off by default — see
+ * convex/seedCredits.ts) and refuses loudly when that row is absent or not
+ * `true`, so a fork inherits a closed tap rather than an open one. The
+ * beneficiary (`clerkUserId`) may differ from the operator — an operator
+ * granting to another user. The transaction it writes is typed "manual_grant"
+ * (never "purchase"), records the granting operator on `grantedByClerkUserId`,
+ * and increments `totalBonusReceived` (never `totalPurchased`).
  */
 export const recordManualTopUp = mutation({
 	args: {
@@ -1150,18 +1156,23 @@ export const recordManualTopUp = mutation({
 	handler: async (ctx, args) => {
 		const { clerkUserId, amount } = args;
 
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) {
-			throw new Error("Unauthorized: Authentication required");
-		}
-		if (identity.subject !== clerkUserId) {
-			throw new Error("Unauthorized: cannot top up another user's credits");
-		}
+		// Operator-only. A credit grant is an ADMIN action: the caller must be
+		// an admin/owner (requireAdmin throws otherwise), NOT merely
+		// authenticated. Gating on the systemConfig switch alone reopened the
+		// tap for EVERY authenticated user the moment the switch was flipped on
+		// — the defect this closes. No orgScope argument is passed: a manual
+		// grant is global (userCredits carries no organizationId column to
+		// verify against), the documented "no org check possible or meaningful"
+		// case per requireAdmin's JSDoc. The beneficiary (clerkUserId) may
+		// legitimately differ from the operator — that is the point of an
+		// operator granting credits to another user.
+		const operator = await requireAdmin(ctx);
 
-		// Off by default. No payment happens on this path — it is a
-		// self-service grant, not a purchase — so a fork must inherit a
-		// closed tap. Refuse loudly rather than silently no-op or fall back
-		// to a permissive default.
+		// Off by default. No payment happens on this path — it is an
+		// operator grant, not a purchase — so a fork must inherit a
+		// closed tap. The switch is a second lock on top of the operator
+		// role check above, not a replacement for it. Refuse loudly rather
+		// than silently no-op or fall back to a permissive default.
 		const enabledConfig = await ctx.db
 			.query("systemConfig")
 			.withIndex("by_key", (q) => q.eq("key", "manual_topup_enabled"))
@@ -1238,6 +1249,9 @@ export const recordManualTopUp = mutation({
 		const transactionId = await ctx.db.insert("creditTransactions", {
 			clerkUserId,
 			type: "manual_grant",
+			// The operator who issued the grant — their own identity, never the
+			// beneficiary's — so the audit log answers "who granted this".
+			grantedByClerkUserId: operator.clerkUserId,
 			amount,
 			balanceAfter: newBalance,
 			description: `Manual credit top-up (grant, no payment): ${amount} credits`,
