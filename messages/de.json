@@ -891,6 +891,20 @@
 			"placeholder_sr": "Dieser Platz ist für einen zukünftigen Kundenbericht reserviert.",
 			"eyebrow": "Erfahrungsberichte"
 		},
+		"socialProof": {
+			"eyebrow": "Sozialer Beweis",
+			"heading": "Gesehen auf",
+			"subheading": "Echte Beiträge von Entwicklern, die mit VantageStarter live gehen — auf X, Instagram, LinkedIn und YouTube.",
+			"view_post": "Beitrag ansehen",
+			"network_x": "X",
+			"network_instagram": "Instagram",
+			"network_linkedin": "LinkedIn",
+			"network_youtube": "YouTube",
+			"metric_likes": "Gefällt mir",
+			"metric_comments": "Kommentare",
+			"metric_shares": "Geteilt",
+			"metric_views": "Aufrufe"
+		},
 		"decorative": {
 			"tree_title": "Generative Baumanimation",
 			"shader_title": "Animierter Hintergrund"
