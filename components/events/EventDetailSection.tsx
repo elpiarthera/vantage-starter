@@ -65,7 +65,14 @@ export function EventDetailSection({ slug }: { slug: string }) {
 	}
 
 	if (event === null) {
-		return <p className="text-muted-foreground text-sm">{t("not_found")}</p>;
+		// The existence of this slug is already guaranteed server-side by
+		// `app/[locale]/events/[slug]/page.tsx`'s `fetchQuery` +
+		// `notFound()` gate, which runs before this client component ever
+		// mounts. `null` can only land here if the event is deleted in the
+		// instant between that server read and this client subscription's
+		// first tick — an unrenderable race, not a routable 404 — so this
+		// renders nothing rather than a soft "not found" sentence at 200.
+		return null;
 	}
 
 	const isFull = event.registeredCount >= event.capacity;
