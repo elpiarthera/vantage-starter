@@ -303,6 +303,12 @@ export default defineSchema({
 			// "manual_topup_enabled" (off by default, see convex/seedCredits.ts).
 			v.literal("manual_grant"),
 		),
+		// Clerk user id of the OPERATOR (admin/owner) who granted this row via
+		// credits.recordManualTopUp. Optional: pre-existing rows and every other
+		// transaction type carry no granter — only an operator-issued
+		// "manual_grant" populates it (with the operator's own identity, never
+		// the beneficiary's).
+		grantedByClerkUserId: v.optional(v.string()),
 		amount: v.number(), // Positive = add, Negative = deduct
 		balanceAfter: v.number(),
 		projectId: v.optional(v.string()),
