@@ -123,7 +123,8 @@ export const seedAll = internalMutation({
 
 /**
  * One-shot migration: add polarProductId + productType to the 3 subscription rows
- * AND insert 4 one-time credit package rows.
+ * AND insert 4 one-time credit package rows (fulfillmentKind "digital"; rows that
+ * already exist without a fulfillmentKind are patched, idempotently).
  * Source of truth: docs/Guides/polar-subscription-setup-guide.md
  * Run: npx convex run seedCredits:patchSubscriptionTiersPolarIds
  */
@@ -180,6 +181,7 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 				displayName: "25 Credits — Starter Pack",
 				polarProductId: "d3b0791a-f692-4564-8690-6f85bc9d435b",
 				productType: "one_time" as const,
+				fulfillmentKind: "digital" as const,
 				priceUsd: 25.0,
 				initialCredits: 25,
 				bonusCredits: 0,
@@ -191,6 +193,7 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 				displayName: "55 Credits — Popular Pack",
 				polarProductId: "86e14b99-a194-45fe-87e3-466fca2e9bb5",
 				productType: "one_time" as const,
+				fulfillmentKind: "digital" as const,
 				priceUsd: 50.0,
 				initialCredits: 50,
 				bonusCredits: 5,
@@ -202,6 +205,7 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 				displayName: "115 Credits — Pro Pack",
 				polarProductId: "44da7533-0a4b-4a26-b641-9b45e81c2d07",
 				productType: "one_time" as const,
+				fulfillmentKind: "digital" as const,
 				priceUsd: 100.0,
 				initialCredits: 100,
 				bonusCredits: 15,
@@ -213,6 +217,7 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 				displayName: "300 Credits — Enterprise Pack",
 				polarProductId: "19c982fd-3106-45f2-833d-07b573b45c2b",
 				productType: "one_time" as const,
+				fulfillmentKind: "digital" as const,
 				priceUsd: 250.0,
 				initialCredits: 250,
 				bonusCredits: 50,
@@ -222,6 +227,7 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 		];
 
 		let inserted = 0;
+		let fulfillmentKindPatched = 0;
 		for (const pkg of creditPackages) {
 			// Guard on both tierKey AND polarProductId to prevent duplicates
 			// from either path (direct insert or race between two callers).
@@ -230,6 +236,17 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 				.withIndex("by_tier_key", (q) => q.eq("tierKey", pkg.tierKey))
 				.first();
 			if (existingByKey) {
+				// Rows inserted before `fulfillmentKind` existed never get it from the
+				// insert path. Without it `purchases.recordFromWebhookOrder` refuses to
+				// record. Patch only when unset: an operator-chosen value is kept.
+				if (existingByKey.fulfillmentKind === undefined) {
+					await ctx.db.patch(existingByKey._id, {
+						fulfillmentKind: pkg.fulfillmentKind,
+						updatedAt: now,
+					});
+					console.log(`🔧 ${pkg.tierKey}: set fulfillmentKind=digital`);
+					fulfillmentKindPatched++;
+				}
 				console.log(`⏭️ ${pkg.tierKey} already exists (by tierKey)`);
 				continue;
 			}
@@ -241,6 +258,13 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 				)
 				.first();
 			if (existingByProduct) {
+				if (existingByProduct.fulfillmentKind === undefined) {
+					await ctx.db.patch(existingByProduct._id, {
+						fulfillmentKind: pkg.fulfillmentKind,
+						updatedAt: now,
+					});
+					fulfillmentKindPatched++;
+				}
 				console.log(
 					`⏭️ ${pkg.tierKey} already exists (by polarProductId ${pkg.polarProductId})`,
 				);
@@ -258,7 +282,7 @@ export const patchSubscriptionTiersPolarIds = internalMutation({
 			inserted++;
 		}
 
-		return { success: true, patched, inserted };
+		return { success: true, patched, inserted, fulfillmentKindPatched };
 	},
 });
 
