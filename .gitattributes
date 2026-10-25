@@ -1,0 +1,16 @@
+# CHANGELOG.md collects a new entry at the top of its [Unreleased] section on
+# almost every PR. With the default 3-way merge, two branches that each add an
+# entry there conflict on every rebase — the same "keep both" resolution, by
+# hand, each time, with a real risk of dropping an entry. The built-in `union`
+# merge driver concatenates both sides instead of raising a conflict, so both
+# entries are preserved automatically. No `git config` is needed — `union` is
+# a built-in driver. The ordering of the two concatenated entries is not
+# guaranteed; for a changelog that is acceptable (both are dated), and the
+# release step is where the section is curated.
+#
+# Note on the built-in `union` driver: it concatenates the two sides line-wise
+# with NO dedup. If both sides edit the SAME line, it keeps BOTH copies
+# silently rather than raising a conflict. This is harmless for append-only
+# changelog entries (each PR adds its own distinct lines), and any duplication
+# is reconciled at the release-curation step where the section is hand-curated.
+CHANGELOG.md merge=union
