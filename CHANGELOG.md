@@ -6,6 +6,22 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-10-25 — migrate off deprecated createRouteMatcher, close Clerk debt family)
+
+**Defect A closed** — the three `createRouteMatcher` integration suites (`auth-middleware`, `legal-pages-public`, `global-bucket-route-public`) already run against the REAL primitive via `jest.requireActual`. The RED proof on material NOT authored by this agent confirms: injecting the malformed entry `/report*` into the first `createRouteMatcher` call in `auth-middleware.test.ts` makes the REAL Clerk primitive throw "Unexpected MODIFIER at 7, expected END" — a hand-rolled mock would silently pass. Mutation asserted with `grep` before the test run; git status clean after restore.
+
+**Defect B — interim decision, not closed** — `createRouteMatcher` from `@clerk/nextjs/server` is deprecated in Clerk v7.5.20. The official migration path is resource-based per-page auth checks — an architectural change. No drop-in replacement exists: `@clerk/shared/pathMatcher`'s `createPathMatcher` is itself `@deprecated` for removal in the same major version, making it strictly worse than the public API it would replace (internal plumbing, zero forward-compat benefit). `middleware.ts` therefore retains `createRouteMatcher` with an explicit declared-divergence comment citing the migration task. The architectural migration is tracked as task k17esv1p7fz06216524f2kwy118gyn3y.
+
+CLASS (Defect A):
+- definition: integration suites that mock the very primitive they claim to exercise, using a hand-rolled clone that disagrees with the real primitive on malformed entries
+- sweep: `grep -rn "createRouteMatcher" --include=*.ts --include=*.tsx . | grep -v node_modules | grep -v .md | grep -v worktrees` → 3 test files + middleware.ts; all test files use `jest.requireActual` or direct import (no mock)
+- remaining: 0
+
+CLASS (Defect B):
+- definition: use of deprecated `createRouteMatcher` that emits a console `deprecated()` warning on every middleware construction in development; requires architectural resource-based auth migration to close
+- sweep: `grep -rn "createRouteMatcher" --include=*.ts --include=*.tsx . | grep -v node_modules | grep -v .md | grep -v worktrees` → middleware.ts is the only production call site; retained with declared-divergence comment
+- remaining: 1 — traced to task k17esv1p7fz06216524f2kwy118gyn3y (architectural migration, out of scope for this debt sweep)
+
 ### Added (2026-10-25 — characterisation test for HeroSection)
 
 test(landing): characterisation test for HeroSection (test-only) — pins title/subtitle, primary CTA /sign-up, secondary CTA github href, section landmark, terminal copy button, and badge copy before any mcpcn hero-block swap.

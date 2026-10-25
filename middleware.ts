@@ -18,6 +18,14 @@ function applyCSP(response: NextResponse): NextResponse {
 	return response;
 }
 
+// DECLARED DIVERGENCE — this file knowingly retains the deprecated-but-supported
+// `createRouteMatcher` from `@clerk/nextjs/server`. Clerk's deprecation guidance
+// asks for resource-based per-page auth checks — an architectural change tracked
+// as task k17esv1p7fz06216524f2kwy118gyn3y. The middleware matcher is kept as
+// defense-in-depth over the Convex-side resource auth that already gates mutations.
+// We deliberately did NOT swap to `@clerk/shared/pathMatcher`: `createPathMatcher`
+// is itself `@deprecated` for removal in the same major version, making it strictly
+// worse — internal plumbing with no forward-compat benefit over the public API.
 // Define public routes (include locale prefixes explicitly to avoid broad matching)
 export const isPublicRoute = createRouteMatcher([
 	"/",
