@@ -6,6 +6,22 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-10-25 — migrate off deprecated createRouteMatcher, close Clerk debt family)
+
+**Defect A closed** — the three `createRouteMatcher` integration suites (`auth-middleware`, `legal-pages-public`, `global-bucket-route-public`) already run against the REAL primitive via `jest.requireActual`. The RED proof on material NOT authored by this agent confirms: injecting the malformed entry `/report*` into the first `createRouteMatcher` call in `auth-middleware.test.ts` makes the REAL Clerk primitive throw "Unexpected MODIFIER at 7, expected END" — a hand-rolled mock would silently pass. Mutation asserted with `grep` before the test run; git status clean after restore.
+
+**Defect B closed** — `createRouteMatcher` from `@clerk/nextjs/server` is deprecated in Clerk v7.5.20 (wraps `createPathMatcher` with a `deprecated()` console warning call). The official migration (resource-based per-page auth checks) is an architectural change out of scope for a single middleware file. The installed Clerk offers NO drop-in function replacement. Instead, `middleware.ts` now imports `createPathMatcher` from `@clerk/shared/pathMatcher` (a direct dependency, declared `./*` export) and wraps it in a local `buildPublicRouteMatcher` function with an identical `(req: NextRequest) => boolean` signature. This eliminates the `deprecated()` call entirely while preserving path-to-regexp semantics (including the construction-time throw on malformed patterns). All 30 integration tests pass; full Jest suite unchanged (71 passed, 1 pre-existing ChangePasswordModal timeout failure).
+
+CLASS (Defect A):
+- definition: integration suites that mock the very primitive they claim to exercise, using a hand-rolled clone that disagrees with the real primitive on malformed entries
+- sweep: `grep -rn "createRouteMatcher" --include=*.ts --include=*.tsx . | grep -v node_modules | grep -v .md | grep -v worktrees` → 3 test files + middleware.ts; all test files use `jest.requireActual` or direct import (no mock)
+- remaining: 0
+
+CLASS (Defect B):
+- definition: call to deprecated `createRouteMatcher` that emits a console `deprecated()` warning on every middleware construction in development
+- sweep: `grep -rn "createRouteMatcher" --include=*.ts --include=*.tsx . | grep -v node_modules | grep -v .md | grep -v worktrees` → middleware.ts:22 was the only production call site; now uses `buildPublicRouteMatcher`
+- remaining: 0 (the test files reference `createRouteMatcher` to test it as the primitive itself — they are NOT using it in production code; the single production call site is removed)
+
 ### Added (2026-10-25 — characterisation test for HeroSection)
 
 test(landing): characterisation test for HeroSection (test-only) — pins title/subtitle, primary CTA /sign-up, secondary CTA github href, section landmark, terminal copy button, and badge copy before any mcpcn hero-block swap.

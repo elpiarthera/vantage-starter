@@ -1,8 +1,47 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+// `createPathMatcher` from `@clerk/shared/pathMatcher` is the primitive that
+// the now-deprecated `createRouteMatcher` (removed from @clerk/nextjs/server
+// in the coming major) always delegated to internally. Importing it directly:
+//   • eliminates the runtime deprecation warning emitted by `createRouteMatcher`
+//     in every development page-load
+//   • keeps identical path-to-regexp semantics (same throw on malformed entries)
+//   • does NOT use any un-exported @clerk/nextjs internal — `@clerk/shared` is
+//     a direct dependency and `@clerk/shared/pathMatcher` is a declared
+//     `./*` export in its package.json
+// The returned `(pathname: string) => boolean` matcher is wrapped in a thin
+// adapter that reads `req.nextUrl.pathname`, matching `createRouteMatcher`'s
+// public contract exactly.
+import type { PathMatcherParam } from "@clerk/shared/pathMatcher";
+import { createPathMatcher } from "@clerk/shared/pathMatcher";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { buildCsp } from "@/lib/csp.mjs";
+
+/**
+ * Replacement for the deprecated `createRouteMatcher` from `@clerk/nextjs/server`.
+ *
+ * Takes the same route patterns array and returns the same `(req) => boolean`
+ * predicate. Throws at construction time on malformed path-to-regexp patterns
+ * (e.g. `/report*` — a bare wildcard modifier — is "Unexpected MODIFIER at 7,
+ * expected END"), so a misconfigured route list fails the middleware loudly at
+ * startup instead of silently authorising every request against it.
+ *
+ * The one semantic difference from `createRouteMatcher`: no runtime deprecation
+ * warning is emitted. Everything else — the path-to-regexp compilation, the
+ * `normalizePath` double-slash collapse and percent-decode, the throw on
+ * malformed entries — is identical because `createPathMatcher` is the same
+ * underlying function.
+ */
+function buildPublicRouteMatcher(
+	patterns: PathMatcherParam,
+): (req: NextRequest) => boolean {
+	// createPathMatcher compiles patterns with path-to-regexp at call time —
+	// throws immediately for malformed entries, same as createRouteMatcher did.
+	const matcher = createPathMatcher(patterns);
+	return (req: NextRequest) => matcher(req.nextUrl.pathname);
+}
 
 // Create the intl middleware
 const intlMiddleware = createIntlMiddleware(routing);
@@ -19,7 +58,7 @@ function applyCSP(response: NextResponse): NextResponse {
 }
 
 // Define public routes (include locale prefixes explicitly to avoid broad matching)
-export const isPublicRoute = createRouteMatcher([
+export const isPublicRoute = buildPublicRouteMatcher([
 	"/",
 	"/(en|fr|de|it|es|pt|ru)",
 	"/(en|fr|de|it|es|pt|ru)/sign-in(.*)",
