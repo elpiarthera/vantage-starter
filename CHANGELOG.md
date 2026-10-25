@@ -6,6 +6,16 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Fixed (2026-10-25 — booking availability: slot overflow + DST one-pass defects)
+
+Two latent defects in `lib/booking/availability.ts` corrected under strict TDD (branch `tau/fix-availability-dst-slots`).
+
+**ETA-X — slot overflow:** `generateAvailableSlots` iterated `hoursSpan * slotsPerHour` steps without guarding the slot's end time. When `slotLengthMinutes` does not divide 60 (e.g. 25 or 50), the loop emitted slots whose end fell after `closingHour` (measured: 25-min window 09:00→18:00, last slot 17:45 ends 18:10). Fix: break when `minutesFromOpening + slotLengthMinutes > (closingHour - openingHour) * 60`.
+
+**ETA-Y — DST single-pass:** `resolveUtcOffset` claimed a "two-pass" technique but only performed one pass — it read the zone offset at the naive-UTC instant (wall-clock fields treated as UTC), which falls on the wrong side of a spring-forward boundary. The pre-transition 01:30 slot on 2026-03-29 resolved to CEST (+02:00) instead of CET (+01:00), encoding the wrong UTC instant; re-reading in Paris yielded 00:30. Fix: genuine two-pass — pass 1 estimates the offset at naïve UTC, pass 2 re-reads at `naïveUtc − pass1Offset` (the candidate real UTC); one iteration converges for all real-world DST rules.
+
+Both tests were RED on original code (ETA-X: assertion `1090 ≤ 1080` failed; ETA-Y spring-forward: `"2026-03-29 00:30"` ≠ `"2026-03-29 01:30"`), GREEN after fixes. `pnpm exec tsc --noEmit` → 0; `pnpm exec biome check` → 0 errors; full Vitest suite 51/51 passed; Jest 72/72 passed.
+
 ### Added (2026-10-25 — characterisation test for HeroSection)
 
 test(landing): characterisation test for HeroSection (test-only) — pins title/subtitle, primary CTA /sign-up, secondary CTA github href, section landmark, terminal copy button, and badge copy before any mcpcn hero-block swap.

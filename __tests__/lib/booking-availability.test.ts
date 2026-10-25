@@ -144,6 +144,116 @@ describe("generateAvailableSlots — day resolution respects config.timezone, no
 	});
 });
 
+// ---------------------------------------------------------------------------
+// DEFECT ETA-X — slot duration not dividing 60 overflows the closing hour
+// ---------------------------------------------------------------------------
+describe("ETA-X: slotLengthMinutes not dividing 60 must not produce a slot that ends after closingHour", () => {
+	const BASE_CONFIG_X = {
+		...BOOKING_AVAILABILITY,
+		openingHour: 9,
+		closingHour: 18,
+		// Use a Monday so the day is always a working day
+		workingDays: [1],
+		blockedDates: [],
+		horizonDays: 7,
+	};
+
+	it("slotLengthMinutes=25: every slot ends at or before closingHour (18:00)", () => {
+		const config = { ...BASE_CONFIG_X, slotLengthMinutes: 25 };
+		// Anchor to a Monday
+		const from = new Date(Date.UTC(2026, 6, 20)); // 2026-07-20 is a Monday
+		const slots = generateAvailableSlots(config, from);
+		expect(slots.length).toBeGreaterThan(0);
+		const closingMinutes = config.closingHour * 60;
+		for (const slot of slots) {
+			const [h, m] = slot.time.split(":").map(Number);
+			const slotEndMinutes = h * 60 + m + config.slotLengthMinutes;
+			expect(slotEndMinutes).toBeLessThanOrEqual(closingMinutes);
+		}
+	});
+
+	it("slotLengthMinutes=50: every slot ends at or before closingHour (18:00)", () => {
+		const config = { ...BASE_CONFIG_X, slotLengthMinutes: 50 };
+		const from = new Date(Date.UTC(2026, 6, 20)); // Monday
+		const slots = generateAvailableSlots(config, from);
+		expect(slots.length).toBeGreaterThan(0);
+		const closingMinutes = config.closingHour * 60;
+		for (const slot of slots) {
+			const [h, m] = slot.time.split(":").map(Number);
+			const slotEndMinutes = h * 60 + m + config.slotLengthMinutes;
+			expect(slotEndMinutes).toBeLessThanOrEqual(closingMinutes);
+		}
+	});
+});
+
+// ---------------------------------------------------------------------------
+// DEFECT ETA-Y — DST round-trip is one hour off at the transition
+// ---------------------------------------------------------------------------
+describe("ETA-Y: buildBookingPayload round-trips the wall-clock time through DST transitions (Europe/Paris)", () => {
+	/**
+	 * Re-read the ISO instant's wall-clock time in Europe/Paris via Intl.
+	 * Returns "YYYY-MM-DD HH:mm" in Paris time.
+	 */
+	function readParisWallClock(isoInstant: string): string {
+		const date = new Date(isoInstant);
+		const fmt = new Intl.DateTimeFormat("en-CA", {
+			timeZone: "Europe/Paris",
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: false,
+		});
+		// en-CA gives "YYYY-MM-DD, HH:mm" — normalize to "YYYY-MM-DD HH:mm"
+		return fmt.format(date).replace(", ", " ");
+	}
+
+	const DST_CONFIG: typeof BOOKING_AVAILABILITY = {
+		...BOOKING_AVAILABILITY,
+		openingHour: 0,
+		closingHour: 6,
+		slotLengthMinutes: 30,
+		workingDays: [0, 1, 2, 3, 4, 5, 6], // every day
+		blockedDates: [],
+		horizonDays: 60,
+	};
+
+	it("spring-forward 2026-03-29: 01:30 Paris slot (pre-transition, CET) round-trips to 2026-03-29 01:30", () => {
+		// 02:30 on spring-forward day is a non-existent skipped time (clocks jump
+		// from 02:00 to 03:00), so its round-trip is physically undefined.  We
+		// instead assert the pre-transition slot 01:30 — a time that exists and
+		// must resolve to CET (+01:00, NOT CEST +02:00 that the naive single-pass
+		// would return).  The defect: naive single-pass reads Paris at the naïve
+		// UTC instant 2026-03-29T01:30Z, which already falls POST-transition
+		// (CEST), so it returns +02:00 instead of +01:00; the resulting ISO
+		// encodes the WRONG UTC, and re-reading in Paris yields 00:30.  The
+		// two-pass fix converges to +01:00, and re-reading gives 01:30 Paris. ✓
+		const from = new Date(Date.UTC(2026, 2, 1)); // 2026-03-01 UTC
+		const slots = generateAvailableSlots(DST_CONFIG, from);
+		const target = slots.find(
+			(s) => s.date === "2026-03-29" && s.time === "01:30",
+		);
+		if (!target) throw new Error("slot 01:30 on 2026-03-29 not found");
+		const payload = buildBookingPayload(target, DST_CONFIG, from);
+		const wallClock = readParisWallClock(payload.startTime);
+		expect(wallClock).toBe("2026-03-29 01:30");
+	});
+
+	it("fall-back 2026-10-25: 02:30 Paris slot round-trips to 2026-10-25 02:30", () => {
+		// Anchor so 2026-10-25 is in horizon (60-day window from 2026-10-01)
+		const from = new Date(Date.UTC(2026, 9, 1)); // 2026-10-01 UTC
+		const slots = generateAvailableSlots(DST_CONFIG, from);
+		const target = slots.find(
+			(s) => s.date === "2026-10-25" && s.time === "02:30",
+		);
+		if (!target) throw new Error("slot 02:30 on 2026-10-25 not found");
+		const payload = buildBookingPayload(target, DST_CONFIG, from);
+		const wallClock = readParisWallClock(payload.startTime);
+		expect(wallClock).toBe("2026-10-25 02:30");
+	});
+});
+
 describe("MUTATION PROOF — altering one entry of BOOKING_AVAILABILITY reddens the test that reads it", () => {
 	it("documents the mutation, its landing, the reddened test, and the restore (see shell transcript in the PR description)", () => {
 		// This test exists to be read alongside the shell transcript captured

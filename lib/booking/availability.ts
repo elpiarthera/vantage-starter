@@ -168,8 +168,16 @@ export function generateAvailableSlots(
 		const isoDate = `${day.getUTCFullYear()}-${pad(day.getUTCMonth() + 1)}-${pad(day.getUTCDate())}`;
 		if (config.blockedDates.includes(isoDate)) continue;
 
+		// Guard: only emit a slot when its END falls at or before closingHour.
+		// `hoursSpan * slotsPerHour` is NOT a safe upper bound when
+		// `slotLengthMinutes` does not divide 60 (e.g. 25 or 50 minutes) —
+		// the last step of that naive loop produces a slot whose end overshoots
+		// closingHour. The explicit end-time check below is the minimal fix
+		// that handles both dividing and non-dividing slot lengths.
+		const spanMinutes = hoursSpan * 60;
 		for (let step = 0; step < hoursSpan * slotsPerHour; step += 1) {
 			const minutesFromOpening = step * config.slotLengthMinutes;
+			if (minutesFromOpening + config.slotLengthMinutes > spanMinutes) break;
 			const hour = config.openingHour + Math.floor(minutesFromOpening / 60);
 			const minute = minutesFromOpening % 60;
 			slots.push({ date: isoDate, time: `${pad(hour)}:${pad(minute)}` });
@@ -240,7 +248,19 @@ export function buildBookingPayload(
 }
 
 /** Returns e.g. "+02:00" — the offset `timezone` carries at that wall-clock
- * date/time, DST-correct because it is read from `Intl`, never hand-typed. */
+ * date/time, DST-correct because it is read from `Intl`, never hand-typed.
+ *
+ * Two-pass technique (genuine):
+ *   Pass 1 — treat wall-clock fields as naive UTC to get a first estimate of
+ *             the offset.  This is wrong at a DST boundary: at spring-forward
+ *             the "wall clock" names a skipped instant, so the naive UTC falls
+ *             on the wrong side of the transition.
+ *   Pass 2 — subtract the pass-1 offset from the naive UTC to get a candidate
+ *             real UTC, then re-read the zone's offset at THAT candidate.
+ *             One iteration converges because timezone offsets change in
+ *             integer-minute steps, so the second read lands on the correct
+ *             side of every real-world DST transition.
+ */
 function resolveUtcOffset(
 	timezone: string,
 	year: number,
@@ -249,10 +269,6 @@ function resolveUtcOffset(
 	hour: number,
 	minute: number,
 ): string {
-	// A UTC instant built from the naive wall-clock fields, then re-read
-	// through `timezone` to find how far off it is — a standard two-pass
-	// technique for offset resolution without a timezone library.
-	const naiveUtc = new Date(Date.UTC(year, month - 1, day, hour, minute));
 	const formatter = new Intl.DateTimeFormat("en-US", {
 		timeZone: timezone,
 		hourCycle: "h23",
@@ -263,22 +279,37 @@ function resolveUtcOffset(
 		minute: "2-digit",
 		second: "2-digit",
 	});
-	const parts = Object.fromEntries(
-		formatter.formatToParts(naiveUtc).map((p) => [p.type, p.value]),
-	);
-	const asIfUtc = Date.UTC(
-		Number(parts.year),
-		Number(parts.month) - 1,
-		Number(parts.day),
-		Number(parts.hour),
-		Number(parts.minute),
-		Number(parts.second),
-	);
-	// offset(t) = local(t) - t, i.e. how far the zone's wall clock reads
-	// ahead of (or behind) UTC at this instant — NOT the reverse, which
-	// would silently invert every non-UTC timezone's sign.
-	const diffMinutes = Math.round((asIfUtc - naiveUtc.getTime()) / 60000);
-	const sign = diffMinutes >= 0 ? "+" : "-";
-	const abs = Math.abs(diffMinutes);
+
+	/** Read the numeric UTC offset (minutes, positive = ahead of UTC) that
+	 *  `timezone` carries at `instant`. */
+	function offsetAt(instant: Date): number {
+		const parts = Object.fromEntries(
+			formatter.formatToParts(instant).map((p) => [p.type, p.value]),
+		);
+		const localMs = Date.UTC(
+			Number(parts.year),
+			Number(parts.month) - 1,
+			Number(parts.day),
+			Number(parts.hour),
+			Number(parts.minute),
+			Number(parts.second),
+		);
+		// offset(t) = local(t) − t: how far the zone's wall clock reads
+		// ahead of (or behind) UTC — NOT the reverse, which inverts the sign.
+		return Math.round((localMs - instant.getTime()) / 60000);
+	}
+
+	// Pass 1: naive estimate — wall clock treated as UTC.
+	const naiveUtc = new Date(Date.UTC(year, month - 1, day, hour, minute));
+	const offsetPass1 = offsetAt(naiveUtc);
+
+	// Pass 2: apply pass-1 offset to get a candidate real-UTC instant, then
+	// re-read the offset AT THAT candidate.  One iteration is sufficient for
+	// all real-world DST rules (offsets change in whole-minute steps).
+	const candidateUtc = new Date(naiveUtc.getTime() - offsetPass1 * 60000);
+	const offsetPass2 = offsetAt(candidateUtc);
+
+	const sign = offsetPass2 >= 0 ? "+" : "-";
+	const abs = Math.abs(offsetPass2);
 	return `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
 }
