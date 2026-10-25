@@ -6,6 +6,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-10-25 — characterisation test for HeroSection)
+
+test(landing): characterisation test for HeroSection (test-only) — pins title/subtitle, primary CTA /sign-up, secondary CTA github href, section landmark, terminal copy button, and badge copy before any mcpcn hero-block swap.
+
 ### Changed (2026-10-25 — first-run docs made pnpm-only, dead-product key surface dropped)
 
 First-run docs (`README.md`, `docs/SETUP.md`) are now pnpm-only: every `npx convex …` invocation is `pnpm exec convex …`. Dead-product keys are dropped from both — `FAL_KEY` and `TOGETHER_API_KEY` (no `process.env` read anywhere, no SDK in `package.json`) and the `fal.ai` stack/feature mentions in `README.md`. The README env block is reduced to the minimal real set to reach the first authenticated screen (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_JWT_ISSUER_DOMAIN`, `CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL`, `OPENAI_API_KEY`) with a pointer to `.env.example` + `docs/SETUP.md` for the full/optional list. Added `analysis/t7-first-run-audit.md` — a point-in-time first-run contract audit (Day 135), carrying its per-variable evidence trail; its stale `CONVEX_URL = Dead` verdict is corrected inline to "Live — Vercel prebuild var". `.env.example`, `scripts/check-env-contract.mjs`, and `lib/env/requiredEnv.ts` are untouched — the `# @required` markers remain the authoritative contract.
