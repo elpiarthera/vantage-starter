@@ -198,6 +198,25 @@ jobs:
       - name: Translation QA — no orphan namespace in messages/en.json
         run: node scripts/check-orphan-namespaces.js
 
+      # A component invoked as `Comp(props)` instead of rendered as
+      # `<Comp {...props} />` type-checks identically to the JSX form when the
+      # prop shapes match — `tsc --noEmit` has no opinion on whether a
+      # component is actually RENDERED. Four accessibility pages relapsed into
+      # exactly this shape and stayed green across the whole suite (PR #97,
+      # commit dbce4c2) before this guard existed. Born GREEN on the commit
+      # that adds it: the family was already emptied in #97, so this step
+      # only prevents the next fork from reopening it. See
+      # scripts/guard-no-component-called-as-function.js for the full
+      # contract, the one rule deciding "is this identifier a component", and
+      # the declared out-of-scope call shapes.
+      #
+      # Three outcomes, never two:
+      #   exit 0 — every component call site resolved, none is a direct call
+      #   exit 1 — a component invoked as a plain function (names file:line)
+      #   exit 2 — could not check; names the file:line it could not resolve
+      - name: Guard — no component called as a function
+        run: pnpm guard:no-component-called-as-function
+
       # tsc --noEmit is proven green on the commit that introduces this gate
       # (2026-07-17): root cause of the prior 16 errors was two missing/mismatched
       # deps (vite absent though vitest 4 requires it; @types/react pinned to ^18
