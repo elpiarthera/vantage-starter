@@ -12,7 +12,7 @@ test(landing): characterisation test for HeroSection (test-only) — pins title/
 
 ### Fixed (2026-10-25 — enforce-task-quality.py tolerates a space before the section colon)
 
-`.claude/hooks/enforce-task-quality.py` matched the section headers with a bare substring (`"verification:"`), so a FR-style `VERIFICATION :` / `TESTS :` (space before the colon) was a false negative — the gate blocked perfectly valid tasks over an espacing difference, the exact class that gets a guard bypassed or disabled (cf. `hook-vitality-bite-probe`). The matcher now uses a multiline, case-insensitive regex (`^\s*verification\s*:` / `^\s*tests\s*:`) that tolerates the optional space. The guard still bites: a description missing a section — or missing one of the two — is still blocked, proven by a bipolar probe (MUST_PASS spaced + classic colons; MUST_BLOCK no-section, partial, and empty).
+`.claude/hooks/enforce-task-quality.py` matched the section headers with a bare substring (`"verification:"`), so a FR-style `VERIFICATION :` / `TESTS :` (space before the colon) was a false negative — the gate blocked perfectly valid tasks over an espacing difference, the exact class that gets a guard bypassed or disabled (cf. `hook-vitality-bite-probe`). The matcher now uses a case-insensitive, word-boundary regex (`\bverification\s*:` / `\btests\s*:`, `re.IGNORECASE`) that tolerates the optional space. The guard still bites: a description missing a section — or missing one of the two — is still blocked, proven by a bipolar probe (MUST_PASS spaced + classic colons; MUST_BLOCK no-section, partial, and empty).
 
 ### Changed (2026-10-25 — first-run docs made pnpm-only, dead-product key surface dropped)
 
