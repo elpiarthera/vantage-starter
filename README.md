@@ -16,7 +16,6 @@ The Next.js boilerplate for the agentic era. AI renders components, not text. Re
 | Billing | Polar.sh (subscriptions, one-time, webhooks) |
 | AI | Vercel AI SDK v6, json-render (Generative UI) |
 | Voice | ElevenLabs (Conversational AI, WebRTC, TTS) |
-| Media | fal.ai (image/video generation) |
 | Scraping | Firecrawl |
 | i18n | next-intl (7 locales) |
 | Styling | OKLCH color system, 7 presets |
@@ -27,7 +26,6 @@ The Next.js boilerplate for the agentic era. AI renders components, not text. Re
 - **Generative UI** -- AI SDK v6 + json-render. Agents return React components, not markdown.
 - **Convex real-time** -- Reactive queries. Zero config. Data updates everywhere instantly.
 - **Credit system** -- Metered AI billing in the schema. Balance tracking, usage gates, transaction history. Voice sessions billed in credits.
-- **fal.ai integration** -- Image and video generation wired and ready.
 - **Firecrawl integration** -- Web scraping and search out of the box.
 - **Clerk auth** -- SSO, MFA, organizations, webhook sync to Convex.
 - **Polar.sh billing** -- Subscriptions, one-time purchases, customer portal.
@@ -45,26 +43,25 @@ git clone https://github.com/elpiarthera/vantage-starter.git
 cd vantage-starter
 pnpm install
 cp .env.example .env.local
-# Fill in Clerk, Convex, Polar, fal.ai keys
-npx convex dev
+# Fill in Clerk + Convex + OpenAI keys — see docs/SETUP.md
+pnpm exec convex dev
 pnpm dev
 ```
 
 ## Environment variables
 
+The minimal set to reach the first authenticated screen:
+
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 CLERK_SECRET_KEY=sk_...
+CLERK_JWT_ISSUER_DOMAIN=your-app.clerk.accounts.dev
+CONVEX_DEPLOYMENT=dev:your-project-name
 NEXT_PUBLIC_CONVEX_URL=https://...convex.cloud
-FAL_KEY=...
-FIRECRAWL_API_KEY=...
-POLAR_ACCESS_TOKEN=...
-# ElevenLabs voice (optional — set NEXT_PUBLIC_ELEVENLABS_ENABLED=true to activate)
-ELEVENLABS_API_KEY=
-ELEVENLABS_ARCHITECT_AGENT_ID=
-ELEVENLABS_NARRATOR_VOICE_ID=
-NEXT_PUBLIC_ELEVENLABS_ENABLED=false
+OPENAI_API_KEY=sk-proj-...
 ```
+
+See [`.env.example`](.env.example) for the full list (the `# @required` markers are the authoritative contract) and [`docs/SETUP.md`](docs/SETUP.md) for the optional features (Polar billing, ElevenLabs voice, Firecrawl).
 
 ## Translation QA
 
