@@ -68,7 +68,7 @@ Convex is the backend: database, serverless functions, and file storage in one. 
 In your terminal, from the project root:
 
 ```bash
-npx convex dev
+pnpm exec convex dev
 ```
 
 The first time you run this, it will:
@@ -196,10 +196,10 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/en/guided/step-1
 
 ## Section 5 — Verify Convex + Clerk Connection
 
-In a new terminal (leave `npx convex dev` running in the first terminal), run:
+In a new terminal (leave `pnpm exec convex dev` running in the first terminal), run:
 
 ```bash
-npx convex dev --once
+pnpm exec convex dev --once
 ```
 
 This runs a single sync cycle and exits. Watch the output.
@@ -311,7 +311,7 @@ The webhook handler (`/api/webhooks/elevenlabs`) runs server-side but the credit
 - Voice sessions cost **10 credits/minute** (ElevenLabs Conversational AI rate). A user needs at least 10 credits to start a session.
 - Operation status announcements (TTS) cost **1 credit per announcement** and are opt-in (default off — user preference).
 - `searchContext` tool (Firecrawl inside voice session) costs **5 credits per search**.
-- All costs are configurable via the `creditCosts` table in Convex. Run `npx convex run seed:systemData` after seeding to add the `voice_session_minute` cost row.
+- All costs are configurable via the `creditCosts` table in Convex. Run `pnpm exec convex run seed:systemData` after seeding to add the `voice_session_minute` cost row.
 
 ---
 
@@ -322,7 +322,7 @@ You need two terminal windows running simultaneously.
 **Terminal 1 — Convex backend (if not already running):**
 
 ```bash
-npx convex dev
+pnpm exec convex dev
 ```
 
 **Terminal 2 — Next.js frontend:**
@@ -359,7 +359,7 @@ Work through this checklist after both servers are running.
 
 **"Could not connect to Convex" error**
 - `NEXT_PUBLIC_CONVEX_URL` is missing or has a trailing slash
-- Convex dev server (`npx convex dev`) is not running
+- Convex dev server (`pnpm exec convex dev`) is not running
 
 **Auth works but user data does not save**
 - `CLERK_JWT_ISSUER_DOMAIN` is missing from Convex dashboard environment variables (Section 4.5)
@@ -385,15 +385,13 @@ Complete table of all environment variables.
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Required | Hard-coded value | Yes | `/sign-up` |
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Required | Hard-coded value | Yes | `/en/dashboard` |
 | `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Required | Hard-coded value | Yes | `/en/guided/step-1` |
-| `CONVEX_DEPLOYMENT` | Required | Auto-written by `npx convex dev` | Yes | `dev:your-project-name` |
-| `NEXT_PUBLIC_CONVEX_URL` | Required | Auto-written by `npx convex dev` | Yes | `https://your-project.convex.cloud` |
+| `CONVEX_DEPLOYMENT` | Required | Auto-written by `pnpm exec convex dev` | Yes | `dev:your-project-name` |
+| `NEXT_PUBLIC_CONVEX_URL` | Required | Auto-written by `pnpm exec convex dev` | Yes | `https://your-project.convex.cloud` |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Required for Vercel | Your Vercel production domain | Yes | `https://my-app.vercel.app` |
 | `CONVEX_URL` | Required for Vercel builds | Same value as `NEXT_PUBLIC_CONVEX_URL` | Yes | `https://your-project.convex.cloud` |
 | `POLAR_ACCESS_TOKEN` | Required | Polar Dashboard → Settings → Access Tokens | Yes | `polar_at_...` |
 | `RESEND_API_KEY` | Required | Resend Dashboard → API Keys | Yes | `re_abc123...` |
 | `OPENAI_API_KEY` | Required for AI features | https://platform.openai.com/api-keys | Yes | `sk-proj-...` | Used by `app/api/chat/route.ts` (via `@ai-sdk/openai`) and `scripts/translate.js`. Not read directly by the raw `openai` package. |
-| `FAL_KEY` | Required for AI features | https://fal.ai/dashboard/keys | Yes | `key_id:key_secret` |
-| `TOGETHER_API_KEY` | Optional (fallback AI) | https://api.together.xyz/settings/api-keys | Yes | `abc123...` |
 | `ELEVENLABS_API_KEY` | Optional (voice features) | https://elevenlabs.io → Profile + API Key | Yes | `sk_abc123...` |
 | `ELEVENLABS_ARCHITECT_AGENT_ID` | Optional (voice features) | ElevenLabs dashboard → your Architect agent | Yes | `abc123...` |
 | `ELEVENLABS_NARRATOR_VOICE_ID` | Optional (voice features) | ElevenLabs dashboard → Voices | Yes | `abc123...` |
@@ -409,7 +407,6 @@ Go to: https://dashboard.convex.dev → your project → Settings → Environmen
 | Variable | Value |
 |----------|-------|
 | `CLERK_JWT_ISSUER_DOMAIN` | Same domain-only value (no `https://`) |
-| `FAL_KEY` | Same value as in `.env.local` |
 
 ---
 

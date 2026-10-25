@@ -6,6 +6,10 @@ All notable changes to VantageStarter are documented in this file.
 
 ## [Unreleased]
 
+### Changed (2026-10-25 — first-run docs made pnpm-only, dead-product key surface dropped)
+
+First-run docs (`README.md`, `docs/SETUP.md`) are now pnpm-only: every `npx convex …` invocation is `pnpm exec convex …`. Dead-product keys are dropped from both — `FAL_KEY` and `TOGETHER_API_KEY` (no `process.env` read anywhere, no SDK in `package.json`) and the `fal.ai` stack/feature mentions in `README.md`. The README env block is reduced to the minimal real set to reach the first authenticated screen (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_JWT_ISSUER_DOMAIN`, `CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL`, `OPENAI_API_KEY`) with a pointer to `.env.example` + `docs/SETUP.md` for the full/optional list. Added `analysis/t7-first-run-audit.md` — a point-in-time first-run contract audit (Day 135), carrying its per-variable evidence trail; its stale `CONVEX_URL = Dead` verdict is corrected inline to "Live — Vercel prebuild var". `.env.example`, `scripts/check-env-contract.mjs`, and `lib/env/requiredEnv.ts` are untouched — the `# @required` markers remain the authoritative contract.
+
 ### Fixed (2026-07-23 — "manual" credit grant now means "granted by an operator", not "any user tops up themselves")
 
 `api.credits.recordManualTopUp` was gated only by a global `systemConfig` switch (`manual_topup_enabled`, off by default) plus a self-only guard: a user could top up THEMSELVES. "Manual" is supposed to mean "granted by a human who has the right", and the code carried no notion of that right — so flipping the switch reopened the tap for **all** authenticated users at once.
