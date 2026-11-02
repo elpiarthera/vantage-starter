@@ -10,9 +10,18 @@ Exit 0 = allow
 Exit 2 = block
 """
 import json
+import re
 import sys
 
-REQUIRED_SECTIONS = ["verification:", "tests:"]
+# A section header is present when its keyword appears followed by a colon,
+# tolerating optional whitespace before the colon (FR style "VERIFICATION :").
+# Matching on an optional space closes a false-negative class that blocked
+# perfectly valid tasks over an espacing difference — a guard that refuses the
+# legitimate gets bypassed or disabled (cf. hook-vitality-bite-probe).
+REQUIRED_SECTIONS = [
+    ("VERIFICATION", re.compile(r"\bverification\s*:", re.IGNORECASE)),
+    ("TESTS", re.compile(r"\btests\s*:", re.IGNORECASE)),
+]
 
 try:
     data = json.load(sys.stdin)
@@ -32,12 +41,10 @@ try:
         )
         sys.exit(2)
 
-    description_lower = description.lower()
-
     missing = [
-        section.rstrip(":").upper()
-        for section in REQUIRED_SECTIONS
-        if section not in description_lower
+        label
+        for label, pattern in REQUIRED_SECTIONS
+        if not pattern.search(description)
     ]
 
     if not missing:
