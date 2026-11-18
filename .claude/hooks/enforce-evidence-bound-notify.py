@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-PreToolUse hook: Evidence-Bound NOTIFY doctrine.
+enforce-evidence-bound-notify.py v2.0.0
 
-Mirrors enforce-evidence-bound-completion.py but applies to outbound peer
-messages. The Day 76 doctrine says a task is not done because the note says
-so; the symmetric truth is that a STATUS CLAIM in a peer message is not true
-because the message says so.
+PreToolUse + PostToolUse hook: Evidence-Bound NOTIFY doctrine.
+
+v1.0.0 (PreToolUse) — pattern-presence gate: blocks send_message that asserts
+  a finished state without at least one evidence line within ±5 lines.
+
+v2.0.0 (PostToolUse) — fact-check layer: after send_message succeeds, parses
+  every `<cmd> -> <output>` evidence line, re-executes WHITELISTED commands,
+  and auto-dispatches a CLAIM-MISMATCH reply if actual output diverges from
+  the cited output. Addresses critical-recurring Sigma over-claim pattern
+  (friction memory j579hr0ht3yx8344kga8hrwhsx87vrbb).
 
 Root cause this hook addresses:
   Orchestrators send "[DONE] PR merged" / "SHIPPED" / "PUBLISHED" status
@@ -15,21 +21,30 @@ Root cause this hook addresses:
   silently — the receiver trusted the sender because the sender said so.
 
 Enforced on:
-  - mcp__vantage-peers__send_message  (always inspected; only blocks when the
-                                       body carries a verb-claim or [DONE])
+  - mcp__vantage-peers__send_message  (PreToolUse: blocks on missing evidence;
+                                       PostToolUse: re-executes + fact-checks)
 
-A message PASSES when:
+A message PASSES PreToolUse when:
   (a) it has NO state-claim marker — pure status / question / FYI, OR
   (b) for EACH claim line it contains, there is at least one EVIDENCE LINE
       within ±5 lines whose body matches an evidence-command pattern
       (gh|git|npm|sha256sum|wc|cat|curl ...).
   (c) optional URL HEAD check is best-effort and fail-soft.
 
-Override (rare): `// allow-no-evidence-notify: <reason>` anywhere in content.
+PostToolUse verifies whitelisted commands by re-execution (10s timeout).
+Non-whitelisted commands are silently skipped. On mismatch, an auto-reply
+is dispatched to the original sender via mcp__vantage-peers__send_message.
 
-Exit codes:
+Override (rare):
+  PreToolUse:  `// allow-no-evidence-notify: <reason>` anywhere in content.
+  PostToolUse: `// allow-claim-mismatch-bypass: <reason>` anywhere in content.
+
+Exit codes (PreToolUse):
   0 = allow
   2 = block with remediation
+
+Exit codes (PostToolUse):
+  0 = allow (always; degraded gracefully on error)
 """
 import json
 import os
@@ -39,6 +54,11 @@ import subprocess
 import sys
 
 ENFORCED_TOOL = "mcp__vantage-peers__send_message"
+VERSION = "2.0.0"
+
+# ---------------------------------------------------------------------------
+# Shared constants
+# ---------------------------------------------------------------------------
 
 # Markers that signal "I am asserting a finished state".
 CLAIM_MARKERS = (
@@ -64,10 +84,65 @@ URL_PATTERNS = (
     re.compile(r"https://github\.com/[^/\s]+/[^/\s]+/pull/\d+(?:#issuecomment-\d+)?"),
 )
 
-OPT_OUT = "allow-no-evidence-notify:"
+OPT_OUT_PRE = "allow-no-evidence-notify:"
+OPT_OUT_POST = "allow-claim-mismatch-bypass:"
 
 NEAR_WINDOW = 5  # lines above/below a claim where evidence can live
 
+# ---------------------------------------------------------------------------
+# v2.0.0 PostToolUse: WHITELIST / BLACKLIST
+# ---------------------------------------------------------------------------
+
+# Safe read-only deterministic commands that can be re-executed.
+WHITELIST_PATTERNS = [
+    # gh pr view <num> [--repo <owner/repo>] --json <fields> [-q <jq>]
+    # jq expression restricted to safe charset only: letters, digits, ._@[]\-
+    # Semicolons, pipes, backticks, $, quotes are rejected → shell injection prevention.
+    re.compile(
+        r"^gh pr view \d+( --repo [a-zA-Z0-9_.\-]+/[a-zA-Z0-9_.\-]+)?( --json [a-zA-Z0-9,|]+)?( -q [a-zA-Z0-9._@\[\]\\-]+)?\s*$"
+    ),
+    # npm view <pkg>[@<version>] version  OR  npm view <pkg> version
+    re.compile(r"^npm view [@a-zA-Z0-9/._\-]+ version\s*$"),
+    # sha256sum <safe-path>
+    re.compile(r"^sha256sum [/.a-zA-Z0-9_\-]+\s*$"),
+    # git rev-parse <ref>
+    re.compile(r"^git rev-parse [a-zA-Z0-9_./\-]+\s*$"),
+    # git log --oneline -<N>  (N 1-50)
+    re.compile(r"^git log --oneline -([1-9]|[1-4]\d|50)\s*$"),
+    # wc -l <safe-path>
+    re.compile(r"^wc -l [/.a-zA-Z0-9_\-]+\s*$"),
+    # ls [-la] <path>
+    re.compile(r"^ls( -la?)? [/.a-zA-Z0-9_\-]+\s*$"),
+    # cat <path> for safe extensions only
+    re.compile(r"^cat [/.a-zA-Z0-9_\-]+\.(json|md|txt|yml|yaml)\s*$"),
+]
+
+# Never re-run these — skip silently.
+BLACKLIST_PATTERNS = [
+    re.compile(r"--prod\b"),
+    re.compile(r"--yes\b"),
+    re.compile(r"\s-f\b"),
+    re.compile(r"--force\b"),
+    re.compile(r"\bnpm publish\b"),
+    re.compile(r"\bnpx convex deploy\b"),
+    re.compile(r"\bgit push\b"),
+    re.compile(r"\bgh pr (merge|create|comment)\b"),
+    re.compile(r"\bmcp__[a-z_]+\b"),
+    re.compile(r"\brm\b"),
+    re.compile(r"\bmv\b"),
+    re.compile(r"\bcp\b"),
+]
+
+# Regex to parse evidence lines from message body:
+#   <cmd> -> <output>   or   <cmd> → <output>
+EVIDENCE_PARSE = re.compile(
+    r"^(.+?)\s*(?:→|->)\s*(.+?)\s*$"
+)
+
+
+# ---------------------------------------------------------------------------
+# Shared helpers
+# ---------------------------------------------------------------------------
 
 def find_claim_lines(lines):
     hits = []
@@ -108,19 +183,222 @@ def head_check(url, timeout=3):
         return (True, f"exception-fail-soft:{exc}")
 
 
-def main():
+# ---------------------------------------------------------------------------
+# v2.0.0 PostToolUse helpers
+# ---------------------------------------------------------------------------
+
+def is_blacklisted(cmd):
+    for pat in BLACKLIST_PATTERNS:
+        if pat.search(cmd):
+            return True
+    return False
+
+
+def is_whitelisted(cmd):
+    if is_blacklisted(cmd):
+        return False
+    for pat in WHITELIST_PATTERNS:
+        if pat.match(cmd.strip()):
+            return True
+    return False
+
+
+def _sha_prefix_match(cited, actual, min_len=7):
+    """Return True if one is a 7+ char prefix of the other (SHA shortening)."""
+    cited = cited.strip()
+    actual = actual.strip()
+    if len(cited) >= min_len and actual.startswith(cited):
+        return True
+    if len(actual) >= min_len and cited.startswith(actual):
+        return True
+    return False
+
+
+def _json_equiv(cited, actual):
+    """Try to compare as JSON dicts/lists, order-independent."""
     try:
-        data = json.load(sys.stdin)
-    # TOOL_NAME_GUARD_PI_FIX Day 113 — fleet deadlock fix (matcher=* fires every tool)
-    if data.get("tool_name") != "mcp__vantage-peers__send_message":
-        sys.exit(0)
+        c = json.loads(cited)
+        a = json.loads(actual)
+        return c == a
     except Exception:
+        return False
+
+
+def outputs_match(cited, actual):
+    """Return True if cited and actual are considered equivalent."""
+    cited = cited.strip()
+    actual = actual.strip()
+    if cited == actual:
+        return True
+    if _sha_prefix_match(cited, actual):
+        return True
+    if _json_equiv(cited, actual):
+        return True
+    return False
+
+
+def run_cmd(cmd, timeout=10):
+    """
+    Run cmd via shlex.split + shell=False. Returns (stdout_stripped, success_bool).
+    success_bool=False if non-zero exit or exception.
+    Shell metacharacters cannot be interpreted — defence-in-depth against injection.
+    """
+    import shlex
+    try:
+        proc = subprocess.run(
+            shlex.split(cmd), shell=False, capture_output=True, text=True, timeout=timeout
+        )
+        stdout = (proc.stdout or "").strip()
+        return (stdout, proc.returncode == 0)
+    except subprocess.TimeoutExpired:
+        print(
+            f"[enforce-evidence-bound-notify v{VERSION}] timeout running: {cmd}",
+            file=sys.stderr,
+        )
+        return ("", False)
+    except Exception as exc:
+        print(
+            f"[enforce-evidence-bound-notify v{VERSION}] error running cmd: {exc}",
+            file=sys.stderr,
+        )
+        return ("", False)
+
+
+def dispatch_mismatch_reply(sender, message_id, mismatches):
+    """
+    Attempt to dispatch an auto-reply via mcp__vantage-peers__send_message.
+    We emit a structured JSON to stdout so the MCP runtime can execute it,
+    following the Claude hooks PostToolUse output format.
+    """
+    lines = [f"[CLAIM-MISMATCH] auto-detected on message {message_id}", ""]
+    lines.append("Claims fabricated:")
+    for lineno, cited_cmd, cited_out, actual_out in mismatches:
+        lines.append(f"  L{lineno}: {cited_cmd} -> {cited_out}")
+        lines.append(f"          actual:        {actual_out}")
+    lines.append("")
+    lines.append(f"(Reported by enforce-evidence-bound-notify.py v{VERSION})")
+    # Self-tag prevents the PostToolUse hook from re-firing on this auto-reply
+    # and entering a recursion loop when the mismatch report itself contains
+    # command citations.
+    lines.append("// allow-claim-mismatch-bypass: auto-reply-from-fact-check")
+    body = "\n".join(lines)
+
+    # Emit structured hook output to trigger auto-reply via runtime injection.
+    # The hooks protocol allows PostToolUse to output JSON with
+    # {"stopReason": ..., "toolResults": ...} — but for send_message auto-reply
+    # the safest approach is to emit to stderr (visible to orchestrator) and
+    # also attempt a direct subprocess call if the MCP binary is available.
+    print(body, file=sys.stderr)
+
+    # Auto-reply uses VP_SEND_CMD env var (path to mcp__vantage-peers__send_message
+    # dispatcher script) if set, else logs a warning to stderr and skips the reply.
+    # This makes the hook testable without a live MCP connection: set VP_SEND_CMD
+    # to a test stub script; leave it unset in CI to safely skip the network call.
+    # mcp__vantage-peers__send_message schema: channel (str), from (str),
+    # content (str), optionally fromInstanceId, sessionDay, tenantId.
+    # "channel" is the recipient's role/instance identifier, NOT "to".
+    vp_send = os.environ.get("VP_SEND_CMD")
+    if vp_send and sender:
+        from_id = os.environ.get("CLAUDE_AGENT_ID", "enforce-evidence-bound-notify")
+        from_instance = os.environ.get("CLAUDE_INSTANCE_ID", "")
+        payload = json.dumps({
+            "tool": "mcp__vantage-peers__send_message",
+            "input": {
+                "channel": sender,
+                "from": from_id,
+                "fromInstanceId": from_instance,
+                "content": body,
+            }
+        })
+        try:
+            subprocess.run(
+                [vp_send, payload],
+                timeout=15,
+                capture_output=True,
+            )
+        except Exception as exc:
+            print(
+                f"[enforce-evidence-bound-notify v{VERSION}] auto-reply failed: {exc}",
+                file=sys.stderr,
+            )
+    else:
+        if not vp_send:
+            print(
+                f"[enforce-evidence-bound-notify v{VERSION}] VP_SEND_CMD not set — skipping auto-reply (set env var to enable)",
+                file=sys.stderr,
+            )
+
+
+def posttooluse_fact_check(data):
+    """
+    v2.0.0 PostToolUse handler.
+    Parses evidence lines from the sent message, re-executes whitelisted
+    commands, and dispatches CLAIM-MISMATCH reply on divergence.
+    Always exits 0 (fail-open, degrade gracefully).
+    """
+    tool_input = data.get("tool_input", {}) or {}
+    tool_response = data.get("tool_response", {}) or {}
+
+    content = tool_input.get("content")
+    content = content if isinstance(content, str) else ""
+
+    if not content.strip():
         sys.exit(0)
 
-    tool_name = data.get("tool_name", "") or ""
-    if tool_name != ENFORCED_TOOL:
+    # Override bypass
+    if OPT_OUT_POST in content:
         sys.exit(0)
 
+    # Extract message id from response (best-effort)
+    message_id = (
+        tool_response.get("messageId")
+        or tool_response.get("id")
+        or tool_response.get("message_id")
+        or "unknown"
+    )
+
+    # Extract sender (the "from" field or agent identity)
+    sender = tool_input.get("from") or tool_input.get("sender") or os.environ.get("CLAUDE_AGENT_ID", "")
+
+    lines = content.splitlines()
+    mismatches = []
+
+    for lineno, line in enumerate(lines, start=1):
+        m = EVIDENCE_PARSE.match(line.strip())
+        if not m:
+            continue
+        cited_cmd = m.group(1).strip()
+        cited_out = m.group(2).strip()
+
+        # Skip if blacklisted (silently)
+        if is_blacklisted(cited_cmd):
+            continue
+
+        # Only fact-check whitelisted commands
+        if not is_whitelisted(cited_cmd):
+            continue
+
+        actual_out, success = run_cmd(cited_cmd)
+
+        if not success:
+            # Non-zero exit while cited as success = mismatch
+            mismatches.append((lineno, cited_cmd, cited_out, f"[exit!=0] {actual_out}"))
+            continue
+
+        if not outputs_match(cited_out, actual_out):
+            mismatches.append((lineno, cited_cmd, cited_out, actual_out))
+
+    if mismatches:
+        dispatch_mismatch_reply(sender, message_id, mismatches)
+
+    sys.exit(0)
+
+
+# ---------------------------------------------------------------------------
+# v1.0.0 PreToolUse handler (UNCHANGED)
+# ---------------------------------------------------------------------------
+
+def pretooluse_gate(data):
     tool_input = data.get("tool_input", {}) or {}
     content = tool_input.get("content")
     content = content if isinstance(content, str) else ""
@@ -128,7 +406,7 @@ def main():
     if not content.strip():
         sys.exit(0)  # empty messages handled by other hooks
 
-    if OPT_OUT in content:
+    if OPT_OUT_PRE in content:
         sys.exit(0)
 
     lines = content.splitlines()
@@ -195,6 +473,28 @@ def main():
 
     print("\n".join(msg), file=sys.stderr)
     sys.exit(2)
+
+
+# ---------------------------------------------------------------------------
+# Main dispatch: PreToolUse vs PostToolUse
+# ---------------------------------------------------------------------------
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        sys.exit(0)
+
+    tool_name = data.get("tool_name", "") or ""
+    if tool_name != ENFORCED_TOOL:
+        sys.exit(0)
+
+    hook_type = data.get("hook_event_name", "") or os.environ.get("CLAUDE_HOOK_TYPE", "PreToolUse")
+
+    if hook_type == "PostToolUse":
+        posttooluse_fact_check(data)
+    else:
+        pretooluse_gate(data)
 
 
 if __name__ == "__main__":
