@@ -50,7 +50,7 @@ importers:
         version: 3.0.41(zod@4.6.7)
       '@ai-sdk/react':
         specifier: latest
-        version: 4.0.186(react@19.2.7)(zod@4.6.7)
+        version: 4.0.188(react@19.2.7)(zod@4.6.7)
       '@base-ui/react':
         specifier: 1.6.0
         version: 1.6.0(@date-fns/tz@1.5.0)(@types/react@19.2.17)(date-fns@4.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -112,8 +112,8 @@ importers:
         specifier: ^0.49.0
         version: 0.49.0
       '@vantageos/cloud-identity':
-        specifier: ^0.38.0
-        version: 0.38.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^0.39.0
+        version: 0.39.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@vercel/analytics':
         specifier: latest
         version: 2.0.1(next@16.4.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(@types/node@22.0.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
@@ -325,8 +325,8 @@ packages:
     peerDependencies:
       zod: ^4.6.7
 
-  '@ai-sdk/gateway@4.0.154':
-    resolution: {integrity: sha512-7noB6L/iZ55MRey35rrcbB/J+rAeyRafhJP6G/+/CkOSHxrcdFeMEbtvdIuXTr5S+AAMMQpka+xnD4zVwn04Sw==}
+  '@ai-sdk/gateway@4.0.156':
+    resolution: {integrity: sha512-Nv1ILpLYNDlIV/beyo6Uc6jZcwTDzLMiSqer4PUEmIHqyOceLHf58lv1bfntAJ0xZxaBa9BtYDOv3/Msu0mQrQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^4.6.7
@@ -337,8 +337,8 @@ packages:
     peerDependencies:
       zod: ^4.6.7
 
-  '@ai-sdk/mcp@2.0.104':
-    resolution: {integrity: sha512-reus9flS8Te+ttV5aCx2k54jAm+CfBrJfB+hxLKvGCw2Xiv9Y47iE9E7yFGtN5OB0XL1eOPgRY0upMusjxUPKg==}
+  '@ai-sdk/mcp@2.0.106':
+    resolution: {integrity: sha512-/3ZwWBdLPqWAhAZPAL4h82+mYlOG+ryR7BI74t7t13ndyKIySVEbjltO3/SP4lEwUhkDlZhzz1yy6TP4ZnySRw==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^4.6.7
@@ -355,8 +355,8 @@ packages:
     peerDependencies:
       zod: ^4.6.7
 
-  '@ai-sdk/provider-utils@5.0.83':
-    resolution: {integrity: sha512-5lInsmNnh64eKi2L3fQjPy5VnV2y69lwyGnZ3vfz82Tlkgy8pWsvYueUrSJGxi8gXOM67jB9tN7LtDjjEFsNLQ==}
+  '@ai-sdk/provider-utils@5.0.85':
+    resolution: {integrity: sha512-kpqFmdbhtslrRKbEvX/FuazM/4ZWGweHRczGsz+NTk3lXfqfjLBRrEdyOn+kZV5Lr6RTkfZqH0C5ny/CTFwq+Q==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^4.6.7
@@ -369,8 +369,8 @@ packages:
     resolution: {integrity: sha512-jRvAhvW23+TeMGVCME2WGejP/TjzyDg7TplUep3t8HcEYnC2/8zqhCy9RRrjjVs1ljcygABZ8pQ21MbCRdF01w==}
     engines: {node: '>=22'}
 
-  '@ai-sdk/react@4.0.186':
-    resolution: {integrity: sha512-AACbn8gCiB3WMJXWV245+W/3dRDwUptnQHmYfEroy+TqaSI5MFAn1lw7tOfCeF2UlHUgKsbGvsYkPBI7tz8gGg==}
+  '@ai-sdk/react@4.0.188':
+    resolution: {integrity: sha512-cdrRLR5PUYwFLzwBeGrz4ZwoOEJh9QbyRZs0wMVCg7xjG1O+kvwPlW/q9kWSC4zCxVaaeTDzpdrrug674kA+0g==}
     engines: {node: '>=22'}
     peerDependencies:
       react: ^18 || ~19.0.1 || ~19.1.2 || ^19.2.1
@@ -3215,8 +3215,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@vantageos/cloud-identity@0.38.0':
-    resolution: {integrity: sha512-3u2qnTMHN8LdJr1EO9O268ZDlChI3XLbYfLh0ZGFtKZpzhdX8OGf/fgO8kevPXiMhDQ9pcEyae0N0vdRs0wOnQ==}
+  '@vantageos/cloud-identity@0.39.0':
+    resolution: {integrity: sha512-rWTFufdWfQU7UGjg4ESPFdETB/eIxvojNnWHh6njcJCuKqviYn+VTwOB0Cc0ps0XzuH1OLR8UQXNGgilghR/4w==}
     engines: {node: '>=20'}
 
   '@vercel/analytics@2.0.1':
@@ -3325,8 +3325,8 @@ packages:
     peerDependencies:
       zod: ^4.6.7
 
-  ai@7.0.181:
-    resolution: {integrity: sha512-b38KYt7tb/dZkujHZTlLWmhohj2bVbWsZQwAJ8Lt6O2hC8saFfIUEFl1U3RwS8tbQ3cL9nAUpeJiiwhsHuBT3w==}
+  ai@7.0.183:
+    resolution: {integrity: sha512-rrPZNiuOKr8L6j9acxrWpE/lKWgR+rYNHDYr9bOvfMLM8RlsX75WMJsMw4LBPZkX6tdjFL8fiLXhTKN29wkkYQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^4.6.7
@@ -6629,10 +6629,10 @@ snapshots:
       '@vercel/oidc': 3.1.0
       zod: 4.6.7
 
-  '@ai-sdk/gateway@4.0.154(zod@4.6.7)':
+  '@ai-sdk/gateway@4.0.156(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 4.0.39
-      '@ai-sdk/provider-utils': 5.0.83(zod@4.6.7)
+      '@ai-sdk/provider-utils': 5.0.85(zod@4.6.7)
       '@vercel/oidc': 3.2.0
       zod: 4.6.7
 
@@ -6642,10 +6642,10 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.19(zod@4.6.7)
       zod: 4.6.7
 
-  '@ai-sdk/mcp@2.0.104(zod@4.6.7)':
+  '@ai-sdk/mcp@2.0.106(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 4.0.39
-      '@ai-sdk/provider-utils': 5.0.83(zod@4.6.7)
+      '@ai-sdk/provider-utils': 5.0.85(zod@4.6.7)
       cross-spawn: 7.0.6
       pkce-challenge: 5.0.2
       zod: 4.6.7
@@ -6663,7 +6663,7 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 4.6.7
 
-  '@ai-sdk/provider-utils@5.0.83(zod@4.6.7)':
+  '@ai-sdk/provider-utils@5.0.85(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 4.0.39
       '@standard-schema/spec': 1.1.0
@@ -6679,12 +6679,12 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@4.0.186(react@19.2.7)(zod@4.6.7)':
+  '@ai-sdk/react@4.0.188(react@19.2.7)(zod@4.6.7)':
     dependencies:
-      '@ai-sdk/mcp': 2.0.104(zod@4.6.7)
+      '@ai-sdk/mcp': 2.0.106(zod@4.6.7)
       '@ai-sdk/provider': 4.0.39
-      '@ai-sdk/provider-utils': 5.0.83(zod@4.6.7)
-      ai: 7.0.181(zod@4.6.7)
+      '@ai-sdk/provider-utils': 5.0.85(zod@4.6.7)
+      ai: 7.0.183(zod@4.6.7)
       react: 19.2.7
       swr: 2.5.1(react@19.2.7)
       throttleit: 2.1.0
@@ -9342,7 +9342,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@vantageos/cloud-identity@0.38.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@vantageos/cloud-identity@0.39.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@clerk/backend': 3.26.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       zod: 4.6.7
@@ -9433,11 +9433,11 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       zod: 4.6.7
 
-  ai@7.0.181(zod@4.6.7):
+  ai@7.0.183(zod@4.6.7):
     dependencies:
-      '@ai-sdk/gateway': 4.0.154(zod@4.6.7)
+      '@ai-sdk/gateway': 4.0.156(zod@4.6.7)
       '@ai-sdk/provider': 4.0.39
-      '@ai-sdk/provider-utils': 5.0.83(zod@4.6.7)
+      '@ai-sdk/provider-utils': 5.0.85(zod@4.6.7)
       zod: 4.6.7
 
   ajv@6.12.6:
